@@ -8,10 +8,12 @@ use Closure;
 use CodeIgniter\Entity\Entity;
 use CodeIgniter\Files\File;
 use CodeIgniter\HTTP\Files\UploadedFile;
+use Maniaba\FileConnect\AssetCollection\SetupAssetCollection;
 use Maniaba\FileConnect\Exceptions\AssetException;
 use Maniaba\FileConnect\Exceptions\FileException;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionInterface;
 use Maniaba\FileConnect\Traits\HasAssetsEntityTrait;
+use Throwable;
 
 /**
  * Class AssetAdder
@@ -23,8 +25,8 @@ final class AssetAdder
 {
     private Asset $asset;
     private File|UploadedFile $file;
-    private bool $preserveOriginal = false;
     private Closure $fileNameSanitizer;
+    private readonly SetupAssetCollection $setupAssetCollection;
 
     public function __construct(
         /** @var Entity&HasAssetsEntityTrait $entity The entity to which the asset is being added */
@@ -35,9 +37,15 @@ final class AssetAdder
         if (! in_array(HasAssetsEntityTrait::class, class_uses($this->entity), true)) {
             throw AssetException::forInvalidEntity($this->entity);
         }
-        $this->fileNameSanitizer = $this->defaultSanitizer(...);
 
         $this->setFile($file);
+
+        // Initialize the SetupAssetCollection instance
+        $this->setupAssetCollection = new SetupAssetCollection();
+
+        $this->fileNameSanitizer = $this->setupAssetCollection->getFileNameSanitizer(...);
+
+        $this->entity->setupAssetConnect($this->setupAssetCollection);
     }
 
     private function setFile(File|string|UploadedFile $file)
@@ -46,14 +54,13 @@ final class AssetAdder
             $file = new File($file);
         }
 
-        $fileName          = $file instanceof UploadedFile ? $file->getClientName() : $file->getBasename();
-        $sanitizedFileName = ($this->fileNameSanitizer)($fileName);
+        $fileName = $file instanceof UploadedFile ? $file->getClientName() : $file->getBasename();
 
         $this->asset = new Asset([
             'file'        => $file,
             'path'        => $file->getRealPath(),
-            'file_name'   => $sanitizedFileName,
-            'name'        => pathinfo($sanitizedFileName, PATHINFO_FILENAME),
+            'file_name'   => $fileName,
+            'name'        => pathinfo($fileName, PATHINFO_FILENAME),
             'mime_type'   => $file->getMimeType(),
             'entity_id'   => $this->entity->id,
             'entity_type' => $this->entity,
@@ -71,7 +78,7 @@ final class AssetAdder
      */
     public function preservingOriginal(bool $preserveOriginal = true): self
     {
-        $this->preserveOriginal = $preserveOriginal;
+        $this->setupAssetCollection->setPreserveOriginal($preserveOriginal);
 
         return $this;
     }
@@ -110,25 +117,6 @@ final class AssetAdder
         $this->asset->name = $name;
 
         return $this;
-    }
-
-    private function defaultSanitizer(string $fileName): string
-    {
-        $sanitizedFileName = preg_replace('#\p{C}+#u', '', $fileName);
-
-        $sanitizedFileName = str_replace(['#', '/', '\\', ' '], '-', $sanitizedFileName);
-
-        $phpExtensions = [
-            '.php', '.php3', '.php4', '.php5', '.php7', '.php8', '.phtml', '.phar',
-        ];
-
-        foreach ($phpExtensions as $extension) {
-            if (str_ends_with(strtolower($sanitizedFileName), $extension)) {
-                throw AssetException::forFileNameNotAllowed($sanitizedFileName);
-            }
-        }
-
-        return $sanitizedFileName;
     }
 
     /**
@@ -177,21 +165,24 @@ final class AssetAdder
      *
      * @return Asset The stored asset
      *
-     * @throws AssetException|FileException
+     * @throws AssetException|FileException|Throwable
      */
     public function toAssetCollection(AssetCollectionInterface|string|null $collection = null): Asset
     {
         if ($collection === null) {
-            $collection = $this->entity->registerAssetCollection() ?? config('Asset')->defaultCollection;
+            $collection = $this->setupAssetCollection->getCollectionDefinition();
         }
 
-        $storageHandler = new AssetStorageHandler($this->asset, $collection);
+        $this->asset->file_name = ($this->fileNameSanitizer)($this->asset->file_name);
+        $this->asset->name      = ($this->fileNameSanitizer)($this->asset->name);
+
+        $storageHandler = new AssetStorageHandler($this->asset, $collection, $this->setupAssetCollection);
 
         // Store the asset and return it
         $asset = $storageHandler->store();
 
         // Delete the original file if not preserving it
-        if (! $this->preserveOriginal && file_exists($this->file->getRealPath())) {
+        if (! $this->setupAssetCollection->shouldPreserveOriginal() && file_exists($this->file->getRealPath())) {
             @unlink($this->file->getRealPath());
         }
 

@@ -9,13 +9,14 @@ use Maniaba\FileConnect\Exceptions\FileException;
 
 final readonly class PathGenerator
 {
-    private readonly PathGeneratorHelper $helper;
+    private PathGeneratorHelper $helper;
+    private PathGeneratorInterface $pathGenerator;
 
     public function __construct(
-        public PathGeneratorInterface $pathGenerator,
         private AssetCollection $collection,
     ) {
-        $this->helper = new PathGeneratorHelper();
+        $this->helper        = new PathGeneratorHelper();
+        $this->pathGenerator = $this->collection->getPathGenerator();
     }
 
     public function getPath(): string

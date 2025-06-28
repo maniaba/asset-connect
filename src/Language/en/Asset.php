@@ -12,5 +12,6 @@ return [
         'invalid_mime_type'      => 'The MIME type "{mimeType}" is not allowed. Allowed MIME types: {allowedMimeTypes}.',
         'file_not_found'         => 'The file was not found at the specified path: {path}',
         'cannot_copy_file'       => 'Cannot copy file from "{source}" to "{destination}".',
+        'database_error'         => 'An error occurred while saving the asset to the database: {errors}',
     ],
 ];

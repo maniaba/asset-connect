@@ -67,4 +67,11 @@ class AssetException extends LogicException
 
         return new static($message, 'Invalid MIME type', 400);
     }
+
+    public static function forDatabaseError(array $errors): static
+    {
+        $message = lang('Asset.exception.database_error', ['errors' => implode(', ', $errors)]);
+
+        return new static($errors, $message, 500);
+    }
 }

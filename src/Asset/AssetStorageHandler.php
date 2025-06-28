@@ -9,6 +9,7 @@ use CodeIgniter\Files\File;
 use CodeIgniter\HTTP\Files\UploadedFile;
 use Maniaba\FileConnect\AssetCollection\AssetCollection;
 use Maniaba\FileConnect\AssetCollection\FileVariants;
+use Maniaba\FileConnect\AssetCollection\SetupAssetCollection;
 use Maniaba\FileConnect\Enums\AssetVisibility;
 use Maniaba\FileConnect\Exceptions\AssetException;
 use Maniaba\FileConnect\Exceptions\FileException;
@@ -30,6 +31,7 @@ final class AssetStorageHandler
     public function __construct(
         private Asset $asset,
         private AssetCollectionInterface|string $collectionDefinition,
+        private readonly SetupAssetCollection $setupAssetCollection,
     ) {
         if (! is_subclass_of($collectionDefinition, AssetCollectionInterface::class)) {
             throw new InvalidArgumentException(sprintf(
@@ -44,10 +46,12 @@ final class AssetStorageHandler
         }
 
         // Create a new AssetCollection to store the definition
-        $this->collection = new AssetCollection();
+        $this->collection = new AssetCollection($this->setupAssetCollection);
 
         // Call the definition method on the collection to set up validation rules
         $this->collectionDefinition->definition($this->collection);
+        // Set the collection name
+        $this->asset->collection = $this->collectionDefinition;
     }
 
     /**
@@ -174,12 +178,15 @@ final class AssetStorageHandler
      */
     private function saveAsset(): void
     {
-        // Set the collection name
-        $this->asset->collection = md5(get_class($this->collectionDefinition));
-
         // Save the asset to the database
         $model = model(AssetModel::class, false);
         $model->save($this->asset);
+
+        $errors = $model->errors();
+
+        if (! in_array($errors, [null, []], true)) {
+            throw AssetException::forDatabaseError($errors);
+        }
 
         $this->asset->id = $model->insertID();
     }
@@ -228,7 +235,7 @@ final class AssetStorageHandler
                 log_message('error', 'Failed to remove storage path: {message}', ['message' => $exception->getMessage()]);
             }
         } elseif (file_exists($path)) {
-            unlink($path);
+            @unlink($path);
         }
     }
 
@@ -257,7 +264,7 @@ final class AssetStorageHandler
                 'entity_id'   => $this->asset->entity_id,
                 'deleted_at'  => null, // Only consider non-deleted assets
             ])->orderBy('created_at', 'DESC')
-            ->limit(2147483647) // Use a large limit to get all assets in the collection
+            ->limit(2147483647) // Use a large limit to get all assets in the collection, int max is 2147483647 for best compatibility
             ->offset($maxItems) // Skip the newest $maxItems (which we want to keep)
             ->builder();
 

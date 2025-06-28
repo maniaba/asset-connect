@@ -9,6 +9,7 @@ use CodeIgniter\Files\File;
 use CodeIgniter\HTTP\Files\UploadedFile;
 use CodeIgniter\I18n\Time;
 use InvalidArgumentException;
+use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionInterface;
 
 /**
  * @property      string            $collection   name of the collection to which the asset belongs (md5 hash of the class name)
@@ -49,6 +50,19 @@ final class Asset extends Entity
         }
 
         $this->attributes['entity_type'] = md5($entityType);
+
+        return $this;
+    }
+
+    public function setCollection(AssetCollectionInterface|string $collection): static
+    {
+        if ($collection instanceof AssetCollectionInterface) {
+            $collection = $collection::class;
+        } elseif (! class_exists($collection) || ! is_subclass_of($collection, AssetCollectionInterface::class)) {
+            throw new InvalidArgumentException('Collection must be a valid AssetCollectionInterface class or instance.');
+        }
+
+        $this->attributes['collection'] = md5($collection);
 
         return $this;
     }

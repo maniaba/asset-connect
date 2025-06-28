@@ -10,6 +10,7 @@ use Maniaba\FileConnect\Enums\AssetVisibility;
 use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionGetterInterface;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionSetterInterface;
+use Maniaba\FileConnect\PathGenerator\PathGeneratorInterface;
 use Maniaba\FileConnect\Utils\PhpIni;
 
 final class AssetCollection implements AssetCollectionSetterInterface, AssetCollectionGetterInterface
@@ -36,9 +37,28 @@ final class AssetCollection implements AssetCollectionSetterInterface, AssetColl
      */
     private int $maximumNumberOfItemsInCollection = 0;
 
-    public function __construct()
-    {
+    private PathGeneratorInterface $pathGenerator;
+
+    public function __construct(
+        private readonly SetupAssetCollection $setupAssetCollection,
+    ) {
         $this->setMaxFileSize(PhpIni::uploadMaxFilesizeBytes());
+    }
+
+    public function setPathGenerator(PathGeneratorInterface $pathGenerator): static
+    {
+        $this->pathGenerator = $pathGenerator;
+
+        return $this;
+    }
+
+    public function getPathGenerator(): PathGeneratorInterface
+    {
+        if (! isset($this->pathGenerator)) {
+            $this->pathGenerator = $this->setupAssetCollection->getPathGenerator();
+        }
+
+        return $this->pathGenerator;
     }
 
     /**

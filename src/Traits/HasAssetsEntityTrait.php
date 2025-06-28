@@ -7,28 +7,21 @@ namespace Maniaba\FileConnect\Traits;
 use CodeIgniter\Files\File;
 use Maniaba\FileConnect\Asset\Asset;
 use Maniaba\FileConnect\Asset\AssetAdder;
-use Maniaba\FileConnect\AssetCollection\AssetCollection;
 use Maniaba\FileConnect\AssetConnect;
-use Maniaba\FileConnect\Entities\AssetCollectionConfig;
 use Maniaba\FileConnect\Exceptions\AssetException;
 use Maniaba\FileConnect\Exceptions\FileException;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionInterface;
+use Maniaba\FileConnect\Interfaces\AssetCollection\SetupAssetCollection;
 
 trait HasAssetsEntityTrait
 {
     /**
-     * The asset collections registered for this entity
+     * Setup the asset connection for this entity
      *
-     * @var array<string, AssetCollectionConfig>
-     */
-    public array $assetCollections = [];
-
-    /**
-     * Get the definition of the asset collection for this entity
+     * This method should be implemented by the entity to define how assets are connected.
      *
-     * @return AssetCollectionInterface|string|null The asset collection definition or null if you want to use the default collection from AssetConfig
+     * @param SetupAssetCollection $setup The setup object to configure the asset connection
      */
-    abstract public function registerAssetCollection(): AssetCollectionInterface|string|null;
+    abstract public function setupAssetConnect(SetupAssetCollection $setup): void;
 
     /**
      * Add an asset to the entity
@@ -97,41 +90,5 @@ trait HasAssetsEntityTrait
         $assetConnect = new AssetConnect();
 
         return $assetConnect->deleteAssetsForEntity($this, $collection);
-    }
-
-    /**
-     * Get an asset collection for this entity
-     *
-     * @param string $collection The collection name
-     *
-     * @return AssetCollection The asset collection
-     */
-    final public function collection(string $collection = 'default'): AssetCollection
-    {
-        return new AssetCollection($this, $collection);
-    }
-
-    /**
-     * Get a registered asset collection
-     *
-     * @param string $collectionName The collection name
-     *
-     * @return AssetCollectionConfig|null The asset collection config or null if not found
-     */
-    public function getAssetCollection(string $collectionName): ?AssetCollectionConfig
-    {
-        $this->registerAssetCollections();
-
-        return $this->assetCollections[$collectionName] ?? null;
-    }
-
-    /**
-     * Add an asset collection to the entity
-     *
-     * @param AssetCollectionConfig $collection The asset collection config
-     */
-    public function addAssetCollection(AssetCollectionConfig $collection): void
-    {
-        $this->assetCollections[$collection->name] = $collection;
     }
 }
