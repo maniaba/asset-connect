@@ -1,0 +1,87 @@
+{
+    "name": "maniaba/file-connect",
+    "description": "File Connect for CodeIgniter 4",
+    "license": "MIT",
+    "type": "library",
+    "keywords": [
+        "codeigniter",
+        "codeigniter4",
+        "files",
+        "file",
+        "tools"
+    ],
+    "authors": [
+        {
+            "name": "Amel Junuzović",
+            "email": "amel.junuzovic@outlook.com",
+            "homepage": "https://github.com/maniaba",
+            "role": "Developer"
+        }
+    ],
+    "homepage": "https://github.com/maniaba/file-connect",
+    "require": {
+        "php": "^8.3"
+    },
+    "require-dev": {
+        "codeigniter4/framework": "^4.3",
+        "icanhazstring/composer-unused": "dev-main",
+        "codeigniter/coding-standard": "^1.5",
+        "fakerphp/faker": "^1.9",
+        "mikey179/vfsstream": "^1.6",
+        "nexusphp/cs-config": "^3.6",
+        "nexusphp/tachycardia": "^2.0",
+        "phpstan/extension-installer": "^1.1",
+        "phpstan/phpstan": "^2.0",
+        "phpstan/phpstan-deprecation-rules": "^2.0",
+        "phpstan/phpstan-phpunit": "^2.0",
+        "phpunit/phpunit": "^10.5 || ^11.5",
+        "rector/rector": "^2.0",
+        "roave/security-advisories": "dev-latest",
+        "vimeo/psalm": "^5.0 || ^6.0"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "Maniaba\\FileConnect\\": "src"
+        },
+        "exclude-from-classmap": [
+            "**/Database/Migrations/**"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests",
+            "Tests\\Support\\": "tests/_support"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "phpstan/extension-installer": true
+        }
+    },
+    "scripts": {
+        "analyze": [
+            "Composer\\Config::disableProcessTimeout",
+            "phpstan analyze",
+            "psalm",
+            "rector process --dry-run"
+        ],
+        "ci": [
+            "Composer\\Config::disableProcessTimeout",
+            "@cs",
+            "@deduplicate",
+            "@inspect",
+            "@analyze",
+            "@test"
+        ],
+        "cs": "php-cs-fixer fix --ansi --verbose --dry-run --diff",
+        "cs-fix": "php-cs-fixer fix --ansi --verbose --diff",
+        "deduplicate": "phpcpd app/ src/",
+        "inspect": "deptrac analyze --cache-file=build/deptrac.cache",
+        "mutate": "infection --threads=2 --skip-initial-tests --coverage=build/phpunit",
+        "sa": "@analyze",
+        "style": "@cs-fix",
+        "test": "phpunit"
+    }
+}

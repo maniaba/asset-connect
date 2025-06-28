@@ -1,0 +1,16 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Maniaba\FileConnect\PathGenerator;
+
+use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionGetterInterface;
+
+interface PathGeneratorInterface
+{
+    // Get the path for the given media, relative to the root storage path.
+    public function getPath(PathGeneratorHelper $generatorHelper, AssetCollectionGetterInterface $collection): string;
+
+    // Get the path for conversions of the given media, relative to the root storage path.
+    public function getPathForVariants(PathGeneratorHelper $generatorHelper, AssetCollectionGetterInterface $collection): string;
+}
