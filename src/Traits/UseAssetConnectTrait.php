@@ -12,7 +12,7 @@ use Maniaba\FileConnect\Exceptions\AssetException;
 use Maniaba\FileConnect\Exceptions\FileException;
 use Maniaba\FileConnect\Interfaces\AssetCollection\SetupAssetCollection;
 
-trait HasAssetsEntityTrait
+trait UseAssetConnectTrait
 {
     /**
      * Setup the asset connection for this entity

@@ -23,11 +23,11 @@ php spark migrate --namespace=Maniaba\\FileConnect
 2. Add the `HasAssetsEntityTrait` to any entity you want to associate files with:
 
 ```php
-use Maniaba\FileConnect\Traits\HasAssetsEntityTrait;
+use Maniaba\FileConnect\Traits\UseAssetConnectTrait;
 
 class User extends Entity
 {
-    use HasAssetsEntityTrait;
+    use UseAssetConnectTrait;
 
     // ...
 }

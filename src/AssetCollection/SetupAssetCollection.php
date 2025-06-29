@@ -6,6 +6,7 @@ namespace Maniaba\FileConnect\AssetCollection;
 
 use Closure;
 use CodeIgniter\Config\BaseConfig;
+use CodeIgniter\Model;
 use Maniaba\FileConnect\Config\Asset;
 use Maniaba\FileConnect\Exceptions\AssetException;
 use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
@@ -21,12 +22,13 @@ final class SetupAssetCollection implements SetupAssetCollectionInterface
     /**
      * Closure to sanitize file names.
      *
-     * @var Closure(string): stringSanitizer
+     * @var Closure(string): string
      */
     private Closure $fileNameSanitizer;
 
     private Asset $config;
-    private bool $preserveOriginal = false;
+    private bool $preserveOriginal             = false;
+    private string $subjectPrimaryKeyAttribute = 'id';
 
     public function __construct()
     {
@@ -64,8 +66,22 @@ final class SetupAssetCollection implements SetupAssetCollectionInterface
     /**
      * Set the path generator for this Entity's asset collection.
      */
-    public function setPathGenerator(PathGeneratorInterface $pathGenerator): static
+    public function setPathGenerator(PathGeneratorInterface|string $pathGenerator): static
     {
+        if (is_string(
+            $pathGenerator,
+        )) {
+            if (! class_exists($pathGenerator) || ! is_subclass_of($pathGenerator, PathGeneratorInterface::class)) {
+                throw new InvalidArgumentException(sprintf(
+                    'Expected a class implementing %s, got %s',
+                    PathGeneratorInterface::class,
+                    $pathGenerator,
+                ));
+            }
+
+            $pathGenerator = new $pathGenerator();
+        }
+
         $this->pathGenerator = $pathGenerator;
 
         return $this;
@@ -165,5 +181,36 @@ final class SetupAssetCollection implements SetupAssetCollectionInterface
     public function shouldPreserveOriginal(): bool
     {
         return $this->preserveOriginal;
+    }
+
+    public function setSubjectPrimaryKeyAttribute(string $attribute): static
+    {
+        $this->subjectPrimaryKeyAttribute = $attribute;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function autoDetectSubjectPrimaryKeyAttribute(string $fromModel): static
+    {
+        if (! class_exists($fromModel) || ! is_subclass_of($fromModel, Model::class)) {
+            throw new InvalidArgumentException(sprintf(
+                'Model class %s does not exist.',
+                $fromModel,
+            ));
+        }
+
+        $model = new $fromModel();
+
+        $this->setSubjectPrimaryKeyAttribute($model->primaryKey);
+
+        return $this;
+    }
+
+    public function getSubjectPrimaryKeyAttribute(): string
+    {
+        return $this->subjectPrimaryKeyAttribute;
     }
 }

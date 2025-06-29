@@ -4,126 +4,97 @@ declare(strict_types=1);
 
 namespace Maniaba\FileConnect;
 
+use CodeIgniter\Config\BaseConfig;
+use CodeIgniter\Entity\Entity;
 use CodeIgniter\Files\File;
 use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\Entities\PendingAsset;
-use Maniaba\FileConnect\Enums\AssetCollectionType;
-use Maniaba\FileConnect\Enums\AssetDiskType;
 use Maniaba\FileConnect\Models\AssetModel;
+use Maniaba\FileConnect\Traits\UseAssetConnectTrait;
 use RuntimeException;
 
 class AssetConnect
 {
     protected AssetModel $assetModel;
 
-    protected array $config;
+    /**
+     * @var Config\Asset The configuration for the AssetConnect
+     */
+    protected BaseConfig $config;
+
+    protected array $relationsInfo = [];
 
     /**
      * Constructor
      */
     public function __construct()
     {
-        $this->assetModel = new AssetModel();
-        $this->config     = config('Asset')->tables;
+        $this->assetModel = model(AssetModel::class, false);
+        $this->config     = config('Asset');
     }
 
-    /**
-     * Add an asset to an entity
-     *
-     * @param object      $entity           The entity to add the asset to
-     * @param File|string $file             The file to add as an asset
-     * @param array       $customProperties Custom properties to store with the asset
-     * @param string|null $collection       The collection to add the asset to
-     * @param string      $diskName         The disk name
-     * @param array       $manipulations    Manipulations to apply to the asset
-     * @param array       $customHeaders    Custom headers
-     *
-     * @return Asset The created asset
-     *
-     * @throws RuntimeException If the entity doesn't have an ID, the file is not accepted for the collection, or the collection size limit is reached
-     */
-    public function addAssetToEntity(
-        object $entity,
-        File|string $file,
-        array $customProperties = [],
-        ?string $collection = null,
-        string $diskName = '',
-        array $manipulations = [],
-        array $customHeaders = [],
-    ): Asset {
-        // Get the entity class name and ID
-        $entityClass = $entity::class;
-        $entityId    = $entity->id ?? null;
+    public function triggerModelAfterFind(array $data): array
+    {
+        $this->propertyMappingHelper($data);
 
-        if ($entityId === null) {
-            throw new RuntimeException('Entity must have an ID to add assets');
-        }
+        return [];
+    }
 
-        // Process the file
-        $fileInfo = $this->processFile($file);
+    public function setRelationsInfo()
+    {
+    }
 
-        // Check if the file is accepted for the collection
-        $collectionName   = $collection ?? AssetCollectionType::DEFAULT;
-        $collectionConfig = null;
+    private function propertyMappingHelper(array $data): array
+    {
+        /** @var list<Entity&UseAssetConnectTrait> $rows */
+        $rows = $data['singleton'] ? [$data['data']] : $data['data'];
 
-        if (method_exists($entity, 'getAssetCollection')) {
-            $collectionConfig = $entity->getAssetCollection($collectionName);
-        }
-
-        if ($collectionConfig !== null) {
-            // Create a pending asset from the file info
-            $pendingAsset = PendingAsset::createFromFileInfo($fileInfo);
-
-            // Check if the file is accepted for the collection
-            if (! ($collectionConfig->acceptsFile)($pendingAsset, $entity)) {
-                throw new RuntimeException("File is not accepted for collection '{$collectionName}'");
-            }
-
-            // Check if the file's MIME type is accepted for the collection
-            if (! empty($collectionConfig->acceptsMimeTypes) && ! in_array($pendingAsset->getMimeType(), $collectionConfig->acceptsMimeTypes, true)) {
-                throw new RuntimeException("MIME type '{$pendingAsset->getMimeType()}' is not accepted for collection '{$collectionName}'");
-            }
-
-            // Use the disk name from the collection config if not provided
-            if ($diskName === '' && $collectionConfig->diskName !== '') {
-                $diskName = $collectionConfig->diskName;
+        foreach ($rows as $row) {
+            if (! in_array(UseAssetConnectTrait::class, class_uses($row), true)) {
+                throw new RuntimeException('The entity(Model::$returnType) must use the UseAssetConnectTrait trait.');
             }
         }
 
-        // Create the asset record
-        $assetData = [
-            'entity_type'       => $entityClass,
-            'entity_id'         => $entityId,
-            'collection'        => $collectionName,
-            'file_name'         => $fileInfo['name'],
-            'mime_type'         => $fileInfo['mime_type'],
-            'size'              => $fileInfo['size'],
-            'disk'              => $diskName ?: AssetDiskType::LOCAL->value, // Use provided disk name or default to local disk
-            'path'              => $fileInfo['path'],
-            'custom_properties' => json_encode($customProperties),
-            'created_at'        => date('Y-m-d H:i:s'),
-            'updated_at'        => date('Y-m-d H:i:s'),
-        ];
+        dd($rows);
 
-        // Add manipulations if provided
-        if (! empty($manipulations)) {
-            $assetData['manipulations'] = json_encode($manipulations);
+        if ($parentIds === []) {
+            unset($this->relationsInfo[$relationKey]);
+
+            return $data;
         }
 
-        // Add custom headers if provided
-        if (! empty($customHeaders)) {
-            $assetData['custom_headers'] = json_encode($customHeaders);
+        $childs = $model->whereIn($model->getModelTable() . '.' . $localKey, array_unique($parentIds))->findAll();
+
+        if ($childs === []) {
+            unset($this->relationsInfo[$relationKey]);
+
+            return $data;
         }
 
-        $assetId = $this->assetModel->insert($assetData);
-        $asset   = $this->getAssetById($assetId);
+        // Step 1: Index children by foreign key
+        $childMap = [];
 
-        // Enforce collection size limit if configured
-        if ($collectionConfig !== null && $collectionConfig->collectionSizeLimit !== false) {
-            $this->enforceCollectionSizeLimit($entity, $collectionName, $collectionConfig->collectionSizeLimit);
+        foreach ($childs as $child) {
+            $childMap[$child->{$localKey}][] = $child;
+        }
+        unset($childs);
+
+        // Step 2: Assign children to parents
+        foreach (($data['singleton'] ? [$data['data']] : $data['data']) as &$parent) {
+            $parentKeyVal = $parent->{$foreignKey};
+
+            if (isset($childMap[$parentKeyVal])) {
+                $value = $oneToMany ? $childMap[$parentKeyVal] : $childMap[$parentKeyVal][0];
+                // if can be cloned, clone it
+                if ($cacheLevel === CacheLevel::NONE && $value instanceof Entity) {
+                    $value = clone $value;
+                }
+                $parent->{$attribute} = $value;
+            }
         }
 
-        return $asset;
+        unset($childMap, $this->relationsInfo[$relationKey]);
+
+        return $data;
     }
 
     /**

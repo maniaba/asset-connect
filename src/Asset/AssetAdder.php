@@ -12,7 +12,7 @@ use Maniaba\FileConnect\AssetCollection\SetupAssetCollection;
 use Maniaba\FileConnect\Exceptions\AssetException;
 use Maniaba\FileConnect\Exceptions\FileException;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionInterface;
-use Maniaba\FileConnect\Traits\HasAssetsEntityTrait;
+use Maniaba\FileConnect\Traits\UseAssetConnectTrait;
 use Throwable;
 
 /**
@@ -29,12 +29,12 @@ final class AssetAdder
     private readonly SetupAssetCollection $setupAssetCollection;
 
     public function __construct(
-        /** @var Entity&HasAssetsEntityTrait $entity The entity to which the asset is being added */
+        /** @var Entity&UseAssetConnectTrait $entity The entity to which the asset is being added */
         private readonly Entity $entity,
         File|string|UploadedFile $file,
     ) {
         // Ensure the entity uses the HasAssetsEntityTrait
-        if (! in_array(HasAssetsEntityTrait::class, class_uses($this->entity), true)) {
+        if (! in_array(UseAssetConnectTrait::class, class_uses($this->entity), true)) {
             throw AssetException::forInvalidEntity($this->entity);
         }
 
@@ -42,10 +42,8 @@ final class AssetAdder
 
         // Initialize the SetupAssetCollection instance
         $this->setupAssetCollection = new SetupAssetCollection();
-
-        $this->fileNameSanitizer = $this->setupAssetCollection->getFileNameSanitizer(...);
-
         $this->entity->setupAssetConnect($this->setupAssetCollection);
+        $this->fileNameSanitizer = $this->setupAssetCollection->getFileNameSanitizer(...);
     }
 
     private function setFile(File|string|UploadedFile $file)
@@ -62,7 +60,7 @@ final class AssetAdder
             'file_name'   => $fileName,
             'name'        => pathinfo($fileName, PATHINFO_FILENAME),
             'mime_type'   => $file->getMimeType(),
-            'entity_id'   => $this->entity->id,
+            'entity_id'   => $this->entity->{$this->setupAssetCollection->getSubjectPrimaryKeyAttribute()},
             'entity_type' => $this->entity,
             'size'        => $file->getSize(),
             'order'       => 0, // Default order, can be set later
