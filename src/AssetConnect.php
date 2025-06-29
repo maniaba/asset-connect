@@ -23,9 +23,9 @@ final class AssetConnect
     /**
      * @var Config\Asset The configuration for the AssetConnect
      */
-    private BaseConfig $config;
+    private readonly BaseConfig $config;
 
-    private SetupAssetCollection $setupAssetCollection;
+    private readonly SetupAssetCollection $setupAssetCollection;
     private array $relationsInfo = [
         'primaryKeys' => [],
         'entityType'  => null,

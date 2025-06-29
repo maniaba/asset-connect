@@ -24,10 +24,7 @@ class TestProperties extends BaseProperties
  */
 final class BasePropertiesTest extends CIUnitTestCase
 {
-    /**
-     * @var TestProperties
-     */
-    private $baseProperties;
+    private TestProperties $baseProperties;
 
     protected function setUp(): void
     {

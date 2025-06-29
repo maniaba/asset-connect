@@ -19,25 +19,10 @@ use PHPUnit\Framework\MockObject\MockObject;
  */
 final class AssetTest extends CIUnitTestCase
 {
-    /**
-     * @var Asset
-     */
-    private $asset;
-
-    /**
-     * @var MockObject
-     */
-    private $mockFile;
-
-    /**
-     * @var MockObject
-     */
-    private $mockEntity;
-
-    /**
-     * @var MockObject
-     */
-    private $mockCollectionDefinition;
+    private Asset $asset;
+    private MockObject $mockFile;
+    private MockObject $mockEntity;
+    private MockObject $mockCollectionDefinition;
 
     protected function setUp(): void
     {
@@ -77,7 +62,7 @@ final class AssetTest extends CIUnitTestCase
 
         // Assert
         $this->assertSame($this->asset, $result);
-        $this->assertSame(md5(get_class($this->mockEntity)), $this->asset->entity_type);
+        $this->assertSame(md5($this->mockEntity::class), $this->asset->entity_type);
     }
 
     /**
@@ -122,7 +107,7 @@ final class AssetTest extends CIUnitTestCase
 
         // Assert
         $this->assertSame($this->asset, $result);
-        $this->assertSame(md5(get_class($this->mockCollectionDefinition)), $this->asset->collection);
+        $this->assertSame(md5($this->mockCollectionDefinition::class), $this->asset->collection);
     }
 
     /**
@@ -234,6 +219,5 @@ final class AssetTest extends CIUnitTestCase
     {
         // Act & Assert
         $this->expectException(\Maniaba\FileConnect\Exceptions\InvalidArgumentException::class);
-        $dirname = $this->asset->path_dirname;
     }
 }

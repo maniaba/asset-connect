@@ -12,15 +12,9 @@ use Maniaba\FileConnect\Asset\Properties\UserCustomProperties;
  */
 final class UserCustomPropertiesTest extends CIUnitTestCase
 {
-    /**
-     * @var UserCustomProperties
-     */
-    private $properties;
-
     protected function setUp(): void
     {
         parent::setUp();
-        $this->properties = new UserCustomProperties([]);
     }
 
     /**

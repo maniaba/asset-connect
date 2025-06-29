@@ -29,8 +29,8 @@ final class AssetStorageHandler
 
     public function __construct(
         /** @var Entity&UseAssetConnectTrait $subjectEntity The entity to which the asset is being added */
-        private Entity $subjectEntity,
-        private Asset $asset,
+        private readonly Entity $subjectEntity,
+        private readonly Asset $asset,
         private readonly SetupAssetCollection $setupAssetCollection,
     ) {
         $this->collection = AssetCollection::create($this->setupAssetCollection);

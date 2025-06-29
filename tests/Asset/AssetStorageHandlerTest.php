@@ -29,50 +29,14 @@ use stdClass;
  */
 final class AssetStorageHandlerTest extends CIUnitTestCase
 {
-    /**
-     * @var MockObject
-     */
-    private $mockEntity;
-
-    /**
-     * @var Asset
-     */
-    private $asset;
-
-    /**
-     * @var MockObject
-     */
-    private $mockSetupAssetCollection;
-
-    /**
-     * @var MockObject
-     */
-    private $mockAssetCollection;
-
-    /**
-     * @var MockObject
-     */
-    private $mockPathGenerator;
-
-    /**
-     * @var MockObject
-     */
-    private $mockAssetModel;
-
-    /**
-     * @var MockObject
-     */
-    private $mockCollectionDefinition;
-
-    /**
-     * @var MockObject
-     */
-    private $mockAssetConnect;
-
-    /**
-     * @var MockObject
-     */
-    private $mockFile;
+    private MockObject $mockEntity;
+    private Asset $asset;
+    private MockObject $mockSetupAssetCollection;
+    private MockObject $mockAssetCollection;
+    private MockObject $mockPathGenerator;
+    private MockObject $mockAssetModel;
+    private MockObject $mockAssetConnect;
+    private MockObject $mockFile;
 
     protected function setUp(): void
     {
@@ -107,7 +71,7 @@ final class AssetStorageHandlerTest extends CIUnitTestCase
             ->addMethods(['save', 'errors', 'where', 'orderBy', 'limit', 'offset', 'findColumn', 'whereIn', 'delete'])
             ->getMock();
 
-        $this->mockCollectionDefinition = $this->createMock(AssetCollectionDefinitionInterface::class);
+        $mockCollectionDefinition = $this->createMock(AssetCollectionDefinitionInterface::class);
 
         $this->mockAssetConnect = $this->getMockBuilder(stdClass::class)
             ->addMethods(['addAsset', 'removeAssetById'])
@@ -119,7 +83,7 @@ final class AssetStorageHandlerTest extends CIUnitTestCase
 
         // Setup common expectations
         $this->mockSetupAssetCollection->method('getCollectionDefinition')
-            ->willReturn($this->mockCollectionDefinition);
+            ->willReturn($mockCollectionDefinition);
 
         // Setup global function mocks
         $this->setupGlobalFunctionMocks();

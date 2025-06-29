@@ -82,6 +82,8 @@
         "mutate": "infection --threads=2 --skip-initial-tests --coverage=build/phpunit",
         "sa": "@analyze",
         "style": "@cs-fix",
-        "test": "phpunit"
+        "test": "phpunit",
+        "rector": "rector process --dry-run",
+        "rector-fix": "rector process"
     }
 }

@@ -94,7 +94,7 @@ final class Asset extends Entity
             return $value;
         }
 
-        return new Properties(json_decode($value, true));
+        return new Properties(json_decode((string) $value, true));
     }
 
     protected function getExtension(): string

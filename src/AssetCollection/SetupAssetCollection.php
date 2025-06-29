@@ -26,7 +26,7 @@ final class SetupAssetCollection implements SetupAssetCollectionInterface
      */
     private Closure $fileNameSanitizer;
 
-    private Asset $config;
+    private readonly Asset $config;
     private bool $preserveOriginal             = false;
     private string $subjectPrimaryKeyAttribute = 'id';
 

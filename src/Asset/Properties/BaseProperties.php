@@ -9,13 +9,10 @@ use JsonSerializable;
 
 abstract class BaseProperties implements JsonSerializable
 {
-    private array $properties;
-
     abstract public static function getName(): string;
 
-    public function __construct(array $properties)
+    public function __construct(private array $properties)
     {
-        $this->properties = $properties;
     }
 
     public function jsonSerialize(): array

@@ -14,10 +14,7 @@ use Maniaba\FileConnect\Asset\Properties\UserCustomProperties;
  */
 final class PropertiesTest extends CIUnitTestCase
 {
-    /**
-     * @var Properties
-     */
-    private $properties;
+    private Properties $properties;
 
     protected function setUp(): void
     {

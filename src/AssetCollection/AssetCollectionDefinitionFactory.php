@@ -18,14 +18,12 @@ final class AssetCollectionDefinitionFactory
     public static function validateStringClass(
         AssetCollectionDefinitionInterface|string $collectionDefinition,
     ): void {
-        if (is_string($collectionDefinition)) {
-            if (! class_exists($collectionDefinition) || ! is_subclass_of($collectionDefinition, AssetCollectionDefinitionInterface::class)) {
-                throw new InvalidArgumentException(sprintf(
-                    'Expected a class implementing %s, got %s',
-                    AssetCollectionDefinitionInterface::class,
-                    $collectionDefinition,
-                ));
-            }
+        if (is_string($collectionDefinition) && (! class_exists($collectionDefinition) || ! is_subclass_of($collectionDefinition, AssetCollectionDefinitionInterface::class))) {
+            throw new InvalidArgumentException(sprintf(
+                'Expected a class implementing %s, got %s',
+                AssetCollectionDefinitionInterface::class,
+                $collectionDefinition,
+            ));
         }
     }
 

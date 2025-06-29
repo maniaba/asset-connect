@@ -92,7 +92,7 @@ trait UseAssetConnectTrait
     {
         $assets = $this->getAssets($collection);
 
-        if (is_array($assets) && count($assets) > 0) {
+        if (is_array($assets) && $assets !== []) {
             return $assets[0];
         }
 

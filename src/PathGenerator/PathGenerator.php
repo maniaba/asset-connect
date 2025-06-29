@@ -73,12 +73,10 @@ final readonly class PathGenerator
             // Recrusively create empty index.html file to prevent directory listing
             $indexFile = $path . DIRECTORY_SEPARATOR . 'index.html';
 
-            if (! file_exists($indexFile)) {
-                if (false === file_put_contents($indexFile, '<!DOCTYPE html><html><head><title>Index</title></head><body></body></html>')) {
-                    $error = sprintf('Failed to create index.html in "%s"', $path);
+            if (! file_exists($indexFile) && false === file_put_contents($indexFile, '<!DOCTYPE html><html><head><title>Index</title></head><body></body></html>')) {
+                $error = sprintf('Failed to create index.html in "%s"', $path);
 
-                    throw new FileException($error, $error, 500);
-                }
+                throw new FileException($error, $error, 500);
             }
 
             // create .htaccess file to prevent directory listing
