@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Maniaba\FileConnect\Traits;
 
+use CodeIgniter\Entity\Entity;
 use CodeIgniter\Files\File;
 use Maniaba\FileConnect\Asset\Asset;
 use Maniaba\FileConnect\Asset\AssetAdder;
@@ -15,7 +16,7 @@ use Maniaba\FileConnect\Interfaces\AssetCollection\SetupAssetCollection;
 
 trait UseAssetConnectTrait
 {
-    private AssetConnect $assetConnect;
+    private AssetConnect $assetConnectInstance;
 
     /**
      * Initialize the asset connection for this entity
@@ -24,7 +25,7 @@ trait UseAssetConnectTrait
      */
     public function loadAssetConnect(AssetConnect $assetConnect): void
     {
-        $this->assetConnect = $assetConnect;
+        $this->assetConnectInstance = $assetConnect;
     }
 
     /**
@@ -32,9 +33,9 @@ trait UseAssetConnectTrait
      *
      * @return AssetConnect|null Returns the asset connection if it exists, otherwise null
      */
-    public function assetConnect(): ?AssetConnect
+    public function assetConnectInstance(): ?AssetConnect
     {
-        return $this->assetConnect ?? null;
+        return $this->assetConnectInstance ?? null;
     }
 
     /**
@@ -66,6 +67,7 @@ trait UseAssetConnectTrait
             throw FileException::forInvalidFile($file->getRealPath());
         }
 
+        /** @var Entity&UseAssetConnectTrait $this */
         return new AssetAdder($this, $file);
     }
 
@@ -78,13 +80,14 @@ trait UseAssetConnectTrait
      */
     final public function getAssets(?string $collection = null): array
     {
-        return $this->assetConnect->getAssetsForEntity($this, $collection);
+        /** @var Entity&UseAssetConnectTrait $this */
+        return $this->assetConnectInstance->getAssetsForEntity($this, $collection);
     }
 
     /**
      * Get the first asset associated with this entity
      *
-     * @param string|null $collection The collection to get the asset from
+     * @param class-string<AssetCollectionDefinitionInterface>|null $collection The collection to get the asset from
      *
      * @return Asset|null The first asset or null if none exists
      */
@@ -92,11 +95,29 @@ trait UseAssetConnectTrait
     {
         $assets = $this->getAssets($collection);
 
-        if (is_array($assets) && $assets !== []) {
-            return $assets[0];
+        if ($assets === []) {
+            return null;
         }
 
-        return $assets instanceof Asset ? $assets : null;
+        return reset($assets) ?: null;
+    }
+
+    /**
+     * Get the last asset associated with this entity
+     *
+     * @param class-string<AssetCollectionDefinitionInterface>|null $collection The collection to get the asset from
+     *
+     * @return Asset|null The last asset or null if none exists
+     */
+    final public function getLastAsset(?string $collection = null): ?Asset
+    {
+        $assets = $this->getAssets($collection);
+
+        if ($assets === []) {
+            return null;
+        }
+
+        return end($assets) ?: null;
     }
 
     /**
@@ -108,8 +129,7 @@ trait UseAssetConnectTrait
      */
     final public function deleteAssets(?string $collection = null): bool
     {
-        $assetConnect = new AssetConnect();
-
-        return $assetConnect->deleteAssetsForEntity($this, $collection);
+        /** @var Entity&UseAssetConnectTrait $this */
+        return $this->assetConnectInstance->deleteAssetsForEntity($this, $collection);
     }
 }

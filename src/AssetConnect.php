@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Maniaba\FileConnect;
 
-use CodeIgniter\Config\BaseConfig;
 use CodeIgniter\Database\BaseBuilder;
 use CodeIgniter\Entity\Entity;
 use Maniaba\FileConnect\Asset\Asset;
 use Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory;
 use Maniaba\FileConnect\AssetCollection\SetupAssetCollection;
+use Maniaba\FileConnect\Exceptions\FileException;
 use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Models\AssetModel;
@@ -19,12 +19,6 @@ use RuntimeException;
 final class AssetConnect
 {
     public readonly AssetModel $assetModel;
-
-    /**
-     * @var Config\Asset The configuration for the AssetConnect
-     */
-    private readonly BaseConfig $config;
-
     private readonly SetupAssetCollection $setupAssetCollection;
     private array $relationsInfo = [
         'primaryKeys' => [],
@@ -37,7 +31,7 @@ final class AssetConnect
      */
     private array $assets = [];
 
-    private bool $fetchedForAllCollections = false;
+    private array $fetchedCollections = [];
 
     /**
      * Constructor
@@ -45,7 +39,6 @@ final class AssetConnect
     public function __construct()
     {
         $this->assetModel           = model(AssetModel::class, false);
-        $this->config               = config('Asset');
         $this->setupAssetCollection = new SetupAssetCollection();
     }
 
@@ -118,44 +111,26 @@ final class AssetConnect
 
     public function fetchForCollection(): void
     {
-        if ($this->fetchedForAllCollections) {
-            // If we have already fetched assets for all collections, no need to fetch again.
-            return;
-        }
+        $currentCollection = $this->relationsInfo['collection'] ?? null;
 
-        $currentCollection = $this->relationsInfo['collection'] ?? '*';
-
-        if (! isset($this->assets[$currentCollection])) {
-            $this->assets[$currentCollection] = [];
+        if (! in_array($currentCollection, $this->fetchedCollections, true)) {
+            $this->fetchedCollections[] = $currentCollection;
 
             $assets = $this->assetModel
                 ->groupStart()
                 ->when(
-                    $currentCollection !== '*',
+                    $currentCollection !== null,
                     static fn (BaseBuilder $builder) => $builder->where('collection', $currentCollection),
                 )
                 ->where('entity_type', $this->relationsInfo['entityType'])
                 ->whereIn('entity_id', $this->relationsInfo['primaryKeys'])
                 ->groupEnd()
+                ->orderBy('order', 'ASC')
                 ->findAll();
 
             foreach ($assets as $asset) {
                 $this->addAsset($asset);
             }
-
-            // Mark that we have fetched assets for all collections
-            $this->fetchedForAllCollections = $currentCollection === '*';
-        }
-    }
-
-    public function removeAsset(Asset $asset): void
-    {
-        if (isset($this->assets[$asset->entity_id])) {
-            // Remove the asset from the specific entity's assets by its ID
-            $assets = &$this->assets[$asset->entity_id];
-            $assets = array_filter($assets, static fn (Asset $a) => $a->id !== $asset->id);
-            // Re-index the array to remove gaps in the keys
-            $this->assets[$asset->entity_id] = array_values($assets);
         }
     }
 
@@ -164,8 +139,6 @@ final class AssetConnect
         foreach ($this->assets as &$assetsPerEntity) {
             // Filter out the asset with the given ID
             $assetsPerEntity = array_filter($assetsPerEntity, static fn (Asset $asset) => $asset->id !== $id);
-            // Re-index the array to remove gaps in the keys
-            $assetsPerEntity = array_values($assetsPerEntity);
         }
     }
 
@@ -176,7 +149,7 @@ final class AssetConnect
             $this->assets[$asset->entity_id] = [];
         }
 
-        $this->assets[$asset->entity_id][] = $asset;
+        $this->assets[$asset->entity_id][$asset->id] = $asset;
     }
 
     /**
@@ -200,9 +173,9 @@ final class AssetConnect
         $this->setCollectionDefinition($collection);
         $this->fetchForCollection();
 
-        $assets = $this->assets[$entityId] ?? [];
-
         $forCollection = $this->relationsInfo['collection'] ?? null;
+
+        $assets = $this->assets[$entityId] ?? [];
 
         // If a specific collection is requested, filter by it
         if ($forCollection !== null) {
@@ -215,40 +188,55 @@ final class AssetConnect
     /**
      * Delete assets for an entity
      *
-     * @param object      $entity     The entity to delete assets for
-     * @param string|null $collection The collection to delete assets from
+     * @param Entity                                                $entity     The entity to delete assets for
+     * @param class-string<AssetCollectionDefinitionInterface>|null $collection The collection to delete assets from
      *
      * @return bool True if assets were deleted, false otherwise
      */
-    public function deleteAssetsForEntity(object $entity, ?string $collection = null): bool
+    public function deleteAssetsForEntity(Entity $entity, ?string $collection = null): bool
     {
-        // Get the entity class name and ID
-        $entityClass = $entity::class;
-        $entityId    = $entity->id ?? null;
+        $entityId = $entity->{$this->setupAssetCollection->getSubjectPrimaryKeyAttribute()} ?? null;
 
         if ($entityId === null) {
-            return false;
+            return true;
         }
+
+        // Get the entity class name and ID
+        $this->setEntityType($entity);
+        $this->setCollectionDefinition($collection);
+
+        $currentCollection = $this->relationsInfo['collection'] ?? null;
 
         // Build the query
-        $query = $this->assetModel->where('entity_type', $entityClass)
-            ->where('entity_id', $entityId);
+        $query = $this->assetModel
+            ->where('entity_type', $this->relationsInfo['entityType'])
+            ->where('entity_id', $entityId)
+            ->when(
+                $currentCollection !== null,
+                static fn (BaseBuilder $builder) => $builder->where('collection', $currentCollection),
+            );
 
-        // Filter by collection if provided
+        $result = $query->delete();
+
+        if (! $result) {
+            $errors = $this->assetModel->errors();
+
+            // If the delete operation failed, throw an exception
+            throw FileException::forDatabaseError($errors);
+        }
+
+        // Remove the assets from the cached array
         if ($collection !== null) {
-            $query->where('collection', $collection);
+            // Remove assets for the specific collection
+            foreach ($this->assets as $entityId => &$assets) {
+                $assets = array_filter($assets, static fn (Asset $asset) => $asset->collection !== $currentCollection);
+            }
+        } else {
+            // Remove all assets for the entity
+            unset($this->assets[$entityId]);
         }
 
-        // Get the assets to delete their files
-        $assets = $query->findAll();
-
-        // Delete the files
-        foreach ($assets as $asset) {
-            $this->deleteFile($asset->path);
-        }
-
-        // Delete the asset records
-        return $query->delete() !== false;
+        return $result;
     }
 
     /**
@@ -263,9 +251,9 @@ final class AssetConnect
         $asset = $this->assetModel->find($id);
 
         if ($asset === null) {
-            throw new RuntimeException('Asset not found');
+            throw new InvalidArgumentException('Asset not found', 'Asset not found', 404);
         }
 
-        return new Asset($asset);
+        return $asset;
     }
 }

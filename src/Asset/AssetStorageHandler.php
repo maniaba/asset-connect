@@ -176,7 +176,7 @@ final class AssetStorageHandler
         unset($this->asset->file); // Unset the file property unless you need it later
 
         // If the asset was saved, we can now connect it to the entity
-        $autoConnectInstance = $this->subjectEntity->assetConnect();
+        $autoConnectInstance = $this->subjectEntity->assetConnectInstance();
         if ($autoConnectInstance !== null) {
             $autoConnectInstance->addAsset($this->asset);
         }
@@ -266,7 +266,7 @@ final class AssetStorageHandler
         // Files from storage will be deleted in queue, so we can safely delete them from the database
         $model->whereIn('id', $ids)->delete();
 
-        $autoConnectInstance = $this->subjectEntity->assetConnect();
+        $autoConnectInstance = $this->subjectEntity->assetConnectInstance();
         if ($autoConnectInstance !== null) {
             foreach ($ids as $id) {
                 $autoConnectInstance->removeAssetById((int) $id);
