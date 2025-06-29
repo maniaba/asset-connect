@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Maniaba\FileConnect\Models;
 
+use CodeIgniter\Entity\Entity;
 use Maniaba\FileConnect\Asset\Asset;
+use Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory;
+use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
+use Maniaba\FileConnect\Traits\UseAssetConnectTrait;
 
 /**
  * @method Asset|list<Asset>|null find($id = null)
@@ -357,5 +361,47 @@ final class AssetModel extends BaseModel
     public function filterByDateRange(string $startDate, string $endDate, string $dateField = 'created_at'): self
     {
         return $this->where($dateField . ' >=', $startDate)->where($dateField . ' <=', $endDate);
+    }
+
+    /**
+     * Filter assets by collection
+     *
+     * @param class-string<AssetCollectionDefinitionInterface>|AssetCollectionDefinitionInterface $collection The collection to filter by
+     *
+     * @return $this
+     */
+    public function whereCollection(string|AssetCollectionDefinitionInterface $collection): self
+    {
+        if (is_string($collection)) {
+            AssetCollectionDefinitionFactory::validateStringClass($collection);
+
+            $collectionHash = md5($collection);
+        } else {
+            $collectionHash = md5($collection::class);
+        }
+
+        $this->where('collection', $collectionHash);
+
+        return $this;
+    }
+
+    /**
+     * Filter assets by entity type
+     *
+     * @param class-string<Entity&UseAssetConnectTrait>|Entity&UseAssetConnectTrait $entityType The entity type to filter by
+     *
+     * @return $this
+     */
+    public function whereEntityType(string|Entity $entityType): self
+    {
+        if (is_string($entityType)) {
+            $entityTypeHash = md5($entityType);
+        } else {
+            $entityTypeHash = md5($entityType::class);
+        }
+
+        $this->where('entity_type', $entityTypeHash);
+
+        return $this;
     }
 }

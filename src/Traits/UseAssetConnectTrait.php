@@ -132,4 +132,5 @@ trait UseAssetConnectTrait
         /** @var Entity&UseAssetConnectTrait $this */
         return $this->assetConnectInstance->deleteAssetsForEntity($this, $collection);
     }
+
 }

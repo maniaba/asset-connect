@@ -42,4 +42,9 @@ trait UseAssetConnectModelTrait
 
         return $this;
     }
+
+    public function assetConnectModel(): AssetModel
+    {
+        return $this->assetConnectInstance->assetModel;
+    }
 }

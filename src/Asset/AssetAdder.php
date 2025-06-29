@@ -170,7 +170,6 @@ final class AssetAdder
     public function toAssetCollection(AssetCollectionDefinitionInterface|string|null $collection = null): Asset
     {
         $this->asset->file_name = ($this->fileNameSanitizer)($this->asset->file_name);
-        $this->asset->name      = ($this->fileNameSanitizer)($this->asset->name);
 
         if ($collection !== null) {
             $this->setupAssetCollection->setCollectionDefinition($collection);

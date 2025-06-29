@@ -89,6 +89,9 @@ class CreateAssetsTable extends BaseMigration
         $this->forge->addKey('id', true);
         $this->forge->addKey(['entity_type', 'entity_id']);
         $this->forge->addKey('collection');
+        $this->forge->addKey('deleted_at');
+
+        $this->forge->addKey(['entity_type', 'entity_id', 'collection']);
 
         $this->createTable('assets', true);
     }

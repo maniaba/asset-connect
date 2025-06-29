@@ -14,7 +14,6 @@ final class DefaultAssetCollection implements AssetCollectionDefinitionInterface
 {
     public function definition(AssetCollectionSetterInterface $definition): void
     {
-        $definition->onlyKeepLatest(4);
     }
 
     public function checkAuthorization(array|Entity $entity, Asset $asset): bool
