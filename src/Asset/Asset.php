@@ -110,4 +110,204 @@ final class Asset extends Entity
 
         return dirname($this->path) . DIRECTORY_SEPARATOR;
     }
+
+    /**
+     * Check if the asset is an image
+     *
+     * @return bool True if the asset is an image, false otherwise
+     */
+    public function isImage(): bool
+    {
+        return \Maniaba\FileConnect\Enums\AssetMimeType::isImage($this->mime_type);
+    }
+
+    /**
+     * Check if the asset is a document
+     *
+     * @return bool True if the asset is a document, false otherwise
+     */
+    public function isDocument(): bool
+    {
+        return \Maniaba\FileConnect\Enums\AssetMimeType::isDocument($this->mime_type);
+    }
+
+    /**
+     * Check if the asset is a video
+     *
+     * @return bool True if the asset is a video, false otherwise
+     */
+    public function isVideo(): bool
+    {
+        return \Maniaba\FileConnect\Enums\AssetMimeType::isVideo($this->mime_type);
+    }
+
+    /**
+     * Check if the asset is an audio
+     *
+     * @return bool True if the asset is an audio, false otherwise
+     */
+    public function isAudio(): bool
+    {
+        return \Maniaba\FileConnect\Enums\AssetMimeType::isAudio($this->mime_type);
+    }
+
+    /**
+     * Check if the asset is an archive
+     *
+     * @return bool True if the asset is an archive, false otherwise
+     */
+    public function isArchive(): bool
+    {
+        return \Maniaba\FileConnect\Enums\AssetMimeType::isArchive($this->mime_type);
+    }
+
+    /**
+     * Check if the asset is a text file
+     *
+     * @return bool True if the asset is a text file, false otherwise
+     */
+    public function isText(): bool
+    {
+        return \Maniaba\FileConnect\Enums\AssetMimeType::isText($this->mime_type);
+    }
+
+    /**
+     * Check if the asset is a web file
+     *
+     * @return bool True if the asset is a web file, false otherwise
+     */
+    public function isWeb(): bool
+    {
+        return \Maniaba\FileConnect\Enums\AssetMimeType::isWeb($this->mime_type);
+    }
+
+    /**
+     * Check if the asset is a programming file
+     *
+     * @return bool True if the asset is a programming file, false otherwise
+     */
+    public function isProgramming(): bool
+    {
+        return \Maniaba\FileConnect\Enums\AssetMimeType::isProgramming($this->mime_type);
+    }
+
+    /**
+     * Check if the asset is a font
+     *
+     * @return bool True if the asset is a font, false otherwise
+     */
+    public function isFont(): bool
+    {
+        return \Maniaba\FileConnect\Enums\AssetMimeType::isFont($this->mime_type);
+    }
+
+    /**
+     * Check if the asset is a design file
+     *
+     * @return bool True if the asset is a design file, false otherwise
+     */
+    public function isDesign(): bool
+    {
+        return \Maniaba\FileConnect\Enums\AssetMimeType::isDesign($this->mime_type);
+    }
+
+    /**
+     * Check if the asset is a database file
+     *
+     * @return bool True if the asset is a database file, false otherwise
+     */
+    public function isDatabase(): bool
+    {
+        return \Maniaba\FileConnect\Enums\AssetMimeType::isDatabase($this->mime_type);
+    }
+
+    /**
+     * Check if the asset is an ebook
+     *
+     * @return bool True if the asset is an ebook, false otherwise
+     */
+    public function isEbook(): bool
+    {
+        return \Maniaba\FileConnect\Enums\AssetMimeType::isEbook($this->mime_type);
+    }
+
+    /**
+     * Check if the asset is a CAD file
+     *
+     * @return bool True if the asset is a CAD file, false otherwise
+     */
+    public function isCad(): bool
+    {
+        return \Maniaba\FileConnect\Enums\AssetMimeType::isCad($this->mime_type);
+    }
+
+    /**
+     * Check if the asset is a scientific file
+     *
+     * @return bool True if the asset is a scientific file, false otherwise
+     */
+    public function isScientific(): bool
+    {
+        return \Maniaba\FileConnect\Enums\AssetMimeType::isScientific($this->mime_type);
+    }
+
+    /**
+     * Check if the asset is a configuration file
+     *
+     * @return bool True if the asset is a configuration file, false otherwise
+     */
+    public function isConfiguration(): bool
+    {
+        return \Maniaba\FileConnect\Enums\AssetMimeType::isConfiguration($this->mime_type);
+    }
+
+    /**
+     * Check if the asset is an executable
+     *
+     * @return bool True if the asset is an executable, false otherwise
+     */
+    public function isExecutable(): bool
+    {
+        return \Maniaba\FileConnect\Enums\AssetMimeType::isExecutable($this->mime_type);
+    }
+
+    /**
+     * Check if the asset is a vector graphic
+     *
+     * @return bool True if the asset is a vector graphic, false otherwise
+     */
+    public function isVectorGraphic(): bool
+    {
+        return \Maniaba\FileConnect\Enums\AssetMimeType::isVectorGraphic($this->mime_type);
+    }
+
+    /**
+     * Check if the asset is a raster graphic
+     *
+     * @return bool True if the asset is a raster graphic, false otherwise
+     */
+    public function isRasterGraphic(): bool
+    {
+        return \Maniaba\FileConnect\Enums\AssetMimeType::isRasterGraphic($this->mime_type);
+    }
+
+    /**
+     * Check if the asset is a spreadsheet
+     *
+     * @return bool True if the asset is a spreadsheet, false otherwise
+     */
+    public function isSpreadsheet(): bool
+    {
+        return \Maniaba\FileConnect\Enums\AssetMimeType::isSpreadsheet($this->mime_type);
+    }
+
+    /**
+     * Check if the asset is a presentation
+     *
+     * @return bool True if the asset is a presentation, false otherwise
+     */
+    public function isPresentation(): bool
+    {
+        return \Maniaba\FileConnect\Enums\AssetMimeType::isPresentation($this->mime_type);
+    }
 }

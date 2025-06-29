@@ -40,6 +40,8 @@ namespace App\AssetCollections;
 use CodeIgniter\Entity\Entity;
 use Maniaba\FileConnect\Asset\Asset;
 use Maniaba\FileConnect\AssetCollection\FileVariants;
+use Maniaba\FileConnect\Enums\AssetExtension;
+use Maniaba\FileConnect\Enums\AssetMimeType;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionSetterInterface;
 use Maniaba\FileConnect\Interfaces\Asset\FileVariantInterface;
@@ -49,7 +51,20 @@ class ImagesCollection implements AssetCollectionDefinitionInterface, FileVarian
     public function definition(AssetCollectionSetterInterface $definition): void
     {
         // Configure the collection using the setter interface
-        $definition->allowedMimeTypes('image/jpeg', 'image/png', 'image/gif')
+        $definition
+            // Allow specific file extensions using the AssetExtension enum
+            ->allowedExtensions(
+                AssetExtension::JPG,
+                AssetExtension::PNG,
+                AssetExtension::GIF
+            )
+            // Allow specific MIME types using the AssetMimeType enum
+            ->allowedMimeTypes(
+                AssetMimeType::IMAGE_JPEG,
+                AssetMimeType::IMAGE_PNG,
+                AssetMimeType::IMAGE_GIF
+            )
+            // Set maximum file size (in bytes)
             ->setMaxFileSize(5 * 1024 * 1024); // 5MB
     }
 
@@ -275,6 +290,8 @@ When you need to store assets in a non-public location (like the "writable" fold
 ```php
 use CodeIgniter\Entity\Entity;
 use Maniaba\FileConnect\Asset\Asset;
+use Maniaba\FileConnect\Enums\AssetExtension;
+use Maniaba\FileConnect\Enums\AssetMimeType;
 use Maniaba\FileConnect\Interfaces\Asset\AuthorizableAssetCollectionDefinitionInterface;
 
 class SecureDocumentsCollection implements AuthorizableAssetCollectionDefinitionInterface
@@ -282,7 +299,19 @@ class SecureDocumentsCollection implements AuthorizableAssetCollectionDefinition
     public function definition(AssetCollectionSetterInterface $definition): void
     {
         // Configure the collection
-        $definition->allowedMimeTypes('application/pdf', 'application/msword');
+        $definition
+            // Allow specific file extensions using the AssetExtension enum
+            ->allowedExtensions(
+                AssetExtension::PDF,
+                AssetExtension::DOC,
+                AssetExtension::DOCX
+            )
+            // Allow specific MIME types using the AssetMimeType enum
+            ->allowedMimeTypes(
+                AssetMimeType::APPLICATION_PDF,
+                AssetMimeType::APPLICATION_MSWORD,
+                AssetMimeType::APPLICATION_DOCX
+            );
     }
 
     public function checkAuthorization(array|Entity $entity, Asset $asset): bool

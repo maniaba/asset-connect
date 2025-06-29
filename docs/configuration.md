@@ -69,11 +69,13 @@ This is useful if you need to rename the default table for security reasons, to 
 
 ### Queue Name
 
-You can specify the name of the queue that will be used for processing asset manipulations:
+You can specify the name of the queue that will be used for processing asset manipulations and garbage collection:
 
 ```php
 public string $queueName = 'custom_asset_queue';
 ```
+
+The queue serves an important role in the file deletion process. When you delete assets from an entity using the `deleteAssets()` method, the records are immediately marked with soft delete in the database, but the actual files are not immediately removed from storage. Instead, a queue job is scheduled to clean up these files later. This approach prevents performance issues when deleting large numbers of files and ensures that file system operations don't slow down your application's response time.
 
 ## Creating Custom Asset Collections
 
@@ -87,6 +89,8 @@ namespace App\AssetCollections;
 use CodeIgniter\Entity\Entity;
 use Maniaba\FileConnect\Asset\Asset;
 use Maniaba\FileConnect\AssetCollection\FileVariants;
+use Maniaba\FileConnect\Enums\AssetExtension;
+use Maniaba\FileConnect\Enums\AssetMimeType;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionSetterInterface;
 use Maniaba\FileConnect\Interfaces\Asset\FileVariantInterface;
@@ -96,9 +100,34 @@ class ProfilePicturesCollection implements AssetCollectionDefinitionInterface, F
 {
     public function definition(AssetCollectionSetterInterface $definition): void
     {
-        $definition->allowedMimeTypes('image/jpeg', 'image/png', 'image/gif')
-            ->setMaxFileSize(5 * 1024 * 1024) // 5MB
-            ->setPathGenerator(new CustomPathGenerator());
+        // Allow specific file extensions using the AssetExtension enum
+        $definition->allowedExtensions(
+            AssetExtension::JPG,
+            AssetExtension::PNG,
+            AssetExtension::GIF,
+            // You can also use string values
+            'webp'
+        )
+        // Allow specific MIME types using the AssetMimeType enum
+        ->allowedMimeTypes(
+            AssetMimeType::IMAGE_JPEG,
+            AssetMimeType::IMAGE_PNG,
+            AssetMimeType::IMAGE_GIF,
+            // You can also use string values
+            'image/webp'
+        )
+        // Set maximum file size (in bytes)
+        ->setMaxFileSize(5 * 1024 * 1024) // 5MB
+
+        // Make this a single-file collection (only one file allowed)
+        // This is equivalent to calling onlyKeepLatest(1)
+        ->singleFileCollection()
+
+        // OR set a maximum number of files to keep (deletes oldest when exceeded)
+        // ->onlyKeepLatest(10) // Keep only the 10 most recent files
+
+        // Set a custom path generator for this collection
+        ->setPathGenerator(new CustomPathGenerator());
     }
 
     public function checkAuthorization(array|Entity $entity, Asset $asset): bool

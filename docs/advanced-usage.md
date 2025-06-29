@@ -18,6 +18,8 @@ namespace App\AssetCollections;
 use CodeIgniter\Entity\Entity;
 use Maniaba\FileConnect\Asset\Asset;
 use Maniaba\FileConnect\AssetCollection\FileVariants;
+use Maniaba\FileConnect\Enums\AssetExtension;
+use Maniaba\FileConnect\Enums\AssetMimeType;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionSetterInterface;
 use Maniaba\FileConnect\Interfaces\Asset\FileVariantInterface;
@@ -27,8 +29,22 @@ class ProductImagesCollection implements AssetCollectionDefinitionInterface, Fil
 {
     public function definition(AssetCollectionSetterInterface $definition): void
     {
-        $definition->allowedMimeTypes('image/jpeg', 'image/png', 'image/webp')
+        $definition
+            // Allow specific file extensions using the AssetExtension enum
+            ->allowedExtensions(
+                AssetExtension::JPG,
+                AssetExtension::PNG,
+                AssetExtension::WEBP
+            )
+            // Allow specific MIME types using the AssetMimeType enum
+            ->allowedMimeTypes(
+                AssetMimeType::IMAGE_JPEG,
+                AssetMimeType::IMAGE_PNG,
+                AssetMimeType::IMAGE_WEBP
+            )
+            // Set maximum file size (in bytes)
             ->setMaxFileSize(10 * 1024 * 1024) // 10MB
+            // Set a custom path generator for this collection
             ->setPathGenerator(new CustomPathGenerator());
     }
 
