@@ -13,7 +13,7 @@ use Throwable;
 
 final class AssetVariantsQueue implements CreateAssetVariantsInterface
 {
-    public bool $isQueue = true;
+    public bool $onQueue = true;
 
     public function __construct(
         private Asset &$asset,
