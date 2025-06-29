@@ -81,6 +81,36 @@ class UserModel extends Model
 }
 ```
 
+If your model already has an `initialize()` method, you need to use PHP's trait aliasing feature to avoid method conflicts:
+
+```php
+<?php
+
+namespace App\Models;
+
+use CodeIgniter\Model;
+use Maniaba\FileConnect\Traits\UseAssetConnectModelTrait;
+
+class UserModel extends Model
+{
+    // Use the trait with method aliasing to avoid conflicts with existing initialize method
+    use UseAssetConnectModelTrait {
+        initialize as initializeAssetConnectModel;
+    }
+
+    protected function initialize(): void
+    {
+        // Call the trait's initialize method with its new alias
+        $this->initializeAssetConnectModel();
+
+        // Your existing initialize code...
+        // etc...
+    }
+
+    // Your other model methods...
+}
+```
+
 ## Next Steps
 
 After installation, you may want to:

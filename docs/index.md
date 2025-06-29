@@ -1,6 +1,6 @@
 # CodeIgniter Asset Connect Documentation
 
-CodeIgniter Asset Connect is a file management library for CodeIgniter 4 that allows you to associate files with any entity in your application. It's inspired by [spatie/laravel-medialibrary](https://github.com/spatie/laravel-medialibrary) but built specifically for CodeIgniter 4.
+CodeIgniter Asset Connect is a file management library for CodeIgniter 4 that allows you to associate files with any entity in your application.
 
 ## Features
 

@@ -47,7 +47,7 @@ This page provides solutions to common issues you might encounter when using Cod
 
 1. Check if the storage directory exists and is writable by the PHP process.
 2. Verify that the path generator is returning a valid path.
-3. If you're using an `AuthorizableAssetCollectionDefinitionInterface` for secure storage, ensure your path is correctly set up in the writable directory.
+3. Make sure the disk configuration is correct if you're using a non-local disk.
 
 ## Asset Collection Issues
 
