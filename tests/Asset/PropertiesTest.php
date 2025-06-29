@@ -6,7 +6,6 @@ namespace Tests\Asset;
 
 use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\FileConnect\Asset\Properties;
-use Maniaba\FileConnect\Asset\Properties\FileVariantProperties;
 use Maniaba\FileConnect\Asset\Properties\UserCustomProperties;
 
 /**

@@ -11,7 +11,7 @@ abstract class BaseProperties implements JsonSerializable
 {
     abstract public static function getName(): string;
 
-    public function __construct(private array $properties)
+    public function __construct(protected array $properties)
     {
     }
 

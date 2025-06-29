@@ -21,7 +21,23 @@ final class DefaultAssetCollection implements AssetCollectionDefinitionInterface
         return true;
     }
 
-    public function variants(FileVariants $variants, Asset $asset): void
+    public function variants(AssetVariants $variants, Asset $asset): void
     {
+        // Here you can add logic to process the asset and create variants.
+        // For example, if you want to create a thumbnail or other variants,
+        // you can use an image processing service.
+
+        // Example:
+        // $imageService = Services::image();
+        // $thumbnail = $imageService->withFile($asset->path)
+        //     ->fit(300, 300, 'center')
+        //     ->getFile();
+        //
+        // $variants->writeFile('thumbnail', $thumbnail->getRealPath());
+    }
+
+    public function fileVariantsOnQueue(): bool
+    {
+        return true; // Indicates that file variants should be processed on a queue.
     }
 }

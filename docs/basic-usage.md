@@ -36,7 +36,7 @@ namespace App\AssetCollections;
 
 use CodeIgniter\Entity\Entity;
 use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\AssetCollection\FileVariants;
+use Maniaba\FileConnect\AssetCollection\AssetVariants;
 use Maniaba\FileConnect\Enums\AssetExtension;
 use Maniaba\FileConnect\Enums\AssetMimeType;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
@@ -74,7 +74,7 @@ class ImagesCollection implements AssetCollectionDefinitionInterface, FileVarian
         return true;
     }
 
-    public function variants(FileVariants $variants, Asset $asset): void
+    public function variants(AssetVariants $variants, Asset $asset): void
     {
         // Define file variants (e.g., thumbnails)
     }

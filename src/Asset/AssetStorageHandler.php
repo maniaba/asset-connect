@@ -9,7 +9,7 @@ use CodeIgniter\Files\File;
 use CodeIgniter\HTTP\Files\UploadedFile;
 use CodeIgniter\I18n\Time;
 use Maniaba\FileConnect\AssetCollection\AssetCollection;
-use Maniaba\FileConnect\AssetCollection\FileVariants;
+use Maniaba\FileConnect\AssetCollection\AssetVariantsProcess;
 use Maniaba\FileConnect\AssetCollection\SetupAssetCollection;
 use Maniaba\FileConnect\Exceptions\AssetException;
 use Maniaba\FileConnect\Exceptions\FileException;
@@ -59,11 +59,11 @@ final class AssetStorageHandler
             // Store the file
             $this->storeFile();
 
-            // Save the asset to the database
-            $this->saveAsset();
-
             // Process file variants if the collection implements FileVariantInterface
             $this->processFileVariants();
+
+            // Save the asset to the database
+            $this->saveAsset();
 
             // Check if we need to enforce maximum number of items in collection
             $this->enforceMaximumNumberOfItemsInCollection();
@@ -188,8 +188,18 @@ final class AssetStorageHandler
     private function processFileVariants(): void
     {
         if ($this->setupAssetCollection->getCollectionDefinition() instanceof FileVariantInterface) {
-            $variants = new FileVariants();
-            // $this->collectionDefinition->variants($variants, $this->asset);
+            $definition = $this->setupAssetCollection->getCollectionDefinition();
+            $onQueue    = $definition->fileVariantsOnQueue();
+
+            if ($onQueue) {
+                // If the collection definition requires processing on a queue, we can skip immediate processing
+                // and let the queue handle it later.
+                AssetVariantsProcess::onQueue($definition, $this->pathGenerator->getPathForVariants(), $this->asset);
+
+                return;
+            }
+
+            AssetVariantsProcess::run($definition, $this->pathGenerator->getPathForVariants(), $this->asset);
         }
     }
 

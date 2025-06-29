@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace Maniaba\FileConnect\Asset;
 
 use JsonSerializable;
-use Maniaba\FileConnect\Asset\Properties\FileVariantProperties;
+use Maniaba\FileConnect\Asset\Properties\AssetVariantProperties;
 use Maniaba\FileConnect\Asset\Properties\UserCustomProperties;
 use Stringable;
 
 final class Properties implements JsonSerializable, Stringable
 {
     public readonly UserCustomProperties $userCustom;
-    public readonly FileVariantProperties $fileVariant;
+    public readonly AssetVariantProperties $fileVariant;
 
     public function __construct(array $properties = [])
     {
         $this->userCustom  = UserCustomProperties::create($properties);
-        $this->fileVariant = FileVariantProperties::create($properties);
+        $this->fileVariant = AssetVariantProperties::create($properties);
     }
 
     public function jsonSerialize(): array

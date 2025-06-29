@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Maniaba\FileConnect\Config;
 
 use CodeIgniter\Config\BaseConfig;
+use Maniaba\FileConnect\AssetCollection\AssetVariantsProcess;
 use Maniaba\FileConnect\AssetCollection\DefaultAssetCollection;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
+use Maniaba\FileConnect\Jobs\AssetConnectJob;
 use Maniaba\FileConnect\PathGenerator\DefaultPathGenerator;
 use Maniaba\FileConnect\PathGenerator\PathGeneratorInterface;
 
@@ -71,5 +73,11 @@ class Asset extends BaseConfig
      * This is the name of the queue that will be used for processing
      * asset manipulations and variants.
      */
-    public string $queueName = 'asset_queue';
+    public array $queue = [
+        'name'       => AssetVariantsProcess::QUEUE_NAME,
+        'jobHandler' => [
+            'name'  => AssetVariantsProcess::JOB_HANDLER,
+            'class' => AssetConnectJob::class,
+        ],
+    ];
 }
