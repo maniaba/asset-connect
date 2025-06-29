@@ -191,7 +191,7 @@ You can add assets to an entity with various options:
 
 ```php
 // Create a File object from a local file path
-$file = new File('C:\Users\amelj\PhpstormProjects\platforma\public\assets\images\user\placeholder.jpg');
+$file = new File('./images/placeholder.jpg');
 
 // Create a File object from an uploaded file in a controller
 $uploadedFile = $this->request->getFile('profile_image');
