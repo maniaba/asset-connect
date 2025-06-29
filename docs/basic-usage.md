@@ -28,9 +28,6 @@ class Product extends Entity
         // Note: Only one default collection can be set; additional calls will override previous ones
         $setup->setDefaultCollectionDefinition(ImagesCollection::class);
 
-        // You can also register other collection definitions (not as default)
-        $setup->setCollectionDefinition(DocumentsCollection::class);
-        $setup->setCollectionDefinition(VideosCollection::class);
     }
 }
 
@@ -85,13 +82,6 @@ class ImagesCollection implements AssetCollectionDefinitionInterface, FileVarian
 
 The `SetupAssetCollection` interface provides methods to configure how assets are handled for an entity. Here's an explanation of each method:
 
-#### setCollectionDefinition
-
-```php
-$setup->setCollectionDefinition(ImagesCollection::class);
-```
-
-This method sets the definition of the asset collection for the entity. It accepts either an instance of a class implementing `AssetCollectionDefinitionInterface` or a string representing the class name. Note that calling this method multiple times with the same collection will override the previous definition.
 
 #### setPathGenerator
 

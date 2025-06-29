@@ -93,8 +93,6 @@ class Product extends Entity
         // Note: Only one default collection can be set; additional calls will override previous ones
         $setup->setDefaultCollectionDefinition(ProductImagesCollection::class);
 
-        // You can also register other collection definitions (not as default)
-        $setup->setCollectionDefinition(DocumentsCollection::class);
     }
 }
 ```

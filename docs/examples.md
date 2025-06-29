@@ -444,12 +444,6 @@ class Gallery extends Entity
         // Note: Only one default collection can be set; additional calls will override previous ones
         $setup->setDefaultCollectionDefinition(ImagesCollection::class);
 
-        // Register other collection definitions (not as default)
-        $setup->setCollectionDefinition(ThumbnailsCollection::class);
-
-        // Alternatively, you could use the simplified approach with all collections registered as non-default:
-        // $setup->setCollectionDefinition(ImagesCollection::class);
-        // $setup->setCollectionDefinition(ThumbnailsCollection::class);
     }
 }
 

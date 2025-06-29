@@ -52,9 +52,6 @@ class User extends Entity
         // Note: Only one default collection can be set; additional calls will override previous ones
         $setup->setDefaultCollectionDefinition(ImagesCollection::class);
 
-        // For more control, you can create and register custom collection classes
-        // that implement AssetCollectionDefinitionInterface and FileVariantInterface
-        // $setup->setCollectionDefinition(CustomImagesCollection::class);
     }
 
     // Your other entity methods...

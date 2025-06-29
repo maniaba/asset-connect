@@ -152,15 +152,75 @@ Path generators determine how file paths are generated for stored assets. You ca
 
 namespace App\PathGenerators;
 
-use Maniaba\FileConnect\Asset\Asset;
+use Maniaba\FileConnect\Enums\AssetVisibility;
+use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionGetterInterface;
+use Maniaba\FileConnect\PathGenerator\PathGeneratorHelper;
 use Maniaba\FileConnect\PathGenerator\PathGeneratorInterface;
 
 class CustomPathGenerator implements PathGeneratorInterface
 {
-    public function getPath(Asset $asset): string
+    // Get the path for the given asset, relative to the root storage path.
+    // It's important to generate unique paths to prevent file overwrites.
+    public function getPath(PathGeneratorHelper $generatorHelper, AssetCollectionGetterInterface $collection): string
     {
-        // Generate a custom path for the asset
-        return 'custom/' . $asset->getCollection() . '/' . $asset->id . '/' . $asset->getFileName();
+        // Check if the collection is protected (non-public) or public
+        $isProtected = $collection->getVisibility() === AssetVisibility::PROTECTED;
+
+        // Set the base path based on visibility
+        $basePath = $isProtected ? WRITEPATH : realpath(ROOTPATH . 'public') . DIRECTORY_SEPARATOR;
+
+        // Generate a unique path using helper methods
+        // This creates a structure like: assets/2023-05-25/123456.789/
+        return $basePath . $generatorHelper->getPathString(
+            'assets',
+            $generatorHelper->getDateTime(),
+            $generatorHelper->getUniqueId()
+        );
+    }
+
+    // Get the path for variants (e.g., thumbnails) of the given asset.
+    // This should also generate unique paths.
+    public function getPathForVariants(PathGeneratorHelper $generatorHelper, AssetCollectionGetterInterface $collection): string
+    {
+        // Get the base path from the getPath method
+        $basePath = $this->getPath($generatorHelper, $collection);
+
+        // Add a 'variants' subdirectory
+        return $basePath . $generatorHelper->getPathString('variants');
     }
 }
 ```
+
+### Understanding PathGeneratorHelper
+
+The `PathGeneratorHelper` class provides several useful methods for generating unique paths:
+
+1. `getUniqueId(bool $moreEntropy = false)`: Generates a unique ID, with an option for more entropy.
+   ```php
+   // Basic unique ID
+   $uniqueId = $generatorHelper->getUniqueId(); // e.g., "1620000000_60a1b2c3"
+
+   // More secure unique ID with higher entropy
+   $secureId = $generatorHelper->getUniqueId(true); // SHA-256 hash
+   ```
+
+2. `getDateTime()`: Generates a date-time string formatted as a folder name.
+   ```php
+   $dateTimeFolder = $generatorHelper->getDateTime(); // e.g., "2023-05-25/123456.789/"
+   ```
+
+3. `getTime()`: Gets the current time formatted as a string.
+   ```php
+   $timeString = $generatorHelper->getTime(); // e.g., "123456.789"
+   ```
+
+4. `getPathString(string ...$segments)`: Joins path segments with the system's directory separator.
+   ```php
+   $path = $generatorHelper->getPathString('folder1', 'folder2', 'folder3'); // "folder1/folder2/folder3/"
+   ```
+
+### Importance of Unique Paths
+
+When implementing custom path generators, it's crucial to ensure that each asset gets a unique path. This prevents files from overwriting each other, especially in high-traffic applications where multiple files might be uploaded simultaneously.
+
+The `PathGeneratorHelper` class provides methods like `getUniqueId()` and `getDateTime()` specifically to help generate unique paths. By combining these with other identifiers (like collection names, entity IDs, etc.), you can create a robust path generation strategy that minimizes the risk of collisions.
