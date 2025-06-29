@@ -217,7 +217,7 @@ class SecureDocumentsCollection implements AuthorizableAssetCollectionDefinition
         return $entity->id === $asset->entity_id;
     }
 
-    public function variants(FileVariants $variants, Asset $asset): void
+    public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void
     {
         // No variants needed for documents
     }

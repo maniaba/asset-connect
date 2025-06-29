@@ -17,12 +17,13 @@ namespace App\AssetCollections;
 
 use CodeIgniter\Entity\Entity;
 use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\AssetCollection\AssetVariants;
+use Maniaba\FileConnect\Asset\AssetVariant;
 use Maniaba\FileConnect\Enums\AssetExtension;
 use Maniaba\FileConnect\Enums\AssetMimeType;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionSetterInterface;
 use Maniaba\FileConnect\Interfaces\Asset\AssetVariantsInterface;
+use Maniaba\FileConnect\Interfaces\AssetCollection\CreateAssetVariantsInterface;
 use Maniaba\FileConnect\PathGenerator\CustomPathGenerator;
 
 class ProductImagesCollection implements AssetCollectionDefinitionInterface, AssetVariantsInterface
@@ -58,7 +59,7 @@ class ProductImagesCollection implements AssetCollectionDefinitionInterface, Ass
         return true;
     }
 
-    public function variants(AssetVariants $variants, Asset $asset): void
+    public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void
     {
         // Define file variants for this asset collection
         // For example, create a thumbnail variant
@@ -66,7 +67,9 @@ class ProductImagesCollection implements AssetCollectionDefinitionInterface, Ass
             // Create a thumbnail variant
             // This is just a placeholder - in a real application, you would
             // use an image manipulation library to create the thumbnail
-            $variants->writeFile('thumbnail', 'thumbnail data');
+            $variants->assetVariant('thumbnail', static function (AssetVariant $variant, Asset $asset): void {
+                $variant->writeFile('thumbnail data');
+            });
         }
     }
 }
