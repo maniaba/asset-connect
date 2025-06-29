@@ -10,7 +10,7 @@ use Throwable;
 
 class AssetException extends LogicException
 {
-    protected int $code = 500;
+    protected $code = 500;
     public readonly array $errors;
 
     public function __construct(

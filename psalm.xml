@@ -11,11 +11,10 @@
     findUnusedCode="false"
 >
     <projectFiles>
-        <directory name="app/" />
+        <directory name="src/" />
         <directory name="tests/" />
         <ignoreFiles>
             <directory name="vendor" />
-            <directory name="app/Views" />
         </ignoreFiles>
     </projectFiles>
 </psalm>
