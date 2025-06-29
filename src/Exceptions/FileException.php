@@ -6,44 +6,44 @@ namespace Maniaba\FileConnect\Exceptions;
 
 class FileException extends AssetException
 {
-    public static function forInvalidFile(string $filePath): static
+    public static function forInvalidFile(string $filePath): self
     {
         $message = lang('Asset.exception.invalid_file', ['path' => $filePath]);
 
-        return new static(
+        return new self(
             $message,
             'Invalid file provided',
             400,
         );
     }
 
-    public static function forFileNotFound(string $sourcePath): static
+    public static function forFileNotFound(string $sourcePath): self
     {
         $message = lang('Asset.exception.file_not_found', ['path' => $sourcePath]);
 
-        return new static(
+        return new self(
             $message,
             'File not found',
             404,
         );
     }
 
-    public static function forCannotCopyFile(string $sourcePath, string $fullPath): static
+    public static function forCannotCopyFile(string $sourcePath, string $fullPath): self
     {
         $message = lang('Asset.exception.cannot_copy_file', ['source' => $sourcePath, 'destination' => $fullPath]);
 
-        return new static(
+        return new self(
             $message,
             'Cannot copy file',
             500,
         );
     }
 
-    public static function forCannotMoveFile(string $sourcePath, string $storePath): static
+    public static function forCannotMoveFile(string $sourcePath, string $storePath): self
     {
         $message = lang('Asset.exception.cannot_move_file', ['source' => $sourcePath, 'destination' => $storePath]);
 
-        return new static(
+        return new self(
             $message,
             'Cannot move file',
             500,

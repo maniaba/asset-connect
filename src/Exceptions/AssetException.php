@@ -24,54 +24,54 @@ class AssetException extends LogicException
         parent::__construct($message, $code, $previous);
     }
 
-    public static function forInvalidEntity(Entity $entity): static
+    public static function forInvalidEntity(Entity $entity): self
     {
         $message = lang('Asset.exception.invalid_entity', ['entity' => $entity::class]);
 
-        return new static($message, $message, 400);
+        return new self($message, $message, 400);
     }
 
-    public static function forFileNameNotAllowed(string $fileName): static
+    public static function forFileNameNotAllowed(string $fileName): self
     {
         $message = lang('Asset.exception.file_name_not_allowed', ['fileName' => $fileName]);
 
-        return new static($message, 'File name not allowed', 400);
+        return new self($message, 'File name not allowed', 400);
     }
 
-    public static function forFileTooLarge(int $fileSize, int $maxFileSize): static
+    public static function forFileTooLarge(int $fileSize, int $maxFileSize): self
     {
         $message = lang('Asset.exception.file_too_large', [
             'fileSize'    => $fileSize,
             'maxFileSize' => $maxFileSize,
         ]);
 
-        return new static($message, 'File size exceeds the maximum allowed size', 413);
+        return new self($message, 'File size exceeds the maximum allowed size', 413);
     }
 
-    public static function forInvalidFileExtension(string $extension, array $allowedExtensions): static
+    public static function forInvalidFileExtension(string $extension, array $allowedExtensions): self
     {
         $message = lang('Asset.exception.invalid_file_extension', [
             'extension'         => $extension,
             'allowedExtensions' => implode(', ', $allowedExtensions),
         ]);
 
-        return new static($message, 'Invalid file extension', 400);
+        return new self($message, 'Invalid file extension', 400);
     }
 
-    public static function forInvalidMimeType(string $mimeType, array $allowedMimeTypes): static
+    public static function forInvalidMimeType(string $mimeType, array $allowedMimeTypes): self
     {
         $message = lang('Asset.exception.invalid_mime_type', [
             'mimeType'         => $mimeType,
             'allowedMimeTypes' => implode(', ', $allowedMimeTypes),
         ]);
 
-        return new static($message, 'Invalid MIME type', 400);
+        return new self($message, 'Invalid MIME type', 400);
     }
 
-    public static function forDatabaseError(array $errors): static
+    public static function forDatabaseError(array $errors): self
     {
         $message = lang('Asset.exception.database_error', ['errors' => implode(', ', $errors)]);
 
-        return new static($errors, $message, 500);
+        return new self($errors, $message, 500);
     }
 }

@@ -30,18 +30,18 @@ final class AssetAdder
     private readonly SetupAssetCollection $setupAssetCollection;
 
     public function __construct(
-        /** @var Entity&UseAssetConnectTrait $entity The entity to which the asset is being added */
-        private readonly Entity $entity,
+        /** @var Entity&UseAssetConnectTrait $subjectEntity The entity to which the asset is being added */
+        private readonly Entity $subjectEntity,
         File|string|UploadedFile $file,
     ) {
         // Ensure the entity uses the HasAssetsEntityTrait
-        if (! in_array(UseAssetConnectTrait::class, class_uses($this->entity), true)) {
-            throw AssetException::forInvalidEntity($this->entity);
+        if (! in_array(UseAssetConnectTrait::class, class_uses($this->subjectEntity), true)) {
+            throw AssetException::forInvalidEntity($this->subjectEntity);
         }
 
         // Initialize the SetupAssetCollection instance
         $this->setupAssetCollection = new SetupAssetCollection();
-        $this->entity->setupAssetConnect($this->setupAssetCollection);
+        $this->subjectEntity->setupAssetConnect($this->setupAssetCollection);
         $this->fileNameSanitizer = $this->setupAssetCollection->getFileNameSanitizer(...);
 
         // Set the file for the asset, after setting up the collection
@@ -62,8 +62,8 @@ final class AssetAdder
             'file_name'   => $fileName,
             'name'        => pathinfo($fileName, PATHINFO_FILENAME),
             'mime_type'   => $file->getMimeType(),
-            'entity_id'   => $this->entity->{$this->setupAssetCollection->getSubjectPrimaryKeyAttribute()},
-            'entity_type' => $this->entity,
+            'entity_id'   => $this->subjectEntity->{$this->setupAssetCollection->getSubjectPrimaryKeyAttribute()},
+            'entity_type' => $this->subjectEntity,
             'size'        => $file->getSize(),
             'order'       => 0, // Default order, can be set later
         ]);
@@ -176,7 +176,7 @@ final class AssetAdder
             $this->setupAssetCollection->setCollectionDefinition($collection);
         }
 
-        $storageHandler = new AssetStorageHandler($this->entity, $this->asset, $this->setupAssetCollection);
+        $storageHandler = new AssetStorageHandler($this->subjectEntity, $this->asset, $this->setupAssetCollection);
 
         // Store the asset and return it
         $asset = $storageHandler->store();

@@ -17,7 +17,7 @@ interface AssetAdderInterface
     /**
      * Sets the file (path, object, etc.).
      *
-     * @param mixed $file
+     * @param File|string $file Should be a File object or a string path to the file.
      */
     public function setFile(File|string $file): static;
 
