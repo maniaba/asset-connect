@@ -1,6 +1,6 @@
 # FileConnect for CodeIgniter 4
 
-FileConnect is a file management library for CodeIgniter 4 that allows you to associate files with any entity in your application. It's inspired by [spatie/laravel-medialibrary](https://github.com/spatie/laravel-medialibrary) but built specifically for CodeIgniter 4.
+FileConnect is a file management library for CodeIgniter 4 that allows you to associate files with any entity in your application.
 
 ## Installation
 
@@ -20,30 +20,43 @@ composer require maniaba/file-connect
 php spark migrate --namespace=Maniaba\\FileConnect
 ```
 
-2. Add the `HasAssetsEntityTrait` to any entity you want to associate files with:
+2. Add the `UseAssetConnectTrait` to any entity you want to associate files with:
 
 ```php
+use CodeIgniter\Entity\Entity;
 use Maniaba\FileConnect\Traits\UseAssetConnectTrait;
+use Maniaba\FileConnect\Interfaces\AssetCollection\SetupAssetCollection;
+use App\AssetCollections\ImagesCollection;
+use App\AssetCollections\DocumentsCollection;
 
 class User extends Entity
 {
     use UseAssetConnectTrait;
 
-    // ...
+    // You must implement this abstract method
+    public function setupAssetConnect(SetupAssetCollection $setup): void
+    {
+        // Set the default collection definition
+        // Note: Only one default collection can be set; additional calls will override previous ones
+        $setup->setDefaultCollectionDefinition(ImagesCollection::class);
+
+        // You can also register other collection definitions (not as default)
+        $setup->setCollectionDefinition(DocumentsCollection::class);
+    }
 }
 ```
 
 ### Adding Assets
 
-You can add assets to an entity using the `addAsset` method, which returns an `AssetAdder` instance that you can configure and then save:
+You can add assets to an entity using the `addAsset` method, which returns an `AssetAdder` instance that you can configure and then add to a collection:
 
 ```php
 // Add an asset from a file path
-$asset = $user->addAsset('/path/to/file.jpg')->save();
+$asset = $user->addAsset('/path/to/file.jpg')->toAssetCollection();
 
 // Add an asset from a CodeIgniter File object
 $file = new \CodeIgniter\Files\File('/path/to/file.jpg');
-$asset = $user->addAsset($file)->save();
+$asset = $user->addAsset($file)->toAssetCollection();
 
 // Add an asset with custom properties
 $asset = $user->addAsset('/path/to/file.jpg')
@@ -51,12 +64,11 @@ $asset = $user->addAsset('/path/to/file.jpg')
         'title' => 'My File',
         'description' => 'This is my file',
     ])
-    ->save();
+    ->toAssetCollection();
 
 // Add an asset to a specific collection
 $asset = $user->addAsset('/path/to/file.jpg')
-    ->toCollection('images')
-    ->save();
+    ->toAssetCollection(ImagesCollection::class);
 
 // Add an asset with custom properties to a specific collection
 $asset = $user->addAsset('/path/to/file.jpg')
@@ -64,8 +76,7 @@ $asset = $user->addAsset('/path/to/file.jpg')
         'title' => 'My File',
         'description' => 'This is my file',
     ])
-    ->toCollection('images')
-    ->save();
+    ->toAssetCollection(ImagesCollection::class);
 ```
 
 ### Retrieving Assets
@@ -77,13 +88,13 @@ You can retrieve assets from an entity using the `getAssets` method:
 $assets = $user->getAssets();
 
 // Get assets from a specific collection
-$images = $user->getAssets('images');
+$images = $user->getAssets(ImagesCollection::class);
 
 // Get the first asset
 $asset = $user->getFirstAsset();
 
 // Get the first asset from a specific collection
-$image = $user->getFirstAsset('images');
+$image = $user->getFirstAsset(ImagesCollection::class);
 ```
 
 ### Working with Collections
@@ -92,10 +103,10 @@ You can work with collections using the `collection` method:
 
 ```php
 // Get a collection
-$collection = $user->collection('images');
+$collection = $user->collection(ImagesCollection::class);
 
 // Add an asset to the collection
-$asset = $collection->addAsset('/path/to/file.jpg')->save();
+$asset = $collection->addAsset('/path/to/file.jpg')->toAssetCollection();
 
 // Add an asset with custom properties to the collection
 $asset = $collection->addAsset('/path/to/file.jpg')
@@ -103,7 +114,7 @@ $asset = $collection->addAsset('/path/to/file.jpg')
         'title' => 'My File',
         'description' => 'This is my file',
     ])
-    ->save();
+    ->toAssetCollection();
 
 // Get all assets in the collection
 $assets = $collection->getAssets();
@@ -175,7 +186,7 @@ You can delete assets from an entity using the `deleteAssets` method:
 $user->deleteAssets();
 
 // Delete assets from a specific collection
-$user->deleteAssets('images');
+$user->deleteAssets(ImagesCollection::class);
 ```
 
 ## Enums

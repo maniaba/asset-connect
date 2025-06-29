@@ -288,11 +288,14 @@ class Gallery extends Entity
 
     public function setupAssetConnect(SetupAssetCollection $setup): void
     {
-        // Register custom collection classes for more control
+        // Set the default collection definition
+        // Note: Only one default collection can be set; additional calls will override previous ones
         $setup->setDefaultCollectionDefinition(ImagesCollection::class);
-        $setup->setDefaultCollectionDefinition(ThumbnailsCollection::class);
 
-        // Alternatively, you could use the simplified approach with default collections:
+        // Register other collection definitions (not as default)
+        $setup->setCollectionDefinition(ThumbnailsCollection::class);
+
+        // Alternatively, you could use the simplified approach with all collections registered as non-default:
         // $setup->setCollectionDefinition(ImagesCollection::class);
         // $setup->setCollectionDefinition(ThumbnailsCollection::class);
     }

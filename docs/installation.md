@@ -48,9 +48,9 @@ class User extends Entity
     // You must implement this abstract method
     public function setupAssetConnect(SetupAssetCollection $setup): void
     {
-        // Register collections by name (uses DefaultAssetCollection)
+        // Set the default collection definition
+        // Note: Only one default collection can be set; additional calls will override previous ones
         $setup->setDefaultCollectionDefinition(ImagesCollection::class);
-        $setup->setDefaultCollectionDefinition(DocumentsCollection::class);
 
         // For more control, you can create and register custom collection classes
         // that implement AssetCollectionDefinitionInterface and FileVariantInterface

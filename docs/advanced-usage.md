@@ -73,12 +73,12 @@ class Product extends Entity
 
     public function setupAssetConnect(SetupAssetCollection $setup): void
     {
-        // Register your custom collection classes
+        // Set the default collection definition
+        // Note: Only one default collection can be set; additional calls will override previous ones
         $setup->setDefaultCollectionDefinition(ProductImagesCollection::class);
 
-        // You can also register default collections by name
-        // This will use the DefaultAssetCollection class
-        $setup->setDefaultCollectionDefinition(DocumentsCollection::class);
+        // You can also register other collection definitions (not as default)
+        $setup->setCollectionDefinition(DocumentsCollection::class);
     }
 }
 ```

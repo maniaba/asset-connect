@@ -24,12 +24,13 @@ class Product extends Entity
 
     public function setupAssetConnect(SetupAssetCollection $setup): void
     {
-        // Register collections by name (uses DefaultAssetCollection)
-        $setup->setDefaultCollectionDefinition(DocumentsCollection::class);
-        $setup->setDefaultCollectionDefinition(VideosCollection::class);
-
-        // Or register custom collection classes for more control
+        // Set the default collection definition
+        // Note: Only one default collection can be set; additional calls will override previous ones
         $setup->setDefaultCollectionDefinition(ImagesCollection::class);
+
+        // You can also register other collection definitions (not as default)
+        $setup->setCollectionDefinition(DocumentsCollection::class);
+        $setup->setCollectionDefinition(VideosCollection::class);
     }
 }
 
