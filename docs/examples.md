@@ -15,57 +15,166 @@ $user = model(User::class, false)
 
 ### Available Filters
 
-The AssetModel provides various filtering methods:
+The AssetModel provides various filtering methods that can be categorized into different groups. These filters can be chained together for more complex queries.
+
+#### Basic Metadata Filters
+
+These filters allow you to filter assets based on their basic metadata:
 
 ```php
-// Filter by name
-$model->filterAssets(fn(AssetModel $model) => $model->filterByName('profile-picture'));
+// Find assets with a specific name
+$model->filterAssets(function(AssetModel $model) {
+    $model->filterByName('profile-picture');
+});
 
-// Filter by file name
-$model->filterAssets(fn(AssetModel $model) => $model->filterByFileName('profile.jpg'));
+// Find assets with a specific file name
+$model->filterAssets(function(AssetModel $model) {
+    $model->filterByFileName('profile.jpg');
+});
 
-// Filter by mime type
-$model->filterAssets(fn(AssetModel $model) => $model->filterByMimeType('image/jpeg'));
+// Find assets with a specific MIME type
+$model->filterAssets(function(AssetModel $model) {
+    $model->filterByMimeType('image/jpeg');
+});
 
-// Filter by size
-$model->filterAssets(fn(AssetModel $model) => $model->filterBySize(1024, '>=')); // Files >= 1KB
+// Find assets with a specific size (with comparison operator)
+$model->filterAssets(function(AssetModel $model) {
+    $model->filterBySize(1024, '>='); // Files >= 1KB
+});
 
-// Filter by path
-$model->filterAssets(fn(AssetModel $model) => $model->filterByPath('/uploads/images/'));
+// Find assets with a specific path
+$model->filterAssets(function(AssetModel $model) {
+    $model->filterByPath('/uploads/images/');
+});
 
-// Filter by order
-$model->filterAssets(fn(AssetModel $model) => $model->filterByOrder(1));
-
-// Filter by custom property
-$model->filterAssets(fn(AssetModel $model) => $model->filterByProperty('title', 'Profile Picture'));
-
-// Filter by property existence
-$model->filterAssets(fn(AssetModel $model) => $model->filterByPropertyExists('title'));
-
-// Filter by property containing a value
-$model->filterAssets(fn(AssetModel $model) => $model->filterByPropertyContains('tags', 'profile'));
-
-// Filter by creation date
-$model->filterAssets(fn(AssetModel $model) => $model->filterByCreatedAt('2023-01-01', '>='));
-
-// Filter by update date
-$model->filterAssets(fn(AssetModel $model) => $model->filterByUpdatedAt('2023-01-01', '>='));
-
-// Filter by name pattern
-$model->filterAssets(fn(AssetModel $model) => $model->filterByNameLike('profile%'));
-
-// Filter by file name pattern
-$model->filterAssets(fn(AssetModel $model) => $model->filterByFileNameLike('%.jpg'));
-
-// Filter by date range
-$model->filterAssets(fn(AssetModel $model) => $model->filterByDateRange('2023-01-01', '2023-12-31', 'created_at'));
-
-// Filter by collection
-$model->filterAssets(fn(AssetModel $model) => $model->whereCollection(ImagesCollection::class));
-
-// Filter by entity type
-$model->filterAssets(fn(AssetModel $model) => $model->whereEntityType(User::class));
+// Find assets with a specific order
+$model->filterAssets(function(AssetModel $model) {
+    $model->filterByOrder(1);
+});
 ```
+
+#### Custom Property Filters
+
+These filters allow you to filter assets based on their custom properties:
+
+```php
+// Find assets with a specific custom property value
+$model->filterAssets(function(AssetModel $model) {
+    $model->filterByProperty('title', 'Profile Picture');
+});
+
+// Find assets that have a specific property (regardless of value)
+$model->filterAssets(function(AssetModel $model) {
+    $model->filterByPropertyExists('title');
+});
+
+// Find assets where an array property contains a specific value
+$model->filterAssets(function(AssetModel $model) {
+    $model->filterByPropertyContains('tags', 'profile');
+});
+```
+
+#### Date Filters
+
+These filters allow you to filter assets based on dates:
+
+```php
+// Find assets created after a specific date
+$model->filterAssets(function(AssetModel $model) {
+    $model->filterByCreatedAt('2023-01-01', '>=');
+});
+
+// Find assets updated before a specific date
+$model->filterAssets(function(AssetModel $model) {
+    $model->filterByUpdatedAt('2023-12-31', '<=');
+});
+
+// Find assets created within a date range
+$model->filterAssets(function(AssetModel $model) {
+    $model->filterByDateRange('2023-01-01', '2023-12-31', 'created_at');
+});
+```
+
+#### Pattern Matching Filters
+
+These filters allow you to filter assets using pattern matching:
+
+```php
+// Find assets with names matching a pattern
+$model->filterAssets(function(AssetModel $model) {
+    $model->filterByNameLike('profile%'); // Names starting with "profile"
+});
+
+// Find assets with file names matching a pattern
+$model->filterAssets(function(AssetModel $model) {
+    $model->filterByFileNameLike('%.jpg'); // File names ending with ".jpg"
+});
+```
+
+#### Range Filters
+
+These filters allow you to filter assets within specific ranges:
+
+```php
+// Find assets within a size range
+$model->filterAssets(function(AssetModel $model) {
+    $model->filterBySizeRange(1024, 1024 * 1024); // Between 1KB and 1MB
+});
+```
+
+#### Collection and Entity Filters
+
+These filters allow you to filter assets by collection or entity type:
+
+```php
+// Find assets in a specific collection
+$model->filterAssets(function(AssetModel $model) {
+    $model->whereCollection(ImagesCollection::class);
+});
+
+// Find assets associated with a specific entity type
+$model->filterAssets(function(AssetModel $model) {
+    $model->whereEntityType(User::class);
+});
+```
+
+#### Chaining Filters
+
+One of the most powerful features of the filtering system is the ability to chain multiple filters together to create complex queries. Here are some examples:
+
+```php
+// Find large JPEG images uploaded recently
+$model->filterAssets(function(AssetModel $model) {
+    $model->filterByMimeType('image/jpeg')
+          ->filterBySizeRange(1000000, PHP_INT_MAX) // Larger than 1MB
+          ->filterByCreatedAt(date('Y-m-d', strtotime('-7 days')), '>=');
+});
+
+// Find PDF documents with specific properties
+$model->filterAssets(function(AssetModel $model) {
+    $model->filterByMimeType('application/pdf')
+          ->filterByPropertyExists('title')
+          ->filterByPropertyExists('author')
+          ->filterByFileNameLike('report%');
+});
+
+// Find assets in a specific collection with a specific tag
+$model->filterAssets(function(AssetModel $model) {
+    $model->whereCollection(DocumentsCollection::class)
+          ->filterByPropertyContains('tags', 'important')
+          ->filterByOrder(1);
+});
+
+// Find images that match specific criteria
+$model->filterAssets(function(AssetModel $model) {
+    $model->whereCollection(ImagesCollection::class)
+          ->filterByNameLike('%profile%')
+          ->filterBySize(500000, '<=') // Less than 500KB
+          ->filterByUpdatedAt(date('Y-m-d'), '='); // Updated today
+});
+```
+
+These examples demonstrate how you can combine multiple filters to create precise queries that match exactly what you're looking for.
 
 ## Working with Collections
 
@@ -73,7 +182,7 @@ You can retrieve assets from a specific collection:
 
 ```php
 // Get assets from a specific collection
-$assets = $user->getAssets(TestKolekcija::class);
+$assets = $user->getAssets(ImagesCollection::class);
 ```
 
 ## Adding Assets
@@ -81,8 +190,21 @@ $assets = $user->getAssets(TestKolekcija::class);
 You can add assets to an entity with various options:
 
 ```php
-// Create a File object
+// Create a File object from a local file path
 $file = new File('C:\Users\amelj\PhpstormProjects\platforma\public\assets\images\user\placeholder.jpg');
+
+// Create a File object from an uploaded file in a controller
+$uploadedFile = $this->request->getFile('profile_image');
+if ($uploadedFile->isValid() && !$uploadedFile->hasMoved()) {
+    // You can use the uploaded file directly
+    $asset = $user->addAsset($uploadedFile)
+        ->usingFileName($uploadedFile->getRandomName())
+        ->toAssetCollection(ProfilePicturesCollection::class);
+
+    // Or move it to a temporary location first
+    $uploadedFile->move(WRITEPATH . 'uploads', $uploadedFile->getRandomName());
+    $file = new File(WRITEPATH . 'uploads/' . $uploadedFile->getName());
+}
 
 // Add the asset with various options
 $asset = $user->addAsset($file)
@@ -146,7 +268,7 @@ You can delete assets from an entity:
 $user->deleteAssets();
 
 // Delete assets from a specific collection
-$user->deleteAssets(TestKolekcija::class);
+$user->deleteAssets(ImagesCollection::class);
 ```
 
 ## Working with Asset Properties
