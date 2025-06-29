@@ -42,10 +42,11 @@ final class AssetConnectJob extends BaseJob implements JobInterface
         log_message('info', 'Asset variants processing queued successfully for asset ID: {id}', ['id' => $this->getAsset()->id]);
 
         // Save the asset after processing variants, updating its properties
-        model(AssetModel::class, false)->save(new Asset([
+        $newAsset = new Asset([
             'id'         => $this->getAsset()->id,
             'properties' => $this->getAsset()->properties,
-        ]));
+        ]);
+        model(AssetModel::class, false)->save($newAsset);
     }
 
     private function &getAsset(): ?Asset

@@ -20,13 +20,13 @@ final class DefaultPathGenerator implements PathGeneratorInterface
         $isProtected = $collection->getVisibility() === AssetVisibility::PROTECTED;
         $basePath    = $isProtected ? WRITEPATH : realpath(ROOTPATH . 'public') . DIRECTORY_SEPARATOR;
 
-        return $this->path = $basePath . $generatorHelper->getPathString('assets', $generatorHelper->getDateTime());
+        return $this->path = $basePath . 'assets' . DIRECTORY_SEPARATOR . $generatorHelper->getDateTime() . DIRECTORY_SEPARATOR;
     }
 
     public function getPathForVariants(PathGeneratorHelper $generatorHelper, AssetCollectionGetterInterface $collection): string
     {
         $basePath = $this->path ?? $this->getPath($generatorHelper, $collection);
 
-        return $basePath . $generatorHelper->getPathString('variants');
+        return $basePath . 'variants';
     }
 }

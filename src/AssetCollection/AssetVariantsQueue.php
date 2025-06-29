@@ -13,8 +13,10 @@ use Throwable;
 
 final class AssetVariantsQueue implements CreateAssetVariantsInterface
 {
+    public bool $isQueue = true;
+
     public function __construct(
-        private readonly Asset &$asset,
+        private Asset &$asset,
     ) {
     }
 
@@ -62,8 +64,12 @@ final class AssetVariantsQueue implements CreateAssetVariantsInterface
         $variant->size      = filesize($variant->path);
         $variant->processed = true;
 
+        // Update the asset variant in the properties
+        $properties = $this->asset->properties;
+        $properties->fileVariant->updateAssetVariant($variant);
+
         // Update the asset
-        $this->asset->properties->fileVariant->updateAssetVariant($variant);
+        $this->asset->properties = $properties;
 
         return $variant;
     }

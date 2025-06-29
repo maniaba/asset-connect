@@ -48,6 +48,6 @@ final class PathGeneratorHelper
      */
     public function getPathString(string ...$segments): string
     {
-        return implode(DIRECTORY_SEPARATOR, $segments) . DIRECTORY_SEPARATOR;
+        return implode(DIRECTORY_SEPARATOR, $segments);
     }
 }

@@ -14,12 +14,12 @@ final class AssetVariantProperties extends BaseProperties
         return 'asset_variants';
     }
 
-    public function addAssetVariant(AssetVariant &$variant): void
+    public function addAssetVariant(AssetVariant $variant): void
     {
         $this->set($variant->name, $variant);
     }
 
-    public function updateAssetVariant(AssetVariant &$variant): void
+    public function updateAssetVariant(AssetVariant $variant): void
     {
         if ($this->hasAssetVariant($variant->name)) {
             $this->set($variant->name, $variant);

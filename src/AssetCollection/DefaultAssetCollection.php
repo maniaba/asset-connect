@@ -27,7 +27,7 @@ final class DefaultAssetCollection implements AssetCollectionDefinitionInterface
     public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void
     {
         /** @var AssetVariants $variants */
-        $variants->onQueue = true; // Indicates that file variants should be processed on a queue.
+        $variants->onQueue = false; // Indicates that file variants should be processed on a queue.
 
         // Here you can add logic to process the asset and create variants.
         // For example, if you want to create a thumbnail or other variants,

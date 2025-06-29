@@ -132,6 +132,7 @@ final class AssetStorageHandler
         $sourcePath      = $file->getRealPath();
         $this->storePath = $storePath = $this->pathGenerator->getPath();
 
+        // Set the asset path and file properties
         $this->asset->path = $storePath . $this->asset->file_name;
         $this->asset->file = new File($this->asset->path);
 
