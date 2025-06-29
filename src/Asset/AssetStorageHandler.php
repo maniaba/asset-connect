@@ -35,8 +35,8 @@ final class AssetStorageHandler
     ) {
         $this->collection = AssetCollection::create($this->setupAssetCollection);
 
-        // Set the collection name
-        $this->asset->collection = $this->setupAssetCollection->getCollectionDefinition();
+        // Set the collection name using the setCollection method
+        $this->asset->setCollection($this->setupAssetCollection->getCollectionDefinition());
     }
 
     /**

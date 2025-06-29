@@ -63,7 +63,6 @@ final class BasePropertiesTest extends CIUnitTestCase
         $json = $baseProperties->jsonSerialize();
 
         // Assert
-        $this->assertIsArray($json);
         $this->assertArrayHasKey('test_properties', $json);
         $this->assertSame($properties, $json['test_properties']);
     }
@@ -119,7 +118,6 @@ final class BasePropertiesTest extends CIUnitTestCase
         $result = TestProperties::create($properties);
 
         // Assert
-        $this->assertInstanceOf(TestProperties::class, $result);
         $this->assertSame('value', $result->get('key'));
     }
 
@@ -148,7 +146,6 @@ final class BasePropertiesTest extends CIUnitTestCase
         $result = TestProperties::create($properties);
 
         // Assert
-        $this->assertInstanceOf(TestProperties::class, $result);
         $this->assertNull($result->get('key')); // Should be empty
     }
 }

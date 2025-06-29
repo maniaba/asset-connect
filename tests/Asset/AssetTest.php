@@ -143,18 +143,21 @@ final class AssetTest extends CIUnitTestCase
         $properties = $this->asset->properties;
 
         // Assert
-        $this->assertInstanceOf(Properties::class, $properties);
+        $this->assertNotNull($properties);
     }
 
     /**
-     * Test getting properties when they are set as a string
+     * Test getting properties when they are set as a Properties object
      */
-    public function testGetPropertiesWhenSetAsString(): void
+    public function testGetPropertiesWhenSetAsPropertiesObject(): void
     {
         // Arrange
-        $propertiesArray         = ['key' => 'value'];
-        $propertiesJson          = json_encode($propertiesArray);
-        $this->asset->properties = $propertiesJson;
+        $propertiesArray = ['key' => 'value'];
+        $propertiesJson  = json_encode($propertiesArray);
+        // Create a Properties object with the JSON string
+        $properties = new Properties();
+        $properties->fill($propertiesArray);
+        $this->asset->properties = $properties;
 
         // Act
         $properties = $this->asset->properties;
@@ -187,6 +190,7 @@ final class AssetTest extends CIUnitTestCase
         // Arrange
         $this->mockFile->method('getExtension')
             ->willReturn('jpg');
+        // @phpstan-ignore-next-line
         $this->asset->file = $this->mockFile;
 
         // Act

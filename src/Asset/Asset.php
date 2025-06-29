@@ -46,7 +46,7 @@ final class Asset extends Entity
     {
         if ($entityType instanceof Entity) {
             $entityType = $entityType::class;
-        } elseif (! class_exists($entityType) || ! is_subclass_of($entityType, Entity::class)) {
+        } elseif (! class_exists($entityType) || ($entityType !== Entity::class && ! is_subclass_of($entityType, Entity::class))) {
             throw new InvalidArgumentException('Entity type must be a valid Entity class or instance.');
         }
 

@@ -12,8 +12,10 @@ use Maniaba\FileConnect\Asset\AssetStorageHandler;
 use Maniaba\FileConnect\AssetCollection\AssetCollection;
 use Maniaba\FileConnect\Exceptions\AssetException;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
+use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionGetterInterface;
 use Maniaba\FileConnect\Models\AssetModel;
 use Maniaba\FileConnect\PathGenerator\PathGeneratorFactory;
+use Maniaba\FileConnect\PathGenerator\PathGeneratorInterface;
 use Maniaba\FileConnect\Traits\UseAssetConnectTrait;
 use PHPUnit\Framework\MockObject\MockObject;
 use stdClass;
@@ -43,29 +45,23 @@ final class AssetStorageHandlerTest extends CIUnitTestCase
         parent::setUp();
 
         // Create a real Asset object instead of a mock
-        $this->asset              = new Asset();
-        $this->asset->collection  = 'test_collection';
-        $this->asset->entity_type = 'test_entity_type';
-        $this->asset->entity_id   = 1;
+        $this->asset = new Asset();
+        // Create a mock collection definition that will be used with setCollection
+        $mockCollectionDefinition = $this->createMock(AssetCollectionDefinitionInterface::class);
+        $this->asset->setCollection($mockCollectionDefinition);
+        $this->asset->setEntityType(Entity::class);
+        $this->asset->entity_id = 1;
 
         // Create mock objects for interfaces
         $this->mockEntity = $this->createEntityWithTrait();
 
         // For final classes, we'll create test doubles that implement the same interfaces
-        $this->mockSetupAssetCollection = $this->getMockBuilder(stdClass::class)
-            ->addMethods(['getCollectionDefinition', 'getPathGenerator'])
-            ->getMock();
+        // Use createMock for interfaces instead of getMockBuilder with stdClass
+        $this->mockSetupAssetCollection = $this->createMock(\Maniaba\FileConnect\Interfaces\AssetCollection\SetupAssetCollection::class);
 
-        $this->mockAssetCollection = $this->getMockBuilder(stdClass::class)
-            ->addMethods([
-                'getVisibility', 'getMaximumNumberOfItemsInCollection', 'getMaxFileSize',
-                'isSingleFileCollection', 'getAllowedMimeTypes', 'getAllowedExtensions',
-            ])
-            ->getMock();
+        $this->mockAssetCollection = $this->createMock(AssetCollectionGetterInterface::class);
 
-        $this->mockPathGenerator = $this->getMockBuilder(stdClass::class)
-            ->addMethods(['getPath', 'getPathForVariants'])
-            ->getMock();
+        $this->mockPathGenerator = $this->createMock(PathGeneratorInterface::class);
 
         $this->mockAssetModel = $this->getMockBuilder(stdClass::class)
             ->addMethods(['save', 'errors', 'where', 'orderBy', 'limit', 'offset', 'findColumn', 'whereIn', 'delete'])
@@ -94,9 +90,15 @@ final class AssetStorageHandlerTest extends CIUnitTestCase
      */
     private function createEntityWithTrait(): MockObject
     {
-        return $this->getMockBuilder(Entity::class)
+        $mockEntity = $this->getMockBuilder(Entity::class)
             ->addMethods(['assetConnect', 'setupAssetConnect', 'loadAssetConnect'])
             ->getMock();
+
+        // Explicitly set the return type to ensure type compatibility
+        $mockEntity->method('assetConnect')
+            ->willReturnCallback(fn () => $this->mockAssetConnect);
+
+        return $mockEntity;
     }
 
     /**
@@ -296,7 +298,6 @@ final class AssetStorageHandlerTest extends CIUnitTestCase
         AssetStorageHandler::removeStoragePath('/path/to/storage/');
 
         // No assertions needed as we're testing the method calls in the mocked functions
-        $this->assertTrue(true);
     }
 
     /**
@@ -323,7 +324,6 @@ final class AssetStorageHandlerTest extends CIUnitTestCase
         AssetStorageHandler::removeStoragePath('/path/to/file.jpg');
 
         // No assertions needed as we're testing the method calls in the mocked functions
-        $this->assertTrue(true);
     }
 
     /**

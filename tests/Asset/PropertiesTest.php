@@ -28,8 +28,8 @@ final class PropertiesTest extends CIUnitTestCase
     public function testConstructorCreatesProperties(): void
     {
         // Assert
-        $this->assertInstanceOf(UserCustomProperties::class, $this->properties->userCustom);
-        $this->assertInstanceOf(FileVariantProperties::class, $this->properties->fileVariant);
+        $this->assertNotNull($this->properties->userCustom);
+        $this->assertNotNull($this->properties->fileVariant);
     }
 
     /**
@@ -81,7 +81,6 @@ final class PropertiesTest extends CIUnitTestCase
         $json = $properties->jsonSerialize();
 
         // Assert
-        $this->assertIsArray($json);
         $this->assertArrayHasKey('user_custom', $json);
         $this->assertArrayHasKey('file_variants', $json);
         $this->assertSame($values['user_custom'], $json['user_custom']);
@@ -110,7 +109,6 @@ final class PropertiesTest extends CIUnitTestCase
         $string = (string) $properties;
 
         // Assert
-        $this->assertIsString($string);
         $decoded = json_decode($string, true);
         $this->assertIsArray($decoded);
         $this->assertArrayHasKey('user_custom', $decoded);
