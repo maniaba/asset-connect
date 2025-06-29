@@ -9,17 +9,23 @@ use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionGetterInterface;
 
 final class DefaultPathGenerator implements PathGeneratorInterface
 {
+    private string $path;
+
     public function getPath(PathGeneratorHelper $generatorHelper, AssetCollectionGetterInterface $collection): string
     {
+        if (isset($this->path)) {
+            return $this->path;
+        }
+
         $isProtected = $collection->getVisibility() === AssetVisibility::PROTECTED;
         $basePath    = $isProtected ? WRITEPATH : realpath(ROOTPATH . 'public') . DIRECTORY_SEPARATOR;
 
-        return $basePath . $generatorHelper->getPathString('assets', $generatorHelper->getDateTime());
+        return $this->path = $basePath . $generatorHelper->getPathString('assets', $generatorHelper->getDateTime());
     }
 
     public function getPathForVariants(PathGeneratorHelper $generatorHelper, AssetCollectionGetterInterface $collection): string
     {
-        $basePath = $this->getPath($generatorHelper, $collection);
+        $basePath = $this->path ?? $this->getPath($generatorHelper, $collection);
 
         return $basePath . $generatorHelper->getPathString('variants');
     }
