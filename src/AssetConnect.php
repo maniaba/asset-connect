@@ -109,7 +109,11 @@ final class AssetConnect
 
         AssetCollectionDefinitionFactory::validateStringClass($collection);
 
-        $this->relationsInfo['collection'] = md5($collection::class);
+        $collectionClass = $collection instanceof AssetCollectionDefinitionInterface
+            ? $collection::class
+            : $collection;
+
+        $this->relationsInfo['collection'] = md5($collectionClass);
     }
 
     public function fetchForCollection(): void
