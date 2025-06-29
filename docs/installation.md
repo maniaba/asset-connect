@@ -1,0 +1,89 @@
+# Installation
+
+## Requirements
+
+Before installing CodeIgniter Asset Connect, ensure your environment meets the following requirements:
+
+- PHP 8.1 or higher
+- CodeIgniter 4.3 or higher
+- Composer
+
+## Installation Steps
+
+### 1. Install via Composer
+
+You can install the package via Composer:
+
+```bash
+composer require maniaba/file-connect
+```
+
+### 2. Run Migrations
+
+The library includes a migration to create the necessary database table for storing asset metadata. Run the migration using the following command:
+
+```bash
+php spark migrate --namespace=Maniaba\\FileConnect
+```
+
+This will create the `assets` table in your database.
+
+### 3. Configure Your Entities
+
+To use Asset Connect with your entities, you need to add the `UseAssetConnectTrait` to any entity you want to associate files with:
+
+```php
+<?php
+
+namespace App\Entities;
+
+use CodeIgniter\Entity\Entity;
+use Maniaba\FileConnect\Traits\UseAssetConnectTrait;
+use Maniaba\FileConnect\Interfaces\AssetCollection\SetupAssetCollection;
+
+class User extends Entity
+{
+    use UseAssetConnectTrait;
+
+    // You must implement this abstract method
+    public function setupAssetConnect(SetupAssetCollection $setup): void
+    {
+        // Register collections by name (uses DefaultAssetCollection)
+        $setup->setDefaultCollectionDefinition(ImagesCollection::class);
+        $setup->setDefaultCollectionDefinition(DocumentsCollection::class);
+
+        // For more control, you can create and register custom collection classes
+        // that implement AssetCollectionDefinitionInterface and FileVariantInterface
+        // $setup->setCollectionDefinition(CustomImagesCollection::class);
+    }
+
+    // Your other entity methods...
+}
+```
+
+### 4. Configure Your Models (Optional)
+
+If you want to automatically load the Asset Connect functionality when retrieving entities from your models, you can add the `UseAssetConnectModelTrait` to your models:
+
+```php
+<?php
+
+namespace App\Models;
+
+use CodeIgniter\Model;
+use Maniaba\FileConnect\Traits\UseAssetConnectModelTrait;
+
+class UserModel extends Model
+{
+    use UseAssetConnectModelTrait;
+
+    // Your model configuration...
+}
+```
+
+## Next Steps
+
+After installation, you may want to:
+
+1. [Configure the library](configuration.md) to customize its behavior
+2. Learn about [basic usage](basic-usage.md) to start working with assets

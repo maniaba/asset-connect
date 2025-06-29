@@ -1,0 +1,81 @@
+site_name: CodeIgniter Asset Connect
+site_description: Asset Connect is a CodeIgniter 4 package that provides a simple way to manage and connect assets in your application with a focus on performance and ease of use.
+
+theme:
+  name: material
+  logo: assets/flame.svg
+  favicon: assets/favicon.ico
+  icon:
+    repo: fontawesome/brands/github
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: codeigniter
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - content.code.copy
+    - navigation.footer
+    - content.action.edit
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - search.share
+
+extra:
+  homepage: https://codeigniter.com
+  generator: false
+
+  social:
+    - icon: material/github
+      link: https://github.com/maniaba/file-connect
+      name: GitHub
+    - icon: material/twitter
+      link: https://twitter.com/CodeIgniterPhp
+      name: X
+    - icon: material/forum
+      link: https://forum.codeigniter.com
+      name: Forum Codeigniter
+    - icon: material/slack
+      link: https://join.slack.com/t/codeigniterchat/shared_invite/zt-244xrrslc-l_I69AJSi5y2a2RVN~xIdQ
+      name: Slack
+
+site_url: https://file-connect.maniaba.com/
+repo_url: https://github.com/maniaba/file-connect
+edit_uri: edit/develop/docs/
+copyright: Copyright &copy; 2025 CodeIgniter Foundation.
+
+markdown_extensions:
+  - admonition
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      use_pygments: false
+
+extra_css:
+  - https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/styles/github.min.css
+  - assets/css/codeigniter.css
+  - assets/css/codeigniter_dark_mode.css
+
+extra_javascript:
+  - https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/highlight.min.js
+  - assets/js/hljs.js
+
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Configuration: configuration.md
+  - Basic usage: basic-usage.md
+  - Examples: examples.md
+  - Advanced usage: advanced-usage.md
+  - Asset Collections: asset-collections.md
+  - Troubleshooting: troubleshooting.md

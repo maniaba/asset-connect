@@ -172,7 +172,7 @@ final class AssetAdder
         $this->asset->file_name = ($this->fileNameSanitizer)($this->asset->file_name);
 
         if ($collection !== null) {
-            $this->setupAssetCollection->setCollectionDefinition($collection);
+            $this->setupAssetCollection->setDefaultCollectionDefinition($collection);
         }
 
         $storageHandler = new AssetStorageHandler($this->subjectEntity, $this->asset, $this->setupAssetCollection);

@@ -48,7 +48,7 @@ final class SetupAssetCollection implements SetupAssetCollectionInterface
      *
      * @throws InvalidArgumentException if the provided class does not implement AssetCollectionDefinitionInterface
      */
-    public function setCollectionDefinition(AssetCollectionDefinitionInterface|string $collectionDefinition, ...$args): static
+    public function setDefaultCollectionDefinition(AssetCollectionDefinitionInterface|string $collectionDefinition, ...$args): static
     {
         if (is_string($collectionDefinition)) {
             $collectionDefinition = AssetCollectionDefinitionFactory::create($collectionDefinition, ...$args);

@@ -13,13 +13,13 @@ use Maniaba\FileConnect\PathGenerator\PathGeneratorInterface;
 interface SetupAssetCollection
 {
     /**
-     * Set the definition of the asset collection for this entity.
+     * Set the definition of the asset collection for this entity as default.
      *
      * @param AssetCollectionDefinitionInterface|class-string<AssetCollectionDefinitionInterface> $collectionDefinition
      *
      * @throws InvalidArgumentException if the provided class does not implement AssetCollectionInterface
      */
-    public function setCollectionDefinition(AssetCollectionDefinitionInterface|string $collectionDefinition): static;
+    public function setDefaultCollectionDefinition(AssetCollectionDefinitionInterface|string $collectionDefinition): static;
 
     /**
      * Set the path generator for the asset collection.

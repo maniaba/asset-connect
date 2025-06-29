@@ -1,0 +1,329 @@
+# Basic Usage
+
+This guide covers the fundamental operations you can perform with CodeIgniter Asset Connect.
+
+## Working with Entities
+
+### Setting Up an Entity
+
+To use Asset Connect with an entity, you need to add the `UseAssetConnectTrait` to your entity class and implement the `setupAssetConnect` method:
+
+```php
+<?php
+
+namespace App\Entities;
+
+use CodeIgniter\Entity\Entity;
+use Maniaba\FileConnect\Traits\UseAssetConnectTrait;
+use Maniaba\FileConnect\Interfaces\AssetCollection\SetupAssetCollection;
+use App\AssetCollections\ImagesCollection;
+
+class Product extends Entity
+{
+    use UseAssetConnectTrait;
+
+    public function setupAssetConnect(SetupAssetCollection $setup): void
+    {
+        // Register collections by name (uses DefaultAssetCollection)
+        $setup->setDefaultCollectionDefinition(DocumentsCollection::class);
+        $setup->setDefaultCollectionDefinition(VideosCollection::class);
+
+        // Or register custom collection classes for more control
+        $setup->setDefaultCollectionDefinition(ImagesCollection::class);
+    }
+}
+
+// Example of a custom collection class
+namespace App\AssetCollections;
+
+use CodeIgniter\Entity\Entity;
+use Maniaba\FileConnect\Asset\Asset;
+use Maniaba\FileConnect\AssetCollection\FileVariants;
+use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
+use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionSetterInterface;
+use Maniaba\FileConnect\Interfaces\Asset\FileVariantInterface;
+
+class ImagesCollection implements AssetCollectionDefinitionInterface, FileVariantInterface
+{
+    public function definition(AssetCollectionSetterInterface $definition): void
+    {
+        // Configure the collection using the setter interface
+        $definition->allowedMimeTypes('image/jpeg', 'image/png', 'image/gif')
+            ->setMaxFileSize(5 * 1024 * 1024); // 5MB
+    }
+
+    public function checkAuthorization(array|Entity $entity, Asset $asset): bool
+    {
+        // Check if the user is authorized to access this asset
+        return true;
+    }
+
+    public function variants(FileVariants $variants, Asset $asset): void
+    {
+        // Define file variants (e.g., thumbnails)
+    }
+}
+```
+
+### Understanding SetupAssetCollection Interface
+
+The `SetupAssetCollection` interface provides methods to configure how assets are handled for an entity. Here's an explanation of each method:
+
+#### setCollectionDefinition
+
+```php
+$setup->setCollectionDefinition(ImagesCollection::class);
+```
+
+This method sets the definition of the asset collection for the entity. It accepts either an instance of a class implementing `AssetCollectionDefinitionInterface` or a string representing the class name. Note that calling this method multiple times with the same collection will override the previous definition.
+
+#### setPathGenerator
+
+```php
+$setup->setPathGenerator(CustomPathGenerator::class);
+```
+
+This method sets the path generator for the asset collection. The path generator determines how file paths are generated for stored assets. It accepts either an instance of a class implementing `PathGeneratorInterface` or a string representing the class name.
+
+#### setFileNameSanitizer
+
+```php
+$setup->setFileNameSanitizer(function (string $fileName): string {
+    return str_replace(['#', '/', '\\', ' '], '-', $fileName);
+});
+```
+
+This method sets a closure to sanitize file names before they are stored. The closure should accept a string (the file name) and return a sanitized string.
+
+#### setPreserveOriginal
+
+```php
+$setup->setPreserveOriginal(true);
+```
+
+This method determines whether to preserve the original file after it has been processed and stored. By default, original files are not preserved.
+
+#### setSubjectPrimaryKeyAttribute
+
+```php
+$setup->setSubjectPrimaryKeyAttribute('user_id');
+```
+
+This method sets the primary key attribute for the subject of the asset collection. By default, the system tries to automatically detect it from the model's `$primaryKey` property, but you can override it with this method.
+
+#### autoDetectSubjectPrimaryKeyAttribute
+
+```php
+$setup->autoDetectSubjectPrimaryKeyAttribute(UserModel::class);
+```
+
+This method automatically detects the primary key attribute from the specified model class. It's useful when you want to ensure the correct primary key is used without hardcoding it.
+
+### Adding Assets
+
+You can add assets to an entity using the `addAsset` method:
+
+```php
+// Add an asset from a file path
+$asset = $product->addAsset('/path/to/image.jpg')->toAssetCollection();
+
+// Add an asset to a specific collection
+$asset = $product->addAsset('/path/to/manual.pdf')
+    ->toAssetCollection(DocumentsCollection::class);
+
+// Add an asset with custom properties
+$asset = $product->addAsset('/path/to/video.mp4')
+    ->withCustomProperties([
+        'title' => 'Product Demo',
+        'description' => 'A demonstration of the product features',
+        'duration' => '2:30',
+    ])
+    ->toAssetCollection(VideosCollection::class);
+```
+
+### Retrieving Assets
+
+You can retrieve assets from an entity using various methods:
+
+```php
+// Get all assets
+$allAssets = $product->getAssets();
+
+// Get assets from a specific collection
+$images = $product->getAssets(ImagesCollection::class);
+
+// Get the first asset
+$firstAsset = $product->getFirstAsset();
+
+// Get the first asset from a specific collection
+$firstImage = $product->getFirstAsset(ImagesCollection::class);
+
+// Get the last asset from a specific collection
+$lastDocument = $product->getLastAsset(DocumentsCollection::class);
+```
+
+### Deleting Assets
+
+You can delete assets from an entity:
+
+```php
+// Delete all assets
+$product->deleteAssets();
+
+// Delete assets from a specific collection
+$product->deleteAssets(ImagesCollection::class);
+```
+
+## Working with Collections
+
+Asset collections provide a way to organize your assets into logical groups. You can work with collections directly:
+
+```php
+// Get a collection
+$imagesCollection = $product->collection(ImagesCollection::class);
+
+// Add an asset to the collection
+$asset = $imagesCollection->addAsset('/path/to/image.jpg')->toAssetCollection();
+
+// Get all assets in the collection
+$images = $imagesCollection->getAssets();
+
+// Get the first asset in the collection
+$firstImage = $imagesCollection->getFirstAsset();
+
+// Delete all assets in the collection
+$imagesCollection->deleteAssets();
+```
+
+## Working with Assets
+
+The `Asset` entity provides methods for working with individual assets:
+
+```php
+// Get an asset
+$asset = $product->getFirstAsset(ImagesCollection::class);
+
+// Get the absolute path to the asset file
+$path = $asset->getAbsolutePath();
+
+// Get the URL to the asset file
+$url = $asset->getUrl();
+
+// Get the custom properties of the asset
+$properties = $asset->getCustomProperties();
+
+// Get a specific custom property
+$title = $asset->getCustomProperty('title');
+
+// Get the file name
+$fileName = $asset->getFileName();
+
+// Get the mime type
+$mimeType = $asset->getMimeType();
+
+// Get the size in bytes
+$size = $asset->getSize();
+
+// Get the human-readable size
+$readableSize = $asset->getHumanReadableSize();
+
+// Check if the asset is an image
+if ($asset->isImage()) {
+    // Do something with the image
+}
+
+// Check if the asset is a video
+if ($asset->isVideo()) {
+    // Do something with the video
+}
+
+// Check if the asset is a document
+if ($asset->isDocument()) {
+    // Do something with the document
+}
+```
+
+## Using Enums
+
+Asset Connect provides several enums for working with assets:
+
+### AssetCollectionType
+
+```php
+use Maniaba\FileConnect\Enums\AssetCollectionType;
+
+// Available collection types
+AssetCollectionType::DEFAULT; // 'default'
+AssetCollectionType::IMAGES; // 'images'
+AssetCollectionType::VIDEOS; // 'videos'
+AssetCollectionType::DOCUMENTS; // 'documents'
+AssetCollectionType::DOWNLOADS; // 'downloads'
+AssetCollectionType::UPLOADS; // 'uploads'
+
+// Get the display name of a collection type
+$displayName = AssetCollectionType::displayName(AssetCollectionType::IMAGES); // 'Images'
+
+// Get all collection types as an array
+$types = AssetCollectionType::toArray();
+```
+
+### Secure Asset Storage
+
+When you need to store assets in a non-public location (like the "writable" folder), you can implement the `AuthorizableAssetCollectionDefinitionInterface`. This interface adds access control to your asset collections, requiring users to go through a controller to access the files:
+
+```php
+use CodeIgniter\Entity\Entity;
+use Maniaba\FileConnect\Asset\Asset;
+use Maniaba\FileConnect\Interfaces\Asset\AuthorizableAssetCollectionDefinitionInterface;
+
+class SecureDocumentsCollection implements AuthorizableAssetCollectionDefinitionInterface
+{
+    public function definition(AssetCollectionSetterInterface $definition): void
+    {
+        // Configure the collection
+        $definition->allowedMimeTypes('application/pdf', 'application/msword');
+    }
+
+    public function checkAuthorization(array|Entity $entity, Asset $asset): bool
+    {
+        // Check if the user is authorized to access this asset
+        // For example, check if the user owns the asset or has the right permissions
+        return $entity->id === $asset->entity_id;
+    }
+
+    public function variants(FileVariants $variants, Asset $asset): void
+    {
+        // No variants needed for documents
+    }
+}
+```
+
+### AssetMimeType
+
+```php
+use Maniaba\FileConnect\Enums\AssetMimeType;
+
+// Available mime types (examples)
+AssetMimeType::IMAGE_JPEG; // 'image/jpeg'
+AssetMimeType::PDF; // 'application/pdf'
+AssetMimeType::VIDEO_MP4; // 'video/mp4'
+
+// Get the file extension for a mime type
+$extension = AssetMimeType::getExtension(AssetMimeType::IMAGE_JPEG); // 'jpg'
+
+// Check if a mime type is an image
+if (AssetMimeType::isImage(AssetMimeType::IMAGE_JPEG)) {
+    // Do something with the image
+}
+
+// Get a mime type from a file extension
+$mimeType = AssetMimeType::fromExtension('jpg'); // 'image/jpeg'
+```
+
+## Advanced Usage
+
+For more advanced usage scenarios, check out the following topics:
+
+- [Custom Asset Collections](configuration.md#creating-custom-asset-collections)
+- [Custom Path Generators](configuration.md#creating-custom-path-generators)
+- [Troubleshooting](troubleshooting.md)
