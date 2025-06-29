@@ -2,6 +2,12 @@
 
 FileConnect is a file management library for CodeIgniter 4 that allows you to associate files with any entity in your application.
 
+## Requirements
+
+- PHP 8.1 or higher
+- CodeIgniter 4.3 or higher
+- CodeIgniter Queue
+
 ## Installation
 
 You can install the package via composer:

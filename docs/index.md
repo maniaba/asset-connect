@@ -15,6 +15,7 @@ CodeIgniter Asset Connect is a file management library for CodeIgniter 4 that al
 
 - PHP 8.1 or higher
 - CodeIgniter 4.3 or higher
+- CodeIgniter Queue
 
 ## Quick Example
 
