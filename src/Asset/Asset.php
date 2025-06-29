@@ -76,8 +76,14 @@ final class Asset extends Entity
         return $this;
     }
 
-    protected function setProperties(?string $properties): static
+    protected function setProperties(Properties|string|null $properties): static
     {
+        if (is_string($properties)) {
+            $properties = new Properties(json_decode($properties, true));
+        } elseif ($properties === null) {
+            $properties = new Properties();
+        }
+
         $this->attributes['properties'] = $properties;
 
         return $this;

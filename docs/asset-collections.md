@@ -102,10 +102,10 @@ use Maniaba\FileConnect\Enums\AssetMimeType;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionSetterInterface;
 use Maniaba\FileConnect\Interfaces\Asset\AuthorizableAssetCollectionDefinitionInterface;
-use Maniaba\FileConnect\Interfaces\Asset\FileVariantInterface;
+use Maniaba\FileConnect\Interfaces\Asset\AssetVariantsInterface;
 use Maniaba\FileConnect\PathGenerator\CustomPathGenerator;
 
-class ProfilePicturesCollection implements AuthorizableAssetCollectionDefinitionInterface, FileVariantInterface
+class ProfilePicturesCollection implements AuthorizableAssetCollectionDefinitionInterface, AssetVariantsInterface
 {
     public function definition(AssetCollectionSetterInterface $definition): void
     {

@@ -30,6 +30,11 @@ abstract class BaseProperties implements JsonSerializable
         return $this->properties[$key] ?? null;
     }
 
+    public function remove(string $key): void
+    {
+        unset($this->properties[$key]);
+    }
+
     public static function create(array $properties): static
     {
         $properties = $properties[static::getName()] ?? [];

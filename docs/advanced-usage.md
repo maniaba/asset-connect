@@ -22,10 +22,10 @@ use Maniaba\FileConnect\Enums\AssetExtension;
 use Maniaba\FileConnect\Enums\AssetMimeType;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionSetterInterface;
-use Maniaba\FileConnect\Interfaces\Asset\FileVariantInterface;
+use Maniaba\FileConnect\Interfaces\Asset\AssetVariantsInterface;
 use Maniaba\FileConnect\PathGenerator\CustomPathGenerator;
 
-class ProductImagesCollection implements AssetCollectionDefinitionInterface, FileVariantInterface
+class ProductImagesCollection implements AssetCollectionDefinitionInterface, AssetVariantsInterface
 {
     public function definition(AssetCollectionSetterInterface $definition): void
     {

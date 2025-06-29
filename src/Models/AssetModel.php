@@ -366,11 +366,11 @@ final class AssetModel extends BaseModel
     /**
      * Filter assets by collection
      *
-     * @param class-string<AssetCollectionDefinitionInterface>|AssetCollectionDefinitionInterface $collection The collection to filter by
+     * @param AssetCollectionDefinitionInterface|class-string<AssetCollectionDefinitionInterface> $collection The collection to filter by
      *
      * @return $this
      */
-    public function whereCollection(string|AssetCollectionDefinitionInterface $collection): self
+    public function whereCollection(AssetCollectionDefinitionInterface|string $collection): self
     {
         if (is_string($collection)) {
             AssetCollectionDefinitionFactory::validateStringClass($collection);
@@ -392,7 +392,7 @@ final class AssetModel extends BaseModel
      *
      * @return $this
      */
-    public function whereEntityType(string|Entity $entityType): self
+    public function whereEntityType(Entity|string $entityType): self
     {
         if (is_string($entityType)) {
             $entityTypeHash = md5($entityType);

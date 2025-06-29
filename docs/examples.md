@@ -357,9 +357,9 @@ use Maniaba\FileConnect\Enums\AssetExtension;
 use Maniaba\FileConnect\Enums\AssetMimeType;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionSetterInterface;
-use Maniaba\FileConnect\Interfaces\Asset\FileVariantInterface;
+use Maniaba\FileConnect\Interfaces\Asset\AssetVariantsInterface;
 
-class ImagesCollection implements AssetCollectionDefinitionInterface, FileVariantInterface
+class ImagesCollection implements AssetCollectionDefinitionInterface, AssetVariantsInterface
 {
     public function definition(AssetCollectionSetterInterface $definition): void
     {
@@ -395,7 +395,7 @@ class ImagesCollection implements AssetCollectionDefinitionInterface, FileVarian
     }
 }
 
-class ThumbnailsCollection implements AssetCollectionDefinitionInterface, FileVariantInterface
+class ThumbnailsCollection implements AssetCollectionDefinitionInterface, AssetVariantsInterface
 {
     public function definition(AssetCollectionSetterInterface $definition): void
     {

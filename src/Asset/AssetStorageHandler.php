@@ -9,12 +9,13 @@ use CodeIgniter\Files\File;
 use CodeIgniter\HTTP\Files\UploadedFile;
 use CodeIgniter\I18n\Time;
 use Maniaba\FileConnect\AssetCollection\AssetCollection;
+use Maniaba\FileConnect\AssetCollection\AssetVariants;
 use Maniaba\FileConnect\AssetCollection\AssetVariantsProcess;
 use Maniaba\FileConnect\AssetCollection\SetupAssetCollection;
 use Maniaba\FileConnect\Exceptions\AssetException;
 use Maniaba\FileConnect\Exceptions\FileException;
 use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
-use Maniaba\FileConnect\Interfaces\Asset\FileVariantInterface;
+use Maniaba\FileConnect\Interfaces\Asset\AssetVariantsInterface;
 use Maniaba\FileConnect\Models\AssetModel;
 use Maniaba\FileConnect\PathGenerator\PathGenerator;
 use Maniaba\FileConnect\PathGenerator\PathGeneratorFactory;
@@ -26,6 +27,7 @@ final class AssetStorageHandler
     private readonly PathGenerator $pathGenerator;
     private string $storePath;
     private readonly AssetCollection $collection;
+    private AssetVariants $assetVariants;
 
     public function __construct(
         /** @var Entity&UseAssetConnectTrait $subjectEntity The entity to which the asset is being added */
@@ -173,6 +175,14 @@ final class AssetStorageHandler
         $this->asset->created_at = Time::now();
         $this->asset->updated_at = Time::now();
 
+        // If variants are processed on the queue, we must add queue job for processing
+        if ($this->assetVariants->onQueue) {
+            AssetVariantsProcess::onQueue(
+                $this->asset,
+                $this->setupAssetCollection->getCollectionDefinition(),
+            );
+        }
+
         unset($this->asset->file); // Unset the file property unless you need it later
 
         // If the asset was saved, we can now connect it to the entity
@@ -187,19 +197,20 @@ final class AssetStorageHandler
      */
     private function processFileVariants(): void
     {
-        if ($this->setupAssetCollection->getCollectionDefinition() instanceof FileVariantInterface) {
-            $definition = $this->setupAssetCollection->getCollectionDefinition();
-            $onQueue    = $definition->fileVariantsOnQueue();
+        if ($this->setupAssetCollection->getCollectionDefinition() instanceof AssetVariantsInterface) {
+            /** @var AssetVariantsInterface $definition */
+            $definition          = $this->setupAssetCollection->getCollectionDefinition();
+            $this->assetVariants = new AssetVariants(
+                $this->pathGenerator->getPathForVariants(),
+                $this->asset,
+            );
 
-            if ($onQueue) {
-                // If the collection definition requires processing on a queue, we can skip immediate processing
-                // and let the queue handle it later.
-                AssetVariantsProcess::onQueue($definition, $this->pathGenerator->getPathForVariants(), $this->asset);
+            $definition->variants($this->assetVariants, $this->asset);
 
-                return;
+            if (! $this->assetVariants->onQueue) {
+                // If the definition indicates that variants should be processed immediately,
+                AssetVariantsProcess::run($this->asset, $definition);
             }
-
-            AssetVariantsProcess::run($definition, $this->pathGenerator->getPathForVariants(), $this->asset);
         }
     }
 

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Maniaba\FileConnect\AssetCollection;
 
 use CodeIgniter\Queue\Config\Services;
-use CodeIgniter\Queue\QueuePushResult;
 use Maniaba\FileConnect\Asset\Asset;
 use Maniaba\FileConnect\Exceptions\FileVariantException;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
@@ -16,7 +15,7 @@ final class AssetVariantsProcess
     public const QUEUE_NAME  = 'asset_queue';
     public const JOB_HANDLER = 'asset_connect';
 
-    public static function onQueue(string $storagePathVariants, Asset &$asset, AssetCollectionDefinitionInterface $definition, mixed ...$definitionArguments): void
+    public static function onQueue(Asset &$asset, AssetCollectionDefinitionInterface $definition, mixed ...$definitionArguments): void
     {
         log_message('info', 'Asset variants processing is queued for asset ID: {id}', ['id' => $asset->id]);
 
@@ -26,15 +25,14 @@ final class AssetVariantsProcess
         $queue      = $config->queue['name'] ?? self::QUEUE_NAME;
         $jobHandler = $config->queue['jobHandler']['name'] ?? self::JOB_HANDLER;
 
-        /** @var QueuePushResult $result */
+        /** @var bool $result */
         $result = Services::queue()->push($queue, $jobHandler, [
             'definition'          => $definition::class,
             'definitionArguments' => $definitionArguments,
-            'storagePath'         => $storagePathVariants,
             'assetId'             => $asset->id,
         ]);
 
-        if (! $result->getStatus()) {
+        if (! $result) {
             log_message('error', 'Failed to queue asset variants processing for asset ID: {id}', ['id' => $asset->id]);
 
             throw new FileVariantException('Failed to queue asset variants processing.');
@@ -44,16 +42,14 @@ final class AssetVariantsProcess
     /**
      * Processes the asset variants based on the provided definition and storage path.
      *
-     * @param AssetCollectionDefinitionInterface $definition         The asset collection definition.
-     * @param string                             $storagePathVarians The storage path for the variants.
-     * @param Asset                              $asset              The asset to process.
+     * @param AssetCollectionDefinitionInterface $definition The asset collection definition.
+     * @param Asset                              &$asset     The asset to process.
      *
      * @throws FileVariantException If an error occurs during variant processing.
      */
-    public static function run(AssetCollectionDefinitionInterface $definition, string $storagePathVarians, Asset &$asset): void
+    public static function run(Asset &$asset, AssetCollectionDefinitionInterface $definition): void
     {
-        $assetVariants = new AssetVariants(
-            $storagePathVarians,
+        $assetVariants = new AssetVariantsQueue(
             $asset,
         );
 
@@ -65,16 +61,6 @@ final class AssetVariantsProcess
         } catch (Throwable $e) {
             // If the exception is not a FileVariantException, we wrap it in one
             throw new FileVariantException($e->getMessage(), $e->getMessage(), $e->getCode(), $e);
-        }
-
-        // Validate the variants after processing
-        $variants = $asset->properties->fileVariant->getVariants();
-
-        foreach ($variants as &$variant) {
-            if (file_exists($variant->path)) {
-                $variant->processed = true;
-                $variant->size      = filesize($variant->path);
-            }
         }
     }
 }

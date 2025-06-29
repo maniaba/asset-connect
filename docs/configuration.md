@@ -94,9 +94,9 @@ use Maniaba\FileConnect\AssetCollection\AssetVariants;
 use Maniaba\FileConnect\Enums\AssetExtension;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionSetterInterface;
-use Maniaba\FileConnect\Interfaces\Asset\FileVariantInterface;
+use Maniaba\FileConnect\Interfaces\Asset\AssetVariantsInterface;
 
-class SingleImageCollection implements AssetCollectionDefinitionInterface, FileVariantInterface
+class SingleImageCollection implements AssetCollectionDefinitionInterface, AssetVariantsInterface
 {
     public function definition(AssetCollectionSetterInterface $definition): void
     {
@@ -131,10 +131,10 @@ use Maniaba\FileConnect\Enums\AssetExtension;
 use Maniaba\FileConnect\Enums\AssetMimeType;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionSetterInterface;
-use Maniaba\FileConnect\Interfaces\Asset\FileVariantInterface;
+use Maniaba\FileConnect\Interfaces\Asset\AssetVariantsInterface;
 use Maniaba\FileConnect\PathGenerator\CustomPathGenerator;
 
-class ProfilePicturesCollection implements AssetCollectionDefinitionInterface, FileVariantInterface
+class ProfilePicturesCollection implements AssetCollectionDefinitionInterface, AssetVariantsInterface
 {
     public function definition(AssetCollectionSetterInterface $definition): void
     {

@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Maniaba\FileConnect\AssetCollection;
 
+use Closure;
 use Maniaba\FileConnect\Asset\Asset;
 use Maniaba\FileConnect\Asset\AssetVariant;
-use Maniaba\FileConnect\Exceptions\FileVariantException;
+use Maniaba\FileConnect\Interfaces\AssetCollection\CreateAssetVariantsInterface;
 
-final class AssetVariants
+final class AssetVariants implements CreateAssetVariantsInterface
 {
+    public bool $onQueue = false;
+
     public function __construct(
         private readonly string $storagePath,
         private readonly Asset $asset,
@@ -17,31 +20,14 @@ final class AssetVariants
     }
 
     /**
-     * @throws FileVariantException
+     * {@inheritDoc}
      */
-    public function writeFile(string $name, string $data, string $mode = 'wb'): bool
-    {
-        helper('filesystem');
-        $variant = $this->assetVariant($name);
-
-        if (! write_file($variant->path, $data, $mode)) {
-            throw new FileVariantException("Failed to write file to path: {$variant->path}");
-        }
-
-        // Update the size of the variant after writing
-        $variant->size      = file_exists($variant->path) ? filesize($variant->path) : 0;
-        $variant->processed = true;
-
-        return true;
-    }
-
-    /**
-     * Get the file path for a given variant name, then you can use this path to write the file.
-     */
-    public function assetVariant(string $name): AssetVariant
+    public function assetVariant(string $name, Closure $closure): AssetVariant
     {
         $fileNameWithoutExtension = pathinfo($this->asset->file_name, PATHINFO_FILENAME);
-        $variantFileName          = $fileNameWithoutExtension . '-' . $name . '.' . $this->asset->extension;
+        $fileExtension            = pathinfo($this->asset->file_name, PATHINFO_EXTENSION);
+
+        $variantFileName = $fileNameWithoutExtension . '-' . $name . '.' . $fileExtension;
 
         $variant = new AssetVariant([
             'name'      => $name,

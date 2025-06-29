@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Maniaba\FileConnect\Asset;
 
 use CodeIgniter\Entity\Entity;
+use Maniaba\FileConnect\Exceptions\FileVariantException;
 
 /**
  * @property string $name
@@ -24,4 +25,22 @@ final class AssetVariant extends Entity
         'size'      => 'int',
         'processed' => 'bool',
     ];
+
+    /**
+     * @throws FileVariantException
+     */
+    public function writeFile(string $data, string $mode = 'wb'): bool
+    {
+        helper('filesystem');
+
+        if (! write_file($this->path, $data, $mode)) {
+            throw new FileVariantException("Failed to write file to path: {$this->path}");
+        }
+
+        // Update the size of the variant after writing
+        $this->size      = file_exists($this->path) ? filesize($this->path) : 0;
+        $this->processed = true;
+
+        return true;
+    }
 }
