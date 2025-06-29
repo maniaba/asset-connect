@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Maniaba\FileConnect\Traits;
 
+use Closure;
 use Maniaba\FileConnect\AssetConnect;
+use Maniaba\FileConnect\Models\AssetModel;
 use RuntimeException;
 
 trait UseAssetConnectModelTrait
@@ -27,5 +29,17 @@ trait UseAssetConnectModelTrait
     protected function triggerModelAfterFindAssetConnect(array $data): array
     {
         return $this->assetConnectInstance->triggerModelAfterFind($data);
+    }
+
+    /**
+     * Filter assets associated with this entity using a closure.
+     *
+     * @param Closure(AssetModel $model): void $filter A closure that takes an Asset and returns a boolean indicating whether to keep the asset.
+     */
+    public function filterAssets(Closure $filter): static
+    {
+        $filter($this->assetConnectInstance->assetModel);
+
+        return $this;
     }
 }

@@ -10,10 +10,33 @@ use Maniaba\FileConnect\Asset\AssetAdder;
 use Maniaba\FileConnect\AssetConnect;
 use Maniaba\FileConnect\Exceptions\AssetException;
 use Maniaba\FileConnect\Exceptions\FileException;
+use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Interfaces\AssetCollection\SetupAssetCollection;
 
 trait UseAssetConnectTrait
 {
+    private AssetConnect $assetConnect;
+
+    /**
+     * Initialize the asset connection for this entity
+     *
+     * This method should be called in the constructor of the entity to set up the asset connection.
+     */
+    public function loadAssetConnect(AssetConnect $assetConnect): void
+    {
+        $this->assetConnect = $assetConnect;
+    }
+
+    /**
+     * Get the asset connection for this entity
+     *
+     * @return AssetConnect|null Returns the asset connection if it exists, otherwise null
+     */
+    public function assetConnect(): ?AssetConnect
+    {
+        return $this->assetConnect ?? null;
+    }
+
     /**
      * Setup the asset connection for this entity
      *
@@ -49,15 +72,13 @@ trait UseAssetConnectTrait
     /**
      * Get all assets associated with this entity
      *
-     * @param string|null $collection The collection to get assets from
+     * @param class-string<AssetCollectionDefinitionInterface>|null $collection The collection to get assets from
      *
-     * @return array|Asset An array of assets or a single asset
+     * @return list<Asset> An array of assets or a single asset
      */
-    final public function getAssets(?string $collection = null): array|Asset
+    final public function getAssets(?string $collection = null): array
     {
-        $assetConnect = new AssetConnect();
-
-        return $assetConnect->getAssetsForEntity($this, $collection);
+        return $this->assetConnect->getAssetsForEntity($this, $collection);
     }
 
     /**

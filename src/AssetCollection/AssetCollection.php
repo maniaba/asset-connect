@@ -10,6 +10,7 @@ use Maniaba\FileConnect\Enums\AssetVisibility;
 use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionGetterInterface;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionSetterInterface;
+use Maniaba\FileConnect\Interfaces\Asset\AuthorizableAssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\PathGenerator\PathGeneratorInterface;
 use Maniaba\FileConnect\Utils\PhpIni;
 
@@ -39,10 +40,19 @@ final class AssetCollection implements AssetCollectionSetterInterface, AssetColl
 
     private PathGeneratorInterface $pathGenerator;
 
-    public function __construct(
-        private readonly SetupAssetCollection $setupAssetCollection,
+    private function __construct(
+        public readonly SetupAssetCollection $setupAssetCollection,
     ) {
         $this->setMaxFileSize(PhpIni::uploadMaxFilesizeBytes());
+
+        // Make changes to the collection definition
+        $definition = $this->setupAssetCollection->getCollectionDefinition();
+
+        $definition->definition($this);
+        // If the collection implements AuthorizableAssetCollectionDefinitionInterface, use the private path
+        if ($definition instanceof AuthorizableAssetCollectionDefinitionInterface) {
+            $this->setVisibility(AssetVisibility::PROTECTED);
+        }
     }
 
     public function setPathGenerator(PathGeneratorInterface $pathGenerator): static
@@ -194,5 +204,17 @@ final class AssetCollection implements AssetCollectionSetterInterface, AssetColl
     public function getVisibility(): AssetVisibility
     {
         return $this->visibility;
+    }
+
+    /**
+     * Create a new AssetCollection instance.
+     *
+     * @param SetupAssetCollection $setupAssetCollection The setup asset collection.
+     *
+     * @throws InvalidArgumentException If the collection definition is not a valid class or interface.
+     */
+    public static function create(SetupAssetCollection $setupAssetCollection): static
+    {
+        return new AssetCollection($setupAssetCollection);
     }
 }

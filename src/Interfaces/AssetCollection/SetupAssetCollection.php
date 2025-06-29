@@ -7,7 +7,7 @@ namespace Maniaba\FileConnect\Interfaces\AssetCollection;
 use Closure;
 use CodeIgniter\Model;
 use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionInterface;
+use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\PathGenerator\PathGeneratorInterface;
 
 interface SetupAssetCollection
@@ -15,11 +15,11 @@ interface SetupAssetCollection
     /**
      * Set the definition of the asset collection for this entity.
      *
-     * @param AssetCollectionInterface|class-string<AssetCollectionInterface> $collectionDefinition
+     * @param AssetCollectionDefinitionInterface|class-string<AssetCollectionDefinitionInterface> $collectionDefinition
      *
      * @throws InvalidArgumentException if the provided class does not implement AssetCollectionInterface
      */
-    public function setCollectionDefinition(AssetCollectionInterface|string $collectionDefinition): static;
+    public function setCollectionDefinition(AssetCollectionDefinitionInterface|string $collectionDefinition): static;
 
     /**
      * Set the path generator for the asset collection.

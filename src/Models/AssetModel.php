@@ -40,4 +40,322 @@ final class AssetModel extends BaseModel
     {
         return 'assets';
     }
+
+    /**
+     * Filter assets by name
+     *
+     * @param string $name The name to filter by
+     *
+     * @return $this
+     */
+    public function filterByName(string $name): self
+    {
+        return $this->where('name', $name);
+    }
+
+    /**
+     * Filter assets by file name
+     *
+     * @param string $fileName The file name to filter by
+     *
+     * @return $this
+     */
+    public function filterByFileName(string $fileName): self
+    {
+        return $this->where('file_name', $fileName);
+    }
+
+    /**
+     * Filter assets by MIME type
+     *
+     * @param string $mimeType The MIME type to filter by
+     *
+     * @return $this
+     */
+    public function filterByMimeType(string $mimeType): self
+    {
+        return $this->where('mime_type', $mimeType);
+    }
+
+    /**
+     * Filter assets by size
+     *
+     * @param int    $size     The size to filter by
+     * @param string $operator Comparison operator (=, >, <, >=, <=)
+     *
+     * @return $this
+     */
+    public function filterBySize(int $size, string $operator = '='): self
+    {
+        return $this->where('size ' . $operator, $size);
+    }
+
+    /**
+     * Filter assets by path
+     *
+     * @param string $path The path to filter by
+     *
+     * @return $this
+     */
+    public function filterByPath(string $path): self
+    {
+        return $this->where('path', $path);
+    }
+
+    /**
+     * Filter assets by order
+     *
+     * @param int $order The order to filter by
+     *
+     * @return $this
+     */
+    public function filterByOrder(int $order): self
+    {
+        return $this->where('order', $order);
+    }
+
+    /**
+     * Get the current database platform/driver
+     *
+     * CodeIgniter 4 supports multiple database drivers:
+     * - MySQLi
+     * - Postgre
+     * - SQLite3
+     * - SQLSRV
+     * - OCI8 (Oracle)
+     *
+     * @return string The database platform/driver name
+     */
+    protected function getDatabasePlatform(): string
+    {
+        return $this->db->getPlatform();
+    }
+
+    /**
+     * Filter assets by properties (JSON column)
+     *
+     * This method adapts to different database drivers:
+     * - MySQLi: Uses JSON_EXTRACT function
+     * - Postgre: Uses the -> operator for JSON path navigation
+     * - SQLite3: Uses json_extract function
+     * - SQLSRV: Uses JSON_VALUE function
+     * - Others: Falls back to LIKE comparison (less efficient)
+     *
+     * @param string $key      The JSON key to filter by (can use dot notation for nested properties)
+     * @param mixed  $value    The value to filter by
+     * @param string $operator Comparison operator (=, >, <, >=, <=, LIKE, etc.)
+     *
+     * @return $this
+     */
+    public function filterByProperty(string $key, $value, string $operator = '='): self
+    {
+        $platform = $this->getDatabasePlatform();
+
+        // For nested properties, we need to construct the proper JSON path
+        // Convert dot notation (e.g., 'user.name') to JSON path ($.user.name)
+        $jsonPath = '$.' . $key;
+
+        switch ($platform) {
+            case 'MySQLi':
+                // MySQL syntax
+                return $this->where("JSON_EXTRACT(properties, '{$jsonPath}') {$operator}", $value);
+
+            case 'Postgre':
+                // PostgreSQL syntax
+                $path = str_replace('.', '->', $key);
+
+                return $this->where("properties->'{$path}' {$operator}", $value);
+
+            case 'SQLite3':
+                // SQLite syntax
+                return $this->where("json_extract(properties, '{$jsonPath}') {$operator}", $value);
+
+            case 'SQLSRV':
+                // SQL Server syntax
+                $path = '$.' . $key;
+
+                return $this->where("JSON_VALUE(properties, '{$path}') {$operator}", $value);
+
+            default:
+                // Fallback to string-based comparison (less efficient but more compatible)
+                return $this->where('properties LIKE ?', '%"' . $key . '":' . json_encode($value) . '%');
+        }
+    }
+
+    /**
+     * Filter assets by checking if a JSON property exists
+     *
+     * This method adapts to different database drivers:
+     * - MySQLi: Uses JSON_CONTAINS_PATH function
+     * - Postgre: Uses the ? operator to check for key existence
+     * - SQLite3: Checks if json_extract result IS NOT NULL
+     * - SQLSRV: Checks if JSON_VALUE result IS NOT NULL
+     * - Others: Falls back to LIKE comparison (less efficient)
+     *
+     * @param string $key The JSON key to check for existence (can use dot notation for nested properties)
+     *
+     * @return $this
+     */
+    public function filterByPropertyExists(string $key): self
+    {
+        $platform = $this->getDatabasePlatform();
+
+        // For nested properties, we need to construct the proper JSON path
+        // Convert dot notation (e.g., 'user.name') to JSON path ($.user.name)
+        $jsonPath = '$.' . $key;
+
+        switch ($platform) {
+            case 'MySQLi':
+                // MySQL syntax
+                return $this->where("JSON_CONTAINS_PATH(properties, 'one', '{$jsonPath}') = 1");
+
+            case 'Postgre':
+                // PostgreSQL syntax
+                $path = str_replace('.', '->', $key);
+
+                return $this->where("properties ? '{$path}'");
+
+            case 'SQLite3':
+                // SQLite syntax
+                return $this->where("json_extract(properties, '{$jsonPath}') IS NOT NULL");
+
+            case 'SQLSRV':
+                // SQL Server syntax
+                $path = '$.' . $key;
+
+                return $this->where("JSON_VALUE(properties, '{$path}') IS NOT NULL");
+
+            default:
+                // Fallback to string-based comparison (less efficient but more compatible)
+                return $this->where('properties LIKE ?', '%"' . $key . '"%');
+        }
+    }
+
+    /**
+     * Filter assets by JSON array containing a specific value
+     *
+     * This method adapts to different database drivers:
+     * - MySQLi: Uses JSON_CONTAINS with JSON_EXTRACT
+     * - Postgre: Uses the @> operator for JSON containment
+     * - SQLite3: Limited support, falls back to LIKE comparison
+     * - SQLSRV: Uses JSON_QUERY with LIKE comparison
+     * - Others: Falls back to LIKE comparison (less efficient)
+     *
+     * @param string $arrayKey The JSON array key (can use dot notation for nested arrays)
+     * @param mixed  $value    The value to check for in the array
+     *
+     * @return $this
+     */
+    public function filterByPropertyContains(string $arrayKey, $value): self
+    {
+        $platform     = $this->getDatabasePlatform();
+        $encodedValue = json_encode($value);
+
+        // For nested properties, we need to construct the proper JSON path
+        // Convert dot notation (e.g., 'user.tags') to JSON path ($.user.tags)
+        $jsonPath = '$.' . $arrayKey;
+
+        switch ($platform) {
+            case 'MySQLi':
+                // MySQL syntax
+                return $this->where("JSON_CONTAINS(JSON_EXTRACT(properties, '{$jsonPath}'), ?)", $encodedValue);
+
+            case 'Postgre':
+                // PostgreSQL syntax
+                $path = str_replace('.', '->', $arrayKey);
+
+                return $this->where("properties->'{$path}' @> ?::jsonb", $encodedValue);
+
+            case 'SQLite3':
+                // SQLite syntax - limited support, fallback to string comparison
+                return $this->where("json_extract(properties, '{$jsonPath}') LIKE ?", '%' . $value . '%');
+
+            case 'SQLSRV':
+                // SQL Server syntax
+                $path = '$.' . $arrayKey;
+
+                return $this->where("JSON_QUERY(properties, '{$path}') LIKE ?", '%' . $value . '%');
+
+            default:
+                // Fallback to string-based comparison (less efficient but more compatible)
+                return $this->where('properties LIKE ?', '%"' . $arrayKey . '"%' . $value . '%');
+        }
+    }
+
+    /**
+     * Filter assets by creation date
+     *
+     * @param string $date     The date to filter by (in format matching dateFormat)
+     * @param string $operator Comparison operator (=, >, <, >=, <=)
+     *
+     * @return $this
+     */
+    public function filterByCreatedAt(string $date, string $operator = '='): self
+    {
+        return $this->where('created_at ' . $operator, $date);
+    }
+
+    /**
+     * Filter assets by update date
+     *
+     * @param string $date     The date to filter by (in format matching dateFormat)
+     * @param string $operator Comparison operator (=, >, <, >=, <=)
+     *
+     * @return $this
+     */
+    public function filterByUpdatedAt(string $date, string $operator = '='): self
+    {
+        return $this->where('updated_at ' . $operator, $date);
+    }
+
+    /**
+     * Filter assets by name pattern (using LIKE)
+     *
+     * @param string $pattern The pattern to search for
+     *
+     * @return $this
+     */
+    public function filterByNameLike(string $pattern): self
+    {
+        return $this->like('name', $pattern);
+    }
+
+    /**
+     * Filter assets by file name pattern (using LIKE)
+     *
+     * @param string $pattern The pattern to search for
+     *
+     * @return $this
+     */
+    public function filterByFileNameLike(string $pattern): self
+    {
+        return $this->like('file_name', $pattern);
+    }
+
+    /**
+     * Filter assets by size range
+     *
+     * @param int $minSize The minimum size
+     * @param int $maxSize The maximum size
+     *
+     * @return $this
+     */
+    public function filterBySizeRange(int $minSize, int $maxSize): self
+    {
+        return $this->where('size >=', $minSize)->where('size <=', $maxSize);
+    }
+
+    /**
+     * Filter assets by date range
+     *
+     * @param string $startDate The start date (in format matching dateFormat)
+     * @param string $endDate   The end date (in format matching dateFormat)
+     * @param string $dateField The date field to filter by (created_at or updated_at)
+     *
+     * @return $this
+     */
+    public function filterByDateRange(string $startDate, string $endDate, string $dateField = 'created_at'): self
+    {
+        return $this->where($dateField . ' >=', $startDate)->where($dateField . ' <=', $endDate);
+    }
 }

@@ -4,54 +4,39 @@ declare(strict_types=1);
 
 namespace Maniaba\FileConnect\Asset;
 
-use CodeIgniter\Database\BaseBuilder;
+use CodeIgniter\Entity\Entity;
 use CodeIgniter\Files\File;
 use CodeIgniter\HTTP\Files\UploadedFile;
+use CodeIgniter\I18n\Time;
 use Maniaba\FileConnect\AssetCollection\AssetCollection;
 use Maniaba\FileConnect\AssetCollection\FileVariants;
 use Maniaba\FileConnect\AssetCollection\SetupAssetCollection;
-use Maniaba\FileConnect\Enums\AssetVisibility;
 use Maniaba\FileConnect\Exceptions\AssetException;
 use Maniaba\FileConnect\Exceptions\FileException;
 use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionInterface;
-use Maniaba\FileConnect\Interfaces\Asset\AuthorizableAssetCollectionInterface;
 use Maniaba\FileConnect\Interfaces\Asset\FileVariantInterface;
 use Maniaba\FileConnect\Models\AssetModel;
 use Maniaba\FileConnect\PathGenerator\PathGenerator;
 use Maniaba\FileConnect\PathGenerator\PathGeneratorFactory;
+use Maniaba\FileConnect\Traits\UseAssetConnectTrait;
 use Throwable;
 
 final class AssetStorageHandler
 {
-    private readonly AssetCollection $collection;
     private readonly PathGenerator $pathGenerator;
     private string $storePath;
+    private readonly AssetCollection $collection;
 
     public function __construct(
+        /** @var Entity&UseAssetConnectTrait $subjectEntity The entity to which the asset is being added */
+        private Entity $subjectEntity,
         private Asset $asset,
-        private AssetCollectionInterface|string $collectionDefinition,
         private readonly SetupAssetCollection $setupAssetCollection,
     ) {
-        if (! is_subclass_of($collectionDefinition, AssetCollectionInterface::class)) {
-            throw new InvalidArgumentException(sprintf(
-                'Expected a class implementing %s, got %s',
-                AssetCollectionInterface::class,
-                $collectionDefinition,
-            ));
-        }
+        $this->collection = AssetCollection::create($this->setupAssetCollection);
 
-        if (is_string($collectionDefinition)) {
-            $this->collectionDefinition = new $collectionDefinition();
-        }
-
-        // Create a new AssetCollection to store the definition
-        $this->collection = new AssetCollection($this->setupAssetCollection);
-
-        // Call the definition method on the collection to set up validation rules
-        $this->collectionDefinition->definition($this->collection);
         // Set the collection name
-        $this->asset->collection = $this->collectionDefinition;
+        $this->asset->collection = $this->setupAssetCollection->getCollectionDefinition();
     }
 
     /**
@@ -128,11 +113,6 @@ final class AssetStorageHandler
      */
     private function initializePathGenerator(): void
     {
-        // If the collection implements AuthorizableAssetCollectionInterface, use the private path
-        if ($this->collectionDefinition instanceof AuthorizableAssetCollectionInterface) {
-            $this->collection->setVisibility(AssetVisibility::PROTECTED);
-        }
-
         // Ensure the collection has a valid visibility before passing it to the path generator
         $this->pathGenerator = PathGeneratorFactory::create($this->collection);
     }
@@ -189,6 +169,17 @@ final class AssetStorageHandler
         }
 
         $this->asset->id = $model->insertID();
+
+        $this->asset->created_at = Time::now();
+        $this->asset->updated_at = Time::now();
+
+        unset($this->asset->file); // Unset the file property unless you need it later
+
+        // If the asset was saved, we can now connect it to the entity
+        $autoConnectInstance = $this->subjectEntity->assetConnect();
+        if ($autoConnectInstance !== null) {
+            $autoConnectInstance->addAsset($this->asset);
+        }
     }
 
     /**
@@ -196,7 +187,7 @@ final class AssetStorageHandler
      */
     private function processFileVariants(): void
     {
-        if ($this->collectionDefinition instanceof FileVariantInterface) {
+        if ($this->setupAssetCollection->getCollectionDefinition() instanceof FileVariantInterface) {
             $variants = new FileVariants();
             // $this->collectionDefinition->variants($variants, $this->asset);
         }
@@ -255,9 +246,8 @@ final class AssetStorageHandler
         }
 
         // Get the AssetModel
-        $model    = model(AssetModel::class, false);
-        $idsQuery = model(AssetModel::class, false)
-            ->select('id')
+        $model = model(AssetModel::class, false);
+        $ids   = model(AssetModel::class, false)
             ->where([
                 'collection'  => $this->asset->collection,
                 'entity_type' => $this->asset->entity_type,
@@ -266,9 +256,21 @@ final class AssetStorageHandler
             ])->orderBy('created_at', 'DESC')
             ->limit(2147483647) // Use a large limit to get all assets in the collection, int max is 2147483647 for best compatibility
             ->offset($maxItems) // Skip the newest $maxItems (which we want to keep)
-            ->builder();
+            ->findColumn('id');
+
+        if (in_array($ids, [null, []], true)) {
+            // No assets to delete, return early
+            return;
+        }
 
         // Files from storage will be deleted in queue, so we can safely delete them from the database
-        $model->whereIn('id', static fn (BaseBuilder $builder) => $builder->fromSubquery($idsQuery, 'subquery'))->delete();
+        $model->whereIn('id', $ids)->delete();
+
+        $autoConnectInstance = $this->subjectEntity->assetConnect();
+        if ($autoConnectInstance !== null) {
+            foreach ($ids as $id) {
+                $autoConnectInstance->removeAssetById((int) $id);
+            }
+        }
     }
 }

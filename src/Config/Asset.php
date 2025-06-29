@@ -6,7 +6,7 @@ namespace Maniaba\FileConnect\Config;
 
 use CodeIgniter\Config\BaseConfig;
 use Maniaba\FileConnect\AssetCollection\DefaultAssetCollection;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionInterface;
+use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\PathGenerator\DefaultPathGenerator;
 use Maniaba\FileConnect\PathGenerator\PathGeneratorInterface;
 
@@ -28,7 +28,7 @@ class Asset extends BaseConfig
      *
      * You can change this to any class that implements the AssetCollectionInterface.
      *
-     * @var class-string<AssetCollectionInterface>
+     * @var class-string<AssetCollectionDefinitionInterface>
      */
     public string $defaultCollection = DefaultAssetCollection::class;
 

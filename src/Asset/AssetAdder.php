@@ -11,7 +11,8 @@ use CodeIgniter\HTTP\Files\UploadedFile;
 use Maniaba\FileConnect\AssetCollection\SetupAssetCollection;
 use Maniaba\FileConnect\Exceptions\AssetException;
 use Maniaba\FileConnect\Exceptions\FileException;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionInterface;
+use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
+use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Traits\UseAssetConnectTrait;
 use Throwable;
 
@@ -38,12 +39,13 @@ final class AssetAdder
             throw AssetException::forInvalidEntity($this->entity);
         }
 
-        $this->setFile($file);
-
         // Initialize the SetupAssetCollection instance
         $this->setupAssetCollection = new SetupAssetCollection();
         $this->entity->setupAssetConnect($this->setupAssetCollection);
         $this->fileNameSanitizer = $this->setupAssetCollection->getFileNameSanitizer(...);
+
+        // Set the file for the asset, after setting up the collection
+        $this->setFile($file);
     }
 
     private function setFile(File|string|UploadedFile $file)
@@ -159,22 +161,22 @@ final class AssetAdder
     /**
      * Store the asset in the specified collection
      *
-     * @param AssetCollectionInterface|string|null $collection The collection to store the asset in
+     * @param AssetCollectionDefinitionInterface|string|null $collection The collection to store the asset in
      *
      * @return Asset The stored asset
      *
-     * @throws AssetException|FileException|Throwable
+     * @throws AssetException|FileException|InvalidArgumentException|Throwable
      */
-    public function toAssetCollection(AssetCollectionInterface|string|null $collection = null): Asset
+    public function toAssetCollection(AssetCollectionDefinitionInterface|string|null $collection = null): Asset
     {
-        if ($collection === null) {
-            $collection = $this->setupAssetCollection->getCollectionDefinition();
-        }
-
         $this->asset->file_name = ($this->fileNameSanitizer)($this->asset->file_name);
         $this->asset->name      = ($this->fileNameSanitizer)($this->asset->name);
 
-        $storageHandler = new AssetStorageHandler($this->asset, $collection, $this->setupAssetCollection);
+        if ($collection !== null) {
+            $this->setupAssetCollection->setCollectionDefinition($collection);
+        }
+
+        $storageHandler = new AssetStorageHandler($this->entity, $this->asset, $this->setupAssetCollection);
 
         // Store the asset and return it
         $asset = $storageHandler->store();

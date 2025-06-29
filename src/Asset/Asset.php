@@ -9,7 +9,8 @@ use CodeIgniter\Files\File;
 use CodeIgniter\HTTP\Files\UploadedFile;
 use CodeIgniter\I18n\Time;
 use InvalidArgumentException;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionInterface;
+use Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory;
+use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
 
 /**
  * @property      string            $collection   name of the collection to which the asset belongs (md5 hash of the class name)
@@ -54,12 +55,19 @@ final class Asset extends Entity
         return $this;
     }
 
-    public function setCollection(AssetCollectionInterface|string $collection): static
+    /**
+     * Set the file associated with the asset.
+     *
+     * @param File|string|UploadedFile $file The file to associate with the asset.
+     *
+     * @throws InvalidArgumentException If the file is not a valid File or UploadedFile instance, or $collection is not valid string
+     */
+    public function setCollection(AssetCollectionDefinitionInterface|string $collection): static
     {
-        if ($collection instanceof AssetCollectionInterface) {
+        if ($collection instanceof AssetCollectionDefinitionInterface) {
             $collection = $collection::class;
-        } elseif (! class_exists($collection) || ! is_subclass_of($collection, AssetCollectionInterface::class)) {
-            throw new InvalidArgumentException('Collection must be a valid AssetCollectionInterface class or instance.');
+        } else {
+            AssetCollectionDefinitionFactory::validateStringClass($collection);
         }
 
         $this->attributes['collection'] = md5($collection);

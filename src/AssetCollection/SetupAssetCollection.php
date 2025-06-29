@@ -10,13 +10,13 @@ use CodeIgniter\Model;
 use Maniaba\FileConnect\Config\Asset;
 use Maniaba\FileConnect\Exceptions\AssetException;
 use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionInterface;
+use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Interfaces\AssetCollection\SetupAssetCollection as SetupAssetCollectionInterface;
 use Maniaba\FileConnect\PathGenerator\PathGeneratorInterface;
 
 final class SetupAssetCollection implements SetupAssetCollectionInterface
 {
-    private AssetCollectionInterface $collectionDefinition;
+    private AssetCollectionDefinitionInterface $collectionDefinition;
     private PathGeneratorInterface $pathGenerator;
 
     /**
@@ -43,19 +43,15 @@ final class SetupAssetCollection implements SetupAssetCollectionInterface
 
     /**
      *  Set the definition of the asset collection for this entity
+     *
+     * * @param AssetCollectionDefinitionInterface|class-string<AssetCollectionDefinitionInterface> $collectionDefinition
+     *
+     * @throws InvalidArgumentException if the provided class does not implement AssetCollectionDefinitionInterface
      */
-    public function setCollectionDefinition(AssetCollectionInterface|string $collectionDefinition): static
+    public function setCollectionDefinition(AssetCollectionDefinitionInterface|string $collectionDefinition, ...$args): static
     {
         if (is_string($collectionDefinition)) {
-            if (! class_exists($collectionDefinition) || ! is_subclass_of($collectionDefinition, AssetCollectionInterface::class)) {
-                throw new InvalidArgumentException(sprintf(
-                    'Expected a class implementing %s, got %s',
-                    AssetCollectionInterface::class,
-                    $collectionDefinition,
-                ));
-            }
-
-            $collectionDefinition = new $collectionDefinition();
+            $collectionDefinition = AssetCollectionDefinitionFactory::create($collectionDefinition, ...$args);
         }
 
         $this->collectionDefinition = $collectionDefinition;
@@ -108,22 +104,15 @@ final class SetupAssetCollection implements SetupAssetCollectionInterface
         return $this->pathGenerator;
     }
 
-    public function getCollectionDefinition(): AssetCollectionInterface
+    /**
+     * Get the collection definition for this Entity's asset collection.
+     *
+     * @throws InvalidArgumentException if the collection definition class does not implement AssetCollectionDefinitionInterface
+     */
+    public function getCollectionDefinition(): AssetCollectionDefinitionInterface
     {
         if (! isset($this->collectionDefinition)) {
-            $collectionDefinitionClass = $this->config->defaultCollection;
-
-            if (! class_exists($collectionDefinitionClass) || ! is_subclass_of($collectionDefinitionClass, AssetCollectionInterface::class)) {
-                $error = sprintf(
-                    'Default collection class %s does not exist or does not implement %s.',
-                    $collectionDefinitionClass,
-                    AssetCollectionInterface::class,
-                );
-
-                throw new InvalidArgumentException($error, $error, 500);
-            }
-
-            $this->collectionDefinition = new $collectionDefinitionClass();
+            $this->collectionDefinition = AssetCollectionDefinitionFactory::create($this->config->defaultCollection);
         }
 
         return $this->collectionDefinition;

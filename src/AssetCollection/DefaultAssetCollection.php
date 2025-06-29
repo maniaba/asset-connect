@@ -9,11 +9,11 @@ use Config\Services;
 use Maniaba\FileConnect\Asset\Asset;
 use Maniaba\FileConnect\Enums\AssetExtension;
 use Maniaba\FileConnect\Enums\AssetMimeType;
+use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionSetterInterface;
-use Maniaba\FileConnect\Interfaces\Asset\AuthorizableAssetCollectionInterface;
 use Maniaba\FileConnect\Interfaces\Asset\FileVariantInterface;
 
-final class DefaultAssetCollection implements AuthorizableAssetCollectionInterface, FileVariantInterface
+final class DefaultAssetCollection implements AssetCollectionDefinitionInterface, FileVariantInterface
 {
     public function definition(AssetCollectionSetterInterface $definition): void
     {
