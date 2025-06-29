@@ -299,26 +299,72 @@ class SecureDocumentsCollection implements AuthorizableAssetCollectionDefinition
 }
 ```
 
+### AssetExtension
+
+```php
+use Maniaba\FileConnect\Enums\AssetExtension;
+
+// Available file extensions (examples)
+AssetExtension::JPG;  // 'jpg'
+AssetExtension::PNG;  // 'png'
+AssetExtension::PDF;  // 'pdf'
+AssetExtension::MP4;  // 'mp4'
+
+// Get all extensions of a specific category
+$imageExtensions = AssetExtension::images(); // Returns array of image extension enums
+$documentExtensions = AssetExtension::documents(); // Returns array of document extension enums
+$videoExtensions = AssetExtension::videos(); // Returns array of video extension enums
+
+// Get more specific subcategories
+$vectorGraphics = AssetExtension::vectorGraphics(); // SVG, AI, EPS, CDR
+$rasterGraphics = AssetExtension::rasterGraphics(); // JPG, PNG, GIF, etc.
+$spreadsheets = AssetExtension::spreadsheets(); // XLS, XLSX, ODS, CSV
+$presentations = AssetExtension::presentations(); // PPT, PPTX, ODP
+```
+
 ### AssetMimeType
 
 ```php
 use Maniaba\FileConnect\Enums\AssetMimeType;
 
 // Available mime types (examples)
-AssetMimeType::IMAGE_JPEG; // 'image/jpeg'
-AssetMimeType::PDF; // 'application/pdf'
-AssetMimeType::VIDEO_MP4; // 'video/mp4'
+AssetMimeType::IMAGE_JPEG;         // 'image/jpeg'
+AssetMimeType::APPLICATION_PDF;    // 'application/pdf'
+AssetMimeType::VIDEO_MP4;          // 'video/mp4'
+AssetMimeType::AUDIO_MP3;          // 'audio/mpeg'
+AssetMimeType::APPLICATION_ZIP;    // 'application/zip'
 
 // Get the file extension for a mime type
 $extension = AssetMimeType::getExtension(AssetMimeType::IMAGE_JPEG); // 'jpg'
+$extension = AssetMimeType::getMimeTypeExtension(AssetMimeType::IMAGE_JPEG); // 'jpg' (alternative method)
 
-// Check if a mime type is an image
+// Check if a mime type belongs to a specific category
 if (AssetMimeType::isImage(AssetMimeType::IMAGE_JPEG)) {
     // Do something with the image
+}
+if (AssetMimeType::isDocument(AssetMimeType::APPLICATION_PDF)) {
+    // Do something with the document
+}
+if (AssetMimeType::isVideo(AssetMimeType::VIDEO_MP4)) {
+    // Do something with the video
+}
+if (AssetMimeType::isAudio(AssetMimeType::AUDIO_MP3)) {
+    // Do something with the audio
+}
+
+// More specific category checks
+if (AssetMimeType::isVectorGraphic(AssetMimeType::IMAGE_SVG)) {
+    // Do something with the vector graphic
+}
+if (AssetMimeType::isSpreadsheet(AssetMimeType::APPLICATION_XLSX)) {
+    // Do something with the spreadsheet
 }
 
 // Get a mime type from a file extension
 $mimeType = AssetMimeType::fromExtension('jpg'); // 'image/jpeg'
+
+// Get a mime type from an AssetExtension enum
+$mimeType = AssetMimeType::fromAssetExtension(AssetExtension::JPG); // 'image/jpeg'
 ```
 
 ## Advanced Usage
