@@ -193,25 +193,6 @@ $user->deleteAssets(ImagesCollection::class);
 
 The library provides several enums for working with assets:
 
-### AssetCollectionType
-
-```php
-use Maniaba\FileConnect\Enums\AssetCollectionType;
-
-// Available collection types
-AssetCollectionType::DEFAULT; // 'default'
-AssetCollectionType::IMAGES; // 'images'
-AssetCollectionType::VIDEOS; // 'videos'
-AssetCollectionType::DOCUMENTS; // 'documents'
-AssetCollectionType::DOWNLOADS; // 'downloads'
-AssetCollectionType::UPLOADS; // 'uploads'
-
-// Get the display name of a collection type
-$displayName = AssetCollectionType::displayName(AssetCollectionType::IMAGES); // 'Images'
-
-// Get all collection types as an array
-$types = AssetCollectionType::toArray();
-```
 
 ### Secure Asset Storage
 
