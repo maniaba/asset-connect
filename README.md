@@ -202,23 +202,37 @@ $displayName = AssetCollectionType::displayName(AssetCollectionType::IMAGES); //
 $types = AssetCollectionType::toArray();
 ```
 
-### AssetDiskType
+### Secure Asset Storage
+
+For secure asset storage, you can implement the `AuthorizableAssetCollectionDefinitionInterface`:
 
 ```php
-use Maniaba\FileConnect\Enums\AssetDiskType;
+use CodeIgniter\Entity\Entity;
+use Maniaba\FileConnect\Asset\Asset;
+use Maniaba\FileConnect\Interfaces\Asset\AuthorizableAssetCollectionDefinitionInterface;
 
-// Available disk types
-AssetDiskType::LOCAL; // 'local'
-AssetDiskType::S3; // 's3'
-AssetDiskType::GOOGLE_CLOUD; // 'google_cloud'
-AssetDiskType::AZURE; // 'azure'
+class SecureDocumentsCollection implements AuthorizableAssetCollectionDefinitionInterface
+{
+    public function definition(AssetCollectionSetterInterface $definition): void
+    {
+        // Configure the collection
+        $definition->allowedMimeTypes('application/pdf', 'application/msword');
+    }
 
-// Get the display name of a disk type
-$displayName = AssetDiskType::S3->displayName(); // 'Amazon S3'
+    public function checkAuthorization(array|Entity $entity, Asset $asset): bool
+    {
+        // Check if the user is authorized to access this asset
+        return $entity->id === $asset->entity_id;
+    }
 
-// Get all disk types as an array
-$types = AssetDiskType::toArray();
+    public function variants(FileVariants $variants, Asset $asset): void
+    {
+        // No variants needed for documents
+    }
+}
 ```
+
+This allows you to store assets in non-public locations (like the "writable" folder) and control access through your controllers.
 
 ### AssetMimeType
 
