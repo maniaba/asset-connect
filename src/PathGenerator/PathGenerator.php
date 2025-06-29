@@ -7,13 +7,13 @@ namespace Maniaba\FileConnect\PathGenerator;
 use Maniaba\FileConnect\AssetCollection\AssetCollection;
 use Maniaba\FileConnect\Exceptions\FileException;
 
-final readonly class PathGenerator
+final class PathGenerator
 {
     private PathGeneratorHelper $helper;
     private PathGeneratorInterface $pathGenerator;
 
     public function __construct(
-        private AssetCollection $collection,
+        private readonly AssetCollection $collection,
     ) {
         $this->helper        = new PathGeneratorHelper();
         $this->pathGenerator = $this->collection->getPathGenerator();
@@ -70,25 +70,7 @@ final readonly class PathGenerator
                 throw new FileException($error, $error, 500);
             }
 
-            // Recrusively create empty index.html file to prevent directory listing
-            $indexFile = $path . DIRECTORY_SEPARATOR . 'index.html';
-
-            if (! file_exists($indexFile) && false === file_put_contents($indexFile, '<!DOCTYPE html><html><head><title>Index</title></head><body></body></html>')) {
-                $error = sprintf('Failed to create index.html in "%s"', $path);
-
-                throw new FileException($error, $error, 500);
-            }
-
-            // create .htaccess file to prevent directory listing
-            $htaccessFile = $path . DIRECTORY_SEPARATOR . '.htaccess';
-            if (! file_exists($htaccessFile)) {
-                $htaccessContent = "Options -Indexes\n";
-                if (false === file_put_contents($htaccessFile, $htaccessContent)) {
-                    $error = sprintf('Failed to create .htaccess in "%s"', $path);
-
-                    throw new FileException($error, $error, 500);
-                }
-            }
+            $this->pathGenerator->onCreatedDirectory($path);
         }
     }
 }

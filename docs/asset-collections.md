@@ -27,15 +27,15 @@ public function definition(AssetCollectionSetterInterface $definition): void;
 
 This method is where you configure the collection using the provided `AssetCollectionSetterInterface` instance. For example, you can specify allowed MIME types, maximum file size, and other settings.
 
-### FileVariantInterface
+### AssetVariantsInterface
 
-The `FileVariantInterface` allows you to define variants of assets, such as thumbnails or resized images. It defines a single method:
+The `AssetVariantsInterface` allows you to define variants of assets, such as thumbnails or resized images. It defines a single method:
 
 ```php
-public function variants(FileVariants $variants, Asset $asset): void;
+public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void;
 ```
 
-This method is called when an asset is added to the collection. You can use the provided `FileVariants` instance to create variants of the asset.
+This method is called when an asset is added to the collection. You can use the provided `CreateAssetVariantsInterface` instance to create variants of the asset.
 
 ### AuthorizableAssetCollectionDefinitionInterface
 
@@ -68,24 +68,29 @@ These methods allow you to:
 - Make the collection hold only a single file
 - Set the path generator for the collection
 
-## FileVariants Class
+## CreateAssetVariantsInterface
 
-The `FileVariants` class provides methods for creating file variants. It's used in the `variants` method of `FileVariantInterface`. It defines the following methods:
+The `CreateAssetVariantsInterface` is implemented by classes that provide methods for creating asset variants. It's used in the `variants` method of `AssetVariantsInterface`. It defines the following method:
 
 ```php
-public function onQueue(?string $queue = null): FileVariants;
-public function writeFile(string $name, string $data, string $mode = 'wb'): bool;
-public function filePath(string $name): string;
+public function assetVariant(string $name, Closure $closure): ?AssetVariant;
 ```
 
-These methods allow you to:
-- Specify a queue for processing variants
-- Write a file variant
-- Get the path for a variant
+This method allows you to create a new asset variant with the given name and closure. The closure receives an `AssetVariant` and an `Asset` and is used to define how to process the variant.
+
+## AssetVariants Class
+
+The `AssetVariants` class implements the `CreateAssetVariantsInterface` and provides methods for creating asset variants. It has a property `onQueue` that can be set to true to indicate that variants should be processed on a queue:
+
+```php
+public bool $onQueue = false;
+```
+
+When `onQueue` is set to true, the variants will be processed asynchronously using a queue job, which can improve performance for large files or complex processing.
 
 ## Creating Custom Asset Collections
 
-To create a custom asset collection, you need to implement the `AssetCollectionDefinitionInterface` and optionally the `FileVariantInterface` and/or `AuthorizableAssetCollectionDefinitionInterface`.
+To create a custom asset collection, you need to implement the `AssetCollectionDefinitionInterface` and optionally the `AssetVariantsInterface` and/or `AuthorizableAssetCollectionDefinitionInterface`.
 
 Here's an example of a custom asset collection that implements all three interfaces:
 
@@ -139,15 +144,25 @@ class ProfilePicturesCollection implements AuthorizableAssetCollectionDefinition
         return $entity->id === $asset->entity_id;
     }
 
-    public function variants(AssetVariants $variants, Asset $asset): void
+    public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void
     {
+        $variants->onQueue = true; // Indicates that file variants should be processed on a queue.
+
         // Create variants of the asset
         // For example, create a thumbnail
         if ($asset->isImage()) {
             // Create a thumbnail variant
-            // This is just a placeholder - in a real application, you would
-            // use an image manipulation library to create the thumbnail
-            $variants->writeFile('thumbnail', 'thumbnail data');
+            $variants->assetVariant('thumbnail', static function (AssetVariant $variant, Asset $asset): void {
+                // Use an image manipulation library to create the thumbnail
+                $imageService = \Config\Services::image();
+                $imageService->withFile($asset->path)
+                    ->fit(300, 300, 'center')
+                    ->text('Thumbnail')
+                    ->save($variant->path);
+
+                // Alternatively, you can use the writeFile method to write the file directly
+                // $variant->writeFile('thumbnail data');
+            });
         }
     }
 }

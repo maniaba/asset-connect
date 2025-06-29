@@ -174,42 +174,63 @@ class ProductImagesCollection extends DefaultAssetCollection
 
 ## Working with Asset Variants
 
-Asset variants allow you to create different versions of the same asset, such as thumbnails or resized images.
+Asset variants allow you to create different versions of the same asset, such as thumbnails or resized images. Asset Connect provides a flexible way to define and process variants through the `AssetVariantsInterface`.
 
-### Creating Asset Variants
+### Defining Asset Variants
 
-You can create variants of an asset using the `createVariant` method:
+You define asset variants in your collection class by implementing the `AssetVariantsInterface` and its `variants` method:
 
 ```php
-$asset = $product->getFirstAsset(ImagesCollection::class);
+public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void
+{
+    $variants->onQueue = true; // Process variants on a queue for better performance
 
-// Create a thumbnail variant
-$thumbnail = $asset->createVariant('thumbnail', function ($file) {
-    // Resize the image to 200x200
-    $image = \Config\Services::image()
-        ->withFile($file)
-        ->resize(200, 200, true)
-        ->save($file);
+    // Create a thumbnail variant for images
+    if ($asset->isImage()) {
+        $variants->assetVariant('thumbnail', static function (AssetVariant $variant, Asset $asset): void {
+            // Use CodeIgniter's image manipulation service
+            $imageService = \Config\Services::image();
+            $imageService->withFile($asset->path)
+                ->fit(300, 300, 'center')
+                ->save($variant->path);
+        });
 
-    return $file;
-});
+        // Create a medium-sized variant
+        $variants->assetVariant('medium', static function (AssetVariant $variant, Asset $asset): void {
+            $imageService = \Config\Services::image();
+            $imageService->withFile($asset->path)
+                ->resize(800, 600, true)
+                ->save($variant->path);
+        });
+    }
 
-// Get the URL to the thumbnail
-$thumbnailUrl = $thumbnail->getUrl();
+    // Create a preview variant for PDF documents
+    if ($asset->getMimeType() === 'application/pdf') {
+        $variants->assetVariant('preview', static function (AssetVariant $variant, Asset $asset): void {
+            // Use a PDF library to create a preview image of the first page
+            // This is just a placeholder - in a real application, you would
+            // use a PDF library like Imagick or a third-party service
+            $variant->writeFile('PDF preview data');
+        });
+    }
+}
 ```
 
-### Retrieving Asset Variants
+### Queue Processing
 
-You can retrieve variants of an asset using the `getVariant` method:
+Setting `$variants->onQueue = true` tells Asset Connect to process the variants asynchronously using a queue job. This is especially useful for large files or complex processing operations that might take a significant amount of time. The queue job will be processed in the background, allowing your application to continue responding to user requests.
+
+To use queue processing, you need to have a queue system set up in your CodeIgniter application. Asset Connect uses CodeIgniter's Queue service, which supports various queue drivers like Database, Redis, and more.
+
+### Accessing Variants
+
+Once variants are created, they are stored with the asset and can be accessed through the asset's properties:
 
 ```php
 $asset = $product->getFirstAsset(ImagesCollection::class);
 
-// Get the thumbnail variant
-$thumbnail = $asset->getVariant('thumbnail');
-
-// Get the URL to the thumbnail
-$thumbnailUrl = $thumbnail->getUrl();
+// Get the URL to a variant
+$thumbnailUrl = $asset->properties->fileVariant->getAssetVariant('thumbnail')->getUrl();
 ```
 
 ## Events

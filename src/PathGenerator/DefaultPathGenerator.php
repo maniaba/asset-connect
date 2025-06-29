@@ -29,4 +29,10 @@ final class DefaultPathGenerator implements PathGeneratorInterface
 
         return $basePath . 'variants';
     }
+
+    public function onCreatedDirectory(string $path): void
+    {
+        // Recrusively create empty index.html file to prevent directory listing
+        log_message('debug', "Creating path '{$path}' for assets.");
+    }
 }
