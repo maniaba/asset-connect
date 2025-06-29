@@ -36,6 +36,9 @@ class ProductImagesCollection implements AssetCollectionDefinitionInterface, Fil
                 AssetExtension::PNG,
                 AssetExtension::WEBP
             )
+            // Alternatively, you can use the spread operator with AssetExtension::images()
+            // to allow all image extensions at once:
+            // ->allowedExtensions(...AssetExtension::images())
             // Allow specific MIME types using the AssetMimeType enum
             ->allowedMimeTypes(
                 AssetMimeType::IMAGE_JPEG,

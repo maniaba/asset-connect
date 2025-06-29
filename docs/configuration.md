@@ -81,6 +81,44 @@ The queue serves an important role in the file deletion process. When you delete
 
 Asset collections allow you to organize your assets into logical groups. You can create custom collections by implementing the `AssetCollectionDefinitionInterface`:
 
+Here's a simple example of a collection that only allows image files and limits the size to 5 MB:
+
+```php
+<?php
+
+namespace App\AssetCollections;
+
+use CodeIgniter\Entity\Entity;
+use Maniaba\FileConnect\Asset\Asset;
+use Maniaba\FileConnect\AssetCollection\FileVariants;
+use Maniaba\FileConnect\Enums\AssetExtension;
+use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
+use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionSetterInterface;
+use Maniaba\FileConnect\Interfaces\Asset\FileVariantInterface;
+
+class SingleImageCollection implements AssetCollectionDefinitionInterface, FileVariantInterface
+{
+    public function definition(AssetCollectionSetterInterface $definition): void
+    {
+        $definition->singleFileCollection()
+            ->setMaxFileSize(5 * 1024 * 1024) // 5 MB
+            ->allowedExtensions(...AssetExtension::images());
+    }
+
+    public function checkAuthorization(array|Entity $entity, Asset $asset): bool
+    {
+        return true;
+    }
+
+    public function variants(FileVariants $variants, Asset $asset): void
+    {
+        // No variants needed
+    }
+}
+```
+
+For more complex collections, you can customize the configuration further:
+
 ```php
 <?php
 
@@ -108,6 +146,9 @@ class ProfilePicturesCollection implements AssetCollectionDefinitionInterface, F
             // You can also use string values
             'webp'
         )
+        // Alternatively, you can use the spread operator with AssetExtension::images()
+        // to allow all image extensions at once
+        // ->allowedExtensions(...AssetExtension::images())
         // Allow specific MIME types using the AssetMimeType enum
         ->allowedMimeTypes(
             AssetMimeType::IMAGE_JPEG,

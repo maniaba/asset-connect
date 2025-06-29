@@ -8,8 +8,13 @@ use Maniaba\FileConnect\Exceptions\FileVariantException;
 
 final class FileVariants
 {
+    
+    
+    
     public function onQueue(?string $queue = null): FileVariants
     {
+        $queue = $queue ?? config('Asset')->defaultQueue;
+
         return $this;
     }
 

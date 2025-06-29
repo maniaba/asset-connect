@@ -10,6 +10,7 @@ use CodeIgniter\HTTP\Files\UploadedFile;
 use CodeIgniter\I18n\Time;
 use InvalidArgumentException;
 use Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory;
+use Maniaba\FileConnect\Enums\AssetMimeType;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
 
 /**
@@ -118,7 +119,7 @@ final class Asset extends Entity
      */
     public function isImage(): bool
     {
-        return \Maniaba\FileConnect\Enums\AssetMimeType::isImage($this->mime_type);
+        return AssetMimeType::isImage($this->mime_type);
     }
 
     /**
@@ -128,7 +129,7 @@ final class Asset extends Entity
      */
     public function isDocument(): bool
     {
-        return \Maniaba\FileConnect\Enums\AssetMimeType::isDocument($this->mime_type);
+        return AssetMimeType::isDocument($this->mime_type);
     }
 
     /**
@@ -138,7 +139,7 @@ final class Asset extends Entity
      */
     public function isVideo(): bool
     {
-        return \Maniaba\FileConnect\Enums\AssetMimeType::isVideo($this->mime_type);
+        return AssetMimeType::isVideo($this->mime_type);
     }
 
     /**
@@ -148,7 +149,7 @@ final class Asset extends Entity
      */
     public function isAudio(): bool
     {
-        return \Maniaba\FileConnect\Enums\AssetMimeType::isAudio($this->mime_type);
+        return AssetMimeType::isAudio($this->mime_type);
     }
 
     /**
@@ -158,7 +159,7 @@ final class Asset extends Entity
      */
     public function isArchive(): bool
     {
-        return \Maniaba\FileConnect\Enums\AssetMimeType::isArchive($this->mime_type);
+        return AssetMimeType::isArchive($this->mime_type);
     }
 
     /**
@@ -168,7 +169,7 @@ final class Asset extends Entity
      */
     public function isText(): bool
     {
-        return \Maniaba\FileConnect\Enums\AssetMimeType::isText($this->mime_type);
+        return AssetMimeType::isText($this->mime_type);
     }
 
     /**
@@ -178,7 +179,7 @@ final class Asset extends Entity
      */
     public function isWeb(): bool
     {
-        return \Maniaba\FileConnect\Enums\AssetMimeType::isWeb($this->mime_type);
+        return AssetMimeType::isWeb($this->mime_type);
     }
 
     /**
@@ -188,7 +189,7 @@ final class Asset extends Entity
      */
     public function isProgramming(): bool
     {
-        return \Maniaba\FileConnect\Enums\AssetMimeType::isProgramming($this->mime_type);
+        return AssetMimeType::isProgramming($this->mime_type);
     }
 
     /**
@@ -198,7 +199,7 @@ final class Asset extends Entity
      */
     public function isFont(): bool
     {
-        return \Maniaba\FileConnect\Enums\AssetMimeType::isFont($this->mime_type);
+        return AssetMimeType::isFont($this->mime_type);
     }
 
     /**
@@ -208,7 +209,7 @@ final class Asset extends Entity
      */
     public function isDesign(): bool
     {
-        return \Maniaba\FileConnect\Enums\AssetMimeType::isDesign($this->mime_type);
+        return AssetMimeType::isDesign($this->mime_type);
     }
 
     /**
@@ -218,7 +219,7 @@ final class Asset extends Entity
      */
     public function isDatabase(): bool
     {
-        return \Maniaba\FileConnect\Enums\AssetMimeType::isDatabase($this->mime_type);
+        return AssetMimeType::isDatabase($this->mime_type);
     }
 
     /**
@@ -228,7 +229,7 @@ final class Asset extends Entity
      */
     public function isEbook(): bool
     {
-        return \Maniaba\FileConnect\Enums\AssetMimeType::isEbook($this->mime_type);
+        return AssetMimeType::isEbook($this->mime_type);
     }
 
     /**
@@ -238,7 +239,7 @@ final class Asset extends Entity
      */
     public function isCad(): bool
     {
-        return \Maniaba\FileConnect\Enums\AssetMimeType::isCad($this->mime_type);
+        return AssetMimeType::isCad($this->mime_type);
     }
 
     /**
@@ -248,7 +249,7 @@ final class Asset extends Entity
      */
     public function isScientific(): bool
     {
-        return \Maniaba\FileConnect\Enums\AssetMimeType::isScientific($this->mime_type);
+        return AssetMimeType::isScientific($this->mime_type);
     }
 
     /**
@@ -258,7 +259,7 @@ final class Asset extends Entity
      */
     public function isConfiguration(): bool
     {
-        return \Maniaba\FileConnect\Enums\AssetMimeType::isConfiguration($this->mime_type);
+        return AssetMimeType::isConfiguration($this->mime_type);
     }
 
     /**
@@ -268,7 +269,7 @@ final class Asset extends Entity
      */
     public function isExecutable(): bool
     {
-        return \Maniaba\FileConnect\Enums\AssetMimeType::isExecutable($this->mime_type);
+        return AssetMimeType::isExecutable($this->mime_type);
     }
 
     /**
@@ -278,7 +279,7 @@ final class Asset extends Entity
      */
     public function isVectorGraphic(): bool
     {
-        return \Maniaba\FileConnect\Enums\AssetMimeType::isVectorGraphic($this->mime_type);
+        return AssetMimeType::isVectorGraphic($this->mime_type);
     }
 
     /**
@@ -288,7 +289,7 @@ final class Asset extends Entity
      */
     public function isRasterGraphic(): bool
     {
-        return \Maniaba\FileConnect\Enums\AssetMimeType::isRasterGraphic($this->mime_type);
+        return AssetMimeType::isRasterGraphic($this->mime_type);
     }
 
     /**
@@ -298,7 +299,7 @@ final class Asset extends Entity
      */
     public function isSpreadsheet(): bool
     {
-        return \Maniaba\FileConnect\Enums\AssetMimeType::isSpreadsheet($this->mime_type);
+        return AssetMimeType::isSpreadsheet($this->mime_type);
     }
 
     /**
@@ -308,6 +309,6 @@ final class Asset extends Entity
      */
     public function isPresentation(): bool
     {
-        return \Maniaba\FileConnect\Enums\AssetMimeType::isPresentation($this->mime_type);
+        return AssetMimeType::isPresentation($this->mime_type);
     }
 }

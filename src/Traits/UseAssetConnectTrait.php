@@ -14,6 +14,14 @@ use Maniaba\FileConnect\Exceptions\FileException;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Interfaces\AssetCollection\SetupAssetCollection;
 
+/**
+ * Trait UseAssetConnectTrait
+ *
+ * This trait provides methods to manage asset connections for entities.
+ * It allows adding, retrieving, and deleting assets associated with the entity.
+ *
+ * @property-read list<Asset> $assets
+ */
 trait UseAssetConnectTrait
 {
     private AssetConnect $assetConnectInstance;
