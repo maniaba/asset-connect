@@ -90,11 +90,11 @@ namespace App\AssetCollections;
 
 use CodeIgniter\Entity\Entity;
 use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\AssetCollection\AssetVariants;
 use Maniaba\FileConnect\Enums\AssetExtension;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionSetterInterface;
 use Maniaba\FileConnect\Interfaces\Asset\AssetVariantsInterface;
+use Maniaba\FileConnect\Interfaces\AssetCollection\CreateAssetVariantsInterface;
 
 class SingleImageCollection implements AssetCollectionDefinitionInterface, AssetVariantsInterface
 {
@@ -110,7 +110,7 @@ class SingleImageCollection implements AssetCollectionDefinitionInterface, Asset
         return true;
     }
 
-    public function variants(AssetVariants $variants, Asset $asset): void
+    public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void
     {
         // No variants needed
     }
@@ -126,12 +126,12 @@ namespace App\AssetCollections;
 
 use CodeIgniter\Entity\Entity;
 use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\AssetCollection\AssetVariants;
 use Maniaba\FileConnect\Enums\AssetExtension;
 use Maniaba\FileConnect\Enums\AssetMimeType;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionSetterInterface;
 use Maniaba\FileConnect\Interfaces\Asset\AssetVariantsInterface;
+use Maniaba\FileConnect\Interfaces\AssetCollection\CreateAssetVariantsInterface;
 use Maniaba\FileConnect\PathGenerator\CustomPathGenerator;
 
 class ProfilePicturesCollection implements AssetCollectionDefinitionInterface, AssetVariantsInterface
@@ -177,7 +177,7 @@ class ProfilePicturesCollection implements AssetCollectionDefinitionInterface, A
         return true;
     }
 
-    public function variants(AssetVariants $variants, Asset $asset): void
+    public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void
     {
         // Define file variants (e.g., thumbnails)
     }
