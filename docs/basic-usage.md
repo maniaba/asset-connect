@@ -99,7 +99,7 @@ $setup->setFileNameSanitizer(function (string $fileName): string {
 });
 ```
 
-This method sets a closure to sanitize file names before they are stored. The closure should accept a string (the file name) and return a sanitized string.
+This method sets a closure to sanitize file names before they are stored. The closure should accept a string (the file name) and return a sanitized string. This method replaces the default sanitizer.
 
 #### setPreserveOriginal
 

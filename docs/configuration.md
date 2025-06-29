@@ -219,6 +219,23 @@ The `PathGeneratorHelper` class provides several useful methods for generating u
    $path = $generatorHelper->getPathString('folder1', 'folder2', 'folder3'); // "folder1/folder2/folder3/"
    ```
 
+### Understanding AssetCollectionGetterInterface
+
+The `AssetCollectionGetterInterface` is passed to the path generator methods and provides information about the asset collection:
+
+1. `getVisibility()`: Returns the visibility of the collection (PUBLIC or PROTECTED).
+   ```php
+   $visibility = $collection->getVisibility(); // AssetVisibility::PUBLIC or AssetVisibility::PROTECTED
+   ```
+
+2. `getMaximumNumberOfItemsInCollection()`: Returns the maximum number of items allowed in the collection.
+3. `getMaxFileSize()`: Returns the maximum file size allowed in the collection.
+4. `isSingleFileCollection()`: Returns whether the collection is limited to a single file.
+5. `getAllowedMimeTypes()`: Returns an array of allowed MIME types.
+6. `getAllowedExtensions()`: Returns an array of allowed file extensions.
+
+These methods can be useful when generating paths, especially `getVisibility()` which helps determine whether to store files in a public or protected location.
+
 ### Importance of Unique Paths
 
 When implementing custom path generators, it's crucial to ensure that each asset gets a unique path. This prevents files from overwriting each other, especially in high-traffic applications where multiple files might be uploaded simultaneously.
