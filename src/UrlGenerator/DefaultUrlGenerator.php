@@ -11,6 +11,7 @@ use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory;
 use Maniaba\FileConnect\Enums\AssetVisibility;
 use Maniaba\FileConnect\Exceptions\AuthorizationException;
+use Maniaba\FileConnect\UrlGenerator\Interfaces\UrlGeneratorInterface;
 
 final class DefaultUrlGenerator implements UrlGeneratorInterface
 {

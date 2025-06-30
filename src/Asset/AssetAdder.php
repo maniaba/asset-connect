@@ -176,10 +176,10 @@ final class AssetAdder implements AssetAdderInterface
             $this->setupAssetCollection->setDefaultCollectionDefinition($collection);
         }
 
-        $storageHandler = new AssetStorageHandler($this->subjectEntity, $this->asset, $this->setupAssetCollection);
+        $persistenceManager = new AssetPersistenceManager($this->subjectEntity, $this->asset, $this->setupAssetCollection);
 
         // Store the asset and return it
-        $asset = $storageHandler->store();
+        $asset = $persistenceManager->store();
 
         // Delete the original file if not preserving it
         if (! $this->setupAssetCollection->shouldPreserveOriginal() && file_exists($this->file->getRealPath())) {

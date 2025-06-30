@@ -6,7 +6,7 @@ namespace Maniaba\FileConnect\Asset\Interfaces;
 
 use Maniaba\FileConnect\Enums\AssetExtension;
 use Maniaba\FileConnect\Enums\AssetMimeType;
-use Maniaba\FileConnect\PathGenerator\PathGeneratorInterface;
+use Maniaba\FileConnect\PathGenerator\Interfaces\PathGeneratorInterface;
 
 interface AssetCollectionSetterInterface
 {

@@ -11,7 +11,7 @@ use Maniaba\FileConnect\Enums\AssetExtension;
 use Maniaba\FileConnect\Enums\AssetMimeType;
 use Maniaba\FileConnect\Enums\AssetVisibility;
 use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
-use Maniaba\FileConnect\PathGenerator\PathGeneratorInterface;
+use Maniaba\FileConnect\PathGenerator\Interfaces\PathGeneratorInterface;
 use Maniaba\FileConnect\Utils\PhpIni;
 
 final class AssetCollection implements AssetCollectionSetterInterface, AssetCollectionGetterInterface

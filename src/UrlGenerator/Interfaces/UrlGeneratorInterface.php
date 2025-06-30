@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\UrlGenerator;
+namespace Maniaba\FileConnect\UrlGenerator\Interfaces;
 
 use CodeIgniter\I18n\Time;
 

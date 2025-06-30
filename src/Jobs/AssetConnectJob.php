@@ -7,7 +7,7 @@ namespace Maniaba\FileConnect\Jobs;
 use CodeIgniter\Queue\BaseJob;
 use CodeIgniter\Queue\Interfaces\JobInterface;
 use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\Asset\AssetStorageHandler;
+use Maniaba\FileConnect\Asset\AssetPersistenceManager;
 use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory;
 use Maniaba\FileConnect\AssetVariants\AssetVariantsProcess;
@@ -86,10 +86,10 @@ final class AssetConnectJob extends BaseJob implements JobInterface
             $variants = $asset->metadata->fileVariant->getVariants();
 
             foreach ($variants as $variant) {
-                AssetStorageHandler::removeStoragePath($variant->path);
+                AssetPersistenceManager::removeStoragePath($variant->path);
             }
 
-            AssetStorageHandler::removeStoragePath($asset->path);
+            AssetPersistenceManager::removeStoragePath($asset->path);
 
             model(AssetModel::class, false)->delete((int) $asset->id, true);
 

@@ -8,7 +8,7 @@ use Closure;
 use CodeIgniter\Model;
 use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
-use Maniaba\FileConnect\PathGenerator\PathGeneratorInterface;
+use Maniaba\FileConnect\PathGenerator\Interfaces\PathGeneratorInterface;
 
 interface SetupAssetCollectionInterface
 {

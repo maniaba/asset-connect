@@ -8,21 +8,18 @@ use CodeIgniter\Entity\Entity;
 use CodeIgniter\Files\File;
 use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\Asset\AssetStorageHandler;
+use Maniaba\FileConnect\Asset\AssetPersistenceManager;
 use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionGetterInterface;
-use Maniaba\FileConnect\AssetCollection\AssetCollection;
 use Maniaba\FileConnect\AssetCollection\Interfaces\SetupAssetCollectionInterface;
 use Maniaba\FileConnect\Exceptions\AssetException;
 use Maniaba\FileConnect\Models\AssetModel;
-use Maniaba\FileConnect\PathGenerator\PathGeneratorFactory;
-use Maniaba\FileConnect\PathGenerator\PathGeneratorInterface;
-use Maniaba\FileConnect\Traits\UseAssetConnectTrait;
+use Maniaba\FileConnect\PathGenerator\Interfaces\PathGeneratorInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use stdClass;
 
 /**
- * Test class for AssetStorageHandler
+ * Test class for AssetPersistenceManager
  *
  * Note: Since many of the classes are marked as final, we need to use a different approach
  * for testing. We'll use test doubles that implement the same interfaces instead of mocking
@@ -30,7 +27,7 @@ use stdClass;
  *
  * @internal
  */
-final class AssetStorageHandlerTest extends CIUnitTestCase
+final class AssetPersistenceManagerTest extends CIUnitTestCase
 {
     private MockObject $mockEntity;
     private Asset $asset;
@@ -150,7 +147,7 @@ final class AssetStorageHandlerTest extends CIUnitTestCase
      */
     public function testStore(): void
     {
-        // This test will verify the public API of AssetStorageHandler
+        // This test will verify the public API of AssetPersistenceManager
         // We'll mock the necessary dependencies and verify the result
 
         // Setup the mock path generator
@@ -296,7 +293,7 @@ final class AssetStorageHandlerTest extends CIUnitTestCase
         });
 
         // Act
-        AssetStorageHandler::removeStoragePath('/path/to/storage/');
+        AssetPersistenceManager::removeStoragePath('/path/to/storage/');
 
         // No assertions needed as we're testing the method calls in the mocked functions
     }
@@ -322,7 +319,7 @@ final class AssetStorageHandlerTest extends CIUnitTestCase
         });
 
         // Act
-        AssetStorageHandler::removeStoragePath('/path/to/file.jpg');
+        AssetPersistenceManager::removeStoragePath('/path/to/file.jpg');
 
         // No assertions needed as we're testing the method calls in the mocked functions
     }
@@ -330,7 +327,7 @@ final class AssetStorageHandlerTest extends CIUnitTestCase
     /**
      * Create a handler with mocked dependencies
      */
-    private function createHandlerWithMocks(): AssetStorageHandler
+    private function createHandlerWithMocks(): AssetPersistenceManager
     {
         // Override the AssetCollection::create static method
         $this->setGlobalFunction('Maniaba\FileConnect\AssetCollection\AssetCollection::create', fn () => $this->mockAssetCollection);
@@ -347,7 +344,7 @@ final class AssetStorageHandlerTest extends CIUnitTestCase
             return null;
         });
 
-        return new AssetStorageHandler(
+        return new AssetPersistenceManager(
             $this->mockEntity,
             $this->asset,
             $this->mockSetupAssetCollection,

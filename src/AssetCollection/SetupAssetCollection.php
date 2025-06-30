@@ -12,7 +12,7 @@ use Maniaba\FileConnect\AssetCollection\Interfaces\SetupAssetCollectionInterface
 use Maniaba\FileConnect\Config\Asset;
 use Maniaba\FileConnect\Exceptions\AssetException;
 use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
-use Maniaba\FileConnect\PathGenerator\PathGeneratorInterface;
+use Maniaba\FileConnect\PathGenerator\Interfaces\PathGeneratorInterface;
 
 final class SetupAssetCollection implements SetupAssetCollectionInterface
 {

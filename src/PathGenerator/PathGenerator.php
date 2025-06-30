@@ -6,6 +6,7 @@ namespace Maniaba\FileConnect\PathGenerator;
 
 use Maniaba\FileConnect\AssetCollection\AssetCollection;
 use Maniaba\FileConnect\Exceptions\FileException;
+use Maniaba\FileConnect\PathGenerator\Interfaces\PathGeneratorInterface;
 
 final class PathGenerator
 {

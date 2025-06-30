@@ -13,7 +13,7 @@ use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory;
 use Maniaba\FileConnect\Enums\AssetMimeType;
 use Maniaba\FileConnect\UrlGenerator\DefaultUrlGenerator;
-use Maniaba\FileConnect\UrlGenerator\UrlGeneratorInterface;
+use Maniaba\FileConnect\UrlGenerator\Interfaces\UrlGeneratorInterface;
 
 /**
  * @property      string            $collection   name of the collection to which the asset belongs (md5 hash of the class name)

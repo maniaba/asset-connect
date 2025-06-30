@@ -6,6 +6,7 @@ namespace Maniaba\FileConnect\PathGenerator;
 
 use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionGetterInterface;
 use Maniaba\FileConnect\Enums\AssetVisibility;
+use Maniaba\FileConnect\PathGenerator\Interfaces\PathGeneratorInterface;
 
 final class DefaultPathGenerator implements PathGeneratorInterface
 {

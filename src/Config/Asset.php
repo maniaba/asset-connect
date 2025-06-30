@@ -10,7 +10,7 @@ use Maniaba\FileConnect\AssetCollection\DefaultAssetCollection;
 use Maniaba\FileConnect\AssetVariants\AssetVariantsProcess;
 use Maniaba\FileConnect\Jobs\AssetConnectJob;
 use Maniaba\FileConnect\PathGenerator\DefaultPathGenerator;
-use Maniaba\FileConnect\PathGenerator\PathGeneratorInterface;
+use Maniaba\FileConnect\PathGenerator\Interfaces\PathGeneratorInterface;
 
 class Asset extends BaseConfig
 {

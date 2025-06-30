@@ -22,7 +22,7 @@ use Maniaba\FileConnect\PathGenerator\PathGeneratorFactory;
 use Maniaba\FileConnect\Traits\UseAssetConnectTrait;
 use Throwable;
 
-final class AssetStorageHandler
+final class AssetPersistenceManager
 {
     private readonly PathGenerator $pathGenerator;
     private string $storePath;
