@@ -95,21 +95,6 @@ To create a custom asset collection, you need to implement the `AssetCollectionD
 Here's an example of a custom asset collection that implements all three interfaces:
 
 ```php
-<?php
-
-namespace App\AssetCollections;
-
-use CodeIgniter\Entity\Entity;
-use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\AssetCollection\AssetVariants;
-use Maniaba\FileConnect\Enums\AssetExtension;
-use Maniaba\FileConnect\Enums\AssetMimeType;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionSetterInterface;
-use Maniaba\FileConnect\Interfaces\Asset\AuthorizableAssetCollectionDefinitionInterface;
-use Maniaba\FileConnect\Interfaces\Asset\AssetVariantsInterface;
-use Maniaba\FileConnect\PathGenerator\CustomPathGenerator;
-
 class ProfilePicturesCollection implements AuthorizableAssetCollectionDefinitionInterface, AssetVariantsInterface
 {
     public function definition(AssetCollectionSetterInterface $definition): void
@@ -173,15 +158,6 @@ class ProfilePicturesCollection implements AuthorizableAssetCollectionDefinition
 Once you've created a custom asset collection, you can use it in your entity's `setupAssetConnect` method:
 
 ```php
-<?php
-
-namespace App\Entities;
-
-use App\AssetCollections\ProfilePicturesCollection;
-use CodeIgniter\Entity\Entity;
-use Maniaba\FileConnect\Traits\UseAssetConnectTrait;
-use Maniaba\FileConnect\Interfaces\AssetCollection\SetupAssetCollection;
-
 class User extends Entity
 {
     use UseAssetConnectTrait;

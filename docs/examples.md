@@ -348,17 +348,6 @@ Here's a more complex example showing how to implement an image gallery:
 
 ```php
 // First, define custom collection classes for more control
-namespace App\AssetCollections;
-
-use CodeIgniter\Entity\Entity;
-use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\Interfaces\AssetCollection\CreateAssetVariantsInterface;
-use Maniaba\FileConnect\Enums\AssetExtension;
-use Maniaba\FileConnect\Enums\AssetMimeType;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionSetterInterface;
-use Maniaba\FileConnect\Interfaces\Asset\AssetVariantsInterface;
-
 class ImagesCollection implements AssetCollectionDefinitionInterface, AssetVariantsInterface
 {
     public function definition(AssetCollectionSetterInterface $definition): void
@@ -429,14 +418,6 @@ class ThumbnailsCollection implements AssetCollectionDefinitionInterface, AssetV
 }
 
 // In your entity class
-namespace App\Entities;
-
-use App\AssetCollections\ImagesCollection;
-use App\AssetCollections\ThumbnailsCollection;
-use CodeIgniter\Entity\Entity;
-use Maniaba\FileConnect\Traits\UseAssetConnectTrait;
-use Maniaba\FileConnect\Interfaces\AssetCollection\SetupAssetCollection;
-
 class Gallery extends Entity
 {
     use UseAssetConnectTrait;

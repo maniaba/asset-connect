@@ -11,21 +11,6 @@ While the basic usage of Asset Connect is sufficient for many applications, you 
 To create a custom asset collection, create a class that extends `DefaultAssetCollection` or implements the `AssetCollectionDefinitionInterface`:
 
 ```php
-<?php
-
-namespace App\AssetCollections;
-
-use CodeIgniter\Entity\Entity;
-use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\Asset\AssetVariant;
-use Maniaba\FileConnect\Enums\AssetExtension;
-use Maniaba\FileConnect\Enums\AssetMimeType;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionSetterInterface;
-use Maniaba\FileConnect\Interfaces\Asset\AssetVariantsInterface;
-use Maniaba\FileConnect\Interfaces\AssetCollection\CreateAssetVariantsInterface;
-use Maniaba\FileConnect\PathGenerator\CustomPathGenerator;
-
 class ProductImagesCollection implements AssetCollectionDefinitionInterface, AssetVariantsInterface
 {
     public function definition(AssetCollectionSetterInterface $definition): void
@@ -80,15 +65,6 @@ class ProductImagesCollection implements AssetCollectionDefinitionInterface, Ass
 Once you've created a custom collection, you can use it in your entity's `setupAssetConnect` method:
 
 ```php
-<?php
-
-namespace App\Entities;
-
-use App\AssetCollections\ProductImagesCollection;
-use CodeIgniter\Entity\Entity;
-use Maniaba\FileConnect\Traits\UseAssetConnectTrait;
-use Maniaba\FileConnect\Interfaces\AssetCollection\SetupAssetCollection;
-
 class Product extends Entity
 {
     use UseAssetConnectTrait;
@@ -112,13 +88,6 @@ Path generators determine how file paths are generated for stored assets. Custom
 To create a custom path generator, implement the `PathGeneratorInterface`:
 
 ```php
-<?php
-
-namespace App\PathGenerators;
-
-use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\PathGenerator\PathGeneratorInterface;
-
 class YearMonthPathGenerator implements PathGeneratorInterface
 {
     public function getPath(Asset $asset): string
@@ -138,13 +107,6 @@ class YearMonthPathGenerator implements PathGeneratorInterface
 You can use custom path generators in your configuration or in specific asset collections:
 
 ```php
-<?php
-
-namespace Config;
-
-use App\PathGenerators\YearMonthPathGenerator;
-use Maniaba\FileConnect\Config\Asset as BaseAsset;
-
 class Asset extends BaseAsset
 {
     public string $defaultPathGenerator = YearMonthPathGenerator::class;
@@ -154,13 +116,6 @@ class Asset extends BaseAsset
 Or in a specific collection:
 
 ```php
-<?php
-
-namespace App\AssetCollections;
-
-use App\PathGenerators\YearMonthPathGenerator;
-use Maniaba\FileConnect\AssetCollection\DefaultAssetCollection;
-
 class ProductImagesCollection extends DefaultAssetCollection
 {
     public static function name(): string
@@ -250,13 +205,6 @@ Asset Connect fires several events that you can listen for in your application:
 You can listen for these events in your application's `app/Config/Events.php` file:
 
 ```php
-<?php
-
-namespace Config;
-
-use CodeIgniter\Events\Events;
-use Maniaba\FileConnect\Events\AssetCreated;
-
 // ...
 
 Events::on('asset.created', function (AssetCreated $event) {

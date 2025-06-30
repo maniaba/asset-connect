@@ -9,15 +9,6 @@ This guide covers the fundamental operations you can perform with CodeIgniter As
 To use Asset Connect with an entity, you need to add the `UseAssetConnectTrait` to your entity class and implement the `setupAssetConnect` method:
 
 ```php
-<?php
-
-namespace App\Entities;
-
-use CodeIgniter\Entity\Entity;
-use Maniaba\FileConnect\Traits\UseAssetConnectTrait;
-use Maniaba\FileConnect\Interfaces\AssetCollection\SetupAssetCollection;
-use App\AssetCollections\ImagesCollection;
-
 class Product extends Entity
 {
     use UseAssetConnectTrait;
@@ -32,18 +23,6 @@ class Product extends Entity
 }
 
 // Example of a custom collection class
-namespace App\AssetCollections;
-
-use CodeIgniter\Entity\Entity;
-use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\Asset\AssetVariant;
-use Maniaba\FileConnect\Enums\AssetExtension;
-use Maniaba\FileConnect\Enums\AssetMimeType;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionSetterInterface;
-use Maniaba\FileConnect\Interfaces\Asset\AssetVariantsInterface;
-use Maniaba\FileConnect\Interfaces\AssetCollection\CreateAssetVariantsInterface;
-
 class ImagesCollection implements AssetCollectionDefinitionInterface, AssetVariantsInterface
 {
     public function definition(AssetCollectionSetterInterface $definition): void
@@ -263,12 +242,6 @@ Asset Connect provides several enums for working with assets:
 When you need to store assets in a non-public location (like the "writable" folder), you can implement the `AuthorizableAssetCollectionDefinitionInterface`. This interface adds access control to your asset collections, requiring users to go through a controller to access the files:
 
 ```php
-use CodeIgniter\Entity\Entity;
-use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\Enums\AssetExtension;
-use Maniaba\FileConnect\Enums\AssetMimeType;
-use Maniaba\FileConnect\Interfaces\Asset\AuthorizableAssetCollectionDefinitionInterface;
-
 class SecureDocumentsCollection implements AuthorizableAssetCollectionDefinitionInterface
 {
     public function definition(AssetCollectionSetterInterface $definition): void
@@ -306,8 +279,6 @@ class SecureDocumentsCollection implements AuthorizableAssetCollectionDefinition
 ### AssetExtension
 
 ```php
-use Maniaba\FileConnect\Enums\AssetExtension;
-
 // Available file extensions (examples)
 AssetExtension::JPG;  // 'jpg'
 AssetExtension::PNG;  // 'png'
@@ -329,8 +300,6 @@ $presentations = AssetExtension::presentations(); // PPT, PPTX, ODP
 ### AssetMimeType
 
 ```php
-use Maniaba\FileConnect\Enums\AssetMimeType;
-
 // Available mime types (examples)
 AssetMimeType::IMAGE_JPEG;         // 'image/jpeg'
 AssetMimeType::APPLICATION_PDF;    // 'application/pdf'

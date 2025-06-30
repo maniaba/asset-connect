@@ -7,12 +7,6 @@ CodeIgniter Asset Connect provides several configuration options to customize it
 The configuration for Asset Connect is managed through the `Config\Asset.php` file. If this file doesn't exist in your application's config directory, you can create it:
 
 ```php
-<?php
-
-namespace Config;
-
-use Maniaba\FileConnect\Config\Asset as BaseAsset;
-
 class Asset extends BaseAsset
 {
     // Your custom configuration here
@@ -36,8 +30,6 @@ If set to `null` (default), the library will use the default database group conf
 You can change the default collection class that will be used when no specific collection is provided:
 
 ```php
-use Maniaba\FileConnect\AssetCollection\CustomAssetCollection;
-
 public string $defaultCollection = CustomAssetCollection::class;
 ```
 
@@ -48,8 +40,6 @@ The class must implement the `AssetCollectionDefinitionInterface`.
 The path generator determines how file paths are generated for stored assets:
 
 ```php
-use Maniaba\FileConnect\PathGenerator\CustomPathGenerator;
-
 public string $defaultPathGenerator = CustomPathGenerator::class;
 ```
 
@@ -84,18 +74,6 @@ Asset collections allow you to organize your assets into logical groups. You can
 Here's a simple example of a collection that only allows image files and limits the size to 5 MB:
 
 ```php
-<?php
-
-namespace App\AssetCollections;
-
-use CodeIgniter\Entity\Entity;
-use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\Enums\AssetExtension;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionSetterInterface;
-use Maniaba\FileConnect\Interfaces\Asset\AssetVariantsInterface;
-use Maniaba\FileConnect\Interfaces\AssetCollection\CreateAssetVariantsInterface;
-
 class SingleImageCollection implements AssetCollectionDefinitionInterface, AssetVariantsInterface
 {
     public function definition(AssetCollectionSetterInterface $definition): void
@@ -120,20 +98,6 @@ class SingleImageCollection implements AssetCollectionDefinitionInterface, Asset
 For more complex collections, you can customize the configuration further:
 
 ```php
-<?php
-
-namespace App\AssetCollections;
-
-use CodeIgniter\Entity\Entity;
-use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\Enums\AssetExtension;
-use Maniaba\FileConnect\Enums\AssetMimeType;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionSetterInterface;
-use Maniaba\FileConnect\Interfaces\Asset\AssetVariantsInterface;
-use Maniaba\FileConnect\Interfaces\AssetCollection\CreateAssetVariantsInterface;
-use Maniaba\FileConnect\PathGenerator\CustomPathGenerator;
-
 class ProfilePicturesCollection implements AssetCollectionDefinitionInterface, AssetVariantsInterface
 {
     public function definition(AssetCollectionSetterInterface $definition): void
@@ -189,15 +153,6 @@ class ProfilePicturesCollection implements AssetCollectionDefinitionInterface, A
 Path generators determine how file paths are generated for stored assets. You can create custom path generators by implementing the `PathGeneratorInterface`:
 
 ```php
-<?php
-
-namespace App\PathGenerators;
-
-use Maniaba\FileConnect\Enums\AssetVisibility;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionGetterInterface;
-use Maniaba\FileConnect\PathGenerator\PathGeneratorHelper;
-use Maniaba\FileConnect\PathGenerator\PathGeneratorInterface;
-
 class CustomPathGenerator implements PathGeneratorInterface
 {
     // Get the path for the given asset, relative to the root storage path.
