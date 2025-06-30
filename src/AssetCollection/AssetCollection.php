@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Maniaba\FileConnect\AssetCollection;
 
+use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionGetterInterface;
+use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionSetterInterface;
+use Maniaba\FileConnect\Asset\Interfaces\AuthorizableAssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Enums\AssetExtension;
 use Maniaba\FileConnect\Enums\AssetMimeType;
 use Maniaba\FileConnect\Enums\AssetVisibility;
 use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionGetterInterface;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionSetterInterface;
-use Maniaba\FileConnect\Interfaces\Asset\AuthorizableAssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\PathGenerator\PathGeneratorInterface;
 use Maniaba\FileConnect\Utils\PhpIni;
 

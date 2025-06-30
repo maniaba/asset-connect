@@ -7,10 +7,10 @@ namespace Maniaba\FileConnect\UrlGenerator;
 use CodeIgniter\Entity\Entity;
 use CodeIgniter\I18n\Time;
 use Maniaba\FileConnect\Asset\Asset;
+use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory;
 use Maniaba\FileConnect\Enums\AssetVisibility;
 use Maniaba\FileConnect\Exceptions\AuthorizationException;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
 
 final class DefaultUrlGenerator implements UrlGeneratorInterface
 {
@@ -43,7 +43,7 @@ final class DefaultUrlGenerator implements UrlGeneratorInterface
         return $this->collectionDefinition->checkAuthorization($entity, $this->asset);
     }
 
-    public function getUrl(string $variantName = ''): string
+    public function getUrl(?string $variantName = null): string
     {
         $collection  = AssetCollectionDefinitionFactory::createCollection($this->collectionDefinition);
         $isProtected = $collection->getVisibility() === AssetVisibility::PROTECTED;
@@ -68,7 +68,7 @@ final class DefaultUrlGenerator implements UrlGeneratorInterface
         return site_url($basePath . '/' . $filename);
     }
 
-    public function getTemporaryUrl(Time $expiration, string $variantName = '', array $options = []): string
+    public function getTemporaryUrl(Time $expiration, ?string $variantName = null, array $options = []): string
     {
         $collection  = AssetCollectionDefinitionFactory::createCollection($this->collectionDefinition);
         $isProtected = $collection->getVisibility() === AssetVisibility::PROTECTED;

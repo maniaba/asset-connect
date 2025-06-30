@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Interfaces\AssetCollection;
+namespace Maniaba\FileConnect\AssetCollection\Interfaces;
 
 use Closure;
 use Maniaba\FileConnect\Asset\Asset;

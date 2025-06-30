@@ -6,11 +6,11 @@ namespace Maniaba\FileConnect\AssetVariants;
 
 use Closure;
 use Maniaba\FileConnect\Asset\Asset;
+use Maniaba\FileConnect\AssetCollection\Interfaces\CreateAssetVariantsInterface;
 use Maniaba\FileConnect\Exceptions\FileVariantException;
-use Maniaba\FileConnect\Interfaces\AssetCollection\CreateAssetVariantsInterface;
 use Throwable;
 
-final class AssetVariantsQueue implements CreateAssetVariantsInterface
+final class AssetVariantsProcessor implements CreateAssetVariantsInterface
 {
     public bool $onQueue = true;
 

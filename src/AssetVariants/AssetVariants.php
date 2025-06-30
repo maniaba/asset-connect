@@ -6,7 +6,7 @@ namespace Maniaba\FileConnect\AssetVariants;
 
 use Closure;
 use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\Interfaces\AssetCollection\CreateAssetVariantsInterface;
+use Maniaba\FileConnect\AssetCollection\Interfaces\CreateAssetVariantsInterface;
 
 final class AssetVariants implements CreateAssetVariantsInterface
 {

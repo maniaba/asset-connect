@@ -31,7 +31,7 @@ php spark migrate --namespace=Maniaba\\FileConnect
 ```php
 use CodeIgniter\Entity\Entity;
 use Maniaba\FileConnect\Traits\UseAssetConnectTrait;
-use Maniaba\FileConnect\Interfaces\AssetCollection\SetupAssetCollection;
+use Maniaba\FileConnect\AssetCollection\Interfaces\SetupAssetCollectionInterface;
 use App\AssetCollections\ImagesCollection;
 use App\AssetCollections\DocumentsCollection;
 
@@ -40,7 +40,7 @@ class User extends Entity
     use UseAssetConnectTrait;
 
     // You must implement this abstract method
-    public function setupAssetConnect(SetupAssetCollection $setup): void
+    public function setupAssetConnect(SetupAssetCollectionInterface $setup): void
     {
         // Set the default collection definition
         // Note: Only one default collection can be set; additional calls will override previous ones
@@ -207,7 +207,7 @@ For secure asset storage, you can implement the `AuthorizableAssetCollectionDefi
 ```php
 use CodeIgniter\Entity\Entity;
 use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\Interfaces\Asset\AuthorizableAssetCollectionDefinitionInterface;
+use Maniaba\FileConnect\Asset\Interfaces\AuthorizableAssetCollectionDefinitionInterface;
 
 class SecureDocumentsCollection implements AuthorizableAssetCollectionDefinitionInterface
 {

@@ -9,10 +9,11 @@ use CodeIgniter\Files\File;
 use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\FileConnect\Asset\Asset;
 use Maniaba\FileConnect\Asset\AssetStorageHandler;
+use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
+use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionGetterInterface;
 use Maniaba\FileConnect\AssetCollection\AssetCollection;
+use Maniaba\FileConnect\AssetCollection\Interfaces\SetupAssetCollectionInterface;
 use Maniaba\FileConnect\Exceptions\AssetException;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionGetterInterface;
 use Maniaba\FileConnect\Models\AssetModel;
 use Maniaba\FileConnect\PathGenerator\PathGeneratorFactory;
 use Maniaba\FileConnect\PathGenerator\PathGeneratorInterface;
@@ -57,7 +58,7 @@ final class AssetStorageHandlerTest extends CIUnitTestCase
 
         // For final classes, we'll create test doubles that implement the same interfaces
         // Use createMock for interfaces instead of getMockBuilder with stdClass
-        $this->mockSetupAssetCollection = $this->createMock(\Maniaba\FileConnect\Interfaces\AssetCollection\SetupAssetCollection::class);
+        $this->mockSetupAssetCollection = $this->createMock(SetupAssetCollectionInterface::class);
 
         $this->mockAssetCollection = $this->createMock(AssetCollectionGetterInterface::class);
 

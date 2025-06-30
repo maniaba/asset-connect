@@ -7,11 +7,11 @@ namespace Maniaba\FileConnect\AssetCollection;
 use Closure;
 use CodeIgniter\Config\BaseConfig;
 use CodeIgniter\Model;
+use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
+use Maniaba\FileConnect\AssetCollection\Interfaces\SetupAssetCollectionInterface;
 use Maniaba\FileConnect\Config\Asset;
 use Maniaba\FileConnect\Exceptions\AssetException;
 use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
-use Maniaba\FileConnect\Interfaces\AssetCollection\SetupAssetCollection as SetupAssetCollectionInterface;
 use Maniaba\FileConnect\PathGenerator\PathGeneratorInterface;
 
 final class SetupAssetCollection implements SetupAssetCollectionInterface

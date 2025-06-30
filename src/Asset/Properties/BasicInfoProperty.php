@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Maniaba\FileConnect\Asset\Properties;
 
 use CodeIgniter\Entity\Entity;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
+use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 
 final class BasicInfoProperty extends BaseProperty
 {

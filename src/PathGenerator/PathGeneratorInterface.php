@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Maniaba\FileConnect\PathGenerator;
 
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionGetterInterface;
+use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionGetterInterface;
 
 interface PathGeneratorInterface
 {

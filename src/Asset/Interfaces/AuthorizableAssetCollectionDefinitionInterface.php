@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Interfaces\Asset;
+namespace Maniaba\FileConnect\Asset\Interfaces;
 
 use CodeIgniter\Entity\Entity;
 use Maniaba\FileConnect\Asset\Asset;

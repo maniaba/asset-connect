@@ -10,7 +10,7 @@ use CodeIgniter\Test\CIUnitTestCase;
 use InvalidArgumentException;
 use Maniaba\FileConnect\Asset\Asset;
 use Maniaba\FileConnect\Asset\AssetMetadata;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
+use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**

@@ -6,10 +6,10 @@ namespace Maniaba\FileConnect\AssetCollection;
 
 use CodeIgniter\Entity\Entity;
 use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionSetterInterface;
-use Maniaba\FileConnect\Interfaces\Asset\AssetVariantsInterface;
-use Maniaba\FileConnect\Interfaces\AssetCollection\CreateAssetVariantsInterface;
+use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
+use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionSetterInterface;
+use Maniaba\FileConnect\AssetCollection\Interfaces\CreateAssetVariantsInterface;
+use Maniaba\FileConnect\AssetVariants\Interfaces\AssetVariantsInterface;
 
 final class DefaultAssetCollection implements AssetCollectionDefinitionInterface, AssetVariantsInterface
 {

@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Interfaces\AssetCollection;
+namespace Maniaba\FileConnect\AssetCollection\Interfaces;
 
 use Closure;
 use CodeIgniter\Model;
+use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\PathGenerator\PathGeneratorInterface;
 
-interface SetupAssetCollection
+interface SetupAssetCollectionInterface
 {
     /**
      * Set the definition of the asset collection for this entity as default.

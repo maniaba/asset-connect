@@ -40,14 +40,14 @@ namespace App\Entities;
 
 use CodeIgniter\Entity\Entity;
 use Maniaba\FileConnect\Traits\UseAssetConnectTrait;
-use Maniaba\FileConnect\Interfaces\AssetCollection\SetupAssetCollection;
+use Maniaba\FileConnect\AssetCollection\Interfaces\SetupAssetCollectionInterface;
 
 class User extends Entity
 {
     use UseAssetConnectTrait;
 
     // You must implement this abstract method
-    public function setupAssetConnect(SetupAssetCollection $setup): void
+    public function setupAssetConnect(SetupAssetCollectionInterface $setup): void
     {
         // Set the default collection definition
         // Note: Only one default collection can be set; additional calls will override previous ones

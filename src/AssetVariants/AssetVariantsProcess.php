@@ -6,8 +6,8 @@ namespace Maniaba\FileConnect\AssetVariants;
 
 use CodeIgniter\Queue\Config\Services;
 use Maniaba\FileConnect\Asset\Asset;
+use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Exceptions\FileVariantException;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
 use Throwable;
 
 final class AssetVariantsProcess
@@ -49,7 +49,7 @@ final class AssetVariantsProcess
      */
     public static function run(Asset &$asset, AssetCollectionDefinitionInterface $definition): void
     {
-        $assetVariants = new AssetVariantsQueue(
+        $assetVariants = new AssetVariantsProcessor(
             $asset,
         );
 

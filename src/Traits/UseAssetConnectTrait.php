@@ -8,11 +8,10 @@ use CodeIgniter\Entity\Entity;
 use CodeIgniter\Files\File;
 use Maniaba\FileConnect\Asset\Asset;
 use Maniaba\FileConnect\Asset\AssetAdder;
+use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\AssetConnect;
 use Maniaba\FileConnect\Exceptions\AssetException;
 use Maniaba\FileConnect\Exceptions\FileException;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
-use Maniaba\FileConnect\Interfaces\AssetCollection\SetupAssetCollection;
 
 /**
  * Trait UseAssetConnectTrait

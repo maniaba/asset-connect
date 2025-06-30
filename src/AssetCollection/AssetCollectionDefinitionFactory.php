@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Maniaba\FileConnect\AssetCollection;
 
+use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
 
 final class AssetCollectionDefinitionFactory
 {

@@ -8,11 +8,12 @@ use Closure;
 use CodeIgniter\Entity\Entity;
 use CodeIgniter\Files\File;
 use CodeIgniter\HTTP\Files\UploadedFile;
+use Maniaba\FileConnect\Asset\Interfaces\AssetAdderInterface;
+use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\AssetCollection\SetupAssetCollection;
 use Maniaba\FileConnect\Exceptions\AssetException;
 use Maniaba\FileConnect\Exceptions\FileException;
 use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Traits\UseAssetConnectTrait;
 use Throwable;
 
@@ -22,7 +23,7 @@ use Throwable;
  * This class is responsible for handling the asset addition process
  * and storing custom properties and collection information.
  */
-final class AssetAdder
+final class AssetAdder implements AssetAdderInterface
 {
     private Asset $asset;
     private File|UploadedFile $file;

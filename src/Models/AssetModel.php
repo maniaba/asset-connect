@@ -6,8 +6,8 @@ namespace Maniaba\FileConnect\Models;
 
 use CodeIgniter\Entity\Entity;
 use Maniaba\FileConnect\Asset\Asset;
+use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory;
-use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Traits\UseAssetConnectTrait;
 
 /**
