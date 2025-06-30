@@ -9,6 +9,7 @@ use CodeIgniter\I18n\Time;
 use Maniaba\FileConnect\Asset\Asset;
 use Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory;
 use Maniaba\FileConnect\Enums\AssetVisibility;
+use Maniaba\FileConnect\Exceptions\AuthorizationException;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
 
 final class DefaultUrlGenerator implements UrlGeneratorInterface
@@ -19,8 +20,8 @@ final class DefaultUrlGenerator implements UrlGeneratorInterface
 
     public function __construct(Asset $asset, ?Entity $entity = null)
     {
-        $this->asset = $asset;
-        $this->entity = $entity;
+        $this->asset                = $asset;
+        $this->entity               = $entity;
         $this->collectionDefinition = AssetCollectionDefinitionFactory::create($asset->collection);
     }
 
@@ -33,7 +34,7 @@ final class DefaultUrlGenerator implements UrlGeneratorInterface
      */
     public function checkAuthorization(?Entity $entity = null): bool
     {
-        $entity = $entity ?? $this->entity;
+        $entity ??= $this->entity;
 
         if ($entity === null) {
             return false;
@@ -44,13 +45,13 @@ final class DefaultUrlGenerator implements UrlGeneratorInterface
 
     public function getUrl(string $variantName = ''): string
     {
-        $collection = AssetCollectionDefinitionFactory::createCollection($this->collectionDefinition);
+        $collection  = AssetCollectionDefinitionFactory::createCollection($this->collectionDefinition);
         $isProtected = $collection->getVisibility() === AssetVisibility::PROTECTED;
 
         if ($isProtected) {
             // For protected assets, we need to go through a controller that checks authorization
-            if ($this->entity !== null && !$this->checkAuthorization()) {
-                throw new \Maniaba\FileConnect\Exceptions\AuthorizationException('Entity is not authorized to access this asset.');
+            if ($this->entity !== null && ! $this->checkAuthorization()) {
+                throw new AuthorizationException('Entity is not authorized to access this asset.');
             }
 
             return site_url('assets/view/' . $this->asset->id . ($variantName ? '/' . $variantName : ''));
@@ -69,7 +70,7 @@ final class DefaultUrlGenerator implements UrlGeneratorInterface
 
     public function getTemporaryUrl(Time $expiration, string $variantName = '', array $options = []): string
     {
-        $collection = AssetCollectionDefinitionFactory::createCollection($this->collectionDefinition);
+        $collection  = AssetCollectionDefinitionFactory::createCollection($this->collectionDefinition);
         $isProtected = $collection->getVisibility() === AssetVisibility::PROTECTED;
 
         // Generate a signed URL that expires at the given time
@@ -77,8 +78,8 @@ final class DefaultUrlGenerator implements UrlGeneratorInterface
 
         if ($isProtected) {
             // For protected assets, we need to go through a controller that checks authorization
-            if ($this->entity !== null && !$this->checkAuthorization()) {
-                throw new \Maniaba\FileConnect\Exceptions\AuthorizationException('Entity is not authorized to access this asset.');
+            if ($this->entity !== null && ! $this->checkAuthorization()) {
+                throw new AuthorizationException('Entity is not authorized to access this asset.');
             }
 
             return site_url('assets/temp/' . $this->asset->id . ($variantName ? '/' . $variantName : '') . '?token=' . $token . '&expires=' . $expiration->getTimestamp());
@@ -103,11 +104,10 @@ final class DefaultUrlGenerator implements UrlGeneratorInterface
         // Create a signature using the asset ID, variant name, expiration time, and a secret key
         $data = $this->asset->id . '|' . $variantName . '|' . $expiration->getTimestamp();
 
-        if (!empty($options)) {
+        if (! empty($options)) {
             $data .= '|' . json_encode($options);
         }
 
         return hash_hmac('sha256', $data, config('Encryption')->key ?? '');
     }
-
 }

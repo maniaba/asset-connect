@@ -20,9 +20,9 @@ interface UrlGeneratorInterface
     /**
      * Get a temporary URL for the given asset that expires after the specified time.
      *
-     * @param Time   $expiration  The time when the URL should expire
+     * @param Time    $expiration  The time when the URL should expire
      * @param ?string $variantName The name of the variant to get the URL for, or empty for the original asset
-     * @param array  $options     Additional options for the URL generation
+     * @param array   $options     Additional options for the URL generation
      *
      * @return string The temporary URL to the asset
      */
