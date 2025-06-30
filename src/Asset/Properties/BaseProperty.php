@@ -30,6 +30,11 @@ abstract class BaseProperty implements JsonSerializable
         return $this->properties[$key] ?? null;
     }
 
+    public function getAll(): array
+    {
+        return $this->properties ?? [];
+    }
+
     public function remove(string $key): void
     {
         unset($this->properties[$key]);

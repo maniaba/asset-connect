@@ -9,6 +9,7 @@ use CodeIgniter\Files\File;
 use Maniaba\FileConnect\Asset\Asset;
 use Maniaba\FileConnect\Asset\AssetAdder;
 use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
+use Maniaba\FileConnect\AssetCollection\Interfaces\SetupAssetCollectionInterface;
 use Maniaba\FileConnect\AssetConnect;
 use Maniaba\FileConnect\Exceptions\AssetException;
 use Maniaba\FileConnect\Exceptions\FileException;
@@ -50,9 +51,9 @@ trait UseAssetConnectTrait
      *
      * This method should be implemented by the entity to define how assets are connected.
      *
-     * @param SetupAssetCollection $setup The setup object to configure the asset connection
+     * @param SetupAssetCollectionInterface $setup The setup object to configure the asset connection
      */
-    abstract public function setupAssetConnect(SetupAssetCollection $setup): void;
+    abstract public function setupAssetConnect(SetupAssetCollectionInterface $setup): void;
 
     /**
      * Add an asset to the entity

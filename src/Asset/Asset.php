@@ -10,10 +10,13 @@ use CodeIgniter\HTTP\Files\UploadedFile;
 use CodeIgniter\I18n\Time;
 use InvalidArgumentException;
 use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
+use Maniaba\FileConnect\Asset\Traits\AssetMimeTypeTrait;
 use Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory;
 use Maniaba\FileConnect\Enums\AssetMimeType;
+use Maniaba\FileConnect\Models\AssetModel;
 use Maniaba\FileConnect\UrlGenerator\DefaultUrlGenerator;
 use Maniaba\FileConnect\UrlGenerator\Interfaces\UrlGeneratorInterface;
+use Maniaba\FileConnect\UrlGenerator\Traits\UrlGeneratorTrait;
 
 /**
  * @property      string            $collection   name of the collection to which the asset belongs (md5 hash of the class name)
@@ -25,17 +28,20 @@ use Maniaba\FileConnect\UrlGenerator\Interfaces\UrlGeneratorInterface;
  * @property      string            $file_name    name of the file associated with the asset
  * @property-read string            $extension    file extension of the asset
  * @property      int               $id           identifier for the asset
- * @property      AssetMetadata     $metadata
+ * @property-read  AssetMetadata     $metadata
  * @property      string            $mime_type    MIME type of the file
  * @property      string            $name         name of the asset
  * @property      int               $order        order of the asset in the collection
  * @property      string            $path         path to the file on the server
- * @property      string            $path_dirname directory path of the file on the server
+ * @property-read      string            $path_dirname directory path of the file on the server
  * @property      int               $size         size of the file in bytes
  * @property      Time              $updated_at   timestamp when the asset was last updated
  */
 final class Asset extends Entity
 {
+    use AssetMimeTypeTrait;
+    use UrlGeneratorTrait;
+
     protected $casts = [
         'id'          => 'int',
         'entity_type' => 'string',
@@ -138,252 +144,7 @@ final class Asset extends Entity
         return dirname($this->path) . DIRECTORY_SEPARATOR;
     }
 
-    /**
-     * Check if the asset is an image
-     *
-     * @return bool True if the asset is an image, false otherwise
-     */
-    public function isImage(): bool
-    {
-        return AssetMimeType::isImage($this->mime_type);
-    }
 
-    /**
-     * Check if the asset is a document
-     *
-     * @return bool True if the asset is a document, false otherwise
-     */
-    public function isDocument(): bool
-    {
-        return AssetMimeType::isDocument($this->mime_type);
-    }
-
-    /**
-     * Check if the asset is a video
-     *
-     * @return bool True if the asset is a video, false otherwise
-     */
-    public function isVideo(): bool
-    {
-        return AssetMimeType::isVideo($this->mime_type);
-    }
-
-    /**
-     * Check if the asset is an audio
-     *
-     * @return bool True if the asset is an audio, false otherwise
-     */
-    public function isAudio(): bool
-    {
-        return AssetMimeType::isAudio($this->mime_type);
-    }
-
-    /**
-     * Check if the asset is an archive
-     *
-     * @return bool True if the asset is an archive, false otherwise
-     */
-    public function isArchive(): bool
-    {
-        return AssetMimeType::isArchive($this->mime_type);
-    }
-
-    /**
-     * Check if the asset is a text file
-     *
-     * @return bool True if the asset is a text file, false otherwise
-     */
-    public function isText(): bool
-    {
-        return AssetMimeType::isText($this->mime_type);
-    }
-
-    /**
-     * Check if the asset is a web file
-     *
-     * @return bool True if the asset is a web file, false otherwise
-     */
-    public function isWeb(): bool
-    {
-        return AssetMimeType::isWeb($this->mime_type);
-    }
-
-    /**
-     * Check if the asset is a programming file
-     *
-     * @return bool True if the asset is a programming file, false otherwise
-     */
-    public function isProgramming(): bool
-    {
-        return AssetMimeType::isProgramming($this->mime_type);
-    }
-
-    /**
-     * Check if the asset is a font
-     *
-     * @return bool True if the asset is a font, false otherwise
-     */
-    public function isFont(): bool
-    {
-        return AssetMimeType::isFont($this->mime_type);
-    }
-
-    /**
-     * Check if the asset is a design file
-     *
-     * @return bool True if the asset is a design file, false otherwise
-     */
-    public function isDesign(): bool
-    {
-        return AssetMimeType::isDesign($this->mime_type);
-    }
-
-    /**
-     * Check if the asset is a database file
-     *
-     * @return bool True if the asset is a database file, false otherwise
-     */
-    public function isDatabase(): bool
-    {
-        return AssetMimeType::isDatabase($this->mime_type);
-    }
-
-    /**
-     * Check if the asset is an ebook
-     *
-     * @return bool True if the asset is an ebook, false otherwise
-     */
-    public function isEbook(): bool
-    {
-        return AssetMimeType::isEbook($this->mime_type);
-    }
-
-    /**
-     * Check if the asset is a CAD file
-     *
-     * @return bool True if the asset is a CAD file, false otherwise
-     */
-    public function isCad(): bool
-    {
-        return AssetMimeType::isCad($this->mime_type);
-    }
-
-    /**
-     * Check if the asset is a scientific file
-     *
-     * @return bool True if the asset is a scientific file, false otherwise
-     */
-    public function isScientific(): bool
-    {
-        return AssetMimeType::isScientific($this->mime_type);
-    }
-
-    /**
-     * Check if the asset is a configuration file
-     *
-     * @return bool True if the asset is a configuration file, false otherwise
-     */
-    public function isConfiguration(): bool
-    {
-        return AssetMimeType::isConfiguration($this->mime_type);
-    }
-
-    /**
-     * Check if the asset is an executable
-     *
-     * @return bool True if the asset is an executable, false otherwise
-     */
-    public function isExecutable(): bool
-    {
-        return AssetMimeType::isExecutable($this->mime_type);
-    }
-
-    /**
-     * Check if the asset is a vector graphic
-     *
-     * @return bool True if the asset is a vector graphic, false otherwise
-     */
-    public function isVectorGraphic(): bool
-    {
-        return AssetMimeType::isVectorGraphic($this->mime_type);
-    }
-
-    /**
-     * Check if the asset is a raster graphic
-     *
-     * @return bool True if the asset is a raster graphic, false otherwise
-     */
-    public function isRasterGraphic(): bool
-    {
-        return AssetMimeType::isRasterGraphic($this->mime_type);
-    }
-
-    /**
-     * Check if the asset is a spreadsheet
-     *
-     * @return bool True if the asset is a spreadsheet, false otherwise
-     */
-    public function isSpreadsheet(): bool
-    {
-        return AssetMimeType::isSpreadsheet($this->mime_type);
-    }
-
-    /**
-     * Check if the asset is a presentation
-     *
-     * @return bool True if the asset is a presentation, false otherwise
-     */
-    public function isPresentation(): bool
-    {
-        return AssetMimeType::isPresentation($this->mime_type);
-    }
-
-    /**
-     * Get a URL generator for this asset
-     *
-     * @param UrlGeneratorInterface|null $urlGenerator Custom URL generator to use, or null to use the default
-     * @param Entity|null                $entity       The entity to check authorization for, or null to skip authorization
-     *
-     * @return UrlGeneratorInterface The URL generator for this asset
-     */
-    public function getUrlGenerator(?UrlGeneratorInterface $urlGenerator = null, ?Entity $entity = null): UrlGeneratorInterface
-    {
-        if ($urlGenerator !== null) {
-            return $urlGenerator;
-        }
-
-        return new DefaultUrlGenerator($this, $entity);
-    }
-
-    /**
-     * Get the URL for this asset, optionally specifying a variant
-     *
-     * @param string                     $variantName  The name of the variant to get the URL for, or empty for the original asset
-     * @param UrlGeneratorInterface|null $urlGenerator Custom URL generator to use, or null to use the default
-     * @param Entity|null                $entity       The entity to check authorization for, or null to skip authorization
-     *
-     * @return string The URL to the asset
-     */
-    public function getUrl(string $variantName = '', ?UrlGeneratorInterface $urlGenerator = null, ?Entity $entity = null): string
-    {
-        return $this->getUrlGenerator($urlGenerator, $entity)->getUrl($variantName);
-    }
-
-    /**
-     * Get a temporary URL for this asset that expires after the specified time
-     *
-     * @param Time                       $expiration   The time when the URL should expire
-     * @param string                     $variantName  The name of the variant to get the URL for, or empty for the original asset
-     * @param array                      $options      Additional options for the URL generation
-     * @param UrlGeneratorInterface|null $urlGenerator Custom URL generator to use, or null to use the default
-     * @param Entity|null                $entity       The entity to check authorization for, or null to skip authorization
-     *
-     * @return string The temporary URL to the asset
-     */
-    public function getTemporaryUrl(Time $expiration, string $variantName = '', array $options = [], ?UrlGeneratorInterface $urlGenerator = null, ?Entity $entity = null): string
-    {
-        return $this->getUrlGenerator($urlGenerator, $entity)->getTemporaryUrl($expiration, $variantName, $options);
-    }
 
     /**
      * Get the class name of the asset collection definition for this asset
@@ -423,5 +184,88 @@ final class Asset extends Entity
         }
 
         return AssetCollectionDefinitionFactory::create($collectionClass, ...$definitionArguments);
+    }
+
+    /**
+     * Get the subject entity which this asset belongs to.
+     * * @return Entity|null The entity that this asset belongs to, or null if not set
+     */
+    public function getSubjectEntity(...$arguments): ?Entity
+    {
+        $entityClass = $this->getSubjectEntityClassName();
+
+        if ($entityClass === null) {
+            return null;
+        }
+
+        return new $entityClass(...$arguments);
+    }
+
+    /**
+     * Get the subject entity which this asset belongs to class name.
+     *
+     * @return string|null  The class name of the subject entity, or null if not set
+     */
+
+    public function getSubjectEntityClassName(): ?string
+    {
+        $className = $this->metadata->basicInfo->entityTypeClassName();
+
+        if ($className === null) {
+            return null;
+        }
+
+        if (! class_exists($className) || ! is_subclass_of($className, Entity::class)) {
+            throw new InvalidArgumentException("Entity class '{$className}' does not exist or does not extend Entity.");
+        }
+
+        return $className;
+    }
+
+    public function getCustomProperty(string $propertyName): mixed
+    {
+        return $this->getMetadata()->userCustom->get($propertyName);
+    }
+
+    public function setCustomProperty(string $propertyName, mixed $value): static
+    {
+        $this->metadata->userCustom->set($propertyName, $value);
+
+        return $this;
+    }
+
+    /**
+     * Get all custom properties
+     *
+     * @return array<string, mixed> An associative array of custom properties
+     */
+    public function getCustomProperties(): array
+    {
+        return $this->getMetadata()->userCustom->getAll();
+    }
+
+    /**
+     * Save the asset to the database.
+     *
+     * @return bool True if the asset was saved successfully, false otherwise
+     */
+    public function save(): bool
+    {
+        $data = new Asset([
+            'id'           => $this->id,
+            'metadata'     => $this->getMetadata(),
+            'name'         => $this->name,
+            'order'        => $this->order,
+            'updated_at'   => $this->updated_at,
+        ]);
+
+        $model = model(AssetModel::class, false);
+
+        return $model->save($data);
+    }
+
+    protected function mimeTypeValue(): string
+    {
+        return $this->mime_type;
     }
 }
