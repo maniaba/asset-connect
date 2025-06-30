@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 namespace Maniaba\FileConnect\Asset\Traits;
 
 use Maniaba\FileConnect\Enums\AssetMimeType;

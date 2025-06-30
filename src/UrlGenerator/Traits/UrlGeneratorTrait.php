@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 namespace Maniaba\FileConnect\UrlGenerator\Traits;
 
 use CodeIgniter\Entity\Entity;

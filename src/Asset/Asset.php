@@ -12,10 +12,7 @@ use InvalidArgumentException;
 use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Asset\Traits\AssetMimeTypeTrait;
 use Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory;
-use Maniaba\FileConnect\Enums\AssetMimeType;
 use Maniaba\FileConnect\Models\AssetModel;
-use Maniaba\FileConnect\UrlGenerator\DefaultUrlGenerator;
-use Maniaba\FileConnect\UrlGenerator\Interfaces\UrlGeneratorInterface;
 use Maniaba\FileConnect\UrlGenerator\Traits\UrlGeneratorTrait;
 
 /**
@@ -28,12 +25,12 @@ use Maniaba\FileConnect\UrlGenerator\Traits\UrlGeneratorTrait;
  * @property      string            $file_name    name of the file associated with the asset
  * @property-read string            $extension    file extension of the asset
  * @property      int               $id           identifier for the asset
- * @property-read  AssetMetadata     $metadata
+ * @property-read AssetMetadata     $metadata
  * @property      string            $mime_type    MIME type of the file
  * @property      string            $name         name of the asset
  * @property      int               $order        order of the asset in the collection
  * @property      string            $path         path to the file on the server
- * @property-read      string            $path_dirname directory path of the file on the server
+ * @property-read string            $path_dirname directory path of the file on the server
  * @property      int               $size         size of the file in bytes
  * @property      Time              $updated_at   timestamp when the asset was last updated
  */
@@ -144,8 +141,6 @@ final class Asset extends Entity
         return dirname($this->path) . DIRECTORY_SEPARATOR;
     }
 
-
-
     /**
      * Get the class name of the asset collection definition for this asset
      *
@@ -188,6 +183,7 @@ final class Asset extends Entity
 
     /**
      * Get the subject entity which this asset belongs to.
+     *
      * * @return Entity|null The entity that this asset belongs to, or null if not set
      */
     public function getSubjectEntity(...$arguments): ?Entity
@@ -204,9 +200,8 @@ final class Asset extends Entity
     /**
      * Get the subject entity which this asset belongs to class name.
      *
-     * @return string|null  The class name of the subject entity, or null if not set
+     * @return string|null The class name of the subject entity, or null if not set
      */
-
     public function getSubjectEntityClassName(): ?string
     {
         $className = $this->metadata->basicInfo->entityTypeClassName();
@@ -252,11 +247,11 @@ final class Asset extends Entity
     public function save(): bool
     {
         $data = new Asset([
-            'id'           => $this->id,
-            'metadata'     => $this->getMetadata(),
-            'name'         => $this->name,
-            'order'        => $this->order,
-            'updated_at'   => $this->updated_at,
+            'id'         => $this->id,
+            'metadata'   => $this->getMetadata(),
+            'name'       => $this->name,
+            'order'      => $this->order,
+            'updated_at' => $this->updated_at,
         ]);
 
         $model = model(AssetModel::class, false);
