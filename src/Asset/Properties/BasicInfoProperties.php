@@ -1,0 +1,46 @@
+<?php
+
+declare(strict_types=1);
+
+
+namespace Maniaba\FileConnect\Asset\Properties;
+
+use CodeIgniter\Entity\Entity;
+use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
+
+final class BasicInfoProperties extends BaseProperties
+{
+
+    public static function getName(): string
+    {
+        return 'basic_info';
+    }
+
+    public function entityTypeClass(string|Entity $entity): void
+    {
+        if ($entity instanceof Entity) {
+            $entity = $entity::class;
+        }
+
+        $this->set('entity_type_class', $entity);
+    }
+
+    public function entityTypeClassName(): ?string
+    {
+        return $this->get('entity_type_class');
+    }
+
+    public function collectionClass(string|AssetCollectionDefinitionInterface $collectionClass): void
+    {
+        if ($collectionClass instanceof AssetCollectionDefinitionInterface) {
+            $collectionClass = $collectionClass::class;
+        }
+
+        $this->set('collection_class', $collectionClass);
+    }
+
+    public function collectionClassName(): ?string
+    {
+        return $this->get('collection_class');
+    }
+}

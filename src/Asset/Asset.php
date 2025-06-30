@@ -12,6 +12,8 @@ use InvalidArgumentException;
 use Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory;
 use Maniaba\FileConnect\Enums\AssetMimeType;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
+use Maniaba\FileConnect\UrlGenerator\DefaultUrlGenerator;
+use Maniaba\FileConnect\UrlGenerator\UrlGeneratorInterface;
 
 /**
  * @property      string            $collection   name of the collection to which the asset belongs (md5 hash of the class name)
@@ -51,6 +53,8 @@ final class Asset extends Entity
             throw new InvalidArgumentException('Entity type must be a valid Entity class or instance.');
         }
 
+        $this->properties->basicInfo->entityTypeClass($entityType);
+
         $this->attributes['entity_type'] = md5($entityType);
 
         return $this;
@@ -71,10 +75,14 @@ final class Asset extends Entity
             AssetCollectionDefinitionFactory::validateStringClass($collection);
         }
 
+        $this->properties->basicInfo->collectionClass($collection);
+
         $this->attributes['collection'] = md5($collection);
 
         return $this;
     }
+
+    private Properties $propertiesInstance;
 
     protected function setProperties(Properties|string|null $properties): static
     {
@@ -84,24 +92,38 @@ final class Asset extends Entity
             $properties = new Properties();
         }
 
-        $this->attributes['properties'] = $properties;
+        $this->propertiesInstance = $properties;
 
         return $this;
     }
 
     protected function getProperties(): Properties
     {
-        $value = $this->attributes['properties'] ?? null;
+        if (! isset($this->propertiesInstance)) {
+            $value = $this->attributes['properties'] ?? null;
 
-        if ($value === null) {
-            return $this->attributes['properties'] = new Properties();
+            if (is_string($value)) {
+                $value = json_decode($value, true);
+                $this->propertiesInstance = new Properties($value);
+            } elseif (is_array($value)) {
+                $this->propertiesInstance = new Properties($value);
+            } else if ($value instanceof Properties) {
+                $this->propertiesInstance = $value;
+            } else {
+                $this->propertiesInstance = new Properties();
+            }
+
         }
 
-        if ($value instanceof Properties) {
-            return $value;
-        }
+        return $this->propertiesInstance;
+    }
 
-        return new Properties(json_decode((string) $value, true));
+    public function toRawArray(bool $onlyChanged = false, bool $recursive = false): array
+    {
+        $rawArray = parent::toRawArray($onlyChanged, $recursive);
+        $rawArray['properties'] = json_encode($this->getProperties());
+
+        return $rawArray;
     }
 
     protected function getExtension(): string
@@ -316,5 +338,91 @@ final class Asset extends Entity
     public function isPresentation(): bool
     {
         return AssetMimeType::isPresentation($this->mime_type);
+    }
+
+    /**
+     * Get a URL generator for this asset
+     *
+     * @param UrlGeneratorInterface|null $urlGenerator Custom URL generator to use, or null to use the default
+     * @param Entity|null                $entity       The entity to check authorization for, or null to skip authorization
+     *
+     * @return UrlGeneratorInterface The URL generator for this asset
+     */
+    public function getUrlGenerator(?UrlGeneratorInterface $urlGenerator = null, ?Entity $entity = null): UrlGeneratorInterface
+    {
+        if ($urlGenerator !== null) {
+            return $urlGenerator;
+        }
+
+        return new DefaultUrlGenerator($this, $entity);
+    }
+
+    /**
+     * Get the URL for this asset, optionally specifying a variant
+     *
+     * @param string                     $variantName  The name of the variant to get the URL for, or empty for the original asset
+     * @param UrlGeneratorInterface|null $urlGenerator Custom URL generator to use, or null to use the default
+     * @param Entity|null                $entity       The entity to check authorization for, or null to skip authorization
+     *
+     * @return string The URL to the asset
+     */
+    public function getUrl(string $variantName = '', ?UrlGeneratorInterface $urlGenerator = null, ?Entity $entity = null): string
+    {
+        return $this->getUrlGenerator($urlGenerator, $entity)->getUrl($variantName);
+    }
+
+    /**
+     * Get a temporary URL for this asset that expires after the specified time
+     *
+     * @param Time                       $expiration   The time when the URL should expire
+     * @param string                     $variantName  The name of the variant to get the URL for, or empty for the original asset
+     * @param array                      $options      Additional options for the URL generation
+     * @param UrlGeneratorInterface|null $urlGenerator Custom URL generator to use, or null to use the default
+     * @param Entity|null                $entity       The entity to check authorization for, or null to skip authorization
+     *
+     * @return string The temporary URL to the asset
+     */
+    public function getTemporaryUrl(Time $expiration, string $variantName = '', array $options = [], ?UrlGeneratorInterface $urlGenerator = null, ?Entity $entity = null): string
+    {
+        return $this->getUrlGenerator($urlGenerator, $entity)->getTemporaryUrl($expiration, $variantName, $options);
+    }
+
+    /**
+     * Get the class name of the asset collection definition for this asset
+     *
+     * @return string|null The class name of the asset collection definition, or null if not set
+     * @throws InvalidArgumentException If the collection class does not exist or does not implement AssetCollectionDefinitionInterface
+     */
+    public function getAssetCollectionDefinitionClass(): ?string
+    {
+        $collectionClass = $this->getProperties()->basicInfo->collectionClassName();
+
+        if ($collectionClass === null) {
+            return null;
+        }
+
+        if (! class_exists($collectionClass) || ! is_subclass_of($collectionClass, AssetCollectionDefinitionInterface::class)) {
+            throw new InvalidArgumentException("Collection class '{$collectionClass}' does not exist or does not implement AssetCollectionDefinitionInterface.");
+        }
+
+        return $collectionClass;
+    }
+
+    /**
+     * Get the asset collection definition for this asset
+     *
+     * @param mixed ...$definitionArguments Additional arguments to pass to the collection definition constructor
+     *
+     * @return AssetCollectionDefinitionInterface|null The asset collection definition, or null if not set
+     */
+    public function getAssetCollectionDefinition(...$definitionArguments): ?AssetCollectionDefinitionInterface
+    {
+        $collectionClass = $this->getAssetCollectionDefinitionClass();
+
+        if ($collectionClass === null) {
+            return null;
+        }
+
+        return AssetCollectionDefinitionFactory::create($collectionClass, ...$definitionArguments);
     }
 }

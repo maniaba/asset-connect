@@ -18,7 +18,7 @@ final class DefaultAssetCollection implements AssetCollectionDefinitionInterface
         $definition->onlyKeepLatest(2); // Keep only the latest 2 versions of the asset.
     }
 
-    public function checkAuthorization(array|Entity $entity, Asset $asset): bool
+    public function checkAuthorization(Entity $entity, Asset $asset): bool
     {
         return true;
     }
