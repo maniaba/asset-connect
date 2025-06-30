@@ -217,4 +217,9 @@ final class AssetCollection implements AssetCollectionSetterInterface, AssetColl
     {
         return new AssetCollection($setupAssetCollection);
     }
+
+    public function isProtected(): bool
+    {
+        return $this->getVisibility() === AssetVisibility::PROTECTED;
+    }
 }

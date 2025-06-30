@@ -41,12 +41,12 @@ final class DefaultUrlGenerator implements UrlGeneratorInterface
             return false;
         }
 
-        return $this->collectionDefinition->checkAuthorization($entity, $this->asset);
+        return $this->collectionDefinition->checkAuthorization($this->asset);
     }
 
     public function getUrl(?string $variantName = null): string
     {
-        $collection  = AssetCollectionDefinitionFactory::createCollection($this->collectionDefinition);
+        $collection  = AssetCollectionDefinitionFactory::create($this->collectionDefinition);
         $isProtected = $collection->getVisibility() === AssetVisibility::PROTECTED;
 
         if ($isProtected) {

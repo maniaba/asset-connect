@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Maniaba\FileConnect\Asset\Interfaces;
 
-use CodeIgniter\Entity\Entity;
 use Maniaba\FileConnect\Asset\Asset;
 
 interface AuthorizableAssetCollectionDefinitionInterface extends AssetCollectionDefinitionInterface
@@ -13,5 +12,5 @@ interface AuthorizableAssetCollectionDefinitionInterface extends AssetCollection
      *  Check if the user is authorized to access the asset collection.
      *  Files typically stored in this collection are user-specific, such as profile pictures or documents.
      */
-    public function checkAuthorization(array|Entity $entity, Asset $asset): bool;
+    public function checkAuthorization(Asset $asset): bool;
 }
