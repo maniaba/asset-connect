@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Maniaba\FileConnect\Config;
 
 use CodeIgniter\Config\BaseConfig;
-use Maniaba\FileConnect\AssetCollection\AssetVariantsProcess;
 use Maniaba\FileConnect\AssetCollection\DefaultAssetCollection;
+use Maniaba\FileConnect\AssetVariants\AssetVariantsProcess;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Jobs\AssetConnectJob;
 use Maniaba\FileConnect\PathGenerator\DefaultPathGenerator;

@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\AssetCollection;
+namespace Maniaba\FileConnect\AssetVariants;
 
 use Closure;
 use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\Asset\AssetVariant;
 use Maniaba\FileConnect\Exceptions\FileVariantException;
 use Maniaba\FileConnect\Interfaces\AssetCollection\CreateAssetVariantsInterface;
 use Throwable;
@@ -22,7 +21,7 @@ final class AssetVariantsQueue implements CreateAssetVariantsInterface
 
     public function assetVariant(string $name, Closure $closure): ?AssetVariant
     {
-        $variant = $this->asset->properties->fileVariant->getAssetVariant($name);
+        $variant = $this->asset->metadata->fileVariant->getAssetVariant($name);
 
         if ($variant === null) {
             log_message('error', 'Asset variant "{name}" not found for asset ID "{asset}".', [
@@ -65,11 +64,11 @@ final class AssetVariantsQueue implements CreateAssetVariantsInterface
         $variant->processed = true;
 
         // Update the asset variant in the properties
-        $properties = $this->asset->properties;
+        $properties = $this->asset->metadata;
         $properties->fileVariant->updateAssetVariant($variant);
 
         // Update the asset
-        $this->asset->properties = $properties;
+        $this->asset->metadata = $properties;
 
         return $variant;
     }

@@ -5,20 +5,19 @@ declare(strict_types=1);
 namespace Tests\Asset;
 
 use CodeIgniter\Test\CIUnitTestCase;
-use Maniaba\FileConnect\Asset\Properties;
-use Maniaba\FileConnect\Asset\Properties\UserCustomProperties;
+use Maniaba\FileConnect\Asset\AssetMetadata;
 
 /**
  * @internal
  */
 final class PropertiesTest extends CIUnitTestCase
 {
-    private Properties $properties;
+    private AssetMetadata $properties;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->properties = new Properties();
+        $this->properties = new AssetMetadata();
     }
 
     /**
@@ -49,7 +48,7 @@ final class PropertiesTest extends CIUnitTestCase
         ];
 
         // Act
-        $properties = new Properties($values);
+        $properties = new AssetMetadata($values);
 
         // Assert
         $this->assertSame('Test Name', $properties->userCustom->get('name'));
@@ -74,7 +73,7 @@ final class PropertiesTest extends CIUnitTestCase
                 'medium'    => 'medium.jpg',
             ],
         ];
-        $properties = new Properties($values);
+        $properties = new AssetMetadata($values);
 
         // Act
         $json = $properties->jsonSerialize();
@@ -102,7 +101,7 @@ final class PropertiesTest extends CIUnitTestCase
                 'medium'    => 'medium.jpg',
             ],
         ];
-        $properties = new Properties($values);
+        $properties = new AssetMetadata($values);
 
         // Act
         $string = (string) $properties;

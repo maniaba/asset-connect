@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Asset\Properties;
 
 use CodeIgniter\Test\CIUnitTestCase;
-use Maniaba\FileConnect\Asset\Properties\UserCustomProperties;
+use Maniaba\FileConnect\Asset\Properties\UserCustomProperty;
 
 /**
  * @internal
@@ -22,7 +22,7 @@ final class UserCustomPropertiesTest extends CIUnitTestCase
      */
     public function testGetNameReturnsCorrectName(): void
     {
-        $this->assertSame('user_custom', UserCustomProperties::getName());
+        $this->assertSame('user_custom', UserCustomProperty::getName());
     }
 
     /**
@@ -34,10 +34,10 @@ final class UserCustomPropertiesTest extends CIUnitTestCase
         $properties = ['user_custom' => ['key' => 'value']];
 
         // Act
-        $result = UserCustomProperties::create($properties);
+        $result = UserCustomProperty::create($properties);
 
         // Assert
-        $this->assertInstanceOf(UserCustomProperties::class, $result);
+        $this->assertInstanceOf(UserCustomProperty::class, $result);
         $this->assertSame('value', $result->get('key'));
     }
 
@@ -48,7 +48,7 @@ final class UserCustomPropertiesTest extends CIUnitTestCase
     {
         // Arrange
         $properties           = ['key1' => 'value1', 'key2' => 'value2'];
-        $userCustomProperties = new UserCustomProperties($properties);
+        $userCustomProperties = new UserCustomProperty($properties);
 
         // Act
         $json = $userCustomProperties->jsonSerialize();

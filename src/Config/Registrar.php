@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Maniaba\FileConnect\Config;
 
-use Maniaba\FileConnect\AssetCollection\AssetVariantsProcess;
+use Maniaba\FileConnect\AssetVariants\AssetVariantsProcess;
 use Maniaba\FileConnect\Jobs\AssetConnectJob;
 
 class Registrar

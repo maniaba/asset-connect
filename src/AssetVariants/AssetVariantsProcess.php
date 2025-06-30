@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\AssetCollection;
+namespace Maniaba\FileConnect\AssetVariants;
 
 use CodeIgniter\Queue\Config\Services;
 use Maniaba\FileConnect\Asset\Asset;

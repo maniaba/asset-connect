@@ -25,12 +25,12 @@ use Maniaba\FileConnect\UrlGenerator\UrlGeneratorInterface;
  * @property      string            $file_name    name of the file associated with the asset
  * @property-read string            $extension    file extension of the asset
  * @property      int               $id           identifier for the asset
+ * @property      AssetMetadata     $metadata
  * @property      string            $mime_type    MIME type of the file
  * @property      string            $name         name of the asset
  * @property      int               $order        order of the asset in the collection
  * @property      string            $path         path to the file on the server
  * @property      string            $path_dirname directory path of the file on the server
- * @property      Properties        $properties
  * @property      int               $size         size of the file in bytes
  * @property      Time              $updated_at   timestamp when the asset was last updated
  */
@@ -44,6 +44,7 @@ final class Asset extends Entity
         'collection'  => 'string',
         'size'        => 'int',
     ];
+    private AssetMetadata $metadata;
 
     public function setEntityType(Entity|string $entityType): static
     {
@@ -53,7 +54,7 @@ final class Asset extends Entity
             throw new InvalidArgumentException('Entity type must be a valid Entity class or instance.');
         }
 
-        $this->properties->basicInfo->entityTypeClass($entityType);
+        $this->metadata->basicInfo->entityTypeClass($entityType);
 
         $this->attributes['entity_type'] = md5($entityType);
 
@@ -75,53 +76,50 @@ final class Asset extends Entity
             AssetCollectionDefinitionFactory::validateStringClass($collection);
         }
 
-        $this->properties->basicInfo->collectionClass($collection);
+        $this->metadata->basicInfo->collectionClass($collection);
 
         $this->attributes['collection'] = md5($collection);
 
         return $this;
     }
 
-    private Properties $propertiesInstance;
-
-    protected function setProperties(Properties|string|null $properties): static
+    protected function setMetadata(AssetMetadata|string|null $metadata): static
     {
-        if (is_string($properties)) {
-            $properties = new Properties(json_decode($properties, true));
-        } elseif ($properties === null) {
-            $properties = new Properties();
+        if (is_string($metadata)) {
+            $metadata = new AssetMetadata(json_decode($metadata, true));
+        } elseif ($metadata === null) {
+            $metadata = new AssetMetadata();
         }
 
-        $this->propertiesInstance = $properties;
+        $this->metadata = $metadata;
 
         return $this;
     }
 
-    protected function getProperties(): Properties
+    protected function getMetadata(): AssetMetadata
     {
-        if (! isset($this->propertiesInstance)) {
-            $value = $this->attributes['properties'] ?? null;
+        if (! isset($this->metadata)) {
+            $value = $this->attributes['metadata'] ?? null;
 
             if (is_string($value)) {
-                $value = json_decode($value, true);
-                $this->propertiesInstance = new Properties($value);
+                $value          = json_decode($value, true);
+                $this->metadata = new AssetMetadata($value);
             } elseif (is_array($value)) {
-                $this->propertiesInstance = new Properties($value);
-            } else if ($value instanceof Properties) {
-                $this->propertiesInstance = $value;
+                $this->metadata = new AssetMetadata($value);
+            } elseif ($value instanceof AssetMetadata) {
+                $this->metadata = $value;
             } else {
-                $this->propertiesInstance = new Properties();
+                $this->metadata = new AssetMetadata();
             }
-
         }
 
-        return $this->propertiesInstance;
+        return $this->metadata;
     }
 
     public function toRawArray(bool $onlyChanged = false, bool $recursive = false): array
     {
-        $rawArray = parent::toRawArray($onlyChanged, $recursive);
-        $rawArray['properties'] = json_encode($this->getProperties());
+        $rawArray             = parent::toRawArray($onlyChanged, $recursive);
+        $rawArray['metadata'] = json_encode($this->getMetadata());
 
         return $rawArray;
     }
@@ -391,11 +389,12 @@ final class Asset extends Entity
      * Get the class name of the asset collection definition for this asset
      *
      * @return string|null The class name of the asset collection definition, or null if not set
+     *
      * @throws InvalidArgumentException If the collection class does not exist or does not implement AssetCollectionDefinitionInterface
      */
     public function getAssetCollectionDefinitionClass(): ?string
     {
-        $collectionClass = $this->getProperties()->basicInfo->collectionClassName();
+        $collectionClass = $this->getMetadata()->basicInfo->collectionClassName();
 
         if ($collectionClass === null) {
             return null;

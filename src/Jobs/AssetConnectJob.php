@@ -9,7 +9,7 @@ use CodeIgniter\Queue\Interfaces\JobInterface;
 use Maniaba\FileConnect\Asset\Asset;
 use Maniaba\FileConnect\Asset\AssetStorageHandler;
 use Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory;
-use Maniaba\FileConnect\AssetCollection\AssetVariantsProcess;
+use Maniaba\FileConnect\AssetVariants\AssetVariantsProcess;
 use Maniaba\FileConnect\Exceptions\AssetException;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Models\AssetModel;
@@ -45,7 +45,7 @@ final class AssetConnectJob extends BaseJob implements JobInterface
         // Save the asset after processing variants, updating its properties
         $newAsset = new Asset([
             'id'         => $this->getAsset()->id,
-            'properties' => $this->getAsset()->properties,
+            'properties' => $this->getAsset()->metadata,
         ]);
         model(AssetModel::class, false)->save($newAsset);
 
@@ -83,7 +83,7 @@ final class AssetConnectJob extends BaseJob implements JobInterface
         }
 
         foreach ($deletedAssets as $asset) {
-            $variants = $asset->properties->fileVariant->getVariants();
+            $variants = $asset->metadata->fileVariant->getVariants();
 
             foreach ($variants as $variant) {
                 AssetStorageHandler::removeStoragePath($variant->path);

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Maniaba\FileConnect\Asset\Properties;
 
-final class UserCustomProperties extends BaseProperties
+final class UserCustomProperty extends BaseProperty
 {
     public static function getName(): string
     {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Asset;
+namespace Maniaba\FileConnect\AssetVariants;
 
 use CodeIgniter\Entity\Entity;
 use Maniaba\FileConnect\Exceptions\FileVariantException;

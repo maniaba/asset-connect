@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Maniaba\FileConnect\Asset\Properties;
 
-use Maniaba\FileConnect\Asset\AssetVariant;
+use Maniaba\FileConnect\AssetVariants\AssetVariant;
 use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
 
-final class AssetVariantProperties extends BaseProperties
+final class AssetVariantProperty extends BaseProperty
 {
     public static function getName(): string
     {

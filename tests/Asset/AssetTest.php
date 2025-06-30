@@ -9,8 +9,7 @@ use CodeIgniter\Files\File;
 use CodeIgniter\Test\CIUnitTestCase;
 use InvalidArgumentException;
 use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\Asset\Properties;
-use Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory;
+use Maniaba\FileConnect\Asset\AssetMetadata;
 use Maniaba\FileConnect\Interfaces\Asset\AssetCollectionDefinitionInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -140,7 +139,7 @@ final class AssetTest extends CIUnitTestCase
     public function testGetPropertiesWhenNotSet(): void
     {
         // Act
-        $properties = $this->asset->properties;
+        $properties = $this->asset->metadata;
 
         // Assert
         $this->assertNotNull($properties);
@@ -155,15 +154,15 @@ final class AssetTest extends CIUnitTestCase
         $propertiesArray = ['key' => 'value'];
         $propertiesJson  = json_encode($propertiesArray);
         // Create a Properties object with the JSON string
-        $properties = new Properties();
+        $properties = new AssetMetadata();
         $properties->fill($propertiesArray);
-        $this->asset->properties = $properties;
+        $this->asset->metadata = $properties;
 
         // Act
-        $properties = $this->asset->properties;
+        $properties = $this->asset->metadata;
 
         // Assert
-        $this->assertInstanceOf(Properties::class, $properties);
+        $this->assertInstanceOf(AssetMetadata::class, $properties);
     }
 
     /**
@@ -172,11 +171,11 @@ final class AssetTest extends CIUnitTestCase
     public function testGetPropertiesWhenSetAsObject(): void
     {
         // Arrange
-        $propertiesObject        = new Properties();
-        $this->asset->properties = $propertiesObject;
+        $propertiesObject      = new AssetMetadata();
+        $this->asset->metadata = $propertiesObject;
 
         // Act
-        $properties = $this->asset->properties;
+        $properties = $this->asset->metadata;
 
         // Assert
         $this->assertSame($propertiesObject, $properties);

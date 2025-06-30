@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\AssetCollection;
+namespace Maniaba\FileConnect\AssetVariants;
 
 use Closure;
 use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\Asset\AssetVariant;
 use Maniaba\FileConnect\Interfaces\AssetCollection\CreateAssetVariantsInterface;
 
 final class AssetVariants implements CreateAssetVariantsInterface
@@ -36,7 +35,7 @@ final class AssetVariants implements CreateAssetVariantsInterface
             'processed' => false,
         ]);
 
-        $this->asset->properties->fileVariant->addAssetVariant($variant);
+        $this->asset->metadata->fileVariant->addAssetVariant($variant);
 
         return $variant;
     }

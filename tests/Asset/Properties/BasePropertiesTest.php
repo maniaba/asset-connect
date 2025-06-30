@@ -6,12 +6,12 @@ namespace Tests\Asset\Properties;
 
 use CodeIgniter\Test\CIUnitTestCase;
 use InvalidArgumentException;
-use Maniaba\FileConnect\Asset\Properties\BaseProperties;
+use Maniaba\FileConnect\Asset\Properties\BaseProperty;
 
 /**
  * Concrete implementation of BaseProperties for testing
  */
-class TestProperties extends BaseProperties
+class TestProperty extends BaseProperty
 {
     public static function getName(): string
     {
@@ -24,14 +24,14 @@ class TestProperties extends BaseProperties
  */
 final class BasePropertiesTest extends CIUnitTestCase
 {
-    private TestProperties $baseProperties;
+    private TestProperty $baseProperties;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         // Create an instance of our concrete implementation
-        $this->baseProperties = new TestProperties([]);
+        $this->baseProperties = new TestProperty([]);
     }
 
     /**
@@ -43,7 +43,7 @@ final class BasePropertiesTest extends CIUnitTestCase
         $properties = ['key1' => 'value1', 'key2' => 'value2'];
 
         // Act
-        $baseProperties = new TestProperties($properties);
+        $baseProperties = new TestProperty($properties);
 
         // Assert - we'll test this through the get method
         $this->assertSame('value1', $baseProperties->get('key1'));
@@ -57,7 +57,7 @@ final class BasePropertiesTest extends CIUnitTestCase
     {
         // Arrange
         $properties     = ['key1' => 'value1', 'key2' => 'value2'];
-        $baseProperties = new TestProperties($properties);
+        $baseProperties = new TestProperty($properties);
 
         // Act
         $json = $baseProperties->jsonSerialize();
@@ -115,7 +115,7 @@ final class BasePropertiesTest extends CIUnitTestCase
         $properties = ['test_properties' => ['key' => 'value']];
 
         // Act
-        $result = TestProperties::create($properties);
+        $result = TestProperty::create($properties);
 
         // Assert
         $this->assertSame('value', $result->get('key'));
@@ -131,7 +131,7 @@ final class BasePropertiesTest extends CIUnitTestCase
 
         // Act & Assert
         $this->expectException(InvalidArgumentException::class);
-        TestProperties::create($properties);
+        TestProperty::create($properties);
     }
 
     /**
@@ -143,7 +143,7 @@ final class BasePropertiesTest extends CIUnitTestCase
         $properties = ['other_key' => ['key' => 'value']];
 
         // Act
-        $result = TestProperties::create($properties);
+        $result = TestProperty::create($properties);
 
         // Assert
         $this->assertNull($result->get('key')); // Should be empty

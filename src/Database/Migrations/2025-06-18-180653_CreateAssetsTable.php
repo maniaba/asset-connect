@@ -64,9 +64,9 @@ class CreateAssetsTable extends BaseMigration
                 'unsigned' => true,
                 'default'  => 0,
             ],
-            'properties' => [
+            'metadata' => [
                 'type'    => 'TEXT',
-                'comment' => 'JSON encoded custom properties for the asset',
+                'comment' => 'JSON encoded metadata for the asset',
                 'null'    => true,
             ],
             'created_at' => [

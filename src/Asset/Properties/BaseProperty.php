@@ -7,7 +7,7 @@ namespace Maniaba\FileConnect\Asset\Properties;
 use InvalidArgumentException;
 use JsonSerializable;
 
-abstract class BaseProperties implements JsonSerializable
+abstract class BaseProperty implements JsonSerializable
 {
     abstract public static function getName(): string;
 

@@ -139,7 +139,7 @@ final class AssetAdder
      */
     public function withCustomProperty(string $key, mixed $value): self
     {
-        $this->asset->properties->userCustom->set($key, $value);
+        $this->asset->metadata->userCustom->set($key, $value);
 
         return $this;
     }
@@ -152,7 +152,7 @@ final class AssetAdder
     public function withCustomProperties(array $customProperties): self
     {
         foreach ($customProperties as $key => $value) {
-            $this->asset->properties->userCustom->set($key, $value);
+            $this->asset->metadata->userCustom->set($key, $value);
         }
 
         return $this;
