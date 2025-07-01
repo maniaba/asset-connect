@@ -18,7 +18,7 @@ use Maniaba\FileConnect\Traits\UseAssetConnectTrait;
 final class AssetModel extends BaseModel
 {
     protected $allowedFields = [
-        'entity_type', 'entity_id', 'collection', 'name', 'file_name', 'mime_type', 'size', 'path', 'order', 'properties', 'created_at', 'updated_at', 'deleted_at',
+        'entity_type', 'entity_id', 'collection', 'name', 'file_name', 'mime_type', 'size', 'path', 'order', 'metadata', 'created_at', 'updated_at', 'deleted_at',
     ];
     protected $useSoftDeletes  = true;
     protected $useTimestamps   = true;
@@ -37,7 +37,7 @@ final class AssetModel extends BaseModel
         'size'        => 'required|integer',
         'path'        => 'required|max_length[1020]',
         'order'       => 'permit_empty|integer',
-        'properties'  => 'permit_empty|valid_json|max_length[65535]',
+        'metadata'    => 'permit_empty|valid_json|max_length[65535]',
     ];
 
     protected function setConfigTableName(): string

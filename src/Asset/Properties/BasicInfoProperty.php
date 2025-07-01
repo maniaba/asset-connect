@@ -6,6 +6,7 @@ namespace Maniaba\FileConnect\Asset\Properties;
 
 use CodeIgniter\Entity\Entity;
 use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
+use Maniaba\FileConnect\Asset\Interfaces\AuthorizableAssetCollectionDefinitionInterface;
 
 final class BasicInfoProperty extends BaseProperty
 {
@@ -40,5 +41,19 @@ final class BasicInfoProperty extends BaseProperty
     public function collectionClassName(): ?string
     {
         return $this->get('collection_class');
+    }
+
+    /**
+     * Check if the collection is protected.
+     *
+     * A collection is considered protected if it implements the AuthorizableAssetCollectionDefinitionInterface.
+     *
+     * @return bool True if the collection is protected, false otherwise.
+     */
+    public function isProtectedCollection(): bool
+    {
+        $collectionClass = $this->get('collection_class');
+
+        return is_subclass_of($collectionClass, AuthorizableAssetCollectionDefinitionInterface::class);
     }
 }
