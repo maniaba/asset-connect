@@ -73,7 +73,41 @@ final class DefaultPathGenerator implements PathGeneratorInterface
     }
 
     /**
+     * Get the base storage directory where variant files will be stored.
+     * This is the root directory for all variant files, which can be either protected or public.
+     *
+     * @param PathGeneratorHelper            $generatorHelper Helper for generating paths
+     * @param AssetCollectionGetterInterface $collection      The asset collection
+     *
+     * @return string The base storage directory path for variants
+     */
+    public function getStoreDirectoryForVariants(PathGeneratorHelper $generatorHelper, AssetCollectionGetterInterface $collection): string
+    {
+        // Variants use the same base storage directory as the original files
+        return $this->getStoreDirectory($generatorHelper, $collection);
+    }
+
+    /**
+     * Get the relative path within the storage directory for a specific variant file.
+     * This path is combined with the store directory to form the complete variant file path.
+     *
+     * @param PathGeneratorHelper            $generatorHelper Helper for generating paths
+     * @param AssetCollectionGetterInterface $collection      The asset collection
+     *
+     * @return string The relative path within the storage directory for variants
+     */
+    public function getFileRelativePathForVariants(PathGeneratorHelper $generatorHelper, AssetCollectionGetterInterface $collection): string
+    {
+        // Get the file relative path for the original file
+        $fileRelativePath = $this->getFileRelativePath($generatorHelper, $collection);
+
+        // Append 'variants' directory to the relative path
+        return $fileRelativePath . 'variants' . DIRECTORY_SEPARATOR;
+    }
+
+    /**
      * Get the path for conversions of the given media, relative to the root storage path.
+     * This is a convenience method that combines getStoreDirectoryForVariants and getFileRelativePathForVariants.
      *
      * @param PathGeneratorHelper            $generatorHelper Helper for generating paths
      * @param AssetCollectionGetterInterface $collection      The asset collection
@@ -82,9 +116,11 @@ final class DefaultPathGenerator implements PathGeneratorInterface
      */
     public function getPathForVariants(PathGeneratorHelper $generatorHelper, AssetCollectionGetterInterface $collection): string
     {
-        $basePath = $this->path ?? $this->getPath($generatorHelper, $collection);
+        // Always use the store directory and file relative path for variants
+        $storeDirectory   = $this->getStoreDirectoryForVariants($generatorHelper, $collection);
+        $fileRelativePath = $this->getFileRelativePathForVariants($generatorHelper, $collection);
 
-        return $basePath . 'variants' . DIRECTORY_SEPARATOR;
+        return $storeDirectory . $fileRelativePath;
     }
 
     public function onCreatedDirectory(string $path): void

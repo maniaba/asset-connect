@@ -206,7 +206,7 @@ final class AssetPersistenceManager
             /** @var AssetVariantsInterface $definition */
             $definition          = $this->setupAssetCollection->getCollectionDefinition();
             $this->assetVariants = new AssetVariants(
-                $this->pathGenerator->getPathForVariants(),
+                $this->pathGenerator,
                 $this->asset,
             );
 

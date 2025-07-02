@@ -66,6 +66,39 @@ final class PathGenerator
         return $path;
     }
 
+    /**
+     * Get the base storage directory where variant files will be stored.
+     * This is the root directory for all variant files, which can be either protected or public.
+     *
+     * @return string The base storage directory path for variants
+     */
+    public function getStoreDirectoryForVariants(): string
+    {
+        $storeDirectory = $this->pathGenerator->getStoreDirectoryForVariants($this->helper, $this->collection);
+
+        // Ensure the directory exists
+        $this->ensurePathExists($storeDirectory);
+
+        return $storeDirectory;
+    }
+
+    /**
+     * Get the relative path within the storage directory for a specific variant file.
+     * This path is combined with the store directory to form the complete variant file path.
+     *
+     * @return string The relative path within the storage directory for variants
+     */
+    public function getFileRelativePathForVariants(): string
+    {
+        return $this->pathGenerator->getFileRelativePathForVariants($this->helper, $this->collection);
+    }
+
+    /**
+     * Get the path for conversions of the given media, relative to the root storage path.
+     * This is a convenience method that combines getStoreDirectoryForVariants and getFileRelativePathForVariants.
+     *
+     * @return string The path for variants
+     */
     public function getPathForVariants(): string
     {
         $path = $this->pathGenerator->getPathForVariants($this->helper, $this->collection);

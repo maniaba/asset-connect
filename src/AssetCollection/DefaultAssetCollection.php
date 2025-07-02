@@ -25,5 +25,23 @@ final class DefaultAssetCollection implements AssetCollectionDefinitionInterface
     public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void
     {
         $variants->onQueue = true; // Indicates that file variants should be processed on a queue.
+
+        $variants->assetVariant('thumbnail', static function ($variant) use ($asset) {
+            // Here you can define how to create the thumbnail variant.
+            // For example, using an image processing library to resize the asset.
+            $variant->writeFile(file_get_contents($asset->path));
+        });
+
+        $variants->assetVariant('medium', static function ($variant) use ($asset) {
+            // Here you can define how to create the medium variant.
+            // For example, resizing the asset to a medium size.
+            $variant->writeFile(file_get_contents($asset->path));
+        });
+
+        $variants->assetVariant('large', static function ($variant) use ($asset) {
+            // Here you can define how to create the large variant.
+            // For example, resizing the asset to a large size.
+            $variant->writeFile(file_get_contents($asset->path));
+        });
     }
 }

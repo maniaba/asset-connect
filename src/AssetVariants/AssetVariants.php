@@ -7,13 +7,14 @@ namespace Maniaba\FileConnect\AssetVariants;
 use Closure;
 use Maniaba\FileConnect\Asset\Asset;
 use Maniaba\FileConnect\AssetCollection\Interfaces\CreateAssetVariantsInterface;
+use Maniaba\FileConnect\PathGenerator\PathGenerator;
 
 final class AssetVariants implements CreateAssetVariantsInterface
 {
     public bool $onQueue = false;
 
     public function __construct(
-        private readonly string $storagePath,
+        private readonly PathGenerator $pathGenerator,
         private readonly Asset $asset,
     ) {
     }
@@ -30,9 +31,13 @@ final class AssetVariants implements CreateAssetVariantsInterface
 
         $variant = new AssetVariant([
             'name'      => $name,
-            'path'      => $this->storagePath . $variantFileName,
+            'path'      => $this->pathGenerator->getPathForVariants() . $variantFileName,
             'size'      => 0, // Size will be updated after writing the file
             'processed' => false,
+            'paths'     => [
+                'storage_base_directory_path' => $this->pathGenerator->getStoreDirectoryForVariants(),
+                'file_relative_path'          => $this->pathGenerator->getFileRelativePathForVariants(),
+            ],
         ]);
 
         $this->asset->metadata->fileVariant->addAssetVariant($variant);

@@ -6,12 +6,14 @@ namespace Maniaba\FileConnect\AssetVariants;
 
 use CodeIgniter\Entity\Entity;
 use Maniaba\FileConnect\Exceptions\FileVariantException;
+use stdClass;
 
 /**
- * @property string $name
- * @property string $path
- * @property bool   $processed
- * @property int    $size
+ * @property string                                                                          $name
+ * @property string                                                                          $path
+ * @property array{storage_base_directory_path: string, file_relative_path: string}|stdClass $paths
+ * @property bool                                                                            $processed
+ * @property int                                                                             $size
  */
 final class AssetVariant extends Entity
 {
@@ -24,6 +26,7 @@ final class AssetVariant extends Entity
     protected $casts = [
         'size'      => 'int',
         'processed' => 'bool',
+        'paths'     => 'json',
     ];
 
     /**
