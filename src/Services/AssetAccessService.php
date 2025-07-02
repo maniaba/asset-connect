@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Maniaba\FileConnect\Services;
 
 use CodeIgniter\HTTP\DownloadResponse;
-use CodeIgniter\HTTP\ResponseInterface;
 use Maniaba\FileConnect\Asset\Asset;
 use Maniaba\FileConnect\Asset\Interfaces\AuthorizableAssetCollectionDefinitionInterface;
-use Maniaba\FileConnect\AssetVariants\AssetVariant;
 use Maniaba\FileConnect\Exceptions\PageException;
 use Maniaba\FileConnect\Models\AssetModel;
 use Maniaba\FileConnect\Services\Interfaces\AssetAccessServiceInterface;
@@ -19,7 +17,7 @@ final class AssetAccessService implements AssetAccessServiceInterface
     /**
      * {@inheritDoc}
      */
-    public function handleAssetRequest(int $assetId, ?string $variantName = null): ResponseInterface
+    public function handleAssetRequest(int $assetId, ?string $variantName = null): DownloadResponse
     {
         // Get the asset from the database
         $assetModel = model(AssetModel::class, false);
@@ -42,14 +40,13 @@ final class AssetAccessService implements AssetAccessServiceInterface
         if ($variantName !== null && $variantName !== '') {
             $variant = $asset->metadata->fileVariant->getAssetVariant($variantName);
 
-            if ($variant === null && $variantName !== 'default') {
+            if ($variant === null) {
                 // If the variant is not found, throw an exception
                 throw PageException::forVariantNotFound($variantName);
             }
-            if ($variant instanceof AssetVariant) {
-                $filePath     = $variant->path;
-                $relativePath = $variant->relative_path;
-            }
+
+            $filePath     = $variant->path;
+            $relativePath = $variant->relative_path;
         }
 
         // Check if the file exists
@@ -86,7 +83,7 @@ final class AssetAccessService implements AssetAccessServiceInterface
         return $collection->checkAuthorization($asset);
     }
 
-    public function handleTemporaryAssetRequest(string $token): ResponseInterface
+    public function handleTemporaryAssetRequest(string $token): DownloadResponse
     {
         $tokenData = TempUrlToken::validateToken($token);
 

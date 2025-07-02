@@ -4,8 +4,45 @@ declare(strict_types=1);
 
 namespace Maniaba\FileConnect\UrlGenerator;
 
+use CodeIgniter\Router\RouteCollection;
+use Maniaba\FileConnect\Controllers\AssetConnectController;
 use Maniaba\FileConnect\UrlGenerator\Interfaces\UrlGeneratorInterface;
 
 class DefaultUrlGenerator implements UrlGeneratorInterface
 {
+    public static function routes(RouteCollection &$routes): void
+    {
+        $routes->group('assets', static function (RouteCollection $routes) {
+            // Bug in CodeIgniter routes, if we write only $1, we will get first segment as $1 and second segment as $2.
+            $routes->get('(:num)/(:segment)', [AssetConnectController::class, 'show/$1/$3'], [
+                'priority' => 100,
+                'as'       => 'asset-connect.show',
+            ]);
+
+            $routes->get('(:num)/variant/(:segment)/(:segment)', [AssetConnectController::class, 'show/$1/$2'], [
+                'priority' => 100,
+                'as'       => 'asset-connect.show_variant',
+            ]);
+
+            $routes->get('temporary/(:segment)/(:segment)', [AssetConnectController::class, 'temporary/$1'], [
+                'priority' => 100,
+                'as'       => 'asset-connect.temporary',
+            ]);
+
+            $routes->get('temporary/(:segment)/variant/(:segment)/(:segment)', [AssetConnectController::class, 'temporary/$1'], [
+                'priority' => 100,
+                'as'       => 'asset-connect.temporary_variant',
+            ]);
+        });
+    }
+
+    public static function params(int $assetId, ?string $variantName, string $filename, ?string $token = null): array
+    {
+        return [
+            'asset-connect.show'              => [$assetId, $filename],
+            'asset-connect.show_variant'      => [$assetId, $variantName, $filename],
+            'asset-connect.temporary'         => [$token, $filename],
+            'asset-connect.temporary_variant' => [$token, $variantName, $filename],
+        ];
+    }
 }

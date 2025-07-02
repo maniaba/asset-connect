@@ -59,9 +59,9 @@ class Asset extends BaseConfig
      *
      * You can change this to any class that implements the UrlGeneratorInterface.
      *
-     * @var class-string<UrlGeneratorInterface>
+     * @var class-string<UrlGeneratorInterface>|null If null, the default URL generator will be used and routes not registered.
      */
-    public string $defaultUrlGenerator = DefaultUrlGenerator::class;
+    public ?string $defaultUrlGenerator = DefaultUrlGenerator::class;
 
     /**
      * --------------------------------------------------------------------

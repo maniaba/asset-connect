@@ -5,16 +5,17 @@ declare(strict_types=1);
 namespace Maniaba\FileConnect\UrlGenerator;
 
 use CodeIgniter\I18n\Time;
+use CodeIgniter\Router\RouteCollection;
 use Maniaba\FileConnect\Asset\Asset;
 use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
 use Maniaba\FileConnect\UrlGenerator\Interfaces\UrlGeneratorInterface;
 
-final class UrlGenerator implements UrlGeneratorInterface
+final class UrlGenerator
 {
     private Asset $asset;
     private bool $isProtectedCollection;
 
-    public function __construct(Asset $asset)
+    private function __construct(Asset $asset)
     {
         $this->asset                 = $asset;
         $this->isProtectedCollection = $this->asset->metadata->basicInfo->isProtectedCollection();
@@ -47,16 +48,9 @@ final class UrlGenerator implements UrlGeneratorInterface
         }
 
         // If the asset is part of a protected collection, return the URL with go to controller route
-        $path = $variantName === null || $variantName === '' ?
-            route_to('asset-connect.show', (int) $this->asset->id, $this->asset->file_name) :
-            route_to('asset-connect.show_variant', (int) $this->asset->id, $variantName, $this->asset->file_name);
+        $method = $variantName === null || $variantName === '' ? 'asset-connect.show' : 'asset-connect.show_variant';
 
-        if ($path === false) {
-            // Please define route with name asset-connect.show
-            throw new InvalidArgumentException("Could not generate URL for asset '{$this->asset->id}' with variant '{$variantName}'. Please ensure the route 'asset-connect.show' is defined.");
-        }
-
-        return site_url($path);
+        return self::routeTo($method, (int) $this->asset->id, $variantName, $this->asset->file_name);
     }
 
     /**
@@ -70,8 +64,64 @@ final class UrlGenerator implements UrlGeneratorInterface
     public function getTemporaryUrl(Time $expiration, ?string $variantName = null): string
     {
         // Generate a temporary URL for the asset
-        $token = TempUrlToken::createToken($this->asset, $variantName, $expiration);
+        $token  = TempUrlToken::createToken($this->asset, $variantName, $expiration);
+        $method = $variantName === null || $variantName === '' ? 'asset-connect.temporary' : 'asset-connect.temporary_variant';
 
-        return route_to('asset-connect.temporary', $token, (int) $this->asset->id, $variantName, $this->asset->file_name) ?? '';
+        return self::routeTo($method, (int) $this->asset->id, $variantName, $this->asset->file_name, $token);
+    }
+
+    public static function routes(RouteCollection &$routes): void
+    {
+        /** @var \Maniaba\FileConnect\Config\Asset $config */
+        $config       = config('Asset');
+        $urlGenerator = $config->defaultUrlGenerator;
+
+        if ($urlGenerator === null) {
+            return;
+        }
+
+        // check if the class implements UrlGeneratorInterface
+        if (! is_subclass_of($urlGenerator, UrlGeneratorInterface::class)) {
+            throw new InvalidArgumentException("The URL generator class '{$urlGenerator}' must implement the UrlGeneratorInterface.");
+        }
+        $urlGenerator::routes($routes);
+    }
+
+    public static function routeTo(string $routeName, int $assetId, ?string $variantName, string $filename, ?string $token = null): string
+    {
+        /** @var \Maniaba\FileConnect\Config\Asset $config */
+        $config       = config('Asset');
+        $urlGenerator = $config->defaultUrlGenerator;
+
+        if ($urlGenerator === null) {
+            return '';
+        }
+
+        // check if the class implements UrlGeneratorInterface
+        if (! is_subclass_of($urlGenerator, UrlGeneratorInterface::class)) {
+            throw new InvalidArgumentException("The URL generator class '{$urlGenerator}' must implement the UrlGeneratorInterface.");
+        }
+
+        $params = $urlGenerator::params($assetId, $variantName, $filename, $token);
+
+        if (! isset($params[$routeName])) {
+            throw new InvalidArgumentException("Route '{$routeName}' is not defined in the URL generator.");
+        }
+
+        $routeParams = $params[$routeName];
+
+        $path = route_to($routeName, ...$routeParams);
+
+        if ($path === false) {
+            // Please define route with name asset-connect.show
+            throw new InvalidArgumentException("Could not generate URL for asset '{$assetId}' with variant '{$variantName}'. Please ensure the route '{$routeName}' is defined.");
+        }
+
+        return $path;
+    }
+
+    public static function create(Asset $asset): self
+    {
+        return new self($asset);
     }
 }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Maniaba\FileConnect\Controllers;
 
 use CodeIgniter\Controller;
-use CodeIgniter\HTTP\DownloadResponse;
 use CodeIgniter\HTTP\ResponseInterface;
 use Maniaba\FileConnect\Services\AssetAccessService;
 
@@ -18,13 +17,19 @@ final class AssetConnectController extends Controller
         /** @var AssetAccessService $service */
         $service = service('assetAccessService');
 
-        $a = $service->handleAssetRequest($assetId, $variantName);
-
-        if ($a instanceof DownloadResponse) {
-            return $a->inline();
+        if ($variantName === '') {
+            $variantName = null; // Handle empty variant name as null
         }
 
-        return $a;
+        $response = $service->handleAssetRequest($assetId, $variantName);
+
+        $isInline = $this->request->getGet('inline') !== null;
+
+        if ($isInline) {
+            $response->inline();
+        }
+
+        return $response;
     }
 
     public function temporary(string $token): ResponseInterface
@@ -34,6 +39,6 @@ final class AssetConnectController extends Controller
         /** @var AssetAccessService $service */
         $service = service('assetAccessService');
 
-        return $service->handleTemporaryAssetRequest($token);
+        return $service->handleTemporaryAssetRequest($token)->inline();
     }
 }
