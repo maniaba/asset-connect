@@ -20,6 +20,39 @@ final class PathGenerator
         $this->pathGenerator = $this->collection->getPathGenerator();
     }
 
+    /**
+     * Get the base storage directory where files will be stored.
+     * This is the root directory for all files, which can be either protected or public.
+     *
+     * @return string The base storage directory path
+     */
+    public function getStoreDirectory(): string
+    {
+        $storeDirectory = $this->pathGenerator->getStoreDirectory($this->helper, $this->collection);
+
+        // Ensure the directory exists
+        $this->ensurePathExists($storeDirectory);
+
+        return $storeDirectory;
+    }
+
+    /**
+     * Get the relative path within the storage directory for a specific file.
+     * This path is combined with the store directory to form the complete file path.
+     *
+     * @return string The relative path within the storage directory
+     */
+    public function getFileRelativePath(): string
+    {
+        return $this->pathGenerator->getFileRelativePath($this->helper, $this->collection);
+    }
+
+    /**
+     * Get the complete path for the given media, combining store directory and relative path.
+     * This is a convenience method that combines getStoreDirectory and getFileRelativePath.
+     *
+     * @return string The complete file path
+     */
     public function getPath(): string
     {
         $path = $this->pathGenerator->getPath($this->helper, $this->collection);
