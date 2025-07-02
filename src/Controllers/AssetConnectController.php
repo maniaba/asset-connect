@@ -11,14 +11,14 @@ use Maniaba\FileConnect\Services\AssetAccessService;
 
 final class AssetConnectController extends Controller
 {
-    public function show(int $assetId, ?string $variantName = null, ?string $path = null): ResponseInterface
+    public function show(int $assetId, ?string $variantName = null): ResponseInterface
     {
         // This method should handle the logic to show an asset based on its ID and variant name.
         // The actual implementation will depend on how assets are stored and retrieved in your application.
         /** @var AssetAccessService $service */
         $service = service('assetAccessService');
 
-        $a = $service->handleAssetRequest($assetId, $variantName, $path);
+        $a = $service->handleAssetRequest($assetId, $variantName);
 
         if ($a instanceof DownloadResponse) {
             return $a->inline();

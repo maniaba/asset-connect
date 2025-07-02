@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Maniaba\FileConnect\UrlGenerator\Traits;
 
 use CodeIgniter\I18n\Time;
-use Maniaba\FileConnect\UrlGenerator\DefaultUrlGenerator;
 use Maniaba\FileConnect\UrlGenerator\Interfaces\UrlGeneratorInterface;
+use Maniaba\FileConnect\UrlGenerator\UrlGenerator;
 
 trait UrlGeneratorTrait
 {
@@ -23,7 +23,7 @@ trait UrlGeneratorTrait
             return $urlGenerator;
         }
 
-        return new DefaultUrlGenerator($this);
+        return new UrlGenerator($this);
     }
 
     /**

@@ -7,7 +7,7 @@ namespace Maniaba\FileConnect\UrlGenerator;
 use CodeIgniter\I18n\Time;
 use Maniaba\FileConnect\Asset\Asset;
 
-class TempUrlToken
+final class TempUrlToken
 {
     private const CACHE_KEY_PREFIX = 'temporary_url_ac_';
 

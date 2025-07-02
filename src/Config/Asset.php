@@ -8,10 +8,11 @@ use CodeIgniter\Config\BaseConfig;
 use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\AssetCollection\DefaultAssetCollection;
 use Maniaba\FileConnect\AssetVariants\AssetVariantsProcess;
-use Maniaba\FileConnect\Controllers\AssetConnectController;
 use Maniaba\FileConnect\Jobs\AssetConnectJob;
 use Maniaba\FileConnect\PathGenerator\DefaultPathGenerator;
 use Maniaba\FileConnect\PathGenerator\Interfaces\PathGeneratorInterface;
+use Maniaba\FileConnect\UrlGenerator\DefaultUrlGenerator;
+use Maniaba\FileConnect\UrlGenerator\Interfaces\UrlGeneratorInterface;
 
 class Asset extends BaseConfig
 {
@@ -51,6 +52,19 @@ class Asset extends BaseConfig
 
     /**
      * --------------------------------------------------------------------
+     * Default URL Generator
+     * --------------------------------------------------------------------
+     * This is the default URL generator that will be used to generate
+     * the URLs for assets.
+     *
+     * You can change this to any class that implements the UrlGeneratorInterface.
+     *
+     * @var class-string<UrlGeneratorInterface>
+     */
+    public string $defaultUrlGenerator = DefaultUrlGenerator::class;
+
+    /**
+     * --------------------------------------------------------------------
      * Customize Name of Asset Table
      * --------------------------------------------------------------------
      * Only change if you want to rename the default Asset Connect table names.
@@ -79,24 +93,6 @@ class Asset extends BaseConfig
         'jobHandler' => [
             'name'  => AssetVariantsProcess::JOB_HANDLER,
             'class' => AssetConnectJob::class,
-        ],
-    ];
-
-    /**
-     * --------------------------------------------------------------------
-     * Controller Route
-     * --------------------------------------------------------------------
-     * This is the route that will be used to access the asset controller.
-     * You can change this to any route that you want.
-     * You can also set it to null if you don't want to use the controller.
-     */
-    public ?array $controllerRoute = [
-        'showAsset' => [
-            'name' => 'assets',
-            // int $assetId,string $variantName = null,string $path = null
-            'uri'        => 'assets/(:num)/(:any)?/(:any)?',
-            'method'     => 'show',
-            'controller' => AssetConnectController::class,
         ],
     ];
 }
