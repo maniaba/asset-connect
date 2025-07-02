@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Maniaba\FileConnect\UrlGenerator\Traits;
 
-use CodeIgniter\Entity\Entity;
 use CodeIgniter\I18n\Time;
 use Maniaba\FileConnect\UrlGenerator\DefaultUrlGenerator;
 use Maniaba\FileConnect\UrlGenerator\Interfaces\UrlGeneratorInterface;
@@ -15,17 +14,16 @@ trait UrlGeneratorTrait
      * Get a URL generator for this asset
      *
      * @param UrlGeneratorInterface|null $urlGenerator Custom URL generator to use, or null to use the default
-     * @param Entity|null                $entity       The entity to check authorization for, or null to skip authorization
      *
      * @return UrlGeneratorInterface The URL generator for this asset
      */
-    public function getUrlGenerator(?UrlGeneratorInterface $urlGenerator = null, ?Entity $entity = null): UrlGeneratorInterface
+    public function getUrlGenerator(?UrlGeneratorInterface $urlGenerator = null): UrlGeneratorInterface
     {
         if ($urlGenerator !== null) {
             return $urlGenerator;
         }
 
-        return new DefaultUrlGenerator($this, $entity);
+        return new DefaultUrlGenerator($this);
     }
 
     /**
@@ -33,13 +31,12 @@ trait UrlGeneratorTrait
      *
      * @param string                     $variantName  The name of the variant to get the URL for, or empty for the original asset
      * @param UrlGeneratorInterface|null $urlGenerator Custom URL generator to use, or null to use the default
-     * @param Entity|null                $entity       The entity to check authorization for, or null to skip authorization
      *
      * @return string The URL to the asset
      */
-    public function getUrl(string $variantName = '', ?UrlGeneratorInterface $urlGenerator = null, ?Entity $entity = null): string
+    public function getUrl(?string $variantName = null, ?UrlGeneratorInterface $urlGenerator = null): string
     {
-        return $this->getUrlGenerator($urlGenerator, $entity)->getUrl($variantName);
+        return $this->getUrlGenerator($urlGenerator)->getUrl($variantName);
     }
 
     /**
@@ -49,12 +46,11 @@ trait UrlGeneratorTrait
      * @param string                     $variantName  The name of the variant to get the URL for, or empty for the original asset
      * @param array                      $options      Additional options for the URL generation
      * @param UrlGeneratorInterface|null $urlGenerator Custom URL generator to use, or null to use the default
-     * @param Entity|null                $entity       The entity to check authorization for, or null to skip authorization
      *
      * @return string The temporary URL to the asset
      */
-    public function getTemporaryUrl(Time $expiration, string $variantName = '', array $options = [], ?UrlGeneratorInterface $urlGenerator = null, ?Entity $entity = null): string
+    public function getTemporaryUrl(Time $expiration, ?string $variantName = null, array $options = [], ?UrlGeneratorInterface $urlGenerator = null): string
     {
-        return $this->getUrlGenerator($urlGenerator, $entity)->getTemporaryUrl($expiration, $variantName, $options);
+        return $this->getUrlGenerator($urlGenerator)->getTemporaryUrl($expiration, $variantName, $options);
     }
 }

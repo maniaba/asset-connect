@@ -7,10 +7,11 @@ namespace Maniaba\FileConnect\AssetCollection;
 use Maniaba\FileConnect\Asset\Asset;
 use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionSetterInterface;
+use Maniaba\FileConnect\Asset\Interfaces\AuthorizableAssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\AssetCollection\Interfaces\CreateAssetVariantsInterface;
 use Maniaba\FileConnect\AssetVariants\Interfaces\AssetVariantsInterface;
 
-final class DefaultAssetCollection implements AssetCollectionDefinitionInterface, AssetVariantsInterface
+final class DefaultAssetCollection implements AssetCollectionDefinitionInterface, AssetVariantsInterface, AuthorizableAssetCollectionDefinitionInterface
 {
     public function definition(AssetCollectionSetterInterface $definition): void
     {

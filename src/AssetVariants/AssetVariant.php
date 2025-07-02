@@ -9,11 +9,13 @@ use Maniaba\FileConnect\Exceptions\FileVariantException;
 use stdClass;
 
 /**
- * @property string                                                                          $name
- * @property string                                                                          $path
- * @property array{storage_base_directory_path: string, file_relative_path: string}|stdClass $paths
- * @property bool                                                                            $processed
- * @property int                                                                             $size
+ * @property      string                                                                          $name
+ * @property      string                                                                          $path
+ * @property      array{storage_base_directory_path: string, file_relative_path: string}|stdClass $paths
+ * @property      bool                                                                            $processed
+ * @property      int                                                                             $size
+ * @property-read string                                                                          $relative_path
+ * @property-read string                                                                          $relative_path_for_url
  */
 final class AssetVariant extends Entity
 {
@@ -45,5 +47,31 @@ final class AssetVariant extends Entity
         $this->processed = true;
 
         return true;
+    }
+
+    protected function getRelativePath(): string
+    {
+        // / replace storage_base_directory_path from path
+        $storageBasePath = $this->paths->storage_base_directory_path ?? null;
+        if ($storageBasePath === null) {
+            throw new FileVariantException('Storage base directory path is not set.');
+        }
+
+        $relativePath = str_replace($storageBasePath, '', $this->path);
+
+        // Ensure the relative path starts with a slash
+        if ($relativePath[0] !== '/') {
+            $relativePath = '/' . $relativePath;
+        }
+
+        return $relativePath;
+    }
+
+    protected function getRelativePathForUrl(): string
+    {
+        $relativePath = $this->getRelativePath();
+
+        // Replace backslashes with forward slashes for URL compatibility
+        return str_replace('\\', '/', $relativePath);
     }
 }

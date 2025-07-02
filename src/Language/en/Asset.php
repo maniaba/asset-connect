@@ -13,5 +13,8 @@ return [
         'file_not_found'         => 'The file was not found at the specified path: {path}',
         'cannot_copy_file'       => 'Cannot copy file from "{source}" to "{destination}".',
         'database_error'         => 'An error occurred while saving the asset to the database: {errors}',
+        'page_forbidden'         => 'You do not have permission to access this page.',
+        'variant_not_found'      => 'The requested variant "{variantName}" was not found.',
+        'token_invalid'          => 'The provided token is invalid or has expired.',
     ],
 ];

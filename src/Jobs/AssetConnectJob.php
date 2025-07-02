@@ -44,8 +44,8 @@ final class AssetConnectJob extends BaseJob implements JobInterface
 
         // Save the asset after processing variants, updating its properties
         $newAsset = new Asset([
-            'id'         => $this->getAsset()->id,
-            'properties' => $this->getAsset()->metadata,
+            'id'       => $this->getAsset()->id,
+            'metadata' => $this->getAsset()->metadata,
         ]);
         model(AssetModel::class, false)->save($newAsset);
 

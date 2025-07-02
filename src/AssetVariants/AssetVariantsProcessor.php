@@ -63,12 +63,8 @@ final class AssetVariantsProcessor implements CreateAssetVariantsInterface
         $variant->size      = filesize($variant->path);
         $variant->processed = true;
 
-        // Update the asset variant in the properties
-        $properties = $this->asset->metadata;
-        $properties->fileVariant->updateAssetVariant($variant);
-
         // Update the asset
-        $this->asset->metadata = $properties;
+        $this->asset->metadata->fileVariant->updateAssetVariant($variant);
 
         return $variant;
     }
