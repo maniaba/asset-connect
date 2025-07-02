@@ -16,9 +16,9 @@ trait UrlGeneratorTrait
      *
      * @return string The URL to the asset
      */
-    public function getUrl(?string $variantName = null): string
+    public function getUrl(?string $variantName = null, bool $forceDownload = false): string
     {
-        return site_url($this->getUrlRelative($variantName));
+        return site_url($this->getUrlRelative($variantName, $forceDownload));
     }
 
     /**
@@ -26,9 +26,9 @@ trait UrlGeneratorTrait
      *
      * @return string The relative URL to the asset
      */
-    public function getUrlRelative(?string $variantName = null): string
+    public function getUrlRelative(?string $variantName = null, bool $forceDownload = false): string
     {
-        return UrlGenerator::create($this)->getUrl($variantName);
+        return UrlGenerator::create($this)->getUrl($variantName) . ($forceDownload ? '?download=force' : '');
     }
 
     /**
@@ -39,9 +39,9 @@ trait UrlGeneratorTrait
      *
      * @return string The temporary URL to the asset
      */
-    public function getTemporaryUrl(Time $expiration, ?string $variantName = null): string
+    public function getTemporaryUrl(Time $expiration, ?string $variantName = null, bool $forceDownload = false): string
     {
-        return site_url($this->getTemporaryUrlRelative($expiration, $variantName));
+        return site_url($this->getTemporaryUrlRelative($expiration, $variantName, $forceDownload));
     }
 
     /**
@@ -52,8 +52,8 @@ trait UrlGeneratorTrait
      *
      * @return string The temporary related URL to the asset
      */
-    public function getTemporaryUrlRelative(Time $expiration, ?string $variantName = null): string
+    public function getTemporaryUrlRelative(Time $expiration, ?string $variantName = null, bool $forceDownload = false): string
     {
-        return UrlGenerator::create($this)->getTemporaryUrl($expiration, $variantName);
+        return UrlGenerator::create($this)->getTemporaryUrl($expiration, $variantName) . ($forceDownload ? '?download=force' : '');
     }
 }

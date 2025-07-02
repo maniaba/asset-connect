@@ -23,9 +23,9 @@ final class AssetConnectController extends Controller
 
         $response = $service->handleAssetRequest($assetId, $variantName);
 
-        $isInline = $this->request->getGet('inline') !== null;
+        $needsDownload = $this->request->getGet('download') !== null;
 
-        if ($isInline) {
+        if (! $needsDownload) {
             $response->inline();
         }
 
@@ -39,6 +39,14 @@ final class AssetConnectController extends Controller
         /** @var AssetAccessService $service */
         $service = service('assetAccessService');
 
-        return $service->handleTemporaryAssetRequest($token)->inline();
+        $response = $service->handleTemporaryAssetRequest($token);
+
+        $needsDownload = $this->request->getGet('download') !== null;
+
+        if (! $needsDownload) {
+            $response->inline();
+        }
+
+        return $response;
     }
 }
