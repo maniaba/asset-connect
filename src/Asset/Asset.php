@@ -57,7 +57,7 @@ final class Asset extends Entity
             throw new InvalidArgumentException('Entity type must be a valid Entity class or instance.');
         }
 
-        $this->getMetadata()->basicInfo->entityTypeClass($entityType);
+        $this->getMetadata()->basicInfo->setEntityTypeClass($entityType);
 
         $this->attributes['entity_type'] = md5($entityType);
 
@@ -79,7 +79,7 @@ final class Asset extends Entity
             AssetCollectionDefinitionFactory::validateStringClass($collection);
         }
 
-        $this->getMetadata()->basicInfo->collectionClass($collection);
+        $this->getMetadata()->basicInfo->setCollectionClass($collection);
 
         $this->attributes['collection'] = md5($collection);
 

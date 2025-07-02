@@ -15,7 +15,7 @@ final class BasicInfoProperty extends BaseProperty
         return 'basic_info';
     }
 
-    public function entityTypeClass(Entity|string $entity): void
+    public function setEntityTypeClass(Entity|string $entity): void
     {
         if ($entity instanceof Entity) {
             $entity = $entity::class;
@@ -29,7 +29,7 @@ final class BasicInfoProperty extends BaseProperty
         return $this->get('entity_type_class');
     }
 
-    public function collectionClass(AssetCollectionDefinitionInterface|string $collectionClass): void
+    public function setCollectionClass(AssetCollectionDefinitionInterface|string $collectionClass): void
     {
         if ($collectionClass instanceof AssetCollectionDefinitionInterface) {
             $collectionClass = $collectionClass::class;
@@ -55,5 +55,25 @@ final class BasicInfoProperty extends BaseProperty
         $collectionClass = $this->get('collection_class');
 
         return is_subclass_of($collectionClass, AuthorizableAssetCollectionDefinitionInterface::class);
+    }
+
+    public function setStorageBaseDirectoryPath(string $path): void
+    {
+        $this->set('storage_base_directory_path', $path);
+    }
+
+    public function storageBaseDirectoryPath(): ?string
+    {
+        return $this->get('storage_base_directory_path');
+    }
+
+    public function setFileRelativePath(string $path): void
+    {
+        $this->set('file_relative_path', $path);
+    }
+
+    public function fileRelativePath(): ?string
+    {
+        return $this->get('file_relative_path');
     }
 }

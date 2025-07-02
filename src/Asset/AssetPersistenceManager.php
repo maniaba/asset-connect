@@ -134,6 +134,10 @@ final class AssetPersistenceManager
 
         // Set the asset path and file properties
         $this->asset->path = $storePath . $this->asset->file_name;
+        // Set the asset metadata basic info properties
+        $this->asset->metadata->basicInfo->setStorageBaseDirectoryPath($this->pathGenerator->getStoreDirectory());
+        $this->asset->metadata->basicInfo->setFileRelativePath($this->pathGenerator->getFileRelativePath());
+
         $this->asset->file = new File($this->asset->path);
 
         if (! file_exists($sourcePath)) {
