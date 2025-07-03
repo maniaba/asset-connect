@@ -6,13 +6,16 @@ namespace Maniaba\FileConnect\Asset;
 
 use CodeIgniter\Entity\Entity;
 use CodeIgniter\Files\File;
+use CodeIgniter\HTTP\DownloadResponse;
 use CodeIgniter\HTTP\Files\UploadedFile;
 use CodeIgniter\I18n\Time;
 use InvalidArgumentException;
+use JsonSerializable;
 use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Asset\Traits\AssetMimeTypeTrait;
 use Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory;
 use Maniaba\FileConnect\Models\AssetModel;
+use Maniaba\FileConnect\Services\AssetAccessService;
 use Maniaba\FileConnect\UrlGenerator\Traits\UrlGeneratorTrait;
 
 /**
@@ -36,7 +39,7 @@ use Maniaba\FileConnect\UrlGenerator\Traits\UrlGeneratorTrait;
  * @property      int               $size                  size of the file in bytes
  * @property      Time              $updated_at            timestamp when the asset was last updated
  */
-final class Asset extends Entity
+final class Asset extends Entity implements JsonSerializable
 {
     use AssetMimeTypeTrait;
     use UrlGeneratorTrait;
@@ -290,5 +293,44 @@ final class Asset extends Entity
         }
 
         return $relativePath;
+    }
+
+    public function download(?string $variantName = null): DownloadResponse
+    {
+        // If variant is not set, return null
+        /** @var AssetAccessService $assetAccess */
+        $assetAccess = service('assetAccessService');
+
+        return $assetAccess->handleAssetRequest($this->id, $variantName);
+    }
+
+    public function jsonSerialize(): array
+    {
+        // need to hide file path on storage
+        $data = [
+            'id'                => $this->id,
+            'name'              => $this->name,
+            'file_name'         => $this->file_name,
+            'mime_type'         => $this->mime_type,
+            'size'              => $this->size,
+            'created_at'        => $this->created_at,
+            'updated_at'        => $this->updated_at,
+            'deleted_at'        => $this->deleted_at,
+            'order'             => $this->order,
+            'custom_properties' => $this->getCustomProperties(),
+            'url'               => $this->getUrl(),
+            'url_relative'      => $this->getUrlRelative(),
+            'variants'          => [],
+        ];
+
+        foreach ($this->getMetadata()->fileVariant->getVariants() as $variant) {
+            $data['variants'][$variant->name] = [
+                'name' => $variant->name,
+                'size' => $variant->size,
+                'url'  => $this->getUrl($variant->name),
+            ];
+        }
+
+        return $data;
     }
 }

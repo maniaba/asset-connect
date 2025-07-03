@@ -43,7 +43,9 @@ final class AssetAdder implements AssetAdderInterface
         // Initialize the SetupAssetCollection instance
         $this->setupAssetCollection = new SetupAssetCollection();
         $this->subjectEntity->setupAssetConnect($this->setupAssetCollection);
-        $this->fileNameSanitizer = $this->setupAssetCollection->getFileNameSanitizer(...);
+
+        // Get the file name sanitizer from the setup collection "getFileNameSanitizer"
+        $this->fileNameSanitizer = $this->setupAssetCollection->getFileNameSanitizer();
 
         // Set the file for the asset, after setting up the collection
         $this->setFile($file);
@@ -170,7 +172,7 @@ final class AssetAdder implements AssetAdderInterface
      */
     public function toAssetCollection(AssetCollectionDefinitionInterface|string|null $collection = null): Asset
     {
-        $this->asset->file_name = ($this->fileNameSanitizer)($this->asset->file_name);
+        $this->asset->file_name = call_user_func($this->fileNameSanitizer, (string) $this->asset->file_name);
 
         if ($collection !== null) {
             $this->setupAssetCollection->setDefaultCollectionDefinition($collection);
@@ -182,7 +184,7 @@ final class AssetAdder implements AssetAdderInterface
         $asset = $persistenceManager->store();
 
         // Delete the original file if not preserving it
-        if (! $this->setupAssetCollection->shouldPreserveOriginal() && file_exists($this->file->getRealPath())) {
+        if (! $this->setupAssetCollection->shouldPreserveOriginal() && ! $this->file instanceof UploadedFile && file_exists($this->file->getRealPath())) {
             @unlink($this->file->getRealPath());
         }
 

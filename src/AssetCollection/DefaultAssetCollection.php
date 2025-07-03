@@ -10,12 +10,13 @@ use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionSetterInterface;
 use Maniaba\FileConnect\Asset\Interfaces\AuthorizableAssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\AssetCollection\Interfaces\CreateAssetVariantsInterface;
 use Maniaba\FileConnect\AssetVariants\Interfaces\AssetVariantsInterface;
+use Maniaba\FileConnect\Enums\AssetExtension;
 
 final class DefaultAssetCollection implements AssetCollectionDefinitionInterface, AssetVariantsInterface, AuthorizableAssetCollectionDefinitionInterface
 {
     public function definition(AssetCollectionSetterInterface $definition): void
     {
-        $definition->onlyKeepLatest(2); // Keep only the latest 2 versions of the asset.
+        $definition->onlyKeepLatest(2)->allowedExtensions(AssetExtension::PDF); // Keep only the latest 2 versions of the asset.
     }
 
     public function checkAuthorization(Asset $asset): bool
