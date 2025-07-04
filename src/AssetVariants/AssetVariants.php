@@ -40,7 +40,7 @@ final class AssetVariants implements CreateAssetVariantsInterface
             ],
         ]);
 
-        $this->asset->metadata->fileVariant->addAssetVariant($variant);
+        $this->asset->metadata->assetVariant->addAssetVariant($variant);
 
         return $variant;
     }

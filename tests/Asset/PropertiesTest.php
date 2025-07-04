@@ -27,7 +27,7 @@ final class PropertiesTest extends CIUnitTestCase
     {
         // Assert
         $this->assertNotNull($this->properties->userCustom);
-        $this->assertNotNull($this->properties->fileVariant);
+        $this->assertNotNull($this->properties->assetVariant);
     }
 
     /**
@@ -41,7 +41,7 @@ final class PropertiesTest extends CIUnitTestCase
                 'name'        => 'Test Name',
                 'description' => 'Test Description',
             ],
-            'file_variants' => [
+            'asset_variants' => [
                 'thumbnail' => 'thumbnail.jpg',
                 'medium'    => 'medium.jpg',
             ],
@@ -53,8 +53,8 @@ final class PropertiesTest extends CIUnitTestCase
         // Assert
         $this->assertSame('Test Name', $properties->userCustom->get('name'));
         $this->assertSame('Test Description', $properties->userCustom->get('description'));
-        $this->assertSame('thumbnail.jpg', $properties->fileVariant->get('thumbnail'));
-        $this->assertSame('medium.jpg', $properties->fileVariant->get('medium'));
+        $this->assertSame('thumbnail.jpg', $properties->assetVariant->get('thumbnail'));
+        $this->assertSame('medium.jpg', $properties->assetVariant->get('medium'));
     }
 
     /**
@@ -68,7 +68,7 @@ final class PropertiesTest extends CIUnitTestCase
                 'name'        => 'Test Name',
                 'description' => 'Test Description',
             ],
-            'file_variants' => [
+            'asset_variants' => [
                 'thumbnail' => 'thumbnail.jpg',
                 'medium'    => 'medium.jpg',
             ],
@@ -80,9 +80,9 @@ final class PropertiesTest extends CIUnitTestCase
 
         // Assert
         $this->assertArrayHasKey('user_custom', $json);
-        $this->assertArrayHasKey('file_variants', $json);
+        $this->assertArrayHasKey('asset_variants', $json);
         $this->assertSame($values['user_custom'], $json['user_custom']);
-        $this->assertSame($values['file_variants'], $json['file_variants']);
+        $this->assertSame($values['asset_variants'], $json['asset_variants']);
     }
 
     /**
@@ -96,7 +96,7 @@ final class PropertiesTest extends CIUnitTestCase
                 'name'        => 'Test Name',
                 'description' => 'Test Description',
             ],
-            'file_variants' => [
+            'asset_variants' => [
                 'thumbnail' => 'thumbnail.jpg',
                 'medium'    => 'medium.jpg',
             ],
@@ -110,8 +110,8 @@ final class PropertiesTest extends CIUnitTestCase
         $decoded = json_decode($string, true);
         $this->assertIsArray($decoded);
         $this->assertArrayHasKey('user_custom', $decoded);
-        $this->assertArrayHasKey('file_variants', $decoded);
+        $this->assertArrayHasKey('asset_variants', $decoded);
         $this->assertSame($values['user_custom'], $decoded['user_custom']);
-        $this->assertSame($values['file_variants'], $decoded['file_variants']);
+        $this->assertSame($values['asset_variants'], $decoded['asset_variants']);
     }
 }

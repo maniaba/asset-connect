@@ -140,9 +140,21 @@ final class Asset extends Entity implements JsonSerializable
         return $rawArray;
     }
 
-    protected function getExtension(): string
+    public function getExtension(): string
     {
-        return pathinfo($this->file_name, PATHINFO_EXTENSION) ?: '';
+        // If file is set, we try to get extension from it
+        if ($this->file instanceof File) {
+            return $this->file->getExtension();
+        }
+
+        // Otherwise, we check the file_name attribute
+        $path = $this->attributes['path'] ?? null;
+        if (is_string($path) && $path !== '') {
+            return pathinfo($path, PATHINFO_EXTENSION);
+        }
+
+        // If file_name is set, we try to get extension from it
+        throw new \Maniaba\FileConnect\Exceptions\InvalidArgumentException('Invalid argument provided');
     }
 
     protected function getPathDirname(): string
@@ -323,7 +335,7 @@ final class Asset extends Entity implements JsonSerializable
             'variants'          => [],
         ];
 
-        foreach ($this->getMetadata()->fileVariant->getVariants() as $variant) {
+        foreach ($this->getMetadata()->assetVariant->getVariants() as $variant) {
             $data['variants'][$variant->name] = [
                 'name' => $variant->name,
                 'size' => $variant->size,

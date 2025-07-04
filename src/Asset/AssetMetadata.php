@@ -13,21 +13,21 @@ use Stringable;
 final class AssetMetadata implements JsonSerializable, Stringable
 {
     public readonly UserCustomProperty $userCustom;
-    public readonly AssetVariantProperty $fileVariant;
+    public readonly AssetVariantProperty $assetVariant;
     public readonly BasicInfoProperty $basicInfo;
 
     public function __construct(array $metadata = [])
     {
-        $this->userCustom  = UserCustomProperty::create($metadata);
-        $this->fileVariant = AssetVariantProperty::create($metadata);
-        $this->basicInfo   = BasicInfoProperty::create($metadata);
+        $this->userCustom   = UserCustomProperty::create($metadata);
+        $this->assetVariant = AssetVariantProperty::create($metadata);
+        $this->basicInfo    = BasicInfoProperty::create($metadata);
     }
 
     public function jsonSerialize(): array
     {
         return [
             ...$this->userCustom->jsonSerialize(),
-            ...$this->fileVariant->jsonSerialize(),
+            ...$this->assetVariant->jsonSerialize(),
             ...$this->basicInfo->jsonSerialize(),
         ];
     }

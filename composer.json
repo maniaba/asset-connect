@@ -20,10 +20,11 @@
     ],
     "homepage": "https://github.com/maniaba/file-connect",
     "require": {
-        "php": "^8.3"
+        "php": "^8.3",
+        "codeigniter4/framework": "^4.6",
+        "codeigniter4/queue": "dev-develop"
     },
     "require-dev": {
-        "codeigniter4/framework": "^4.3",
         "icanhazstring/composer-unused": "dev-main",
         "codeigniter/coding-standard": "^1.5",
         "fakerphp/faker": "^1.9",

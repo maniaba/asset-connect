@@ -21,7 +21,7 @@ final class AssetVariantsProcessor implements CreateAssetVariantsInterface
 
     public function assetVariant(string $name, Closure $closure): ?AssetVariant
     {
-        $variant = $this->asset->metadata->fileVariant->getAssetVariant($name);
+        $variant = $this->asset->metadata->assetVariant->getAssetVariant($name);
 
         if ($variant === null) {
             log_message('error', 'Asset variant "{name}" not found for asset ID "{asset}".', [
@@ -64,7 +64,7 @@ final class AssetVariantsProcessor implements CreateAssetVariantsInterface
         $variant->processed = true;
 
         // Update the asset
-        $this->asset->metadata->fileVariant->updateAssetVariant($variant);
+        $this->asset->metadata->assetVariant->updateAssetVariant($variant);
 
         return $variant;
     }

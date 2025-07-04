@@ -33,7 +33,7 @@ final class UrlGenerator
         // If the asset is not part of a protected collection, return the URL directly
         if (! $this->isProtectedCollection) {
             if ($variantName !== null && $variantName !== '' && $variantName !== '0') {
-                $variant = $this->asset->metadata->fileVariant->getAssetVariant($variantName);
+                $variant = $this->asset->metadata->assetVariant->getAssetVariant($variantName);
 
                 if ($variant === null) {
                     throw new InvalidArgumentException("Variant '{$variantName}' does not exist for asset '{$this->asset->id}'.");

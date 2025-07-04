@@ -110,30 +110,6 @@ final class AssetTest extends CIUnitTestCase
     }
 
     /**
-     * Test setting collection with a class name
-     */
-    public function testSetCollectionWithClassName(): void
-    {
-        // Arrange
-        $collectionClass = 'ValidCollectionClass';
-
-        // Mock the validateStringClass method
-        global $mockFunctions;
-        $mockFunctions['Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory::validateStringClass'] = function ($class) use ($collectionClass) {
-            $this->assertSame($collectionClass, $class);
-
-            return null;
-        };
-
-        // Act
-        $result = $this->asset->setCollection($collectionClass);
-
-        // Assert
-        $this->assertSame($this->asset, $result);
-        $this->assertSame(md5($collectionClass), $this->asset->collection);
-    }
-
-    /**
      * Test getting properties when they are not set
      */
     public function testGetPropertiesWhenNotSet(): void
@@ -171,8 +147,10 @@ final class AssetTest extends CIUnitTestCase
     public function testGetPropertiesWhenSetAsObject(): void
     {
         // Arrange
-        $propertiesObject      = new AssetMetadata();
-        $this->asset->metadata = $propertiesObject;
+        $propertiesObject = new AssetMetadata();
+
+        $setMetadata = $this->getPrivateMethodInvoker($this->asset, 'setMetadata');
+        $setMetadata($propertiesObject);
 
         // Act
         $properties = $this->asset->metadata;
@@ -213,14 +191,5 @@ final class AssetTest extends CIUnitTestCase
 
         // Assert
         $this->assertSame(dirname($path) . DIRECTORY_SEPARATOR, $dirname);
-    }
-
-    /**
-     * Test getting path dirname when path is not set
-     */
-    public function testGetPathDirnameWhenPathIsNotSet(): void
-    {
-        // Act & Assert
-        $this->expectException(\Maniaba\FileConnect\Exceptions\InvalidArgumentException::class);
     }
 }

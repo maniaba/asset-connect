@@ -38,7 +38,7 @@ final class AssetAccessService implements AssetAccessServiceInterface
 
         // If a variant is requested, get the variant path
         if ($variantName !== null && $variantName !== '') {
-            $variant = $asset->metadata->fileVariant->getAssetVariant($variantName);
+            $variant = $asset->metadata->assetVariant->getAssetVariant($variantName);
 
             if ($variant === null) {
                 // If the variant is not found, throw an exception
