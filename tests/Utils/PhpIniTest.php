@@ -6,7 +6,6 @@ namespace Tests\Utils;
 
 use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\FileConnect\Utils\PhpIni;
-use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionClass;
 
 /**
@@ -80,7 +79,7 @@ final class PhpIniTest extends CIUnitTestCase
     public function testShorthandToBytesWithLowercaseUnits(): void
     {
         // Arrange
-        $values = ['2k', '3m', '4g'];
+        $values   = ['2k', '3m', '4g'];
         $expected = [
             2 * 1024,
             3 * 1024 * 1024,
@@ -102,14 +101,12 @@ final class PhpIniTest extends CIUnitTestCase
         // Arrange
         $value = ' 5M ';
 
-
         // Act
         $result = $this->invokePrivateMethod(PhpIni::class, 'shorthandToBytes', [$value]);
 
         // Assert
         $this->assertSame(5 * 1024 * 1024, $result);
     }
-
 
     /**
      * Helper method to invoke private methods for testing
@@ -123,7 +120,7 @@ final class PhpIniTest extends CIUnitTestCase
     private function invokePrivateMethod(string $class, string $methodName, array $parameters = []): mixed
     {
         $reflection = new ReflectionClass($class);
-        $method = $reflection->getMethod($methodName);
+        $method     = $reflection->getMethod($methodName);
         $method->setAccessible(true);
 
         return $method->invokeArgs(null, $parameters);
