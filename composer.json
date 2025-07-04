@@ -39,7 +39,8 @@
         "rector/rector": "^2.0",
         "roave/security-advisories": "dev-latest",
         "vimeo/psalm": "^5.0 || ^6.0",
-        "phpstan/phpstan-strict-rules": "^2.0"
+        "phpstan/phpstan-strict-rules": "^2.0",
+        "dg/bypass-finals": "^1.9"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,

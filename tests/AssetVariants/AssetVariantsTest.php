@@ -6,22 +6,17 @@ namespace Tests\AssetVariants;
 
 use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\Asset\AssetMetadata;
 use Maniaba\FileConnect\AssetCollection\Interfaces\CreateAssetVariantsInterface;
 use Maniaba\FileConnect\AssetVariants\AssetVariant;
-use ReflectionClass;
-use Tests\AssetVariants\Doubles\TestAssetVariants;
-use Tests\AssetVariants\Doubles\TestPathGenerator;
+use Maniaba\FileConnect\AssetVariants\AssetVariants;
+use Maniaba\FileConnect\PathGenerator\PathGenerator;
 
 /**
  * @internal
  */
 final class AssetVariantsTest extends CIUnitTestCase
 {
-    private TestPathGenerator $pathGenerator;
-
     private Asset $asset;
-
     private CreateAssetVariantsInterface $assetVariants;
 
     protected function setUp(): void
@@ -34,26 +29,27 @@ final class AssetVariantsTest extends CIUnitTestCase
         // Set up the asset with required properties
         $this->asset->file_name = 'test_image.jpg';
 
-        // Create AssetMetadata instance and set it to the asset
-        $metadata         = new AssetMetadata();
-        $reflection       = new ReflectionClass($this->asset);
-        $metadataProperty = $reflection->getProperty('metadata');
-        $metadataProperty->setAccessible(true);
-        $metadataProperty->setValue($this->asset, $metadata);
-
-        // Create TestPathGenerator instance
-        $this->pathGenerator = new TestPathGenerator();
-
-        // Configure the path generator
-        $this->pathGenerator->setPathForVariants('/path/to/variants/')
-            ->setStoreDirectoryForVariants('/path/to/')
-            ->setFileRelativePathForVariants('variants/');
-
         // Create TestAssetVariants instance
-        $this->assetVariants = new TestAssetVariants(
-            $this->pathGenerator,
+        $this->assetVariants = new AssetVariants(
+            $this->mockPathGenerator(),
             $this->asset,
         );
+    }
+
+    private function mockPathGenerator(): PathGenerator
+    {
+        // Create a mock PathGenerator instance
+        $pathGenerator = $this->createMock(PathGenerator::class);
+
+        // Set expectations for the methods used in the tests
+        $pathGenerator->method('getPathForVariants')
+            ->willReturn(HOMEPATH . '/build/path/to/variants/');
+        $pathGenerator->method('getStoreDirectoryForVariants')
+            ->willReturn(HOMEPATH . '/build/path/to/');
+        $pathGenerator->method('getFileRelativePathForVariants')
+            ->willReturn('variants/');
+
+        return $pathGenerator;
     }
 
     /**
@@ -62,15 +58,8 @@ final class AssetVariantsTest extends CIUnitTestCase
     public function testAssetVariantCreatesAndReturnsNewAssetVariant(): void
     {
         // Arrange
-        $variantName      = 'thumbnail';
-        $variantPath      = '/path/to/variants/';
-        $storeDirectory   = '/path/to/';
-        $fileRelativePath = 'variants/';
-
-        // Configure the path generator
-        $this->pathGenerator->setPathForVariants($variantPath)
-            ->setStoreDirectoryForVariants($storeDirectory)
-            ->setFileRelativePathForVariants($fileRelativePath);
+        $variantName = 'thumbnail';
+        $variantPath = HOMEPATH . '/build/path/to/variants/';
 
         // Define a simple closure for the variant
         $closure = static function (AssetVariant $variant, Asset $asset) {
@@ -100,12 +89,7 @@ final class AssetVariantsTest extends CIUnitTestCase
     {
         // Arrange
         $variantName = 'medium';
-        $variantPath = '/path/to/variants/';
-
-        // Configure the path generator
-        $this->pathGenerator->setPathForVariants($variantPath)
-            ->setStoreDirectoryForVariants('/path/to/')
-            ->setFileRelativePathForVariants('variants/');
+        $variantPath = HOMEPATH . '/build/path/to/variants/';
 
         // Test with different file names
         $fileNames = [
