@@ -7,7 +7,7 @@ CodeIgniter Asset Connect provides several configuration options to customize it
 The configuration for Asset Connect is managed through the `Config\Asset.php` file. If this file doesn't exist in your application's config directory, you can create it:
 
 ```php
-class Asset extends BaseAsset
+class Asset extends BaseConfig
 {
     // Your custom configuration here
 }

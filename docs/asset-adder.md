@@ -236,31 +236,7 @@ $asset = $user->addAsset('/path/to/file.jpg')
 
 ### Working with Uploaded Files
 
-```php
-// In a controller method
-public function uploadProfilePicture()
-{
-    $file = $this->request->getFile('profile_picture');
-
-    if ($file->isValid() && !$file->hasMoved()) {
-        $user = model(User::class)->find($this->request->getPost('user_id'));
-
-        // Add the uploaded file as an asset
-        $asset = $user->addAsset($file)
-            ->usingFileName($file->getRandomName()) // Use a random name to avoid conflicts
-            ->usingName('Profile Picture')
-            ->withCustomProperties([
-                'uploaded_by' => user_id(),
-                'uploaded_at' => date('Y-m-d H:i:s'),
-            ])
-            ->toAssetCollection(ProfilePicturesCollection::class);
-
-        return redirect()->to('user/profile')->with('success', 'Profile picture uploaded successfully.');
-    }
-
-    return redirect()->back()->with('error', 'Failed to upload profile picture.');
-}
-```
+For handling uploaded files from HTTP requests, use the `addAssetFromRequest` method described in the next section. This method provides a more convenient and robust way to handle file uploads directly from requests.
 
 ### Using addAssetFromRequest
 

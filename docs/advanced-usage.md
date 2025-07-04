@@ -107,7 +107,8 @@ class YearMonthPathGenerator implements PathGeneratorInterface
 You can use custom path generators in your configuration or in specific asset collections:
 
 ```php
-class Asset extends BaseAsset
+// In your Config/Asset.php file
+class Asset extends BaseConfig
 {
     public string $defaultPathGenerator = YearMonthPathGenerator::class;
 }
@@ -116,16 +117,13 @@ class Asset extends BaseAsset
 Or in a specific collection:
 
 ```php
-class ProductImagesCollection extends DefaultAssetCollection
+class ProductImagesCollection implements AssetCollectionDefinitionInterface
 {
-    public static function name(): string
+    public function definition(AssetCollectionSetterInterface $definition): void
     {
-        return 'product_images';
-    }
-
-    public static function pathGenerator(): string
-    {
-        return YearMonthPathGenerator::class;
+        $definition
+            // Other configuration...
+            ->setPathGenerator(new YearMonthPathGenerator());
     }
 }
 ```

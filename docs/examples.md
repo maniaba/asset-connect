@@ -193,18 +193,8 @@ You can add assets to an entity with various options:
 // Create a File object from a local file path
 $file = new File('./images/placeholder.jpg');
 
-// Create a File object from an uploaded file in a controller
-$uploadedFile = $this->request->getFile('profile_image');
-if ($uploadedFile->isValid() && !$uploadedFile->hasMoved()) {
-    // You can use the uploaded file directly
-    $asset = $user->addAsset($uploadedFile)
-        ->usingFileName($uploadedFile->getRandomName())
-        ->toAssetCollection(ProfilePicturesCollection::class);
-
-    // Or move it to a temporary location first
-    $uploadedFile->move(WRITEPATH . 'uploads', $uploadedFile->getRandomName());
-    $file = new File(WRITEPATH . 'uploads/' . $uploadedFile->getName());
-}
+// For handling uploaded files from a request, use addAssetFromRequest instead
+// See the section on addAssetFromRequest in the Asset Adder documentation
 
 // Add the asset with various options
 $asset = $user->addAsset($file)
@@ -434,28 +424,38 @@ class Gallery extends Entity
 // In your controller
 public function uploadImage()
 {
-    $file = $this->request->getFile('image');
+    $gallery = model(Gallery::class)->find($this->request->getPost('gallery_id'));
 
-    if ($file->isValid() && !$file->hasMoved()) {
-        $gallery = model(Gallery::class)->find($this->request->getPost('gallery_id'));
+    // Add the original image using addAssetFromRequest
+    $assetAdders = $gallery->addAssetFromRequest('image')
+        ->forEach(function($uploadedFile, $assetAdder) {
+            $assetAdder
+                ->usingFileName($uploadedFile->getRandomName())
+                ->withCustomProperties([
+                    'title' => $this->request->getPost('title'),
+                    'description' => $this->request->getPost('description'),
+                    'tags' => explode(',', $this->request->getPost('tags')),
+                ]);
+        });
 
-        // Add the original image
-        $image = $gallery->addAsset($file)
-            ->usingFileName($file->getRandomName())
-            ->withCustomProperties([
-                'title' => $this->request->getPost('title'),
-                'description' => $this->request->getPost('description'),
-                'tags' => explode(',', $this->request->getPost('tags')),
-            ])
-            ->toAssetCollection(ImagesCollection::class);
+    // Convert to assets and store in collection
+    $images = [];
+    foreach ($assetAdders as $assetAdder) {
+        $images[] = $assetAdder->toAssetCollection(ImagesCollection::class);
+    }
+
+    // If we have an image, create a thumbnail
+    if (!empty($images)) {
+        $image = $images[0];
+        $uploadedFile = $this->request->getFile('image');
 
         // Create and add a thumbnail
         $thumbnail = \Config\Services::image()
-            ->withFile($file)
+            ->withFile($uploadedFile)
             ->resize(200, 200, true)
-            ->save(WRITEPATH . 'uploads/thumbnail_' . $file->getRandomName());
+            ->save(WRITEPATH . 'uploads/thumbnail_' . $uploadedFile->getRandomName());
 
-        $gallery->addAsset(WRITEPATH . 'uploads/thumbnail_' . $file->getName())
+        $gallery->addAsset(WRITEPATH . 'uploads/thumbnail_' . $uploadedFile->getName())
             ->withCustomProperty('original_id', $image->id)
             ->toAssetCollection(ThumbnailsCollection::class);
 
