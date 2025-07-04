@@ -130,7 +130,7 @@ final class SetupAssetCollection implements SetupAssetCollectionInterface
      *
      * If no sanitizer is set, it will use the default sanitizer.
      *
-     * @return callable(string $fileName):string
+     * @return Closure(string $fileName):string
      */
     public function getFileNameSanitizer(): Closure
     {

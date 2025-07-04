@@ -7,6 +7,7 @@ namespace Maniaba\FileConnect\AssetVariants;
 use CodeIgniter\Queue\Config\Services;
 use Maniaba\FileConnect\Asset\Asset;
 use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
+use Maniaba\FileConnect\AssetVariants\Interfaces\AssetVariantsInterface;
 use Maniaba\FileConnect\Exceptions\FileVariantException;
 use Throwable;
 
@@ -42,12 +43,12 @@ final class AssetVariantsProcess
     /**
      * Processes the asset variants based on the provided definition and storage path.
      *
-     * @param AssetCollectionDefinitionInterface $definition The asset collection definition.
-     * @param Asset                              &$asset     The asset to process.
+     * @param AssetCollectionDefinitionInterface&AssetVariantsInterface $definition The asset collection definition.
+     * @param Asset                                                     &$asset     The asset to process.
      *
      * @throws FileVariantException If an error occurs during variant processing.
      */
-    public static function run(Asset &$asset, AssetCollectionDefinitionInterface $definition): void
+    public static function run(Asset &$asset, AssetCollectionDefinitionInterface&AssetVariantsInterface $definition): void
     {
         $assetVariants = new AssetVariantsProcessor(
             $asset,

@@ -78,11 +78,11 @@ final class Asset extends Entity implements JsonSerializable
     }
 
     /**
-     * Set the file associated with the asset.
+     * Set the collection associated with the asset.
      *
-     * @param File|string|UploadedFile $file The file to associate with the asset.
+     * @param AssetCollectionDefinitionInterface|string $collection The collection to associate with the asset.
      *
-     * @throws InvalidArgumentException If the file is not a valid File or UploadedFile instance, or $collection is not valid string
+     * @throws InvalidArgumentException If $collection is not a valid AssetCollectionDefinitionInterface instance or string
      */
     public function setCollection(AssetCollectionDefinitionInterface|string $collection): static
     {
@@ -143,17 +143,22 @@ final class Asset extends Entity implements JsonSerializable
     public function getExtension(): string
     {
         // If file is set, we try to get extension from it
-        if ($this->file instanceof File) {
+        if (isset($this->file) && ($this->file instanceof File || $this->file instanceof UploadedFile)) {
             return $this->file->getExtension();
         }
 
-        // Otherwise, we check the file_name attribute
+        // Otherwise, we check the path attribute
         $path = $this->attributes['path'] ?? null;
         if (is_string($path) && $path !== '') {
             return pathinfo($path, PATHINFO_EXTENSION);
         }
 
         // If file_name is set, we try to get extension from it
+        $fileName = $this->attributes['file_name'] ?? null;
+        if (is_string($fileName) && $fileName !== '') {
+            return pathinfo($fileName, PATHINFO_EXTENSION);
+        }
+
         throw new \Maniaba\FileConnect\Exceptions\InvalidArgumentException('Invalid argument provided');
     }
 

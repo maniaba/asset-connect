@@ -8,6 +8,7 @@ use CodeIgniter\Entity\Entity;
 use CodeIgniter\Files\File;
 use CodeIgniter\HTTP\Files\UploadedFile;
 use CodeIgniter\I18n\Time;
+use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\AssetCollection\AssetCollection;
 use Maniaba\FileConnect\AssetCollection\SetupAssetCollection;
 use Maniaba\FileConnect\AssetVariants\AssetVariants;
@@ -32,13 +33,15 @@ final class AssetPersistenceManager
     public function __construct(
         /** @var Entity&UseAssetConnectTrait $subjectEntity The entity to which the asset is being added */
         private readonly Entity $subjectEntity,
-        private readonly Asset $asset,
+        private Asset $asset,
         private readonly SetupAssetCollection $setupAssetCollection,
     ) {
         $this->collection = AssetCollection::create($this->setupAssetCollection);
 
         // Set the collection name using the setCollection method
         $this->asset->setCollection($this->setupAssetCollection->getCollectionDefinition());
+
+        $this->pathGenerator = PathGeneratorFactory::create($this->collection);
     }
 
     /**
@@ -54,9 +57,6 @@ final class AssetPersistenceManager
         try {
             // Validate the asset against the collection definition
             $this->validateAsset();
-
-            // Determine the storage path based on the collection type
-            $this->initializePathGenerator();
 
             // Store the file
             $this->storeFile();
@@ -108,15 +108,6 @@ final class AssetPersistenceManager
         if ($allowedMimeTypes !== [] && ! in_array($this->asset->mime_type, $allowedMimeTypes, true)) {
             throw AssetException::forInvalidMimeType($this->asset->mime_type, $allowedMimeTypes);
         }
-    }
-
-    /**
-     * Determine the storage path based on the collection type
-     */
-    private function initializePathGenerator(): void
-    {
-        // Ensure the collection has a valid visibility before passing it to the path generator
-        $this->pathGenerator = PathGeneratorFactory::create($this->collection);
     }
 
     /**
@@ -175,7 +166,7 @@ final class AssetPersistenceManager
             throw AssetException::forDatabaseError($errors);
         }
 
-        $this->asset->id = $model->insertID();
+        $this->asset->id = $model->getInsertID();
 
         $this->asset->created_at = Time::now();
         $this->asset->updated_at = Time::now();
@@ -203,7 +194,7 @@ final class AssetPersistenceManager
     private function processFileVariants(): void
     {
         if ($this->setupAssetCollection->getCollectionDefinition() instanceof AssetVariantsInterface) {
-            /** @var AssetVariantsInterface $definition */
+            /** @var AssetCollectionDefinitionInterface&AssetVariantsInterface $definition */
             $definition          = $this->setupAssetCollection->getCollectionDefinition();
             $this->assetVariants = new AssetVariants(
                 $this->pathGenerator,
