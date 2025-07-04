@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\UrlGenerator;
 
 use CodeIgniter\Config\Factories;
+use CodeIgniter\Config\Services;
 use CodeIgniter\I18n\Time;
 use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\FileConnect\Asset\Asset;
@@ -48,6 +49,12 @@ final class UrlGeneratorTest extends CIUnitTestCase
 
         // Mock global functions
         $this->setupGlobalFunctionMocks();
+
+        // Mock the Factories class to return a mock config
+        Services::reset();
+
+        // routes load to ensure routes are available
+        Services::routes()->loadRoutes();
     }
 
     /**
