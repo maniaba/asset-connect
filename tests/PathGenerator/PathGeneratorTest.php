@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\PathGenerator;
 
 use CodeIgniter\Test\CIUnitTestCase;
+use CodeIgniter\Test\FeatureTestTrait;
 use Maniaba\FileConnect\AssetCollection\AssetCollection;
 use Maniaba\FileConnect\PathGenerator\Interfaces\PathGeneratorInterface;
 use Maniaba\FileConnect\PathGenerator\PathGenerator;
@@ -16,6 +17,8 @@ use ReflectionClass;
  */
 final class PathGeneratorTest extends CIUnitTestCase
 {
+    use FeatureTestTrait;
+
     private PathGenerator $pathGenerator;
     private MockObject|PathGeneratorInterface $mockPathGeneratorInterface;
 
@@ -69,7 +72,7 @@ final class PathGeneratorTest extends CIUnitTestCase
     public function testGetStoreDirectory(): void
     {
         // Arrange
-        $storeDirectory = '/path/to/store';
+        $storeDirectory = HOMEPATH . '/build/path/to/store';
 
         // Setup expectations for the mock
         $this->mockPathGeneratorInterface->expects($this->once())
@@ -92,7 +95,7 @@ final class PathGeneratorTest extends CIUnitTestCase
     public function testGetStoreDirectoryWhenDirectoryDoesntExist(): void
     {
         // Arrange
-        $storeDirectory = '/path/to/store';
+        $storeDirectory = HOMEPATH . '/build/path/to/store';
 
         // Setup expectations for the mock
         $this->mockPathGeneratorInterface->expects($this->once())
@@ -171,7 +174,7 @@ final class PathGeneratorTest extends CIUnitTestCase
     public function testGetPathWhenPathDoesntEndWithDirectorySeparator(): void
     {
         // Arrange
-        $path         = '/path/to/file';
+        $path         =  HOMEPATH . '/build/path/to/file';
         $expectedPath = $path . DIRECTORY_SEPARATOR;
 
         // Setup expectations for the mock
@@ -195,7 +198,7 @@ final class PathGeneratorTest extends CIUnitTestCase
     public function testGetStoreDirectoryForVariants(): void
     {
         // Arrange
-        $storeDirectory = '/path/to/store';
+        $storeDirectory = HOMEPATH . '/build/path/to/store';
 
         // Setup expectations for the mock
         $this->mockPathGeneratorInterface->expects($this->once())
