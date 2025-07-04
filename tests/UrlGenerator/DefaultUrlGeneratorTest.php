@@ -15,7 +15,7 @@ use PHPUnit\Framework\MockObject\MockObject;
  */
 final class DefaultUrlGeneratorTest extends CIUnitTestCase
 {
-    private RouteCollection|MockObject $mockRoutes;
+    private MockObject|RouteCollection $mockRoutes;
 
     protected function setUp(): void
     {
@@ -38,10 +38,11 @@ final class DefaultUrlGeneratorTest extends CIUnitTestCase
             ->method('group')
             ->with(
                 $this->equalTo('assets'),
-                $this->callback(function ($callback) use (&$groupCallback) {
+                $this->callback(static function ($callback) use (&$groupCallback) {
                     $groupCallback = $callback;
+
                     return true;
-                })
+                }),
             );
 
         // Act
@@ -59,23 +60,23 @@ final class DefaultUrlGeneratorTest extends CIUnitTestCase
             [
                 'pattern' => '(:num)/(:segment)',
                 'handler' => [AssetConnectController::class, 'show/$1/$3'],
-                'options' => ['priority' => 100, 'as' => 'asset-connect.show']
+                'options' => ['priority' => 100, 'as' => 'asset-connect.show'],
             ],
             [
                 'pattern' => '(:num)/variant/(:segment)/(:segment)',
                 'handler' => [AssetConnectController::class, 'show/$1/$2'],
-                'options' => ['priority' => 100, 'as' => 'asset-connect.show_variant']
+                'options' => ['priority' => 100, 'as' => 'asset-connect.show_variant'],
             ],
             [
                 'pattern' => 'temporary/(:segment)/(:segment)',
                 'handler' => [AssetConnectController::class, 'temporary/$1'],
-                'options' => ['priority' => 100, 'as' => 'asset-connect.temporary']
+                'options' => ['priority' => 100, 'as' => 'asset-connect.temporary'],
             ],
             [
                 'pattern' => 'temporary/(:segment)/variant/(:segment)/(:segment)',
                 'handler' => [AssetConnectController::class, 'temporary/$1'],
-                'options' => ['priority' => 100, 'as' => 'asset-connect.temporary_variant']
-            ]
+                'options' => ['priority' => 100, 'as' => 'asset-connect.temporary_variant'],
+            ],
         ];
 
         // Counter to track which call we're on
@@ -85,11 +86,12 @@ final class DefaultUrlGeneratorTest extends CIUnitTestCase
             ->method('get')
             ->willReturnCallback(function ($pattern, $handler, $options) use (&$callIndex, $expectedCalls, $mockGroupRoutes) {
                 $expected = $expectedCalls[$callIndex];
-                $this->assertEquals($expected['pattern'], $pattern);
-                $this->assertEquals($expected['handler'], $handler);
-                $this->assertEquals($expected['options']['priority'], $options['priority']);
-                $this->assertEquals($expected['options']['as'], $options['as']);
+                $this->assertSame($expected['pattern'], $pattern);
+                $this->assertSame($expected['handler'], $handler);
+                $this->assertSame($expected['options']['priority'], $options['priority']);
+                $this->assertSame($expected['options']['as'], $options['as']);
                 $callIndex++;
+
                 return $mockGroupRoutes;
             });
 
@@ -103,10 +105,10 @@ final class DefaultUrlGeneratorTest extends CIUnitTestCase
     public function testParams(): void
     {
         // Arrange
-        $assetId = 123;
+        $assetId     = 123;
         $variantName = 'thumbnail';
-        $filename = 'test.jpg';
-        $token = 'test_token';
+        $filename    = 'test.jpg';
+        $token       = 'test_token';
 
         // Act
         $params = DefaultUrlGenerator::params($assetId, $variantName, $filename, $token);
@@ -132,10 +134,10 @@ final class DefaultUrlGeneratorTest extends CIUnitTestCase
     public function testParamsWithNullVariantName(): void
     {
         // Arrange
-        $assetId = 123;
+        $assetId     = 123;
         $variantName = null;
-        $filename = 'test.jpg';
-        $token = 'test_token';
+        $filename    = 'test.jpg';
+        $token       = 'test_token';
 
         // Act
         $params = DefaultUrlGenerator::params($assetId, $variantName, $filename, $token);
@@ -157,10 +159,10 @@ final class DefaultUrlGeneratorTest extends CIUnitTestCase
     public function testParamsWithNullToken(): void
     {
         // Arrange
-        $assetId = 123;
+        $assetId     = 123;
         $variantName = 'thumbnail';
-        $filename = 'test.jpg';
-        $token = null;
+        $filename    = 'test.jpg';
+        $token       = null;
 
         // Act
         $params = DefaultUrlGenerator::params($assetId, $variantName, $filename, $token);

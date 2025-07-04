@@ -9,7 +9,6 @@ use CodeIgniter\I18n\Time;
 use CodeIgniter\Test\CIUnitTestCase;
 use Config\Services;
 use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\Asset\AssetMetadata;
 use Maniaba\FileConnect\UrlGenerator\TempUrlToken;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -27,12 +26,12 @@ final class TempUrlTokenTest extends CIUnitTestCase
 
         // Create a real Asset object with metadata via constructor
         $this->asset = new Asset([
-            'id' => '123',
+            'id'        => '123',
             'file_name' => 'test.jpg',
-            'metadata' => json_encode([
+            'metadata'  => json_encode([
                 'basic_info' => [
                     'file_relative_path' => 'uploads',
-                    'collection_class' => null, // Not a protected collection
+                    'collection_class'   => null, // Not a protected collection
                 ],
             ]),
         ]);
@@ -44,22 +43,20 @@ final class TempUrlTokenTest extends CIUnitTestCase
         Services::injectMock('cache', $this->mockCache);
     }
 
-
-
     /**
      * Test createToken method
      */
     public function testCreateToken(): void
     {
         // Arrange
-        $variant = 'thumbnail';
-        $expiration = Time::now()->addHours(1);
+        $variant           = 'thumbnail';
+        $expiration        = Time::now()->addHours(1);
         $expectedTokenData = [
-            'asset_id' => 123,
-            'variant' => $variant,
+            'asset_id'   => 123,
+            'variant'    => $variant,
             'expiration' => $expiration->getTimestamp(),
         ];
-        $expectedToken =  hash('sha256',json_encode($expectedTokenData));
+        $expectedToken = hash('sha256', json_encode($expectedTokenData));
 
         // Setup expectations for the cache save method
         $this->mockCache->expects($this->once())
@@ -67,17 +64,17 @@ final class TempUrlTokenTest extends CIUnitTestCase
             ->with(
                 $this->equalTo('temporary_url_ac_' . $expectedToken),
                 $this->equalTo($expectedTokenData),
-                $this->equalTo($expiration->getTimestamp() - time())
+                $this->equalTo($expiration->getTimestamp() - time()),
             )
             ->willReturn(true);
 
         // Act
         $token = TempUrlToken::createToken(new Asset([
-            'id' => 123,
+            'id'       => 123,
             'metadata' => json_encode([
                 'basic_info' => [
                     'file_relative_path' => 'uploads',
-                    'collection_class' => null, // Not a protected collection
+                    'collection_class'   => null, // Not a protected collection
                 ],
             ]),
         ]), $variant, $expiration);
@@ -92,10 +89,10 @@ final class TempUrlTokenTest extends CIUnitTestCase
     public function testValidateTokenWithValidToken(): void
     {
         // Arrange
-        $token = 'valid_token';
+        $token     = 'valid_token';
         $tokenData = [
-            'asset_id' => '123',
-            'variant' => 'thumbnail',
+            'asset_id'   => '123',
+            'variant'    => 'thumbnail',
             'expiration' => Time::now()->addYears(1)->getTimestamp(), // (future)
         ];
 
@@ -118,10 +115,10 @@ final class TempUrlTokenTest extends CIUnitTestCase
     public function testValidateTokenWithExpiredToken(): void
     {
         // Arrange
-        $token = 'expired_token';
+        $token     = 'expired_token';
         $tokenData = [
-            'asset_id' => '123',
-            'variant' => 'thumbnail',
+            'asset_id'   => '123',
+            'variant'    => 'thumbnail',
             'expiration' => 1625011200, // 2021-06-30 00:00:00 UTC (past)
         ];
 

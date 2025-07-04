@@ -4,15 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\UrlGenerator;
 
-use CodeIgniter\Cache\CacheInterface;
 use CodeIgniter\Config\Factories;
 use CodeIgniter\I18n\Time;
-use CodeIgniter\Router\RouteCollection;
 use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\Asset\AssetMetadata;
 use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
-use Maniaba\FileConnect\UrlGenerator\TempUrlToken;
 use Maniaba\FileConnect\UrlGenerator\UrlGenerator;
 use stdClass;
 
@@ -29,21 +25,21 @@ final class UrlGeneratorTest extends CIUnitTestCase
 
         // Create a real Asset object with metadata via constructor
         $this->asset = new Asset([
-            'id' => '123',
+            'id'        => '123',
             'file_name' => 'test.jpg',
-            'path' => '/path/to/test.jpg',
-            'metadata' => json_encode([
+            'path'      => '/path/to/test.jpg',
+            'metadata'  => json_encode([
                 'basic_info' => [
                     'file_relative_path' => 'uploads',
-                    'collection_class' => null, // Not a protected collection
+                    'collection_class'   => null, // Not a protected collection
                 ],
                 'asset_variants' => [
                     'thumbnail' => [
-                        'name' => 'thumbnail',
+                        'name'                  => 'thumbnail',
                         'relative_path_for_url' => 'uploads/variants/test_thumbnail.jpg',
-                        'paths' => [
+                        'paths'                 => [
                             'storage_base_directory_path' => '/path/to',
-                            'file_relative_path' => 'uploads/variants',
+                            'file_relative_path'          => 'uploads/variants',
                         ],
                     ],
                 ],
@@ -111,7 +107,6 @@ final class UrlGeneratorTest extends CIUnitTestCase
         $this->assertSame('https://example.com/index.php/uploads/test.jpg', $url);
     }
 
-
     /**
      * Test getUrl method for non-protected collection with non-existent variant
      */
@@ -134,17 +129,17 @@ final class UrlGeneratorTest extends CIUnitTestCase
         // Arrange
         // Create a new Asset object with a protected collection
         $asset = new Asset([
-            'id' => '123',
+            'id'        => '123',
             'file_name' => 'test.jpg',
-            'path' => '/path/to/test.jpg',
-            'metadata' => json_encode([
+            'path'      => '/path/to/test.jpg',
+            'metadata'  => json_encode([
                 'basic_info' => [
                     'file_relative_path' => 'uploads',
-                    'collection_class' => 'Maniaba\FileConnect\Asset\Interfaces\AuthorizableAssetCollectionDefinitionInterface', // Protected collection
+                    'collection_class'   => 'Maniaba\FileConnect\Asset\Interfaces\AuthorizableAssetCollectionDefinitionInterface', // Protected collection
                 ],
                 'asset_variants' => [
                     'thumbnail' => [
-                        'name' => 'thumbnail',
+                        'name'                  => 'thumbnail',
                         'relative_path_for_url' => 'uploads/variants/test_thumbnail.jpg',
                     ],
                 ],
@@ -160,7 +155,6 @@ final class UrlGeneratorTest extends CIUnitTestCase
         // Assert
         $this->assertSame('https://example.com/index.php/uploads/test.jpg', $url);
     }
-
 
     /**
      * Test getTemporaryUrl method with variant
@@ -183,9 +177,6 @@ final class UrlGeneratorTest extends CIUnitTestCase
         // Assert
         $this->assertSame('/assets/temporary/b0a4ae59595b37c409e6196189b3f22854f578e66a1fe526cee293792c8b166c/variant/thumbnail/test.jpg', $url);
     }
-
-
-
 
     /**
      * Test routeTo method
@@ -235,8 +226,7 @@ final class UrlGeneratorTest extends CIUnitTestCase
         $variantName = null;
         $filename    = 'test.jpg';
 
-        $assetConfig = new class extends \Maniaba\FileConnect\Config\Asset
-        {
+        $assetConfig = new class () extends \Maniaba\FileConnect\Config\Asset {
             public ?string $defaultUrlGenerator = null;
         };
 
@@ -248,7 +238,6 @@ final class UrlGeneratorTest extends CIUnitTestCase
         // Assert
         $this->assertSame('', $url);
     }
-
 
     /**
      * Test routeTo method with undefined route
@@ -277,8 +266,6 @@ final class UrlGeneratorTest extends CIUnitTestCase
         $this->expectException(InvalidArgumentException::class);
         UrlGenerator::routeTo($routeName, $assetId, $variantName, $filename);
     }
-
-
 
     /**
      * Test create method
