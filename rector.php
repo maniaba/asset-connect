@@ -2,11 +2,6 @@
 
 declare(strict_types=1);
 
-use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\AssetVariants\AssetVariant;
-use Maniaba\FileConnect\Exceptions\AssetException;
-use Maniaba\FileConnect\Models\AssetModel;
-use Maniaba\FileConnect\Models\BaseModel;
 use Rector\Caching\ValueObject\Storage\FileCacheStorage;
 use Rector\CodeQuality\Rector\BooleanAnd\SimplifyEmptyArrayCheckRector;
 use Rector\CodeQuality\Rector\Class_\CompleteDynamicPropertiesRector;
@@ -106,11 +101,11 @@ return static function (RectorConfig $rectorConfig): void {
         StringClassNameToClassConstantRector::class,
 
         TypedPropertyFromAssignsRector::class => [
-            Asset::class,
-            AssetModel::class,
-            BaseModel::class,
-            AssetVariant::class,
-            AssetException::class,
+            __DIR__ . '/src/Asset/Asset.php',
+            __DIR__ . '/src/Models/AssetModel.php',
+            __DIR__ . '/src/Models/BaseModel.php',
+            __DIR__ . '/src/AssetVariants/AssetVariant.php',
+            __DIR__ . '/src/Exceptions/AssetException.php',
         ],
     ]);
 
