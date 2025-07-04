@@ -14,6 +14,7 @@ use Maniaba\FileConnect\AssetVariants\AssetVariantsProcess;
 use Maniaba\FileConnect\AssetVariants\Interfaces\AssetVariantsInterface;
 use Maniaba\FileConnect\Exceptions\AssetException;
 use Maniaba\FileConnect\Models\AssetModel;
+use Override;
 
 /**
  * @property array{assetId: int, definition: class-string<AssetCollectionDefinitionInterface>, definitionArguments: array} $data
@@ -25,6 +26,7 @@ final class AssetConnectJob extends BaseJob implements JobInterface
     private ?Asset $asset     = null;
     private AssetCollectionDefinitionInterface&AssetVariantsInterface $definitionInstance;
 
+    #[Override]
     public function process(): void
     {
         if ($this->getAsset() === null) {

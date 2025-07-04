@@ -13,6 +13,7 @@ use Maniaba\FileConnect\Enums\AssetVisibility;
 use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
 use Maniaba\FileConnect\PathGenerator\Interfaces\PathGeneratorInterface;
 use Maniaba\FileConnect\Utils\PhpIni;
+use Override;
 
 final class AssetCollection implements AssetCollectionSetterInterface, AssetCollectionGetterInterface
 {
@@ -55,6 +56,7 @@ final class AssetCollection implements AssetCollectionSetterInterface, AssetColl
         }
     }
 
+    #[Override]
     public function setPathGenerator(PathGeneratorInterface $pathGenerator): static
     {
         $this->pathGenerator = $pathGenerator;
@@ -74,6 +76,7 @@ final class AssetCollection implements AssetCollectionSetterInterface, AssetColl
     /**
      * {@inheritDoc}
      */
+    #[Override]
     public function allowedExtensions(AssetExtension|string ...$extensions): static
     {
         $this->allowedExtensions = array_unique(array_map(static function ($extension) {
@@ -102,11 +105,13 @@ final class AssetCollection implements AssetCollectionSetterInterface, AssetColl
     /**
      * {@inheritDoc}
      */
+    #[Override]
     public function getAllowedExtensions(): array
     {
         return $this->allowedExtensions;
     }
 
+    #[Override]
     public function singleFileCollection(): static
     {
         $this->onlyKeepLatest(1);
@@ -117,6 +122,7 @@ final class AssetCollection implements AssetCollectionSetterInterface, AssetColl
     /**
      * {@inheritDoc}
      */
+    #[Override]
     public function allowedMimeTypes(AssetMimeType|string ...$mimeTypes): static
     {
         $this->allowedMimeTypes = array_unique(array_map(static function ($mimeType) {
@@ -140,6 +146,7 @@ final class AssetCollection implements AssetCollectionSetterInterface, AssetColl
     /**
      * {@inheritDoc}
      */
+    #[Override]
     public function getAllowedMimeTypes(): array
     {
         return $this->allowedMimeTypes;
@@ -148,6 +155,7 @@ final class AssetCollection implements AssetCollectionSetterInterface, AssetColl
     /**
      * {@inheritDoc}
      */
+    #[Override]
     public function setMaxFileSize(float|int $maxFileSize): static
     {
         if ($maxFileSize < 0) {
@@ -159,6 +167,7 @@ final class AssetCollection implements AssetCollectionSetterInterface, AssetColl
         return $this;
     }
 
+    #[Override]
     public function isSingleFileCollection(): bool
     {
         return $this->maximumNumberOfItemsInCollection === 1;
@@ -167,6 +176,7 @@ final class AssetCollection implements AssetCollectionSetterInterface, AssetColl
     /**
      * {@inheritDoc}
      */
+    #[Override]
     public function getMaxFileSize(): int
     {
         return $this->maxFileSize;
@@ -175,6 +185,7 @@ final class AssetCollection implements AssetCollectionSetterInterface, AssetColl
     /**
      * {@inheritDoc}
      */
+    #[Override]
     public function onlyKeepLatest(int $maximumNumberOfItemsInCollection): static
     {
         if ($maximumNumberOfItemsInCollection < 0) {
@@ -189,6 +200,7 @@ final class AssetCollection implements AssetCollectionSetterInterface, AssetColl
     /**
      * {@inheritDoc}
      */
+    #[Override]
     public function getMaximumNumberOfItemsInCollection(): int
     {
         return $this->maximumNumberOfItemsInCollection;
@@ -201,6 +213,7 @@ final class AssetCollection implements AssetCollectionSetterInterface, AssetColl
         return $this;
     }
 
+    #[Override]
     public function getVisibility(): AssetVisibility
     {
         return $this->visibility;
@@ -218,6 +231,7 @@ final class AssetCollection implements AssetCollectionSetterInterface, AssetColl
         return new AssetCollection($setupAssetCollection);
     }
 
+    #[Override]
     public function isProtected(): bool
     {
         return $this->getVisibility() === AssetVisibility::PROTECTED;

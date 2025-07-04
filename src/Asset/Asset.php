@@ -291,6 +291,7 @@ final class Asset extends Entity implements JsonSerializable
         return $model->save($data);
     }
 
+    #[Override]
     protected function mimeTypeValue(): string
     {
         return $this->mime_type;

@@ -9,6 +9,7 @@ use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionSetterInterface;
 use Maniaba\FileConnect\Enums\AssetExtension;
 use Maniaba\FileConnect\Enums\AssetMimeType;
 use Maniaba\FileConnect\PathGenerator\Interfaces\PathGeneratorInterface;
+use Override;
 
 /**
  * Class ValidationRuleCollector
@@ -36,6 +37,7 @@ final class ValidationRuleCollector implements AssetCollectionSetterInterface
      *
      * @return $this
      */
+    #[Override]
     public function allowedExtensions(AssetExtension|string ...$extensions): static
     {
         $extensionList = [];
@@ -56,6 +58,7 @@ final class ValidationRuleCollector implements AssetCollectionSetterInterface
      *
      * @return $this
      */
+    #[Override]
     public function allowedMimeTypes(AssetMimeType|string ...$mimeTypes): static
     {
         $mimeTypeList = [];
@@ -76,6 +79,7 @@ final class ValidationRuleCollector implements AssetCollectionSetterInterface
      *
      * @return $this
      */
+    #[Override]
     public function onlyKeepLatest(int $maximumNumberOfItemsInCollection): static
     {
         // Use a custom rule name that will be registered in the validator
@@ -123,6 +127,7 @@ final class ValidationRuleCollector implements AssetCollectionSetterInterface
      *
      * @return $this
      */
+    #[Override]
     public function setMaxFileSize(float|int $maxFileSize): static
     {
         // Convert to kilobytes for the max_size rule
@@ -138,6 +143,7 @@ final class ValidationRuleCollector implements AssetCollectionSetterInterface
      *
      * @return $this
      */
+    #[Override]
     public function singleFileCollection(): static
     {
         $this->rules['max_file_count'] = 'max_file_count[' . $this->currentField . ',1]';
@@ -152,6 +158,7 @@ final class ValidationRuleCollector implements AssetCollectionSetterInterface
      *
      * @return $this
      */
+    #[Override]
     public function setPathGenerator(PathGeneratorInterface $pathGenerator): static
     {
         // This doesn't translate to a validation rule

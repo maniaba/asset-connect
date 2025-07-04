@@ -8,6 +8,7 @@ use JsonSerializable;
 use Maniaba\FileConnect\Asset\Properties\AssetVariantProperty;
 use Maniaba\FileConnect\Asset\Properties\BasicInfoProperty;
 use Maniaba\FileConnect\Asset\Properties\UserCustomProperty;
+use Override;
 use Stringable;
 
 final readonly class AssetMetadata implements JsonSerializable, Stringable
@@ -23,6 +24,7 @@ final readonly class AssetMetadata implements JsonSerializable, Stringable
         $this->basicInfo    = BasicInfoProperty::create($metadata);
     }
 
+    #[Override]
     public function jsonSerialize(): array
     {
         return [
@@ -32,6 +34,7 @@ final readonly class AssetMetadata implements JsonSerializable, Stringable
         ];
     }
 
+    #[Override]
     public function __toString(): string
     {
         return json_encode($this->jsonSerialize(), JSON_THROW_ON_ERROR);

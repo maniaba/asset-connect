@@ -6,6 +6,7 @@ namespace Maniaba\FileConnect\PathGenerator;
 
 use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionGetterInterface;
 use Maniaba\FileConnect\PathGenerator\Interfaces\PathGeneratorInterface;
+use Override;
 
 final class DefaultPathGenerator implements PathGeneratorInterface
 {
@@ -22,6 +23,7 @@ final class DefaultPathGenerator implements PathGeneratorInterface
      *
      * @return string The base storage directory path
      */
+    #[Override]
     public function getStoreDirectory(PathGeneratorHelper $generatorHelper, AssetCollectionGetterInterface $collection): string
     {
         if (isset($this->storeDirectory)) {
@@ -42,6 +44,7 @@ final class DefaultPathGenerator implements PathGeneratorInterface
      *
      * @return string The relative path within the storage directory
      */
+    #[Override]
     public function getFileRelativePath(PathGeneratorHelper $generatorHelper, AssetCollectionGetterInterface $collection): string
     {
         return $this->fileRelativePath ?? $this->fileRelativePath = 'assets' . DIRECTORY_SEPARATOR . $generatorHelper->getDateTime() . DIRECTORY_SEPARATOR;
@@ -56,6 +59,7 @@ final class DefaultPathGenerator implements PathGeneratorInterface
      *
      * @return string The complete file path
      */
+    #[Override]
     public function getPath(PathGeneratorHelper $generatorHelper, AssetCollectionGetterInterface $collection): string
     {
         if (isset($this->path)) {
@@ -77,6 +81,7 @@ final class DefaultPathGenerator implements PathGeneratorInterface
      *
      * @return string The base storage directory path for variants
      */
+    #[Override]
     public function getStoreDirectoryForVariants(PathGeneratorHelper $generatorHelper, AssetCollectionGetterInterface $collection): string
     {
         // Variants use the same base storage directory as the original files
@@ -92,6 +97,7 @@ final class DefaultPathGenerator implements PathGeneratorInterface
      *
      * @return string The relative path within the storage directory for variants
      */
+    #[Override]
     public function getFileRelativePathForVariants(PathGeneratorHelper $generatorHelper, AssetCollectionGetterInterface $collection): string
     {
         // Get the file relative path for the original file
@@ -110,6 +116,7 @@ final class DefaultPathGenerator implements PathGeneratorInterface
      *
      * @return string The path for variants
      */
+    #[Override]
     public function getPathForVariants(PathGeneratorHelper $generatorHelper, AssetCollectionGetterInterface $collection): string
     {
         // Always use the store directory and file relative path for variants
@@ -119,6 +126,7 @@ final class DefaultPathGenerator implements PathGeneratorInterface
         return $storeDirectory . $fileRelativePath;
     }
 
+    #[Override]
     public function onCreatedDirectory(string $path): void
     {
         // Recrusively create empty index.html file to prevent directory listing

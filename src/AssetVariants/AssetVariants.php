@@ -8,6 +8,7 @@ use Closure;
 use Maniaba\FileConnect\Asset\Asset;
 use Maniaba\FileConnect\AssetCollection\Interfaces\CreateAssetVariantsInterface;
 use Maniaba\FileConnect\PathGenerator\PathGenerator;
+use Override;
 
 final class AssetVariants implements CreateAssetVariantsInterface
 {
@@ -22,6 +23,7 @@ final class AssetVariants implements CreateAssetVariantsInterface
     /**
      * {@inheritDoc}
      */
+    #[Override]
     public function assetVariant(string $name, Closure $closure): AssetVariant
     {
         $fileNameWithoutExtension = pathinfo($this->asset->file_name, PATHINFO_FILENAME);

@@ -6,9 +6,11 @@ namespace Maniaba\FileConnect\Asset\Properties;
 
 use Maniaba\FileConnect\AssetVariants\AssetVariant;
 use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
+use Override;
 
 final class AssetVariantProperty extends BaseProperty
 {
+    #[Override]
     public static function getName(): string
     {
         return 'asset_variants';

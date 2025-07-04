@@ -133,6 +133,7 @@ final class AssetCollectionDefinitionFactoryTest extends CIUnitTestCase
  */
 class TestAssetCollectionDefinition implements AssetCollectionDefinitionInterface
 {
+    #[Override]
     public function definition($definition): void
     {
         // Do nothing
@@ -150,6 +151,7 @@ class TestAssetCollectionDefinitionWithArgs implements AssetCollectionDefinition
     ) {
     }
 
+    #[Override]
     public function definition($definition): void
     {
         // Do nothing

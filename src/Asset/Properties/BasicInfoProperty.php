@@ -7,9 +7,11 @@ namespace Maniaba\FileConnect\Asset\Properties;
 use CodeIgniter\Entity\Entity;
 use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Asset\Interfaces\AuthorizableAssetCollectionDefinitionInterface;
+use Override;
 
 final class BasicInfoProperty extends BaseProperty
 {
+    #[Override]
     public static function getName(): string
     {
         return 'basic_info';

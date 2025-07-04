@@ -7,9 +7,11 @@ namespace Maniaba\FileConnect\UrlGenerator;
 use CodeIgniter\Router\RouteCollection;
 use Maniaba\FileConnect\Controllers\AssetConnectController;
 use Maniaba\FileConnect\UrlGenerator\Interfaces\UrlGeneratorInterface;
+use Override;
 
 class DefaultUrlGenerator implements UrlGeneratorInterface
 {
+    #[Override]
     public static function routes(RouteCollection &$routes): void
     {
         $routes->group('assets', static function (RouteCollection $routes) {
@@ -36,6 +38,7 @@ class DefaultUrlGenerator implements UrlGeneratorInterface
         });
     }
 
+    #[Override]
     public static function params(int $assetId, ?string $variantName, string $filename, ?string $token = null): array
     {
         return [

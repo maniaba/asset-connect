@@ -15,6 +15,7 @@ use Maniaba\FileConnect\Exceptions\AssetException;
 use Maniaba\FileConnect\Exceptions\FileException;
 use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
 use Maniaba\FileConnect\Traits\UseAssetConnectTrait;
+use Override;
 use Throwable;
 
 /**
@@ -79,6 +80,7 @@ final class AssetAdder implements AssetAdderInterface
      *
      * @param bool $preserveOriginal Whether to preserve the original file.
      */
+    #[Override]
     public function preservingOriginal(bool $preserveOriginal = true): self
     {
         $this->setupAssetCollection->setPreserveOriginal($preserveOriginal);
@@ -91,6 +93,7 @@ final class AssetAdder implements AssetAdderInterface
      *
      * @param int $order The order to set for the asset.
      */
+    #[Override]
     public function setOrder(int $order): self
     {
         $this->asset->order = $order;
@@ -103,6 +106,7 @@ final class AssetAdder implements AssetAdderInterface
      *
      * @param string $fileName The file name to set for the asset.
      */
+    #[Override]
     public function usingFileName(string $fileName): self
     {
         $this->asset->file_name = $fileName;
@@ -115,6 +119,7 @@ final class AssetAdder implements AssetAdderInterface
      *
      * @param string $name The name to set for the asset.
      */
+    #[Override]
     public function usingName(string $name): self
     {
         $this->asset->name = $name;
@@ -152,6 +157,7 @@ final class AssetAdder implements AssetAdderInterface
      *
      * @param array<string, mixed> $customProperties An associative array of custom properties.
      */
+    #[Override]
     public function withCustomProperties(array $customProperties): self
     {
         foreach ($customProperties as $key => $value) {
@@ -170,6 +176,7 @@ final class AssetAdder implements AssetAdderInterface
      *
      * @throws AssetException|FileException|InvalidArgumentException|Throwable
      */
+    #[Override]
     public function toAssetCollection(AssetCollectionDefinitionInterface|string|null $collection = null): Asset
     {
         $this->asset->file_name = call_user_func($this->fileNameSanitizer, (string) $this->asset->file_name);

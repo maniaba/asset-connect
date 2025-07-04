@@ -9,6 +9,7 @@ use CodeIgniter\Model;
 use CodeIgniter\Validation\ValidationInterface;
 use Exception;
 use Maniaba\FileConnect\Config\Asset;
+use Override;
 
 abstract class BaseModel extends Model
 {
@@ -31,6 +32,7 @@ abstract class BaseModel extends Model
     /**
      * @throws Exception
      */
+    #[Override]
     protected function initialize(): void
     {
         $this->table = $this->assetConfig->tables[$this->setConfigTableName()]

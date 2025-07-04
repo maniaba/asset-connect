@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Maniaba\FileConnect\Database\Migrations;
 
 use Maniaba\FileConnect\Database\BaseMigration;
+use Override;
 
 class CreateAssetsTable extends BaseMigration
 {
+    #[Override]
     public function up(): void
     {
         $this->forge->addField([
@@ -96,6 +98,7 @@ class CreateAssetsTable extends BaseMigration
         $this->createTable('assets', true);
     }
 
+    #[Override]
     public function down(): void
     {
         $this->dropTable('assets');

@@ -13,6 +13,7 @@ use Maniaba\FileConnect\Config\Asset;
 use Maniaba\FileConnect\Exceptions\AssetException;
 use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
 use Maniaba\FileConnect\PathGenerator\Interfaces\PathGeneratorInterface;
+use Override;
 
 final class SetupAssetCollection implements SetupAssetCollectionInterface
 {
@@ -48,6 +49,7 @@ final class SetupAssetCollection implements SetupAssetCollectionInterface
      *
      * @throws InvalidArgumentException if the provided class does not implement AssetCollectionDefinitionInterface
      */
+    #[Override]
     public function setDefaultCollectionDefinition(AssetCollectionDefinitionInterface|string $collectionDefinition, ...$args): static
     {
         if (is_string($collectionDefinition)) {
@@ -62,6 +64,7 @@ final class SetupAssetCollection implements SetupAssetCollectionInterface
     /**
      * Set the path generator for this Entity's asset collection.
      */
+    #[Override]
     public function setPathGenerator(PathGeneratorInterface|string $pathGenerator): static
     {
         if (is_string(
@@ -118,6 +121,7 @@ final class SetupAssetCollection implements SetupAssetCollectionInterface
         return $this->collectionDefinition;
     }
 
+    #[Override]
     public function setFileNameSanitizer(Closure $sanitizer): static
     {
         $this->fileNameSanitizer = $sanitizer;
@@ -160,6 +164,7 @@ final class SetupAssetCollection implements SetupAssetCollectionInterface
         return $sanitizedFileName;
     }
 
+    #[Override]
     public function setPreserveOriginal(bool $preserve): static
     {
         $this->preserveOriginal = $preserve;
@@ -172,6 +177,7 @@ final class SetupAssetCollection implements SetupAssetCollectionInterface
         return $this->preserveOriginal;
     }
 
+    #[Override]
     public function setSubjectPrimaryKeyAttribute(string $attribute): static
     {
         $this->subjectPrimaryKeyAttribute = $attribute;
@@ -182,6 +188,7 @@ final class SetupAssetCollection implements SetupAssetCollectionInterface
     /**
      * {@inheritDoc}
      */
+    #[Override]
     public function autoDetectSubjectPrimaryKeyAttribute(string $fromModel): static
     {
         if (! class_exists($fromModel) || (! is_subclass_of($fromModel, Model::class) && $fromModel !== Model::class)) {

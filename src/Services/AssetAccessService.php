@@ -11,12 +11,14 @@ use Maniaba\FileConnect\Exceptions\PageException;
 use Maniaba\FileConnect\Models\AssetModel;
 use Maniaba\FileConnect\Services\Interfaces\AssetAccessServiceInterface;
 use Maniaba\FileConnect\UrlGenerator\TempUrlToken;
+use Override;
 
 final class AssetAccessService implements AssetAccessServiceInterface
 {
     /**
      * {@inheritDoc}
      */
+    #[Override]
     public function handleAssetRequest(int $assetId, ?string $variantName = null): DownloadResponse
     {
         // Get the asset from the database
@@ -70,6 +72,7 @@ final class AssetAccessService implements AssetAccessServiceInterface
         return $response;
     }
 
+    #[Override]
     public function hasAccessPermission(Asset $asset): bool
     {
         $collection = $asset->getAssetCollectionDefinition();
@@ -83,6 +86,7 @@ final class AssetAccessService implements AssetAccessServiceInterface
         return $collection->checkAuthorization($asset);
     }
 
+    #[Override]
     public function handleTemporaryAssetRequest(string $token): DownloadResponse
     {
         $tokenData = TempUrlToken::validateToken($token);

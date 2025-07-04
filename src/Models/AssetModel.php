@@ -9,6 +9,7 @@ use Maniaba\FileConnect\Asset\Asset;
 use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory;
 use Maniaba\FileConnect\Traits\UseAssetConnectTrait;
+use Override;
 
 /**
  * @method Asset|list<Asset>|null find($id = null)
@@ -40,6 +41,7 @@ final class AssetModel extends BaseModel
         'metadata'    => 'permit_empty|valid_json|max_length[65535]',
     ];
 
+    #[Override]
     protected function setConfigTableName(): string
     {
         return 'assets';

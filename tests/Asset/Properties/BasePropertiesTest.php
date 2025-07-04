@@ -14,6 +14,7 @@ use Override;
  */
 class TestProperty extends BaseProperty
 {
+    #[Override]
     public static function getName(): string
     {
         return 'test_properties';

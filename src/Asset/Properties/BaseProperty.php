@@ -6,6 +6,7 @@ namespace Maniaba\FileConnect\Asset\Properties;
 
 use InvalidArgumentException;
 use JsonSerializable;
+use Override;
 
 abstract class BaseProperty implements JsonSerializable
 {
@@ -15,6 +16,7 @@ abstract class BaseProperty implements JsonSerializable
     {
     }
 
+    #[Override]
     public function jsonSerialize(): array
     {
         return [static::getName() => $this->properties];
