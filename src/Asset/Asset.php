@@ -17,6 +17,7 @@ use Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory;
 use Maniaba\FileConnect\Models\AssetModel;
 use Maniaba\FileConnect\Services\AssetAccessService;
 use Maniaba\FileConnect\UrlGenerator\Traits\UrlGeneratorTrait;
+use Override;
 
 /**
  * @property      string            $collection            name of the collection to which the asset belongs (md5 hash of the class name)
@@ -132,6 +133,7 @@ final class Asset extends Entity implements JsonSerializable
         return $this->metadata;
     }
 
+    #[Override]
     public function toRawArray(bool $onlyChanged = false, bool $recursive = false): array
     {
         $rawArray             = parent::toRawArray($onlyChanged, $recursive);
@@ -321,6 +323,7 @@ final class Asset extends Entity implements JsonSerializable
         return $assetAccess->handleAssetRequest($this->id, $variantName);
     }
 
+    #[Override]
     public function jsonSerialize(): array
     {
         // need to hide file path on storage

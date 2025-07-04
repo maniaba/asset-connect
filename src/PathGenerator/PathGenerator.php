@@ -8,13 +8,13 @@ use Maniaba\FileConnect\AssetCollection\AssetCollection;
 use Maniaba\FileConnect\Exceptions\FileException;
 use Maniaba\FileConnect\PathGenerator\Interfaces\PathGeneratorInterface;
 
-final class PathGenerator
+final readonly class PathGenerator
 {
-    private readonly PathGeneratorHelper $helper;
-    private readonly PathGeneratorInterface $pathGenerator;
+    private PathGeneratorHelper $helper;
+    private PathGeneratorInterface $pathGenerator;
 
     public function __construct(
-        private readonly AssetCollection $collection,
+        private AssetCollection $collection,
     ) {
         $this->helper        = new PathGeneratorHelper();
         $this->pathGenerator = $this->collection->getPathGenerator();

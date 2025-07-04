@@ -23,15 +23,5 @@ parameters:
 		booleansInConditions: true
 		matchingInheritedMethodNames: true
 	treatPhpDocTypesAsCertain: false
-	ignoreErrors:
-		# Ignore assertions that will always evaluate to true in tests
-		- '#Call to method PHPUnit\\Framework\\Assert::assertTrue\(\) with true will always evaluate to true\.#'
-		- '#Call to method PHPUnit\\Framework\\Assert::assertInstanceOf\(\) with .* will always evaluate to true\.#'
-		- '#Call to method PHPUnit\\Framework\\Assert::assertNotNull\(\) with .* will always evaluate to true\.#'
-		# Ignore property access issues in tests
-		- '#Access to an undefined property Maniaba\\FileConnect\\AssetCollection\\Interfaces\\CreateAssetVariantsInterface::\$onQueue\.#'
-		# Ignore offset access issues in tests
-		# Ignore parameter type issues in tests
-		- '#Parameter \#1 \$pathGenerator of method Maniaba\\FileConnect\\AssetCollection\\SetupAssetCollection::setPathGenerator\(\) expects class-string<Maniaba\\FileConnect\\PathGenerator\\Interfaces\\PathGeneratorInterface>\|Maniaba\\FileConnect\\PathGenerator\\Interfaces\\PathGeneratorInterface, string given\.#'
-		- '#Parameter \#1 \$fromModel of method Maniaba\\FileConnect\\AssetCollection\\SetupAssetCollection::autoDetectSubjectPrimaryKeyAttribute\(\) expects class-string<CodeIgniter\\Model>, string given\.#'
-		- '#Parameter \#2 \$collectionDefinition of method Maniaba\\FileConnect\\Validation\\AssetConnectValidator::setFieldCollectionDefinition\(\) expects class-string<Maniaba\\FileConnect\\Asset\\Interfaces\\AssetCollectionDefinitionInterface>\|Maniaba\\FileConnect\\Asset\\Interfaces\\AssetCollectionDefinitionInterface, PHPUnit\\Framework\\MockObject\\MockObject given\.#'
+includes:
+        - phpstan-baseline.neon

@@ -14,6 +14,7 @@ use Maniaba\FileConnect\Config\Asset;
 use Maniaba\FileConnect\Exceptions\AssetException;
 use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
 use Maniaba\FileConnect\PathGenerator\Interfaces\PathGeneratorInterface;
+use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionClass;
 use stdClass;
@@ -40,11 +41,7 @@ final class SetupAssetCollectionTest extends CIUnitTestCase
      */
     private MockObject $mockAssetConfig;
 
-    /**
-     * @var MockObject&Model
-     */
-    private MockObject $mockModel;
-
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -53,11 +50,11 @@ final class SetupAssetCollectionTest extends CIUnitTestCase
         $this->mockCollectionDefinition = $this->createMock(AssetCollectionDefinitionInterface::class);
         $this->mockPathGenerator        = $this->createMock(PathGeneratorInterface::class);
         $this->mockAssetConfig          = $this->createMock(Asset::class);
-        $this->mockModel                = $this->createMock(Model::class);
+        $mockModel                      = $this->createMock(Model::class);
 
         // Setup global function mocks
         Factories::injectMock('config', 'Asset', $this->mockAssetConfig);
-        Factories::injectMock('models', 'TestModel', $this->mockModel);
+        Factories::injectMock('models', 'TestModel', $mockModel);
     }
 
     /**

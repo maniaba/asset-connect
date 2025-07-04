@@ -10,6 +10,7 @@ use Maniaba\FileConnect\AssetCollection\Interfaces\CreateAssetVariantsInterface;
 use Maniaba\FileConnect\AssetVariants\AssetVariant;
 use Maniaba\FileConnect\AssetVariants\AssetVariants;
 use Maniaba\FileConnect\PathGenerator\PathGenerator;
+use Override;
 
 /**
  * @internal
@@ -19,6 +20,7 @@ final class AssetVariantsTest extends CIUnitTestCase
     private Asset $asset;
     private CreateAssetVariantsInterface $assetVariants;
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();

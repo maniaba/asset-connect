@@ -12,6 +12,7 @@ use Maniaba\FileConnect\Enums\AssetExtension;
 use Maniaba\FileConnect\Enums\AssetMimeType;
 use Maniaba\FileConnect\PathGenerator\Interfaces\PathGeneratorInterface;
 use Maniaba\FileConnect\Validation\ValidationRuleCollector;
+use Override;
 
 /**
  * @internal
@@ -21,6 +22,7 @@ final class ValidationRuleCollectorTest extends CIUnitTestCase
     private ValidationRuleCollector $collector;
     private string $fieldName = 'testField';
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();

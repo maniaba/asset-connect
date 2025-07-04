@@ -10,11 +10,11 @@ use Maniaba\FileConnect\Asset\Asset;
 use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
 use Maniaba\FileConnect\UrlGenerator\Interfaces\UrlGeneratorInterface;
 
-final class UrlGenerator
+final readonly class UrlGenerator
 {
-    private readonly bool $isProtectedCollection;
+    private bool $isProtectedCollection;
 
-    private function __construct(private readonly Asset $asset)
+    private function __construct(private Asset $asset)
     {
         $this->isProtectedCollection = $this->asset->metadata->basicInfo->isProtectedCollection();
     }

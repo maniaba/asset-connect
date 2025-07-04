@@ -1,0 +1,166 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Call to an undefined method CodeIgniter\\Entity\\Entity\:\:setupAssetConnect\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Asset/AssetAdder.php
+
+		-
+			message: '#^PHPDoc type for property Maniaba\\FileConnect\\Asset\\AssetAdder\:\:\$subjectEntity contains unresolvable type\.$#'
+			identifier: property.unresolvableType
+			count: 1
+			path: src/Asset/AssetAdder.php
+
+		-
+			message: '#^Call to an undefined method CodeIgniter\\Entity\\Entity\:\:addAsset\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: src/Asset/AssetAdderMultiple.php
+
+		-
+			message: '#^PHPDoc type for property Maniaba\\FileConnect\\Asset\\AssetAdderMultiple\:\:\$subjectEntity contains unresolvable type\.$#'
+			identifier: property.unresolvableType
+			count: 1
+			path: src/Asset/AssetAdderMultiple.php
+
+		-
+			message: '#^Call to an undefined method CodeIgniter\\Entity\\Entity\:\:assetConnectInstance\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: src/Asset/AssetPersistenceManager.php
+
+		-
+			message: '#^PHPDoc type for property Maniaba\\FileConnect\\Asset\\AssetPersistenceManager\:\:\$subjectEntity contains unresolvable type\.$#'
+			identifier: property.unresolvableType
+			count: 1
+			path: src/Asset/AssetPersistenceManager.php
+
+		-
+			message: '#^Access to protected property CodeIgniter\\Model\:\:\$primaryKey\.$#'
+			identifier: property.protected
+			count: 1
+			path: src/AssetCollection/SetupAssetCollection.php
+
+		-
+			message: '#^PHPDoc tag @var for variable \$rows contains unresolvable type\.$#'
+			identifier: varTag.unresolvableType
+			count: 1
+			path: src/AssetConnect.php
+
+		-
+			message: '#^PHPDoc tag @param has invalid value \(class\-string\<Entity&UseAssetConnectTrait\>\|Entity&UseAssetConnectTrait \$entityType The entity type to filter by\)\: Unexpected token "&", expected variable at offset 109 on line 4$#'
+			identifier: phpDoc.parseError
+			count: 1
+			path: src/Models/AssetModel.php
+
+		-
+			message: '''
+				#^Call to deprecated method __construct\(\) of class CodeIgniter\\HTTP\\DownloadResponse\:
+				4\.5\.0 The param \$config is no longer used\.$#
+			'''
+			identifier: method.deprecated
+			count: 1
+			path: src/Services/AssetAccessService.php
+
+		-
+			message: '#^Trait Maniaba\\FileConnect\\Traits\\UseAssetConnectModelTrait is used zero times and is not analysed\.$#'
+			identifier: trait.unused
+			count: 1
+			path: src/Traits/UseAssetConnectModelTrait.php
+
+		-
+			message: '#^Trait Maniaba\\FileConnect\\Traits\\UseAssetConnectTrait is used zero times and is not analysed\.$#'
+			identifier: trait.unused
+			count: 1
+			path: src/Traits/UseAssetConnectTrait.php
+
+		-
+			message: '#^Property Maniaba\\FileConnect\\Validation\\ValidationRuleCollector\:\:\$rules \(non\-empty\-array\<string, list\<string\>\|non\-falsy\-string\>\) does not accept non\-empty\-array\<string, \(Closure\(mixed, array\|null, string\|null, string\)\: bool\)\|list\<string\>\|non\-falsy\-string\>\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: src/Validation/ValidationRuleCollector.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\FileConnect\\\\Asset\\\\Properties\\\\AssetVariantProperty'' and Maniaba\\FileConnect\\Asset\\Properties\\AssetVariantProperty will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 1
+			path: tests/Asset/Properties/AssetVariantPropertyTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertTrue\(\) with true will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 1
+			path: tests/Asset/Properties/AssetVariantPropertyTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\FileConnect\\\\Asset\\\\Properties\\\\BasicInfoProperty'' and Maniaba\\FileConnect\\Asset\\Properties\\BasicInfoProperty will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 1
+			path: tests/Asset/Properties/BasicInfoPropertyTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\FileConnect\\\\Asset\\\\Properties\\\\UserCustomProperty'' and Maniaba\\FileConnect\\Asset\\Properties\\UserCustomProperty will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 1
+			path: tests/Asset/Properties/UserCustomPropertiesTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertNotNull\(\) with Maniaba\\FileConnect\\Asset\\Properties\\AssetVariantProperty will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 1
+			path: tests/Asset/PropertiesTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertNotNull\(\) with Maniaba\\FileConnect\\Asset\\Properties\\UserCustomProperty will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 1
+			path: tests/Asset/PropertiesTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\FileConnect\\\\Asset\\\\Interfaces\\\\AssetCollectionDefinitionInterface'' and Maniaba\\FileConnect\\Asset\\Interfaces\\AssetCollectionDefinitionInterface will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 2
+			path: tests/AssetCollection/AssetCollectionDefinitionFactoryTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertTrue\(\) with true will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 2
+			path: tests/AssetCollection/AssetCollectionDefinitionFactoryTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\FileConnect\\\\AssetCollection\\\\AssetCollection'' and Maniaba\\FileConnect\\AssetCollection\\AssetCollection will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 1
+			path: tests/AssetCollection/AssetCollectionTest.php
+
+		-
+			message: '#^Parameter \#1 \$fromModel of method Maniaba\\FileConnect\\AssetCollection\\SetupAssetCollection\:\:autoDetectSubjectPrimaryKeyAttribute\(\) expects class\-string\<CodeIgniter\\Model\>, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: tests/AssetCollection/SetupAssetCollectionTest.php
+
+		-
+			message: '#^Parameter \#1 \$pathGenerator of method Maniaba\\FileConnect\\AssetCollection\\SetupAssetCollection\:\:setPathGenerator\(\) expects class\-string\<Maniaba\\FileConnect\\PathGenerator\\Interfaces\\PathGeneratorInterface\>\|Maniaba\\FileConnect\\PathGenerator\\Interfaces\\PathGeneratorInterface, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: tests/AssetCollection/SetupAssetCollectionTest.php
+
+		-
+			message: '#^Access to an undefined property Maniaba\\FileConnect\\AssetCollection\\Interfaces\\CreateAssetVariantsInterface\:\:\$onQueue\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/AssetVariants/AssetVariantsTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\FileConnect\\\\UrlGenerator\\\\UrlGenerator'' and Maniaba\\FileConnect\\UrlGenerator\\UrlGenerator will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 1
+			path: tests/UrlGenerator/UrlGeneratorTest.php
+
+		-
+			message: '#^Parameter \#2 \$collectionDefinition of method Maniaba\\FileConnect\\Validation\\AssetConnectValidator\:\:setFieldCollectionDefinition\(\) expects class\-string\<Maniaba\\FileConnect\\Asset\\Interfaces\\AssetCollectionDefinitionInterface\>\|Maniaba\\FileConnect\\Asset\\Interfaces\\AssetCollectionDefinitionInterface, PHPUnit\\Framework\\MockObject\\MockObject given\.$#'
+			identifier: argument.type
+			count: 3
+			path: tests/Validation/AssetConnectValidatorTest.php

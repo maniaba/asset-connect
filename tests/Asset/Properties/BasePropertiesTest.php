@@ -7,6 +7,7 @@ namespace Tests\Asset\Properties;
 use CodeIgniter\Test\CIUnitTestCase;
 use InvalidArgumentException;
 use Maniaba\FileConnect\Asset\Properties\BaseProperty;
+use Override;
 
 /**
  * Concrete implementation of BaseProperties for testing
@@ -26,6 +27,7 @@ final class BasePropertiesTest extends CIUnitTestCase
 {
     private TestProperty $baseProperties;
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();

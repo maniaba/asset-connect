@@ -8,6 +8,7 @@ use CodeIgniter\Router\RouteCollection;
 use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\FileConnect\Controllers\AssetConnectController;
 use Maniaba\FileConnect\UrlGenerator\DefaultUrlGenerator;
+use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
@@ -17,6 +18,7 @@ final class DefaultUrlGeneratorTest extends CIUnitTestCase
 {
     private MockObject|RouteCollection $mockRoutes;
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();

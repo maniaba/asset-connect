@@ -24,6 +24,7 @@ $finder = Finder::create()
 $overrides = [
     'declare_strict_types' => true,
     // 'void_return'          => true,
+    'php_unit_attributes' => true,
 ];
 
 $options = [

@@ -8,6 +8,7 @@ use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionGetterInterface;
 use Maniaba\FileConnect\PathGenerator\DefaultPathGenerator;
 use Maniaba\FileConnect\PathGenerator\PathGeneratorHelper;
+use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionClass;
 
@@ -20,6 +21,7 @@ final class DefaultPathGeneratorTest extends CIUnitTestCase
     private PathGeneratorHelper $helper;
     private AssetCollectionGetterInterface|MockObject $mockCollection;
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();

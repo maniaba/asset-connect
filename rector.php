@@ -47,7 +47,7 @@ use Rector\ValueObject\PhpVersion;
 return static function (RectorConfig $rectorConfig): void {
     $rectorConfig->sets([
         SetList::DEAD_CODE,
-        LevelSetList::UP_TO_PHP_81,
+        LevelSetList::UP_TO_PHP_83,
         PHPUnitSetList::PHPUNIT_CODE_QUALITY,
         PHPUnitSetList::PHPUNIT_100,
     ]);
@@ -77,11 +77,14 @@ return static function (RectorConfig $rectorConfig): void {
     ]);
 
     if (is_file(__DIR__ . '/phpstan.neon.dist')) {
-        $rectorConfig->phpstanConfig(__DIR__ . '/phpstan.neon.dist');
+        $rectorConfig->phpstanConfigs([
+            __DIR__ . DIRECTORY_SEPARATOR . 'phpstan.neon.dist',
+            __DIR__ . DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, ['vendor', 'phpstan', 'phpstan-strict-rules', 'rules.neon']),
+        ]);
     }
 
     // Set the target version for refactoring
-    $rectorConfig->phpVersion(PhpVersion::PHP_81);
+    $rectorConfig->phpVersion(PhpVersion::PHP_83);
 
     // Auto-import fully qualified class names
     $rectorConfig->importNames();
@@ -106,6 +109,9 @@ return static function (RectorConfig $rectorConfig): void {
             __DIR__ . '/src/Models/BaseModel.php',
             __DIR__ . '/src/AssetVariants/AssetVariant.php',
             __DIR__ . '/src/Exceptions/AssetException.php',
+
+            // Tests
+            __DIR__ . '/tests/AssetCollection/SetupAssetCollectionTest.php',
         ],
     ]);
 

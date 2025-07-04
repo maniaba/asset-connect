@@ -12,6 +12,7 @@ use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory;
 use Maniaba\FileConnect\Validation\AssetConnectValidator;
 use Maniaba\FileConnect\Validation\ValidationRuleCollector;
+use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
@@ -23,6 +24,7 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
     private MockObject $mockValidation;
     private MockObject $mockCollectionDefinition;
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();

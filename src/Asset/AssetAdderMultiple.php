@@ -11,13 +11,13 @@ use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
 use Maniaba\FileConnect\Traits\UseAssetConnectTrait;
 
-final class AssetAdderMultiple
+final readonly class AssetAdderMultiple
 {
     public function __construct(
         /** @var array<string, list<UploadedFile>> $uploadedFiles */
-        private readonly array $uploadedFiles,
+        private array $uploadedFiles,
         /** @var Entity&UseAssetConnectTrait $subjectEntity */
-        private readonly Entity $subjectEntity,
+        private Entity $subjectEntity,
     ) {
     }
 

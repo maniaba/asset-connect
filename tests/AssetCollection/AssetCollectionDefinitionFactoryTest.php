@@ -8,6 +8,7 @@ use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory;
 use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
+use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 use stdClass;
 
@@ -21,6 +22,7 @@ final class AssetCollectionDefinitionFactoryTest extends CIUnitTestCase
      */
     private MockObject $mockCollectionDefinition;
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();

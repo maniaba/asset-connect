@@ -86,6 +86,7 @@
         "sa": "@analyze",
         "style": "@cs-fix",
         "test": "phpunit",
+        "phpstan-gb": "phpstan analyze --generate-baseline=phpstan-baseline.neon",
         "rector": "rector process --dry-run",
         "rector-fix": "rector process"
     }

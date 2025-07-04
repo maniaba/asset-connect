@@ -13,8 +13,8 @@ use Throwable;
 
 final class AssetVariantsProcess
 {
-    public const QUEUE_NAME  = 'asset_queue';
-    public const JOB_HANDLER = 'asset_connect';
+    public const string QUEUE_NAME  = 'asset_queue';
+    public const string JOB_HANDLER = 'asset_connect';
 
     public static function onQueue(Asset &$asset, AssetCollectionDefinitionInterface $definition, mixed ...$definitionArguments): void
     {

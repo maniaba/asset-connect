@@ -9,7 +9,7 @@ use Maniaba\FileConnect\Asset\Asset;
 
 final class TempUrlToken
 {
-    private const CACHE_KEY_PREFIX = 'temporary_url_ac_';
+    private const string CACHE_KEY_PREFIX = 'temporary_url_ac_';
 
     public static function createToken(Asset $asset, ?string $variant, Time $expiration): string
     {

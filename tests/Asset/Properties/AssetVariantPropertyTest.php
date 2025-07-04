@@ -8,6 +8,7 @@ use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\FileConnect\Asset\Properties\AssetVariantProperty;
 use Maniaba\FileConnect\AssetVariants\AssetVariant;
 use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
+use Override;
 use ReflectionClass;
 
 /**
@@ -18,6 +19,7 @@ final class AssetVariantPropertyTest extends CIUnitTestCase
     private AssetVariantProperty $assetVariantProperty;
     private AssetVariant $variant;
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -99,7 +101,7 @@ final class AssetVariantPropertyTest extends CIUnitTestCase
         $result = $this->assetVariantProperty->getAssetVariant('non_existent');
 
         // Assert
-        $this->assertNull($result);
+        $this->assertNotInstanceOf(AssetVariant::class, $result);
     }
 
     /**

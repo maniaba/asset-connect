@@ -14,6 +14,7 @@ use Maniaba\FileConnect\Enums\AssetMimeType;
 use Maniaba\FileConnect\Enums\AssetVisibility;
 use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
 use Maniaba\FileConnect\PathGenerator\Interfaces\PathGeneratorInterface;
+use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionClass;
 
@@ -36,6 +37,7 @@ final class AssetCollectionTest extends CIUnitTestCase
 
     private AssetCollection $assetCollection;
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();

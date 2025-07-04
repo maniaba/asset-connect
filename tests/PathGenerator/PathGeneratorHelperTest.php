@@ -7,6 +7,7 @@ namespace Tests\PathGenerator;
 use CodeIgniter\I18n\Time;
 use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\FileConnect\PathGenerator\PathGeneratorHelper;
+use Override;
 
 /**
  * @internal
@@ -15,6 +16,7 @@ final class PathGeneratorHelperTest extends CIUnitTestCase
 {
     private PathGeneratorHelper $helper;
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();

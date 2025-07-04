@@ -9,6 +9,7 @@ use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Asset\Interfaces\AuthorizableAssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Asset\Properties\BasicInfoProperty;
+use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
@@ -33,6 +34,7 @@ final class BasicInfoPropertyTest extends CIUnitTestCase
      */
     private MockObject $mockAuthorizableCollectionDefinition;
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();

@@ -10,11 +10,11 @@ use Maniaba\FileConnect\Asset\Properties\BasicInfoProperty;
 use Maniaba\FileConnect\Asset\Properties\UserCustomProperty;
 use Stringable;
 
-final class AssetMetadata implements JsonSerializable, Stringable
+final readonly class AssetMetadata implements JsonSerializable, Stringable
 {
-    public readonly UserCustomProperty $userCustom;
-    public readonly AssetVariantProperty $assetVariant;
-    public readonly BasicInfoProperty $basicInfo;
+    public UserCustomProperty $userCustom;
+    public AssetVariantProperty $assetVariant;
+    public BasicInfoProperty $basicInfo;
 
     public function __construct(array $metadata = [])
     {

@@ -11,6 +11,7 @@ use InvalidArgumentException;
 use Maniaba\FileConnect\Asset\Asset;
 use Maniaba\FileConnect\Asset\AssetMetadata;
 use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
+use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
@@ -23,6 +24,7 @@ final class AssetTest extends CIUnitTestCase
     private MockObject $mockEntity;
     private MockObject $mockCollectionDefinition;
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();

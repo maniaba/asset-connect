@@ -7,6 +7,7 @@ namespace Tests\AssetVariants;
 use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\FileConnect\AssetVariants\AssetVariant;
 use Maniaba\FileConnect\Exceptions\FileVariantException;
+use Override;
 use ReflectionClass;
 
 /**
@@ -16,6 +17,7 @@ final class AssetVariantTest extends CIUnitTestCase
 {
     private AssetVariant $assetVariant;
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
