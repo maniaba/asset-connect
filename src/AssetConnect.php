@@ -228,7 +228,7 @@ final class AssetConnect
         // Remove the assets from the cached array
         if ($collection !== null) {
             // Remove assets for the specific collection
-            foreach ($this->assets as $entityId => &$assets) {
+            foreach ($this->assets as &$assets) {
                 $assets = array_filter($assets, static fn (Asset $asset) => $asset->collection !== $currentCollection);
             }
         } else {

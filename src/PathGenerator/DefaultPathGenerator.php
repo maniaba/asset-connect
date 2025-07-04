@@ -44,11 +44,7 @@ final class DefaultPathGenerator implements PathGeneratorInterface
      */
     public function getFileRelativePath(PathGeneratorHelper $generatorHelper, AssetCollectionGetterInterface $collection): string
     {
-        if (isset($this->fileRelativePath)) {
-            return $this->fileRelativePath;
-        }
-
-        return $this->fileRelativePath = 'assets' . DIRECTORY_SEPARATOR . $generatorHelper->getDateTime() . DIRECTORY_SEPARATOR;
+        return $this->fileRelativePath ?? $this->fileRelativePath = 'assets' . DIRECTORY_SEPARATOR . $generatorHelper->getDateTime() . DIRECTORY_SEPARATOR;
     }
 
     /**

@@ -65,8 +65,6 @@ final class DefaultPathGeneratorTest extends CIUnitTestCase
         $this->assertSame(WRITEPATH, $storeDirectory);
     }
 
-
-
     /**
      * Test getPath method
      */

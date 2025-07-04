@@ -21,7 +21,7 @@ final class AssetConnectJob extends BaseJob implements JobInterface
 {
     protected int $retryAfter = 60;
     protected int $tries      = 1;
-    private ?Asset $asset;
+    private ?Asset $asset     = null;
     private AssetCollectionDefinitionInterface $definitionInstance;
 
     public function process(): void

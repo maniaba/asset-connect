@@ -10,8 +10,8 @@ use Maniaba\FileConnect\PathGenerator\Interfaces\PathGeneratorInterface;
 
 final class PathGenerator
 {
-    private PathGeneratorHelper $helper;
-    private PathGeneratorInterface $pathGenerator;
+    private readonly PathGeneratorHelper $helper;
+    private readonly PathGeneratorInterface $pathGenerator;
 
     public function __construct(
         private readonly AssetCollection $collection,

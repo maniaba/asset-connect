@@ -37,7 +37,7 @@ final class DefaultUrlGeneratorTest extends CIUnitTestCase
         $this->mockRoutes->expects($this->once())
             ->method('group')
             ->with(
-                $this->equalTo('assets'),
+                'assets',
                 $this->callback(static function ($callback) use (&$groupCallback) {
                     $groupCallback = $callback;
 

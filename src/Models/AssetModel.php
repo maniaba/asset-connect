@@ -394,11 +394,7 @@ final class AssetModel extends BaseModel
      */
     public function whereEntityType(Entity|string $entityType): self
     {
-        if (is_string($entityType)) {
-            $entityTypeHash = md5($entityType);
-        } else {
-            $entityTypeHash = md5($entityType::class);
-        }
+        $entityTypeHash = is_string($entityType) ? md5($entityType) : md5($entityType::class);
 
         $this->where('entity_type', $entityTypeHash);
 

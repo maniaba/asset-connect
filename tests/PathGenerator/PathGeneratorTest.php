@@ -6,7 +6,6 @@ namespace Tests\PathGenerator;
 
 use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\FileConnect\AssetCollection\AssetCollection;
-use Maniaba\FileConnect\Exceptions\FileException;
 use Maniaba\FileConnect\PathGenerator\Interfaces\PathGeneratorInterface;
 use Maniaba\FileConnect\PathGenerator\PathGenerator;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -18,7 +17,6 @@ use ReflectionClass;
 final class PathGeneratorTest extends CIUnitTestCase
 {
     private PathGenerator $pathGenerator;
-    private AssetCollection $assetCollection;
     private MockObject|PathGeneratorInterface $mockPathGeneratorInterface;
 
     protected function setUp(): void
@@ -26,8 +24,8 @@ final class PathGeneratorTest extends CIUnitTestCase
         parent::setUp();
 
         // Create a real AssetCollection instance using reflection
-        $reflectionClass       = new ReflectionClass(AssetCollection::class);
-        $this->assetCollection = $reflectionClass->newInstanceWithoutConstructor();
+        $reflectionClass = new ReflectionClass(AssetCollection::class);
+        $assetCollection = $reflectionClass->newInstanceWithoutConstructor();
 
         // Create a mock PathGeneratorInterface
         $this->mockPathGeneratorInterface = $this->createMock(PathGeneratorInterface::class);
@@ -35,10 +33,10 @@ final class PathGeneratorTest extends CIUnitTestCase
         // Use reflection to set the private property in AssetCollection
         $reflectionProperty = $reflectionClass->getProperty('pathGenerator');
         $reflectionProperty->setAccessible(true);
-        $reflectionProperty->setValue($this->assetCollection, $this->mockPathGeneratorInterface);
+        $reflectionProperty->setValue($assetCollection, $this->mockPathGeneratorInterface);
 
         // Create the PathGenerator
-        $this->pathGenerator = new PathGenerator($this->assetCollection);
+        $this->pathGenerator = new PathGenerator($assetCollection);
 
         // Setup global function mocks
         $this->setupGlobalFunctionMocks();
@@ -123,7 +121,6 @@ final class PathGeneratorTest extends CIUnitTestCase
         // Assert
         $this->assertSame($storeDirectory, $result);
     }
-
 
     /**
      * Test getFileRelativePath method

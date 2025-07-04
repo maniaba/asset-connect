@@ -10,11 +10,6 @@ use Maniaba\FileConnect\Services\Interfaces\AssetAccessServiceInterface;
 
 class Services extends BaseService
 {
-    /**
-     * @var array<string, mixed>
-     */
-    protected static $instances = [];
-
     public static function assetAccessService(bool $getShared = true): AssetAccessServiceInterface
     {
         if ($getShared) {

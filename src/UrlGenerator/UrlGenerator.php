@@ -12,12 +12,10 @@ use Maniaba\FileConnect\UrlGenerator\Interfaces\UrlGeneratorInterface;
 
 final class UrlGenerator
 {
-    private Asset $asset;
-    private bool $isProtectedCollection;
+    private readonly bool $isProtectedCollection;
 
-    private function __construct(Asset $asset)
+    private function __construct(private readonly Asset $asset)
     {
-        $this->asset                 = $asset;
         $this->isProtectedCollection = $this->asset->metadata->basicInfo->isProtectedCollection();
     }
 
@@ -34,7 +32,7 @@ final class UrlGenerator
 
         // If the asset is not part of a protected collection, return the URL directly
         if (! $this->isProtectedCollection) {
-            if ($variantName) {
+            if ($variantName !== null && $variantName !== '' && $variantName !== '0') {
                 $variant = $this->asset->metadata->fileVariant->getAssetVariant($variantName);
 
                 if ($variant === null) {

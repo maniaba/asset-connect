@@ -27,7 +27,7 @@ final class AssetConnectValidator
     /**
      * @var Validation The CodeIgniter validation instance
      */
-    private Validation $validation;
+    private readonly Validation $validation;
 
     /**
      * @var array<string, AssetCollectionDefinitionInterface> Field-specific collection definitions

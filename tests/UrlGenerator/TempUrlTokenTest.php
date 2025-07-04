@@ -17,24 +17,11 @@ use PHPUnit\Framework\MockObject\MockObject;
  */
 final class TempUrlTokenTest extends CIUnitTestCase
 {
-    private Asset $asset;
     private CacheInterface|MockObject $mockCache;
 
     protected function setUp(): void
     {
         parent::setUp();
-
-        // Create a real Asset object with metadata via constructor
-        $this->asset = new Asset([
-            'id'        => '123',
-            'file_name' => 'test.jpg',
-            'metadata'  => json_encode([
-                'basic_info' => [
-                    'file_relative_path' => 'uploads',
-                    'collection_class'   => null, // Not a protected collection
-                ],
-            ]),
-        ]);
 
         // Mock the cache service
         $this->mockCache = $this->createMock(CacheInterface::class);
@@ -62,9 +49,9 @@ final class TempUrlTokenTest extends CIUnitTestCase
         $this->mockCache->expects($this->once())
             ->method('save')
             ->with(
-                $this->equalTo('temporary_url_ac_' . $expectedToken),
-                $this->equalTo($expectedTokenData),
-                $this->equalTo($expiration->getTimestamp() - time()),
+                'temporary_url_ac_' . $expectedToken,
+                $expectedTokenData,
+                $expiration->getTimestamp() - time(),
             )
             ->willReturn(true);
 
@@ -99,7 +86,7 @@ final class TempUrlTokenTest extends CIUnitTestCase
         // Setup expectations for the cache get method
         $this->mockCache->expects($this->once())
             ->method('get')
-            ->with($this->equalTo('temporary_url_ac_' . $token))
+            ->with('temporary_url_ac_' . $token)
             ->willReturn($tokenData);
 
         // Act
@@ -125,13 +112,13 @@ final class TempUrlTokenTest extends CIUnitTestCase
         // Setup expectations for the cache get method
         $this->mockCache->expects($this->once())
             ->method('get')
-            ->with($this->equalTo('temporary_url_ac_' . $token))
+            ->with('temporary_url_ac_' . $token)
             ->willReturn($tokenData);
 
         // Setup expectations for the cache delete method
         $this->mockCache->expects($this->once())
             ->method('delete')
-            ->with($this->equalTo('temporary_url_ac_' . $token));
+            ->with('temporary_url_ac_' . $token);
 
         // Act
         $result = TempUrlToken::validateToken($token);
@@ -151,7 +138,7 @@ final class TempUrlTokenTest extends CIUnitTestCase
         // Setup expectations for the cache get method
         $this->mockCache->expects($this->once())
             ->method('get')
-            ->with($this->equalTo('temporary_url_ac_' . $token))
+            ->with('temporary_url_ac_' . $token)
             ->willReturn(null);
 
         // Act

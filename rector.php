@@ -2,6 +2,11 @@
 
 declare(strict_types=1);
 
+use Maniaba\FileConnect\Asset\Asset;
+use Maniaba\FileConnect\AssetVariants\AssetVariant;
+use Maniaba\FileConnect\Exceptions\AssetException;
+use Maniaba\FileConnect\Models\AssetModel;
+use Maniaba\FileConnect\Models\BaseModel;
 use Rector\Caching\ValueObject\Storage\FileCacheStorage;
 use Rector\CodeQuality\Rector\BooleanAnd\SimplifyEmptyArrayCheckRector;
 use Rector\CodeQuality\Rector\Class_\CompleteDynamicPropertiesRector;
@@ -88,7 +93,7 @@ return static function (RectorConfig $rectorConfig): void {
 
     // Are there files or rules you need to skip?
     $rectorConfig->skip([
-        __DIR__ . '/app/Views',
+        __DIR__ . '/src/Views',
 
         StringifyStrNeedlesRector::class,
         YieldDataProviderRector::class,
@@ -99,6 +104,14 @@ return static function (RectorConfig $rectorConfig): void {
 
         // May load view files directly when detecting classes
         StringClassNameToClassConstantRector::class,
+
+        TypedPropertyFromAssignsRector::class => [
+            Asset::class,
+            AssetModel::class,
+            BaseModel::class,
+            AssetVariant::class,
+            AssetException::class,
+        ],
     ]);
 
     // auto import fully qualified class names
