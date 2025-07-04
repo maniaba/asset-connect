@@ -11,7 +11,6 @@ use Maniaba\FileConnect\Asset\AssetMetadata;
 use Maniaba\FileConnect\AssetVariants\AssetVariant;
 use Maniaba\FileConnect\AssetVariants\AssetVariantsProcessor;
 use Maniaba\FileConnect\Exceptions\FileVariantException;
-use ReflectionClass;
 use RuntimeException;
 
 /**
@@ -19,39 +18,33 @@ use RuntimeException;
  */
 final class AssetVariantsProcessorTest extends CIUnitTestCase
 {
-    private Asset $asset;
-
     private AssetVariantsProcessor $processor;
-
-    private AssetVariant $variant;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         // Create Asset instance
-        $this->asset     = new Asset();
-        $this->asset->id = 123;
+        $asset     = new Asset();
+        $asset->id = 123;
 
         // Create AssetMetadata instance and set it to the asset
-        $metadata         = new AssetMetadata();
-        $reflection       = new ReflectionClass($this->asset);
-        $metadataProperty = $reflection->getProperty('metadata');
-        $metadataProperty->setAccessible(true);
-        $metadataProperty->setValue($this->asset, $metadata);
+        $metadata    = new AssetMetadata();
+        $setMetadata = $this->getPrivateMethodInvoker($asset, 'setMetadata');
+        $setMetadata($metadata);
 
         // Create a variant and add it to the asset's metadata
-        $this->variant = new AssetVariant([
+        $variant = new AssetVariant([
             'name'      => 'thumbnail',
             'path'      => '/path/to/variants/image-thumbnail.jpg',
             'size'      => 0,
             'processed' => false,
         ]);
 
-        $this->asset->metadata->assetVariant->addAssetVariant($this->variant);
+        $asset->metadata->assetVariant->addAssetVariant($variant);
 
         // Create AssetVariantsProcessor instance
-        $this->processor = new AssetVariantsProcessor($this->asset);
+        $this->processor = new AssetVariantsProcessor($asset);
 
         // Setup global function mocks
         $this->setupGlobalFunctionMocks();
@@ -91,7 +84,7 @@ final class AssetVariantsProcessorTest extends CIUnitTestCase
         $result = $this->processor->assetVariant($variantName, $closure);
 
         // Assert
-        $this->assertNull($result);
+        $this->assertNotInstanceOf(AssetVariant::class, $result);
     }
 
     /**
