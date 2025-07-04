@@ -184,14 +184,14 @@ final class SetupAssetCollection implements SetupAssetCollectionInterface
      */
     public function autoDetectSubjectPrimaryKeyAttribute(string $fromModel): static
     {
-        if (! class_exists($fromModel) || ! is_subclass_of($fromModel, Model::class)) {
+        if (! class_exists($fromModel) || (! is_subclass_of($fromModel, Model::class) && $fromModel !== Model::class)) {
             throw new InvalidArgumentException(sprintf(
                 'Model class %s does not exist.',
                 $fromModel,
             ));
         }
 
-        $model = new $fromModel();
+        $model = model($fromModel, false);
 
         $this->setSubjectPrimaryKeyAttribute($model->primaryKey);
 
