@@ -8,22 +8,27 @@ use CodeIgniter\HTTP\DownloadResponse;
 use Maniaba\FileConnect\Asset\Asset;
 use Maniaba\FileConnect\Asset\Interfaces\AuthorizableAssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Exceptions\PageException;
-use Maniaba\FileConnect\Models\AssetModel;
+use Maniaba\FileConnect\Repositories\AssetRepository;
+use Maniaba\FileConnect\Repositories\Interfaces\AssetRepositoryInterface;
 use Maniaba\FileConnect\Services\Interfaces\AssetAccessServiceInterface;
 use Maniaba\FileConnect\UrlGenerator\TempUrlToken;
 use Override;
 
-final class AssetAccessService implements AssetAccessServiceInterface
+final readonly class AssetAccessService implements AssetAccessServiceInterface
 {
+    public function __construct(
+        private AssetRepositoryInterface $assetRepository = new AssetRepository(),
+    ) {
+    }
+
     /**
      * {@inheritDoc}
      */
     #[Override]
     public function handleAssetRequest(int $assetId, ?string $variantName = null): DownloadResponse
     {
-        // Get the asset from the database
-        $assetModel = model(AssetModel::class, false);
-        $asset      = $assetModel->find($assetId);
+        // Get the asset from the repository
+        $asset = $this->assetRepository->find($assetId);
 
         if ($asset === null) {
             throw PageException::forPageNotFound();
