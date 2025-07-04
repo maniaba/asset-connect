@@ -52,7 +52,7 @@ final class AssetVariantTest extends CIUnitTestCase
     public function testWriteFileSuccessfully(): void
     {
         // Arrange
-        $this->assetVariant->path = HOMEPATH . '/build/path/to/file.jpg';
+        $this->assetVariant->path = HOMEPATH . '/build/path/to/write_method/file.txt';
         $data                     = 'file content';
 
         // Act

@@ -39,7 +39,9 @@ final class AssetVariant extends Entity
         helper('filesystem');
 
         if (! write_file($this->path, $data, $mode)) {
-            throw new FileVariantException("Failed to write file to path: {$this->path}");
+            $error = "Failed to write file to path: {$this->path}";
+
+            throw new FileVariantException($error, $error);
         }
 
         // Update the size of the variant after writing
