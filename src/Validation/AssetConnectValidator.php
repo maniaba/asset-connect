@@ -34,6 +34,11 @@ final class AssetConnectValidator
      */
     private array $fieldCollectionDefinitions = [];
 
+    /**
+     * @var array<string, bool> Tracks which fields have had their rules generated
+     */
+    private array $generatedRules = [];
+
     public function __construct(
     ) {
         $this->validation = Services::validation();
@@ -54,7 +59,8 @@ final class AssetConnectValidator
         }
 
         $this->fieldCollectionDefinitions[$fieldName] = $collectionDefinition;
-        $this->generateRules(); // Regenerate rules with the new field collection definition
+        $this->generatedRules[$fieldName]             = false; // Mark this field as needing rule generation
+        $this->generateRules(); // Generate rules only for the new field
 
         return $this;
     }
@@ -64,12 +70,12 @@ final class AssetConnectValidator
      */
     private function generateRules(): void
     {
-        // Start with an empty rules array
-        $this->rules = [];
-
-        // Generate rules for field-specific collection definitions
+        // Generate rules only for fields that haven't had their rules generated yet
         foreach ($this->fieldCollectionDefinitions as $fieldName => $collectionDefinition) {
-            $this->generateRulesForField($fieldName, $collectionDefinition);
+            if (! isset($this->generatedRules[$fieldName]) || $this->generatedRules[$fieldName] === false) {
+                $this->generateRulesForField($fieldName, $collectionDefinition);
+                $this->generatedRules[$fieldName] = true; // Mark as generated
+            }
         }
     }
 
@@ -87,10 +93,11 @@ final class AssetConnectValidator
         // Call the definition method on the collection definition to populate the rules
         $collectionDefinition->definition($ruleCollector);
 
-        // Get the collected rules and merge them with existing rules
-        $this->rules = array_merge($this->rules, [
-            $fieldName => $ruleCollector->getRules(),
-        ]);
+        // Get the collected rules
+        $fieldRules = $ruleCollector->getRules();
+
+        // Add the rules for this field to the rules array
+        $this->rules[$fieldName] = $fieldRules;
     }
 
     /**
