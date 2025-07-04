@@ -97,7 +97,7 @@ class YearMonthPathGenerator implements PathGeneratorInterface
         $entityType = $asset->entity_type;
         $entityId = $asset->entity_id;
 
-        return "uploads/{$collection}/{$date}/{$entityType}/{$entityId}/{$asset->id}-{$asset->file_name}";
+        return "uploads/{$collection}/{$date}/{$entityType}/{$entityId}/{$asset->file_name}";
     }
 }
 ```
@@ -213,37 +213,3 @@ Events::on('asset.created', function (AssetCreated $event) {
 });
 ```
 
-## Integration with Other Libraries
-
-Asset Connect can be integrated with other CodeIgniter libraries to extend its functionality.
-
-### Integration with CodeIgniter Image Manipulation
-
-You can use CodeIgniter's Image Manipulation library to process images before or after they are stored:
-
-```php
-$asset = $product->addAsset('/path/to/image.jpg')
-    ->withProcessor(function ($file) {
-        // Process the image
-        $image = \Config\Services::image()
-            ->withFile($file)
-            ->resize(800, 600, true)
-            ->save($file);
-
-        return $file;
-    })
-    ->toAssetCollection();
-```
-
-### Integration with CodeIgniter Cache
-
-You can use CodeIgniter's Cache library to cache asset URLs or other frequently accessed data:
-
-```php
-$cache = \Config\Services::cache();
-
-// Get the URL to an asset, caching it for 1 hour
-$url = $cache->remember('asset_' . $asset->id . '_url', 3600, function () use ($asset) {
-    return $asset->getUrl();
-});
-```
