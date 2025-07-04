@@ -262,6 +262,105 @@ public function uploadProfilePicture()
 }
 ```
 
+### Using addAssetFromRequest
+
+The `addAssetFromRequest` method provides a convenient way to add assets directly from HTTP request files. This method handles the validation and processing of uploaded files automatically.
+
+```php
+public function addAssetFromRequest(string ...$keyNames): AssetAdderMultiple
+```
+
+**Parameters:**
+- `$keyNames`: One or more strings representing the names of the file input fields in the request. At least one key name must be provided.
+
+**Returns:**
+- An instance of `AssetAdderMultiple` that allows you to configure and save multiple assets at once.
+
+**Throws:**
+- `AssetException`: If there is an error processing the asset.
+- `FileException`: If there is an error with the file or if the file is invalid.
+- `InvalidArgumentException`: If no key names are provided.
+
+**Example - Single File Upload:**
+```php
+// In a controller method
+public function uploadProfilePicture()
+{
+    $user = model(User::class)->find($this->request->getPost('user_id'));
+
+    try {
+        // Add assets from the 'profile_picture' field in the request
+        $assetAdders = $user->addAssetFromRequest('profile_picture')
+            ->forEach(function($uploadedFile, $assetAdder, $fieldName) {
+                $assetAdder
+                    ->usingFileName($uploadedFile->getRandomName())
+                    ->usingName('Profile Picture')
+                    ->withCustomProperties([
+                        'uploaded_by' => user_id(),
+                        'uploaded_at' => date('Y-m-d H:i:s'),
+                    ]);
+            });
+
+        // Convert to assets and store in collection
+        $assets = [];
+        foreach ($assetAdders as $assetAdder) {
+            $assets[] = $assetAdder->toAssetCollection(ProfilePicturesCollection::class);
+        }
+
+        return redirect()->to('user/profile')->with('success', 'Profile picture uploaded successfully.');
+    } catch (\Exception $e) {
+        return redirect()->back()->with('error', $e->getMessage());
+    }
+}
+```
+
+**Example - Multiple File Upload:**
+```php
+// In a controller method
+public function uploadGalleryImages()
+{
+    $user = model(User::class)->find($this->request->getPost('user_id'));
+
+    try {
+        // Add assets from multiple fields in the request
+        $assets = $user->addAssetFromRequest('gallery_images', 'additional_images')
+            ->toAssetCollection(GalleryImagesCollection::class);
+
+        return redirect()->to('user/gallery')->with('success', count($assets) . ' images uploaded successfully.');
+    } catch (\Exception $e) {
+        return redirect()->back()->with('error', $e->getMessage());
+    }
+}
+```
+
+**Example - Using forEach with Multiple Files:**
+```php
+// In a controller method
+public function uploadDocuments()
+{
+    $user = model(User::class)->find($this->request->getPost('user_id'));
+
+    try {
+        // Process each uploaded file individually
+        $user->addAssetFromRequest('documents')
+            ->forEach(function($uploadedFile, $assetAdder, $fieldName) {
+                // Get original file name without extension
+                $originalName = pathinfo($uploadedFile->getName(), PATHINFO_FILENAME);
+
+                $assetAdder
+                    ->usingName($originalName)
+                    ->withCustomProperty('file_size', $uploadedFile->getSize())
+                    ->withCustomProperty('mime_type', $uploadedFile->getMimeType())
+                    ->toAssetCollection(DocumentsCollection::class);
+            });
+
+        return redirect()->to('user/documents')->with('success', 'Documents uploaded successfully.');
+    } catch (\Exception $e) {
+        return redirect()->back()->with('error', $e->getMessage());
+    }
+}
+```
+
 ## Best Practices
 
 ### File Name Sanitization

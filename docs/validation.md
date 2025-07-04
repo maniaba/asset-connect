@@ -29,6 +29,8 @@ if ($validator->validate($data)) {
 }
 ```
 
+> For more detailed information about the AssetConnectValidator class and its usage with ValidationRuleCollector, see the [AssetConnectValidator](asset-connect-validator.md) documentation.
+
 ## Defining Field Names
 
 You must define field names using the `setFieldCollectionDefinition` method:
@@ -298,58 +300,3 @@ if ($multiValidator->validate($data)) {
 }
 ```
 
-## Additional Validation Rules
-
-The `ValidationRuleCollector` class provides several methods for adding validation rules to your collection definition:
-
-### Basic File Validation
-
-- `allowedExtensions(AssetExtension|string ...$extensions)`: Validates that the file extension is one of the specified extensions.
-- `allowedMimeTypes(AssetMimeType|string ...$mimeTypes)`: Validates that the file's MIME type is one of the specified MIME types.
-- `setMaxFileSize(float|int $maxFileSize)`: Validates that the file size does not exceed the specified maximum size in bytes.
-- `singleFileCollection()`: Validates that only a single file is uploaded.
-- `onlyKeepLatest(int $maximumNumberOfItemsInCollection)`: Validates that the number of files does not exceed the specified maximum.
-
-### Image Validation
-
-- `setMaxImageDimensions(int $width, int $height)`: Validates that the image dimensions do not exceed the specified maximum width and height.
-- `setMinImageDimensions(int $width, int $height)`: Validates that the image dimensions meet the specified minimum width and height.
-- `requireImage()`: Validates that the file is an image.
-
-### Example
-
-```php
-class ImagesCollection implements AssetCollectionDefinitionInterface, AssetVariantsInterface
-{
-    public function definition(AssetCollectionSetterInterface $definition): void
-    {
-        $definition
-            ->allowedExtensions(AssetExtension::JPG, AssetExtension::PNG, AssetExtension::GIF)
-            ->allowedMimeTypes(AssetMimeType::IMAGE_JPEG, AssetMimeType::IMAGE_PNG, AssetMimeType::IMAGE_GIF)
-            ->setMaxFileSize(2 * 1024 * 1024) // 2MB
-            ->setMaxImageDimensions(1920, 1080) // Maximum dimensions: 1920x1080 pixels
-            ->setMinImageDimensions(100, 100) // Minimum dimensions: 100x100 pixels
-            ->requireImage() // Must be an image
-            ->singleFileCollection();
-    }
-
-    // ... other methods
-}
-```
-
-## Custom Validation Rules
-
-The AssetConnectValidator includes the following custom validation rules:
-
-- `max_file_count[n]`: Validates that the number of files does not exceed the specified maximum. This rule is used by the `singleFileCollection()` and `onlyKeepLatest(int $maximumNumberOfItemsInCollection)` methods.
-- `uploaded[field_name]`: Validates that the name of the parameter matches the name of an uploaded file. This rule is automatically added by the `allowedExtensions()` method.
-- `is_image[field_name]`: Validates that the file is an image based on the mime type. This rule is added by the `requireImage()` method.
-- `mime_in[field_name,mime1,mime2,...]`: Validates that the file's mime type is one of those listed in the parameters. This rule is added by the `allowedMimeTypes()` method.
-- `ext_in[field_name,ext1,ext2,...]`: Validates that the file's extension is one of those listed in the parameters. This rule is added by the `allowedExtensions()` method.
-- `max_size[field_name,size]`: Validates that the file size does not exceed the specified maximum size in kilobytes. This rule is added by the `setMaxFileSize()` method.
-- `max_dims[field_name,width,height]`: Validates that the image dimensions do not exceed the specified maximum width and height. This rule is added by the `setMaxImageDimensions()` method.
-- `min_dims[field_name,width,height]`: Validates that the image dimensions meet the specified minimum width and height. This rule is added by the `setMinImageDimensions()` method.
-
-These rules follow the CodeIgniter 4 validation rule format and are implemented according to the CodeIgniter 4 validation system.
-
-You can also extend the `ValidationRuleCollector` class to add your own custom validation rules for your specific needs.
