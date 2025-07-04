@@ -1,6 +1,6 @@
 parameters:
   paths:
-    - ./app/
+    - ./src/
     - ./vendor/codeigniter4/framework/system/
   exclude_files:
     - '#.*test.*#i'
@@ -44,7 +44,7 @@ parameters:
         - type: bool
           must:
           - type: directory
-            regex: app/Config/.*
+            regex: src/Config/.*
           must_not:
           - type: className
             regex: .*Services
@@ -64,7 +64,7 @@ parameters:
         - type: bool
           must:
           - type: directory
-            regex: app/Entities/.*
+            regex: src/Entities/.*
           must_not:
           - type: directory
             regex: vendor/.*
@@ -79,7 +79,7 @@ parameters:
         - type: bool
           must:
           - type: directory
-            regex: app/Views/.*
+            regex: src/Views/.*
           must_not:
           - type: directory
             regex: vendor/.*
