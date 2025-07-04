@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Maniaba\FileConnect\PathGenerator;
 
+use CodeIgniter\I18n\Time;
+
 final class PathGeneratorHelper
 {
     public function getUniqueId(bool $moreEntropy = false): string
@@ -36,7 +38,7 @@ final class PathGeneratorHelper
 
     private function getDateTimeFormat(string $format): string
     {
-        return date($format);
+        return Time::now()->format($format);
     }
 
     /**
