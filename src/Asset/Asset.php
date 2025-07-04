@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Maniaba\FileConnect\Asset;
 
 use CodeIgniter\Entity\Entity;
+use CodeIgniter\Events\Events;
 use CodeIgniter\Files\File;
 use CodeIgniter\HTTP\DownloadResponse;
 use CodeIgniter\HTTP\Files\UploadedFile;
@@ -14,6 +15,7 @@ use JsonSerializable;
 use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\Asset\Traits\AssetMimeTypeTrait;
 use Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory;
+use Maniaba\FileConnect\Events\AssetUpdated;
 use Maniaba\FileConnect\Models\AssetModel;
 use Maniaba\FileConnect\Services\AssetAccessService;
 use Maniaba\FileConnect\UrlGenerator\Traits\UrlGeneratorTrait;
@@ -286,9 +288,15 @@ final class Asset extends Entity implements JsonSerializable
             'updated_at' => $this->updated_at,
         ]);
 
-        $model = model(AssetModel::class, false);
+        $model  = model(AssetModel::class, false);
+        $result = $model->save($data);
 
-        return $model->save($data);
+        if ($result) {
+            // Trigger asset.updated event
+            Events::trigger(AssetUpdated::name(), AssetUpdated::createFromId($this->id));
+        }
+
+        return $result;
     }
 
     #[Override]

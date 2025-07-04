@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Maniaba\FileConnect\Asset;
 
 use CodeIgniter\Entity\Entity;
+use CodeIgniter\Events\Events;
 use CodeIgniter\Files\File;
 use CodeIgniter\HTTP\Files\UploadedFile;
 use CodeIgniter\I18n\Time;
@@ -14,6 +15,7 @@ use Maniaba\FileConnect\AssetCollection\SetupAssetCollection;
 use Maniaba\FileConnect\AssetVariants\AssetVariants;
 use Maniaba\FileConnect\AssetVariants\AssetVariantsProcess;
 use Maniaba\FileConnect\AssetVariants\Interfaces\AssetVariantsInterface;
+use Maniaba\FileConnect\Events\AssetCreated;
 use Maniaba\FileConnect\Exceptions\AssetException;
 use Maniaba\FileConnect\Exceptions\FileException;
 use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
@@ -184,6 +186,9 @@ final class AssetPersistenceManager
         if ($autoConnectInstance !== null) {
             $autoConnectInstance->addAsset($this->asset);
         }
+
+        // Trigger asset.created event
+        Events::trigger(AssetCreated::name(), AssetCreated::createFromAsset($this->asset, $this->subjectEntity));
     }
 
     /**

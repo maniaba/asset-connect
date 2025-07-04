@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Maniaba\FileConnect\AssetVariants;
 
 use Closure;
+use CodeIgniter\Events\Events;
 use Maniaba\FileConnect\Asset\Asset;
 use Maniaba\FileConnect\AssetCollection\Interfaces\CreateAssetVariantsInterface;
+use Maniaba\FileConnect\Events\VariantCreated;
 use Maniaba\FileConnect\PathGenerator\PathGenerator;
 use Override;
 
@@ -43,6 +45,10 @@ final class AssetVariants implements CreateAssetVariantsInterface
         ]);
 
         $this->asset->metadata->assetVariant->addAssetVariant($variant);
+
+        // Trigger variant.created event
+        $variantCreatedEvent = new VariantCreated($variant, $this->asset);
+        Events::trigger(VariantCreated::name(), $variantCreatedEvent);
 
         return $variant;
     }

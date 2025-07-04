@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Maniaba\FileConnect\Jobs;
 
+use CodeIgniter\Events\Events;
 use CodeIgniter\Queue\BaseJob;
 use CodeIgniter\Queue\Interfaces\JobInterface;
 use Maniaba\FileConnect\Asset\Asset;
@@ -12,6 +13,7 @@ use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory;
 use Maniaba\FileConnect\AssetVariants\AssetVariantsProcess;
 use Maniaba\FileConnect\AssetVariants\Interfaces\AssetVariantsInterface;
+use Maniaba\FileConnect\Events\AssetUpdated;
 use Maniaba\FileConnect\Exceptions\AssetException;
 use Maniaba\FileConnect\Models\AssetModel;
 use Override;
@@ -53,6 +55,9 @@ final class AssetConnectJob extends BaseJob implements JobInterface
             'metadata' => $this->getAsset()->metadata,
         ]);
         model(AssetModel::class, false)->save($newAsset);
+
+        // Trigger the asset updated event
+        Events::trigger(AssetUpdated::name(), AssetUpdated::createFromId($this->getAsset()->id));
 
         log_message('info', 'Asset with ID {id} has been saved after processing variants.', ['id' => $this->getAsset()->id]);
 

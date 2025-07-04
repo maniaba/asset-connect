@@ -6,10 +6,12 @@ namespace Maniaba\FileConnect;
 
 use CodeIgniter\Database\BaseBuilder;
 use CodeIgniter\Entity\Entity;
+use CodeIgniter\Events\Events;
 use Maniaba\FileConnect\Asset\Asset;
 use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory;
 use Maniaba\FileConnect\AssetCollection\SetupAssetCollection;
+use Maniaba\FileConnect\Events\AssetDeleted;
 use Maniaba\FileConnect\Exceptions\FileException;
 use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
 use Maniaba\FileConnect\Models\AssetModel;
@@ -207,7 +209,19 @@ final class AssetConnect
 
         $currentCollection = $this->relationsInfo['collection'] ?? null;
 
-        // Build the query
+        if (Events::listeners(AssetDeleted::name()) !== []) {
+            // Build the query to get assets before deleting
+            $assetsToDelete = $this->assetModel
+                ->where('entity_type', $this->relationsInfo['entityType'])
+                ->where('entity_id', $entityId)
+                ->when(
+                    $currentCollection !== null,
+                    static fn (BaseBuilder $builder) => $builder->where('collection', $currentCollection),
+                )
+                ->findAll();
+        }
+
+        // Build the query for deletion
         $query = $this->assetModel
             ->where('entity_type', $this->relationsInfo['entityType'])
             ->where('entity_id', $entityId)
@@ -223,6 +237,13 @@ final class AssetConnect
 
             // If the delete operation failed, throw an exception
             throw FileException::forDatabaseError($errors);
+        }
+
+        if (isset($assetsToDelete)) {
+            // Trigger asset.deleted event for each deleted asset
+            foreach ($assetsToDelete as $asset) {
+                Events::trigger(AssetDeleted::name(), AssetDeleted::createFromAsset($asset));
+            }
         }
 
         // Remove the assets from the cached array
