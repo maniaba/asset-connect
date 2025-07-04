@@ -22,13 +22,10 @@ use ReflectionClass;
  */
 final class AssetCollectionTest extends CIUnitTestCase
 {
-    /**
-     * @var SetupAssetCollection
-     */
     private SetupAssetCollection $setupAssetCollection;
 
     /**
-     * @var MockObject&AssetCollectionDefinitionInterface
+     * @var AssetCollectionDefinitionInterface&MockObject
      */
     private MockObject $mockCollectionDefinition;
 
@@ -37,9 +34,6 @@ final class AssetCollectionTest extends CIUnitTestCase
      */
     private MockObject $mockPathGenerator;
 
-    /**
-     * @var AssetCollection
-     */
     private AssetCollection $assetCollection;
 
     protected function setUp(): void
@@ -47,9 +41,9 @@ final class AssetCollectionTest extends CIUnitTestCase
         parent::setUp();
 
         // Create real instance of SetupAssetCollection
-        $this->setupAssetCollection = new SetupAssetCollection();
+        $this->setupAssetCollection     = new SetupAssetCollection();
         $this->mockCollectionDefinition = $this->createMock(AssetCollectionDefinitionInterface::class);
-        $this->mockPathGenerator = $this->createMock(PathGeneratorInterface::class);
+        $this->mockPathGenerator        = $this->createMock(PathGeneratorInterface::class);
 
         $this->setPrivateProperty($this->setupAssetCollection, 'collectionDefinition', $this->mockCollectionDefinition);
 
@@ -108,10 +102,7 @@ final class AssetCollectionTest extends CIUnitTestCase
         $mockAuthorizableDefinition = $this->createMock(AuthorizableAssetCollectionDefinitionInterface::class);
 
         // Setup SetupAssetCollection to use our mock authorizable collection definition
-        $reflection = new ReflectionClass($this->setupAssetCollection);
-        $property = $reflection->getProperty('collectionDefinition');
-        $property->setAccessible(true);
-        $property->setValue($this->setupAssetCollection, $mockAuthorizableDefinition);
+        $this->setPrivateProperty($this->setupAssetCollection, 'collectionDefinition', $mockAuthorizableDefinition);
 
         // Act
         $collection = AssetCollection::create($this->setupAssetCollection);
@@ -142,7 +133,7 @@ final class AssetCollectionTest extends CIUnitTestCase
     public function testAllowedExtensionsWithAssetExtensionEnum(): void
     {
         // Arrange
-        $extensions = [AssetExtension::JPG, AssetExtension::PNG, AssetExtension::PDF];
+        $extensions         = [AssetExtension::JPG, AssetExtension::PNG, AssetExtension::PDF];
         $expectedExtensions = ['jpg', 'png', 'pdf'];
 
         // Act
@@ -214,7 +205,7 @@ final class AssetCollectionTest extends CIUnitTestCase
     public function testAllowedMimeTypesWithAssetMimeTypeEnum(): void
     {
         // Arrange
-        $mimeTypes = [AssetMimeType::IMAGE_JPEG, AssetMimeType::IMAGE_PNG, AssetMimeType::APPLICATION_PDF];
+        $mimeTypes         = [AssetMimeType::IMAGE_JPEG, AssetMimeType::IMAGE_PNG, AssetMimeType::APPLICATION_PDF];
         $expectedMimeTypes = ['image/jpeg', 'image/png', 'application/pdf'];
 
         // Act
@@ -361,7 +352,7 @@ final class AssetCollectionTest extends CIUnitTestCase
         // Arrange
         // Setup SetupAssetCollection to use our mock path generator
         $reflection = new ReflectionClass($this->setupAssetCollection);
-        $property = $reflection->getProperty('pathGenerator');
+        $property   = $reflection->getProperty('pathGenerator');
         $property->setAccessible(true);
         $property->setValue($this->setupAssetCollection, $this->mockPathGenerator);
 

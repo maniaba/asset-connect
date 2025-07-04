@@ -52,7 +52,15 @@ final class AssetVariantTest extends CIUnitTestCase
     public function testWriteFileSuccessfully(): void
     {
         // Arrange
-        $this->assetVariant->path = HOMEPATH . 'build/path/to/write_method/file.txt';
+        $path = HOMEPATH . 'build/path/to/write_method/file.txt';
+
+        // Ensure the directory exists
+        $dir = dirname($path);
+        if (! is_dir($dir)) {
+            mkdir($dir, 0777, true);
+        }
+
+        $this->assetVariant->path = $path;
         $data                     = 'file content';
 
         // Act
@@ -62,6 +70,40 @@ final class AssetVariantTest extends CIUnitTestCase
         $this->assertTrue($result);
         $this->assertSame(12, $this->assetVariant->size);
         $this->assertTrue($this->assetVariant->processed);
+    }
+
+    /**
+     * Test writeFile method throws exception when write fails
+     */
+    public function testWriteFileThrowsExceptionWhenWriteFails(): void
+    {
+        // Arrange
+        $path = HOMEPATH . 'build/path/to/write_method/file.txt';
+
+        // Ensure the directory exists
+        $dir = dirname($path);
+        if (! is_dir($dir)) {
+            mkdir($dir, 0777, true);
+        }
+
+        $this->assetVariant->path = $path;
+        $data                     = 'file content';
+
+        // Override the write_file mock to return false
+        global $mockFunctions;
+        $originalWriteFile           = $mockFunctions['write_file'] ?? null;
+        $mockFunctions['write_file'] = static fn () => false;
+
+        try {
+            // Act & Assert
+            $this->expectException(FileVariantException::class);
+            $this->assetVariant->writeFile($data);
+        } finally {
+            // Restore the original mock if it existed
+            if ($originalWriteFile !== null) {
+                $mockFunctions['write_file'] = $originalWriteFile;
+            }
+        }
     }
 
     /**

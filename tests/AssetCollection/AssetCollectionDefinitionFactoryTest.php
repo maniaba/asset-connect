@@ -9,6 +9,7 @@ use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory;
 use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
 use PHPUnit\Framework\MockObject\MockObject;
+use stdClass;
 
 /**
  * @internal
@@ -16,7 +17,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 final class AssetCollectionDefinitionFactoryTest extends CIUnitTestCase
 {
     /**
-     * @var MockObject&AssetCollectionDefinitionInterface
+     * @var AssetCollectionDefinitionInterface&MockObject
      */
     private MockObject $mockCollectionDefinition;
 
@@ -59,7 +60,7 @@ final class AssetCollectionDefinitionFactoryTest extends CIUnitTestCase
     public function testValidateStringClassWithClassNotImplementingInterface(): void
     {
         // Arrange
-        $invalidClass = \stdClass::class;
+        $invalidClass = stdClass::class;
 
         // Act & Assert
         $this->expectException(InvalidArgumentException::class);
@@ -99,8 +100,8 @@ final class AssetCollectionDefinitionFactoryTest extends CIUnitTestCase
     {
         // Arrange
         $className = TestAssetCollectionDefinitionWithArgs::class;
-        $arg1 = 'test';
-        $arg2 = 123;
+        $arg1      = 'test';
+        $arg2      = 123;
 
         // Act
         $result = AssetCollectionDefinitionFactory::create($className, $arg1, $arg2);
