@@ -174,7 +174,7 @@ final class PathGeneratorTest extends CIUnitTestCase
     public function testGetPathWhenPathDoesntEndWithDirectorySeparator(): void
     {
         // Arrange
-        $path         =  HOMEPATH . '/build/path/to/file';
+        $path         = HOMEPATH . '/build/path/to/file';
         $expectedPath = $path . DIRECTORY_SEPARATOR;
 
         // Setup expectations for the mock
