@@ -52,7 +52,7 @@ final class AssetVariantTest extends CIUnitTestCase
     public function testWriteFileSuccessfully(): void
     {
         // Arrange
-        $this->assetVariant->path = HOMEPATH . '/build/path/to/write_method/file.txt';
+        $this->assetVariant->path = HOMEPATH . 'build/path/to/write_method/file.txt';
         $data                     = 'file content';
 
         // Act
@@ -76,13 +76,10 @@ final class AssetVariantTest extends CIUnitTestCase
             'file_relative_path'          => 'path/to',
         ];
 
-        // Use reflection to access protected method
-        $reflection = new ReflectionClass($this->assetVariant);
-        $method     = $reflection->getMethod('getRelativePath');
-        $method->setAccessible(true);
+        $method = $this->getPrivateMethodInvoker($this->assetVariant, 'getRelativePath');
 
         // Act
-        $result = $method->invoke($this->assetVariant);
+        $result = $method($this->assetVariant);
 
         // Assert
         $this->assertSame('/path/to/file.jpg', $result);
