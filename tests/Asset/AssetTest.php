@@ -150,13 +150,13 @@ final class AssetTest extends CIUnitTestCase
      */
     public function testGetPropertiesWhenSetAsPropertiesObject(): void
     {
-        // Arrange
-        $propertiesArray = ['key' => 'value'];
-        $propertiesJson  = json_encode($propertiesArray);
         // Create a Properties object with the JSON string
-        $properties = new AssetMetadata();
-        $properties->fill($propertiesArray);
-        $this->asset->metadata = $properties;
+        $properties = new AssetMetadata([
+            'key' => 'value',
+        ]);
+
+        $setMetadata = $this->getPrivateMethodInvoker($this->asset, 'setMetadata');
+        $setMetadata($properties);
 
         // Act
         $properties = $this->asset->metadata;

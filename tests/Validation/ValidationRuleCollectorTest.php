@@ -177,8 +177,8 @@ final class ValidationRuleCollectorTest extends CIUnitTestCase
 
         // Assert
         $this->assertFalse($result);
-        $this->assertNotNull($error);
-        $this->assertStringContainsString("cannot contain more than {$maxFiles} files", (string) $error);
+        $this->assertNotNull($error, 'Error should not be null');
+        $this->assertStringContainsString("cannot contain more than {$maxFiles} files", $error . '');
     }
 
     /**
