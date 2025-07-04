@@ -283,7 +283,6 @@ enum AssetMimeType: string
                     self::APPLICATION_APP    => 'app',
                     self::APPLICATION_DMG    => 'dmg',
                     self::APPLICATION_MSI    => 'msi',
-                    default                  => null,
                 };
             }
         }

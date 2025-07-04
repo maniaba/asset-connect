@@ -113,8 +113,6 @@ final class AssetPersistenceManager
     /**
      * Store the file
      *
-     * @param string $fullPath The full path to store the file
-     *
      * @throws FileException
      */
     private function storeFile(): void

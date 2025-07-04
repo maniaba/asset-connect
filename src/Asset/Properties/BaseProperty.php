@@ -11,7 +11,7 @@ abstract class BaseProperty implements JsonSerializable
 {
     abstract public static function getName(): string;
 
-    public function __construct(protected array $properties)
+    public function __construct(protected array $properties = [])
     {
     }
 
@@ -32,7 +32,7 @@ abstract class BaseProperty implements JsonSerializable
 
     public function getAll(): array
     {
-        return $this->properties ?? [];
+        return $this->properties;
     }
 
     public function remove(string $key): void
@@ -50,6 +50,7 @@ abstract class BaseProperty implements JsonSerializable
             ));
         }
 
+        // @phpstan-ignore-next-line
         return new static($properties);
     }
 }

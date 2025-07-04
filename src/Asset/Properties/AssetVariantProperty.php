@@ -46,7 +46,7 @@ final class AssetVariantProperty extends BaseProperty
     /**
      * Get all asset variants.
      *
-     * @return list<AssetVariant>
+     * @return array<string, AssetVariant>
      */
     public function &getVariants(): array
     {

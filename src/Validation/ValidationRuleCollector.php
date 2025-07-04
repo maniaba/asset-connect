@@ -19,9 +19,9 @@ use Maniaba\FileConnect\PathGenerator\Interfaces\PathGeneratorInterface;
 final class ValidationRuleCollector implements AssetCollectionSetterInterface
 {
     /**
-     * @var array<string, list<string>> The collected validation rules
+     * @var non-empty-array<string, list<string>|non-falsy-string> The collected validation rules
      */
-    private array $rules = [];
+    private array $rules;
 
     public function __construct(
         private readonly string $currentField,

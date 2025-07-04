@@ -7,6 +7,7 @@ namespace Maniaba\FileConnect\Validation;
 use CodeIgniter\HTTP\CLIRequest;
 use CodeIgniter\HTTP\IncomingRequest;
 use CodeIgniter\Validation\Validation;
+use CodeIgniter\Validation\ValidationInterface;
 use Config\Services;
 use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory;
@@ -25,9 +26,9 @@ final class AssetConnectValidator
     private array $rules = [];
 
     /**
-     * @var Validation The CodeIgniter validation instance
+     * @var ValidationInterface The CodeIgniter validation instance
      */
-    private readonly Validation $validation;
+    private readonly ValidationInterface $validation;
 
     /**
      * @var array<string, AssetCollectionDefinitionInterface> Field-specific collection definitions

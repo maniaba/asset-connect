@@ -58,7 +58,7 @@ final class AssetAccessService implements AssetAccessServiceInterface
 
         // Create a download response
         $response = new DownloadResponse($asset->file_name, false);
-        $response->setFileName($asset->name . ($variantName ? " ({$variantName})" : '') . '.' . $asset->extension);
+        $response->setFileName($asset->name . (in_array($variantName, [null, ''], true) ? " ({$variantName})" : '') . '.' . $asset->extension);
         $response->setContentType($asset->mime_type);
 
         $response->setFilePath($filePath);

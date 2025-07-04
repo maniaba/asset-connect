@@ -11,6 +11,7 @@ use Maniaba\FileConnect\Asset\AssetPersistenceManager;
 use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory;
 use Maniaba\FileConnect\AssetVariants\AssetVariantsProcess;
+use Maniaba\FileConnect\AssetVariants\Interfaces\AssetVariantsInterface;
 use Maniaba\FileConnect\Exceptions\AssetException;
 use Maniaba\FileConnect\Models\AssetModel;
 
@@ -22,7 +23,7 @@ final class AssetConnectJob extends BaseJob implements JobInterface
     protected int $retryAfter = 60;
     protected int $tries      = 1;
     private ?Asset $asset     = null;
-    private AssetCollectionDefinitionInterface $definitionInstance;
+    private AssetCollectionDefinitionInterface&AssetVariantsInterface $definitionInstance;
 
     public function process(): void
     {
@@ -35,8 +36,10 @@ final class AssetConnectJob extends BaseJob implements JobInterface
             );
         }
 
+        $asset = $this->getAsset();
+
         AssetVariantsProcess::run(
-            $this->getAsset(),
+            $asset,
             $this->getAssetCollectionDefinition(),
         );
 
@@ -55,7 +58,7 @@ final class AssetConnectJob extends BaseJob implements JobInterface
         $this->cleanGarbage();
     }
 
-    private function &getAsset(): ?Asset
+    private function getAsset(): ?Asset
     {
         if (! isset($this->asset)) {
             $this->asset = model(AssetModel::class, false)->find($this->data['assetId'] ?? 0);
@@ -64,11 +67,22 @@ final class AssetConnectJob extends BaseJob implements JobInterface
         return $this->asset;
     }
 
-    private function getAssetCollectionDefinition(): AssetCollectionDefinitionInterface
+    private function getAssetCollectionDefinition(): AssetCollectionDefinitionInterface&AssetVariantsInterface
     {
         if (! isset($this->definitionInstance)) {
-            $definitionArguments      = $this->data['definitionArguments'] ?? [];
-            $this->definitionInstance = AssetCollectionDefinitionFactory::create($this->data['definition'], ...$definitionArguments);
+            $definitionArguments = $this->data['definitionArguments'] ?? [];
+
+            /** @var AssetCollectionDefinitionInterface&AssetVariantsInterface $definitionInstance */
+            $definitionInstance = AssetCollectionDefinitionFactory::create($this->data['definition'], ...$definitionArguments);
+
+            if (! $definitionInstance instanceof AssetVariantsInterface) {
+                throw new AssetException(
+                    'Invalid asset collection definition provided.',
+                    'AssetConnectJob: Invalid asset collection definition.',
+                );
+            }
+
+            $this->definitionInstance = $definitionInstance;
         }
 
         return $this->definitionInstance;

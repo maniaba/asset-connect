@@ -143,7 +143,7 @@ final class Asset extends Entity implements JsonSerializable
     public function getExtension(): string
     {
         // If file is set, we try to get extension from it
-        if (isset($this->file) && ($this->file instanceof File || $this->file instanceof UploadedFile)) {
+        if (isset($this->file) && $this->file instanceof File) {
             return $this->file->getExtension();
         }
 
