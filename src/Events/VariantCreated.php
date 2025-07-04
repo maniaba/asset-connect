@@ -6,6 +6,7 @@ namespace Maniaba\FileConnect\Events;
 
 use Maniaba\FileConnect\Asset\Asset;
 use Maniaba\FileConnect\AssetVariants\AssetVariant;
+use Override;
 
 /**
  * Event fired when a variant is created
@@ -24,6 +25,7 @@ final class VariantCreated implements AssetEventInterface
     ) {
     }
 
+    #[Override]
     public function getAsset(): Asset
     {
         return $this->asset;
@@ -34,6 +36,7 @@ final class VariantCreated implements AssetEventInterface
         return $this->variant;
     }
 
+    #[Override]
     public static function name(): string
     {
         return 'variant.created';

@@ -6,6 +6,7 @@ namespace Maniaba\FileConnect\Events;
 
 use CodeIgniter\Entity\Entity;
 use Maniaba\FileConnect\Asset\Asset;
+use Override;
 
 /**
  * Event fired when an asset is created
@@ -23,6 +24,7 @@ final class AssetCreated implements AssetEventInterface
     ) {
     }
 
+    #[Override]
     public function getAsset(): Asset
     {
         return $this->asset;
@@ -38,6 +40,7 @@ final class AssetCreated implements AssetEventInterface
         return new self($asset, $subjectEntity);
     }
 
+    #[Override]
     public static function name(): string
     {
         return 'asset.created';

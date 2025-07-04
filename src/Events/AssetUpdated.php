@@ -7,6 +7,7 @@ namespace Maniaba\FileConnect\Events;
 use Maniaba\FileConnect\Asset\Asset;
 use Maniaba\FileConnect\Exceptions\AssetException;
 use Maniaba\FileConnect\Models\AssetModel;
+use Override;
 
 /**
  * Event fired when an asset is updated
@@ -28,6 +29,7 @@ final class AssetUpdated implements AssetEventInterface
         return new self($assetId);
     }
 
+    #[Override]
     public function getAsset(): Asset
     {
         if ($this->asset === null) {
@@ -43,6 +45,7 @@ final class AssetUpdated implements AssetEventInterface
         return $this->asset;
     }
 
+    #[Override]
     public static function name(): string
     {
         return 'asset.updated';

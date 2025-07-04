@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Maniaba\FileConnect\Events;
 
 use Maniaba\FileConnect\Asset\Asset;
+use Override;
 
 /**
  * Event fired when an asset is deleted
@@ -16,6 +17,7 @@ final class AssetDeleted implements AssetEventInterface
     ) {
     }
 
+    #[Override]
     public function getAsset(): Asset
     {
         return $this->asset;
@@ -26,6 +28,7 @@ final class AssetDeleted implements AssetEventInterface
         return new self($asset);
     }
 
+    #[Override]
     public static function name(): string
     {
         return 'asset.deleted';
