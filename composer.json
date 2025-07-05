@@ -1,6 +1,6 @@
 {
-    "name": "maniaba/file-connect",
-    "description": "File Connect for CodeIgniter 4",
+    "name": "maniaba/asset-connect",
+    "description": "Asset Connect for CodeIgniter 4",
     "license": "MIT",
     "type": "library",
     "keywords": [
@@ -13,12 +13,12 @@
     "authors": [
         {
             "name": "Amel Junuzović",
-            "email": "amel.junuzovic@outlook.com",
+            "email": "maniaba@outlook.com",
             "homepage": "https://github.com/maniaba",
             "role": "Developer"
         }
     ],
-    "homepage": "https://github.com/maniaba/file-connect",
+    "homepage": "https://github.com/maniaba/asset-connect",
     "require": {
         "php": "^8.3",
         "codeigniter4/framework": "^4.6",
@@ -46,7 +46,7 @@
     "prefer-stable": true,
     "autoload": {
         "psr-4": {
-            "Maniaba\\FileConnect\\": "src"
+            "Maniaba\\AssetConnect\\": "src"
         },
         "exclude-from-classmap": [
             "**/Database/Migrations/**"
@@ -88,6 +88,7 @@
         "test": "phpunit",
         "phpstan-gb": "phpstan analyze --generate-baseline=phpstan-baseline.neon",
         "rector": "rector process --dry-run",
-        "rector-fix": "rector process"
+        "rector-fix": "rector process",
+        "psalm": "psalm --alter --issues=MissingOverrideAttribute"
     }
 }

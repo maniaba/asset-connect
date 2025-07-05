@@ -1,5 +1,5 @@
-site_name: CodeIgniter Asset Connect
-site_description: Asset Connect is a CodeIgniter 4 package that provides a simple way to manage and connect assets in your application with a focus on performance and ease of use.
+site_name: CodeIgniter AssetConnect
+site_description: AssetConnect is a file management library for CodeIgniter 4 that allows you to associate files with any entity in your application.
 
 theme:
   name: material
@@ -33,12 +33,12 @@ theme:
     - search.share
 
 extra:
-  homepage: https://codeigniter.com
+  homepage: https://maniaba.github.io/asset-connect/
   generator: false
 
   social:
     - icon: material/github
-      link: https://github.com/maniaba/file-connect
+      link: https://github.com/maniaba/asset-connect
       name: GitHub
     - icon: material/twitter
       link: https://twitter.com/CodeIgniterPhp
@@ -50,10 +50,10 @@ extra:
       link: https://join.slack.com/t/codeigniterchat/shared_invite/zt-244xrrslc-l_I69AJSi5y2a2RVN~xIdQ
       name: Slack
 
-site_url: https://file-connect.maniaba.com/
-repo_url: https://github.com/maniaba/file-connect
+site_url: https://maniaba.github.io/asset-connect/
+repo_url: https://github.com/maniaba/asset-connect
 edit_uri: edit/develop/docs/
-copyright: Copyright &copy; 2025 CodeIgniter Foundation.
+copyright: Copyright &copy; 2025 Maniaba.
 
 markdown_extensions:
   - admonition

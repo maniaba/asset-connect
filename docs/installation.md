@@ -16,7 +16,7 @@ Before installing CodeIgniter Asset Connect, ensure your environment meets the f
 You can install the package via Composer:
 
 ```bash
-composer require maniaba/file-connect
+composer require maniaba/asset-connect
 ```
 
 ### 2. Run Migrations
@@ -24,7 +24,7 @@ composer require maniaba/file-connect
 The library includes a migration to create the necessary database table for storing asset metadata. Run the migration using the following command:
 
 ```bash
-php spark migrate --namespace=Maniaba\\FileConnect
+php spark migrate --namespace=Maniaba\\AssetConnect
 ```
 
 This will create the `assets` table in your database.
@@ -39,8 +39,8 @@ To use Asset Connect with your entities, you need to add the `UseAssetConnectTra
 namespace App\Entities;
 
 use CodeIgniter\Entity\Entity;
-use Maniaba\FileConnect\Traits\UseAssetConnectTrait;
-use Maniaba\FileConnect\AssetCollection\Interfaces\SetupAssetCollectionInterface;
+use Maniaba\AssetConnect\Traits\UseAssetConnectTrait;
+use Maniaba\AssetConnect\AssetCollection\Interfaces\SetupAssetCollectionInterface;
 
 class User extends Entity
 {
@@ -69,7 +69,7 @@ If you want to automatically load the Asset Connect functionality when retrievin
 namespace App\Models;
 
 use CodeIgniter\Model;
-use Maniaba\FileConnect\Traits\UseAssetConnectModelTrait;
+use Maniaba\AssetConnect\Traits\UseAssetConnectModelTrait;
 
 class UserModel extends Model
 {
@@ -87,7 +87,7 @@ If your model already has an `initialize()` method, you need to use PHP's trait 
 namespace App\Models;
 
 use CodeIgniter\Model;
-use Maniaba\FileConnect\Traits\UseAssetConnectModelTrait;
+use Maniaba\AssetConnect\Traits\UseAssetConnectModelTrait;
 
 class UserModel extends Model
 {

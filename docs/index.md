@@ -40,4 +40,4 @@ $url = $user->getFirstAsset(ImagesCollection::class)->getUrl();
 
 ## License
 
-This library is licensed under the MIT License - see the [LICENSE](https://github.com/maniaba/file-connect/blob/main/LICENSE.md) file for details.
+This library is licensed under the MIT License - see the [LICENSE](https://github.com/maniaba/asset-connect/blob/main/LICENSE.md) file for details.
