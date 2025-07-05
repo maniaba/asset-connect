@@ -33,8 +33,8 @@ trait UrlGeneratorTrait
     /**
      * Get the relative URL for this asset, which is the path without the base URL
      *
-     * @param string|null $variantName The name of the variant to get the URL for, or empty for the original asset
-     * @param bool $forceDownload Whether to force the browser to download the file instead of displaying it
+     * @param string|null $variantName   The name of the variant to get the URL for, or empty for the original asset
+     * @param bool        $forceDownload Whether to force the browser to download the file instead of displaying it
      *
      * @return string The relative URL to the asset
      *
@@ -59,8 +59,8 @@ trait UrlGeneratorTrait
     /**
      * Get a temporary URL for this asset that expires after the specified time
      *
-     * @param Time        $expiration  The time when the URL should expire
-     * @param string|null $variantName The name of the variant to get the URL for, or empty for the original asset
+     * @param Time        $expiration    The time when the URL should expire
+     * @param string|null $variantName   The name of the variant to get the URL for, or empty for the original asset
      * @param bool        $forceDownload Whether to force the browser to download the file instead of displaying it
      *
      * @return string The temporary URL to the asset
@@ -90,8 +90,8 @@ trait UrlGeneratorTrait
     /**
      * Get a temporary relative URL for this asset that expires after the specified time
      *
-     * @param Time    $expiration  The time when the URL should expire
-     * @param ?string $variantName The name of the variant to get the URL for, or empty for the original asset
+     * @param Time    $expiration    The time when the URL should expire
+     * @param ?string $variantName   The name of the variant to get the URL for, or empty for the original asset
      * @param bool    $forceDownload Whether to force the browser to download the file instead of displaying it
      *
      * @return string The temporary relative URL to the asset

@@ -1,5 +1,15 @@
 # AssetConnect for CodeIgniter 4
 
+[![PHPUnit](https://github.com/maniaba/asset-connect/actions/workflows/phpunit.yml/badge.svg)](https://github.com/maniaba/asset-connect/actions/workflows/phpunit.yml)
+[![PHPStan](https://github.com/maniaba/asset-connect/actions/workflows/phpstan.yml/badge.svg)](https://github.com/maniaba/asset-connect/actions/workflows/phpstan.yml)
+[![Deptrac](https://github.com/maniaba/asset-connect/actions/workflows/deptrac.yml/badge.svg)](https://github.com/maniaba/asset-connect/actions/workflows/deptrac.yml)
+[![Psalm](https://github.com/maniaba/asset-connect/actions/workflows/psalm.yml/badge.svg)](https://github.com/maniaba/asset-connect/actions/workflows/psalm.yml)
+
+
+![PHP](https://img.shields.io/badge/PHP-%5E8.3-blue)
+[![CodeIgniter](https://img.shields.io/badge/CodeIgniter-4.6+-blue.svg?style=flat-square)](http://codeigniter.com/)
+![License](https://img.shields.io/badge/License-MIT-blue)
+
 AssetConnect is a file management library for CodeIgniter 4 that allows you to associate files with any entity in your application.
 It provides a robust, flexible solution for handling file uploads, storage, and retrieval with powerful features like collections, custom properties, and secure access control.
 
