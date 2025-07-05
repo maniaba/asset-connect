@@ -344,6 +344,6 @@ $mimeType = AssetMimeType::fromAssetExtension(AssetExtension::JPG); // 'image/jp
 
 For more advanced usage scenarios, check out the following topics:
 
-- [Custom Asset Collections](configuration.md#creating-custom-asset-collections)
+- [Custom Asset Collections](custom-asset-collections.md)
 - [Custom Path Generators](custom-path-generators.md)
 - [Troubleshooting](troubleshooting.md)
