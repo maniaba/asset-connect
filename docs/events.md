@@ -53,7 +53,8 @@ Events::on('asset.deleted', function (AssetDeleted $event) {
 // Listen for variant.created event
 Events::on('variant.created', function (VariantCreated $event) {
     $asset = $event->getAsset();
-    $variantName = $event->getVariantName();
+    $variant = $event->getVariant();
+    $variantName = $variant->name;
 
     // Do something with the asset and variant name
     log_message('info', 'Variant created: ' . $variantName . ' for asset ' . $asset->id);
@@ -114,12 +115,13 @@ Events::on('asset.deleted', function (AssetDeleted $event) {
 
 ### VariantCreated
 
-The `VariantCreated` event object provides access to the asset and the name of the created variant:
+The `VariantCreated` event object provides access to the asset and the variant that was created:
 
 ```php
 Events::on('variant.created', function (VariantCreated $event) {
     $asset = $event->getAsset();
-    $variantName = $event->getVariantName();
+    $variant = $event->getVariant();
+    $variantName = $variant->name;
 
     // Access asset properties
     $assetId = $asset->id;
@@ -154,7 +156,8 @@ Events::on('asset.deleted', function (AssetDeleted $event) {
 
 Events::on('variant.created', function (VariantCreated $event) {
     $asset = $event->getAsset();
-    $variantName = $event->getVariantName();
+    $variant = $event->getVariant();
+    $variantName = $variant->name;
     log_message('info', 'Variant created: ' . $variantName . ' for asset ' . $asset->id);
 });
 ```
@@ -184,7 +187,8 @@ Events::on('asset.created', function (AssetCreated $event) {
 // Generate additional variants when a variant is created
 Events::on('variant.created', function (VariantCreated $event) {
     $asset = $event->getAsset();
-    $variantName = $event->getVariantName();
+    $variant = $event->getVariant();
+    $variantName = $variant->name;
 
     // Only process certain variants
     if ($variantName === 'thumbnail' && $asset->isImage()) {
