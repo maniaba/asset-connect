@@ -444,21 +444,7 @@ public function uploadImage()
         $images[] = $assetAdder->toAssetCollection(ImagesCollection::class);
     }
 
-    // If we have an image, create a thumbnail
     if (!empty($images)) {
-        $image = $images[0];
-        $uploadedFile = $this->request->getFile('image');
-
-        // Create and add a thumbnail
-        $thumbnail = \Config\Services::image()
-            ->withFile($uploadedFile)
-            ->resize(200, 200, true)
-            ->save(WRITEPATH . 'uploads/thumbnail_' . $uploadedFile->getRandomName());
-
-        $gallery->addAsset(WRITEPATH . 'uploads/thumbnail_' . $uploadedFile->getName())
-            ->withCustomProperty('original_id', $image->id)
-            ->toAssetCollection(ThumbnailsCollection::class);
-
         return redirect()->to('gallery/' . $gallery->id);
     }
 

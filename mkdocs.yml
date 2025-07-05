@@ -73,12 +73,17 @@ extra_javascript:
 nav:
   - Home: index.md
   - Installation: installation.md
-  - Configuration: configuration.md
-  - Basic usage: basic-usage.md
-  - Examples: examples.md
-  - Asset: asset.md
-  - Asset Adder: asset-adder.md
-  - Asset Collections: asset-collections.md
+  - Configuration:
+      - Overview: configuration.md
+      - Custom Path Generators: custom-path-generators.md
+      - Custom URL Generator: custom-url-generator.md
+  - Usage:
+      - Basic usage: basic-usage.md
+      - Advanced usage: advanced-usage.md
+      - Examples: examples.md
+  - Assets:
+      - Overview: asset.md
+      - Asset Adder: asset-adder.md
+      - Asset Collections: asset-collections.md
   - Validation: validation.md
-  - Advanced usage: advanced-usage.md
   - Troubleshooting: troubleshooting.md
