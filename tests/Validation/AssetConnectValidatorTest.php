@@ -8,10 +8,10 @@ use CodeIgniter\HTTP\IncomingRequest;
 use CodeIgniter\Test\CIUnitTestCase;
 use CodeIgniter\Validation\Validation;
 use Config\Services;
-use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
-use Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory;
-use Maniaba\FileConnect\Validation\AssetConnectValidator;
-use Maniaba\FileConnect\Validation\ValidationRuleCollector;
+use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
+use Maniaba\AssetConnect\AssetCollection\AssetCollectionDefinitionFactory;
+use Maniaba\AssetConnect\Validation\AssetConnectValidator;
+use Maniaba\AssetConnect\Validation\ValidationRuleCollector;
 use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -50,7 +50,7 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
     {
         // Mock AssetCollectionDefinitionFactory::validateStringClass
         global $mockFunctions;
-        $mockFunctions['Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory::validateStringClass'] = static fn () => null;
+        $mockFunctions['Maniaba\AssetConnect\AssetCollection\AssetCollectionDefinitionFactory::validateStringClass'] = static fn () => null;
     }
 
     /**

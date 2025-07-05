@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Enums;
+namespace Maniaba\AssetConnect\Enums;
 
 enum AssetExtension: string
 {

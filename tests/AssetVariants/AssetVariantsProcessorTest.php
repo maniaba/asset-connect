@@ -6,11 +6,11 @@ namespace Tests\AssetVariants;
 
 use Closure;
 use CodeIgniter\Test\CIUnitTestCase;
-use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\Asset\AssetMetadata;
-use Maniaba\FileConnect\AssetVariants\AssetVariant;
-use Maniaba\FileConnect\AssetVariants\AssetVariantsProcessor;
-use Maniaba\FileConnect\Exceptions\FileVariantException;
+use Maniaba\AssetConnect\Asset\Asset;
+use Maniaba\AssetConnect\Asset\AssetMetadata;
+use Maniaba\AssetConnect\AssetVariants\AssetVariant;
+use Maniaba\AssetConnect\AssetVariants\AssetVariantsProcessor;
+use Maniaba\AssetConnect\Exceptions\FileVariantException;
 use Override;
 use RuntimeException;
 

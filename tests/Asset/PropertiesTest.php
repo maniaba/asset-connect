@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Asset;
 
 use CodeIgniter\Test\CIUnitTestCase;
-use Maniaba\FileConnect\Asset\AssetMetadata;
+use Maniaba\AssetConnect\Asset\AssetMetadata;
 use Override;
 
 /**

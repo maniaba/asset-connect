@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Events;
+namespace Maniaba\AssetConnect\Events;
 
 use CodeIgniter\Entity\Entity;
-use Maniaba\FileConnect\Asset\Asset;
+use Maniaba\AssetConnect\Asset\Asset;
 use Override;
 
 /**

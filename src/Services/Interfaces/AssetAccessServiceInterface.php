@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Services\Interfaces;
+namespace Maniaba\AssetConnect\Services\Interfaces;
 
 use CodeIgniter\HTTP\ResponseInterface;
-use Maniaba\FileConnect\Asset\Asset;
+use Maniaba\AssetConnect\Asset\Asset;
 
 interface AssetAccessServiceInterface
 {

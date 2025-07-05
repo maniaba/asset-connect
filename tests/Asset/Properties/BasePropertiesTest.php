@@ -6,7 +6,7 @@ namespace Tests\Asset\Properties;
 
 use CodeIgniter\Test\CIUnitTestCase;
 use InvalidArgumentException;
-use Maniaba\FileConnect\Asset\Properties\BaseProperty;
+use Maniaba\AssetConnect\Asset\Properties\BaseProperty;
 use Override;
 
 /**

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Asset\Properties;
+namespace Maniaba\AssetConnect\Asset\Properties;
 
-use Maniaba\FileConnect\AssetVariants\AssetVariant;
-use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
+use Maniaba\AssetConnect\AssetVariants\AssetVariant;
+use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Override;
 
 final class AssetVariantProperty extends BaseProperty

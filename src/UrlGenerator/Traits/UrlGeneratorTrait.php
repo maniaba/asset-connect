@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\UrlGenerator\Traits;
+namespace Maniaba\AssetConnect\UrlGenerator\Traits;
 
 use CodeIgniter\I18n\Time;
-use Maniaba\FileConnect\UrlGenerator\UrlGenerator;
+use Maniaba\AssetConnect\UrlGenerator\UrlGenerator;
 
 trait UrlGeneratorTrait
 {

@@ -2,27 +2,27 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Asset;
+namespace Maniaba\AssetConnect\Asset;
 
 use CodeIgniter\Entity\Entity;
 use CodeIgniter\Events\Events;
 use CodeIgniter\Files\File;
 use CodeIgniter\HTTP\Files\UploadedFile;
 use CodeIgniter\I18n\Time;
-use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
-use Maniaba\FileConnect\AssetCollection\AssetCollection;
-use Maniaba\FileConnect\AssetCollection\SetupAssetCollection;
-use Maniaba\FileConnect\AssetVariants\AssetVariants;
-use Maniaba\FileConnect\AssetVariants\AssetVariantsProcess;
-use Maniaba\FileConnect\AssetVariants\Interfaces\AssetVariantsInterface;
-use Maniaba\FileConnect\Events\AssetCreated;
-use Maniaba\FileConnect\Exceptions\AssetException;
-use Maniaba\FileConnect\Exceptions\FileException;
-use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
-use Maniaba\FileConnect\Models\AssetModel;
-use Maniaba\FileConnect\PathGenerator\PathGenerator;
-use Maniaba\FileConnect\PathGenerator\PathGeneratorFactory;
-use Maniaba\FileConnect\Traits\UseAssetConnectTrait;
+use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
+use Maniaba\AssetConnect\AssetCollection\AssetCollection;
+use Maniaba\AssetConnect\AssetCollection\SetupAssetCollection;
+use Maniaba\AssetConnect\AssetVariants\AssetVariants;
+use Maniaba\AssetConnect\AssetVariants\AssetVariantsProcess;
+use Maniaba\AssetConnect\AssetVariants\Interfaces\AssetVariantsInterface;
+use Maniaba\AssetConnect\Events\AssetCreated;
+use Maniaba\AssetConnect\Exceptions\AssetException;
+use Maniaba\AssetConnect\Exceptions\FileException;
+use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
+use Maniaba\AssetConnect\Models\AssetModel;
+use Maniaba\AssetConnect\PathGenerator\PathGenerator;
+use Maniaba\AssetConnect\PathGenerator\PathGeneratorFactory;
+use Maniaba\AssetConnect\Traits\UseAssetConnectTrait;
 use Throwable;
 
 final class AssetPersistenceManager

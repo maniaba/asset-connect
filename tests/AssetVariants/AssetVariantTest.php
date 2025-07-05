@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\AssetVariants;
 
 use CodeIgniter\Test\CIUnitTestCase;
-use Maniaba\FileConnect\AssetVariants\AssetVariant;
-use Maniaba\FileConnect\Exceptions\FileVariantException;
+use Maniaba\AssetConnect\AssetVariants\AssetVariant;
+use Maniaba\AssetConnect\Exceptions\FileVariantException;
 use Override;
 use ReflectionClass;
 

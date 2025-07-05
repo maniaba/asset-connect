@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Asset\Interfaces;
+namespace Maniaba\AssetConnect\Asset\Interfaces;
 
-use Maniaba\FileConnect\Enums\AssetVisibility;
+use Maniaba\AssetConnect\Enums\AssetVisibility;
 
 interface AssetCollectionGetterInterface
 {

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Config;
+namespace Maniaba\AssetConnect\Config;
 
-use Maniaba\FileConnect\AssetVariants\AssetVariantsProcess;
-use Maniaba\FileConnect\Jobs\AssetConnectJob;
+use Maniaba\AssetConnect\AssetVariants\AssetVariantsProcess;
+use Maniaba\AssetConnect\Jobs\AssetConnectJob;
 
 class Registrar
 {

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Traits;
+namespace Maniaba\AssetConnect\Traits;
 
 use Closure;
-use Maniaba\FileConnect\AssetConnect;
-use Maniaba\FileConnect\Models\AssetModel;
+use Maniaba\AssetConnect\AssetConnect;
+use Maniaba\AssetConnect\Models\AssetModel;
 use RuntimeException;
 
 trait UseAssetConnectModelTrait

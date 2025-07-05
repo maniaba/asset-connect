@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\UrlGenerator;
+namespace Maniaba\AssetConnect\UrlGenerator;
 
 use CodeIgniter\I18n\Time;
 use CodeIgniter\Router\RouteCollection;
-use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
-use Maniaba\FileConnect\UrlGenerator\Interfaces\UrlGeneratorInterface;
+use Maniaba\AssetConnect\Asset\Asset;
+use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
+use Maniaba\AssetConnect\UrlGenerator\Interfaces\UrlGeneratorInterface;
 
 final readonly class UrlGenerator
 {
@@ -70,7 +70,7 @@ final readonly class UrlGenerator
 
     public static function routes(RouteCollection &$routes): void
     {
-        /** @var \Maniaba\FileConnect\Config\Asset $config */
+        /** @var \Maniaba\AssetConnect\Config\Asset $config */
         $config       = config('Asset');
         $urlGenerator = $config->defaultUrlGenerator;
 
@@ -87,7 +87,7 @@ final readonly class UrlGenerator
 
     public static function routeTo(string $routeName, int $assetId, ?string $variantName, string $filename, ?string $token = null): string
     {
-        /** @var \Maniaba\FileConnect\Config\Asset $config */
+        /** @var \Maniaba\AssetConnect\Config\Asset $config */
         $config       = config('Asset');
         $urlGenerator = $config->defaultUrlGenerator;
 

@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Services;
+namespace Maniaba\AssetConnect\Services;
 
 use CodeIgniter\HTTP\DownloadResponse;
-use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\Asset\Interfaces\AuthorizableAssetCollectionDefinitionInterface;
-use Maniaba\FileConnect\Exceptions\PageException;
-use Maniaba\FileConnect\Repositories\AssetRepository;
-use Maniaba\FileConnect\Repositories\Interfaces\AssetRepositoryInterface;
-use Maniaba\FileConnect\Services\Interfaces\AssetAccessServiceInterface;
-use Maniaba\FileConnect\UrlGenerator\TempUrlToken;
+use Maniaba\AssetConnect\Asset\Asset;
+use Maniaba\AssetConnect\Asset\Interfaces\AuthorizableAssetCollectionDefinitionInterface;
+use Maniaba\AssetConnect\Exceptions\PageException;
+use Maniaba\AssetConnect\Repositories\AssetRepository;
+use Maniaba\AssetConnect\Repositories\Interfaces\AssetRepositoryInterface;
+use Maniaba\AssetConnect\Services\Interfaces\AssetAccessServiceInterface;
+use Maniaba\AssetConnect\UrlGenerator\TempUrlToken;
 use Override;
 
 final readonly class AssetAccessService implements AssetAccessServiceInterface

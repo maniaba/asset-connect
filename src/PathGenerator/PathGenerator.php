@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\PathGenerator;
+namespace Maniaba\AssetConnect\PathGenerator;
 
-use Maniaba\FileConnect\AssetCollection\AssetCollection;
-use Maniaba\FileConnect\Exceptions\FileException;
-use Maniaba\FileConnect\PathGenerator\Interfaces\PathGeneratorInterface;
+use Maniaba\AssetConnect\AssetCollection\AssetCollection;
+use Maniaba\AssetConnect\Exceptions\FileException;
+use Maniaba\AssetConnect\PathGenerator\Interfaces\PathGeneratorInterface;
 
 final readonly class PathGenerator
 {

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\AssetVariants;
+namespace Maniaba\AssetConnect\AssetVariants;
 
 use Closure;
-use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\AssetCollection\Interfaces\CreateAssetVariantsInterface;
-use Maniaba\FileConnect\Exceptions\FileVariantException;
+use Maniaba\AssetConnect\Asset\Asset;
+use Maniaba\AssetConnect\AssetCollection\Interfaces\CreateAssetVariantsInterface;
+use Maniaba\AssetConnect\Exceptions\FileVariantException;
 use Override;
 use Throwable;
 

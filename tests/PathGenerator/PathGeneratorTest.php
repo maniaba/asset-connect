@@ -6,9 +6,9 @@ namespace Tests\PathGenerator;
 
 use CodeIgniter\Test\CIUnitTestCase;
 use CodeIgniter\Test\FeatureTestTrait;
-use Maniaba\FileConnect\AssetCollection\AssetCollection;
-use Maniaba\FileConnect\PathGenerator\Interfaces\PathGeneratorInterface;
-use Maniaba\FileConnect\PathGenerator\PathGenerator;
+use Maniaba\AssetConnect\AssetCollection\AssetCollection;
+use Maniaba\AssetConnect\PathGenerator\Interfaces\PathGeneratorInterface;
+use Maniaba\AssetConnect\PathGenerator\PathGenerator;
 use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionClass;

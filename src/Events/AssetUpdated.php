@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Events;
+namespace Maniaba\AssetConnect\Events;
 
-use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\Exceptions\AssetException;
-use Maniaba\FileConnect\Models\AssetModel;
+use Maniaba\AssetConnect\Asset\Asset;
+use Maniaba\AssetConnect\Exceptions\AssetException;
+use Maniaba\AssetConnect\Models\AssetModel;
 use Override;
 
 /**

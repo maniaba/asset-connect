@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Jobs;
+namespace Maniaba\AssetConnect\Jobs;
 
 use CodeIgniter\Events\Events;
 use CodeIgniter\Queue\BaseJob;
 use CodeIgniter\Queue\Interfaces\JobInterface;
-use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\Asset\AssetPersistenceManager;
-use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
-use Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory;
-use Maniaba\FileConnect\AssetVariants\AssetVariantsProcess;
-use Maniaba\FileConnect\AssetVariants\Interfaces\AssetVariantsInterface;
-use Maniaba\FileConnect\Events\AssetUpdated;
-use Maniaba\FileConnect\Exceptions\AssetException;
-use Maniaba\FileConnect\Models\AssetModel;
+use Maniaba\AssetConnect\Asset\Asset;
+use Maniaba\AssetConnect\Asset\AssetPersistenceManager;
+use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
+use Maniaba\AssetConnect\AssetCollection\AssetCollectionDefinitionFactory;
+use Maniaba\AssetConnect\AssetVariants\AssetVariantsProcess;
+use Maniaba\AssetConnect\AssetVariants\Interfaces\AssetVariantsInterface;
+use Maniaba\AssetConnect\Events\AssetUpdated;
+use Maniaba\AssetConnect\Exceptions\AssetException;
+use Maniaba\AssetConnect\Models\AssetModel;
 use Override;
 
 /**

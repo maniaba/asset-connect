@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Config;
+namespace Maniaba\AssetConnect\Config;
 
 use CodeIgniter\Config\BaseService;
-use Maniaba\FileConnect\Repositories\AssetRepository;
-use Maniaba\FileConnect\Repositories\Interfaces\AssetRepositoryInterface;
-use Maniaba\FileConnect\Services\AssetAccessService;
-use Maniaba\FileConnect\Services\Interfaces\AssetAccessServiceInterface;
+use Maniaba\AssetConnect\Repositories\AssetRepository;
+use Maniaba\AssetConnect\Repositories\Interfaces\AssetRepositoryInterface;
+use Maniaba\AssetConnect\Services\AssetAccessService;
+use Maniaba\AssetConnect\Services\Interfaces\AssetAccessServiceInterface;
 
 class Services extends BaseService
 {

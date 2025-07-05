@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\AssetVariants;
+namespace Maniaba\AssetConnect\AssetVariants;
 
 use Closure;
 use CodeIgniter\Events\Events;
-use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\AssetCollection\Interfaces\CreateAssetVariantsInterface;
-use Maniaba\FileConnect\Events\VariantCreated;
-use Maniaba\FileConnect\PathGenerator\PathGenerator;
+use Maniaba\AssetConnect\Asset\Asset;
+use Maniaba\AssetConnect\AssetCollection\Interfaces\CreateAssetVariantsInterface;
+use Maniaba\AssetConnect\Events\VariantCreated;
+use Maniaba\AssetConnect\PathGenerator\PathGenerator;
 use Override;
 
 final class AssetVariants implements CreateAssetVariantsInterface

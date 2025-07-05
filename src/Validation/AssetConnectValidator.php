@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Validation;
+namespace Maniaba\AssetConnect\Validation;
 
 use CodeIgniter\HTTP\CLIRequest;
 use CodeIgniter\HTTP\IncomingRequest;
 use CodeIgniter\Validation\Validation;
 use CodeIgniter\Validation\ValidationInterface;
 use Config\Services;
-use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
-use Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory;
+use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
+use Maniaba\AssetConnect\AssetCollection\AssetCollectionDefinitionFactory;
 
 /**
  * Class AssetConnectValidator

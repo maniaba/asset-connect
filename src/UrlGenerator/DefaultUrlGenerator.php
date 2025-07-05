@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\UrlGenerator;
+namespace Maniaba\AssetConnect\UrlGenerator;
 
 use CodeIgniter\Router\RouteCollection;
-use Maniaba\FileConnect\Controllers\AssetConnectController;
-use Maniaba\FileConnect\UrlGenerator\Interfaces\UrlGeneratorInterface;
+use Maniaba\AssetConnect\Controllers\AssetConnectController;
+use Maniaba\AssetConnect\UrlGenerator\Interfaces\UrlGeneratorInterface;
 use Override;
 
 class DefaultUrlGenerator implements UrlGeneratorInterface

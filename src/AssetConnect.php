@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect;
+namespace Maniaba\AssetConnect;
 
 use CodeIgniter\Database\BaseBuilder;
 use CodeIgniter\Entity\Entity;
 use CodeIgniter\Events\Events;
-use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
-use Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory;
-use Maniaba\FileConnect\AssetCollection\SetupAssetCollection;
-use Maniaba\FileConnect\Events\AssetDeleted;
-use Maniaba\FileConnect\Exceptions\FileException;
-use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
-use Maniaba\FileConnect\Models\AssetModel;
-use Maniaba\FileConnect\Traits\UseAssetConnectTrait;
+use Maniaba\AssetConnect\Asset\Asset;
+use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
+use Maniaba\AssetConnect\AssetCollection\AssetCollectionDefinitionFactory;
+use Maniaba\AssetConnect\AssetCollection\SetupAssetCollection;
+use Maniaba\AssetConnect\Events\AssetDeleted;
+use Maniaba\AssetConnect\Exceptions\FileException;
+use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
+use Maniaba\AssetConnect\Models\AssetModel;
+use Maniaba\AssetConnect\Traits\UseAssetConnectTrait;
 use RuntimeException;
 
 final class AssetConnect

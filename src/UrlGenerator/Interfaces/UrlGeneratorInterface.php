@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\UrlGenerator\Interfaces;
+namespace Maniaba\AssetConnect\UrlGenerator\Interfaces;
 
 use CodeIgniter\Router\RouteCollection;
 

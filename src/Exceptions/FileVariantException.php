@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Exceptions;
+namespace Maniaba\AssetConnect\Exceptions;
 
 final class FileVariantException extends AssetException
 {

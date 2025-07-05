@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Asset\Traits;
+namespace Maniaba\AssetConnect\Asset\Traits;
 
-use Maniaba\FileConnect\Enums\AssetMimeType;
+use Maniaba\AssetConnect\Enums\AssetMimeType;
 
 trait AssetMimeTypeTrait
 {

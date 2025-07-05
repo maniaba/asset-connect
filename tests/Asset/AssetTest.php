@@ -8,9 +8,9 @@ use CodeIgniter\Entity\Entity;
 use CodeIgniter\Files\File;
 use CodeIgniter\Test\CIUnitTestCase;
 use InvalidArgumentException;
-use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\Asset\AssetMetadata;
-use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
+use Maniaba\AssetConnect\Asset\Asset;
+use Maniaba\AssetConnect\Asset\AssetMetadata;
+use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -45,7 +45,7 @@ final class AssetTest extends CIUnitTestCase
     {
         // Mock AssetCollectionDefinitionFactory::validateStringClass
         global $mockFunctions;
-        $mockFunctions['Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory::validateStringClass'] = static fn () => null;
+        $mockFunctions['Maniaba\AssetConnect\AssetCollection\AssetCollectionDefinitionFactory::validateStringClass'] = static fn () => null;
     }
 
     /**

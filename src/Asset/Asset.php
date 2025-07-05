@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Asset;
+namespace Maniaba\AssetConnect\Asset;
 
 use CodeIgniter\Entity\Entity;
 use CodeIgniter\Events\Events;
@@ -12,13 +12,13 @@ use CodeIgniter\HTTP\Files\UploadedFile;
 use CodeIgniter\I18n\Time;
 use InvalidArgumentException;
 use JsonSerializable;
-use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
-use Maniaba\FileConnect\Asset\Traits\AssetMimeTypeTrait;
-use Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory;
-use Maniaba\FileConnect\Events\AssetUpdated;
-use Maniaba\FileConnect\Models\AssetModel;
-use Maniaba\FileConnect\Services\AssetAccessService;
-use Maniaba\FileConnect\UrlGenerator\Traits\UrlGeneratorTrait;
+use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
+use Maniaba\AssetConnect\Asset\Traits\AssetMimeTypeTrait;
+use Maniaba\AssetConnect\AssetCollection\AssetCollectionDefinitionFactory;
+use Maniaba\AssetConnect\Events\AssetUpdated;
+use Maniaba\AssetConnect\Models\AssetModel;
+use Maniaba\AssetConnect\Services\AssetAccessService;
+use Maniaba\AssetConnect\UrlGenerator\Traits\UrlGeneratorTrait;
 use Override;
 
 /**
@@ -163,13 +163,13 @@ final class Asset extends Entity implements JsonSerializable
             return pathinfo($fileName, PATHINFO_EXTENSION);
         }
 
-        throw new \Maniaba\FileConnect\Exceptions\InvalidArgumentException('Invalid argument provided');
+        throw new \Maniaba\AssetConnect\Exceptions\InvalidArgumentException('Invalid argument provided');
     }
 
     protected function getPathDirname(): string
     {
         if ($this->path === null || $this->path === '') {
-            throw new \Maniaba\FileConnect\Exceptions\InvalidArgumentException('Path directory not set.');
+            throw new \Maniaba\AssetConnect\Exceptions\InvalidArgumentException('Path directory not set.');
         }
 
         return dirname($this->path) . DIRECTORY_SEPARATOR;
@@ -310,7 +310,7 @@ final class Asset extends Entity implements JsonSerializable
         $relativePath = $this->getMetadata()->basicInfo->fileRelativePath();
 
         if ($relativePath === null) {
-            throw new \Maniaba\FileConnect\Exceptions\InvalidArgumentException('File relative path not set.');
+            throw new \Maniaba\AssetConnect\Exceptions\InvalidArgumentException('File relative path not set.');
         }
 
         $relativePath = rtrim($relativePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $this->file_name;

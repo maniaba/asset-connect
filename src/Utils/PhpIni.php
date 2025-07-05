@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Utils;
+namespace Maniaba\AssetConnect\Utils;
 
 final class PhpIni
 {

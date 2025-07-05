@@ -6,9 +6,9 @@ namespace Tests\Asset\Properties;
 
 use CodeIgniter\Entity\Entity;
 use CodeIgniter\Test\CIUnitTestCase;
-use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
-use Maniaba\FileConnect\Asset\Interfaces\AuthorizableAssetCollectionDefinitionInterface;
-use Maniaba\FileConnect\Asset\Properties\BasicInfoProperty;
+use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
+use Maniaba\AssetConnect\Asset\Interfaces\AuthorizableAssetCollectionDefinitionInterface;
+use Maniaba\AssetConnect\Asset\Properties\BasicInfoProperty;
 use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 

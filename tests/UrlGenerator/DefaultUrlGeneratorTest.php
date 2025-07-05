@@ -6,8 +6,8 @@ namespace Tests\UrlGenerator;
 
 use CodeIgniter\Router\RouteCollection;
 use CodeIgniter\Test\CIUnitTestCase;
-use Maniaba\FileConnect\Controllers\AssetConnectController;
-use Maniaba\FileConnect\UrlGenerator\DefaultUrlGenerator;
+use Maniaba\AssetConnect\Controllers\AssetConnectController;
+use Maniaba\AssetConnect\UrlGenerator\DefaultUrlGenerator;
 use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 

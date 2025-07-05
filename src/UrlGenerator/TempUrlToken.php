@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\UrlGenerator;
+namespace Maniaba\AssetConnect\UrlGenerator;
 
 use CodeIgniter\I18n\Time;
-use Maniaba\FileConnect\Asset\Asset;
+use Maniaba\AssetConnect\Asset\Asset;
 
 final class TempUrlToken
 {

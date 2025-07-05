@@ -1,14 +1,17 @@
 {
     "name": "maniaba/asset-connect",
-    "description": "Asset Connect for CodeIgniter 4",
+    "description": "AssetConnect is a file management library for CodeIgniter 4 that allows you to associate files with any entity in your application",
     "license": "MIT",
     "type": "library",
     "keywords": [
         "codeigniter",
         "codeigniter4",
-        "files",
-        "file",
-        "tools"
+        "file-upload",
+        "asset-management",
+        "filemanagement",
+        "php83",
+        "file-connect",
+        "files"
     ],
     "authors": [
         {

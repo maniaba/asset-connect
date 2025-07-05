@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\PathGenerator;
+namespace Maniaba\AssetConnect\PathGenerator;
 
 use CodeIgniter\I18n\Time;
 

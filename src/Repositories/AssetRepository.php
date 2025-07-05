@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Repositories;
+namespace Maniaba\AssetConnect\Repositories;
 
-use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\Models\AssetModel;
-use Maniaba\FileConnect\Repositories\Interfaces\AssetRepositoryInterface;
+use Maniaba\AssetConnect\Asset\Asset;
+use Maniaba\AssetConnect\Models\AssetModel;
+use Maniaba\AssetConnect\Repositories\Interfaces\AssetRepositoryInterface;
 use Override;
 
 final class AssetRepository implements AssetRepositoryInterface

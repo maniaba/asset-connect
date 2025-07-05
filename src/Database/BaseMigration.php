@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Database;
+namespace Maniaba\AssetConnect\Database;
 
 use CodeIgniter\Database\Forge;
 use CodeIgniter\Database\Migration;
-use Maniaba\FileConnect\Config\Asset;
+use Maniaba\AssetConnect\Config\Asset;
 
 abstract class BaseMigration extends Migration
 {

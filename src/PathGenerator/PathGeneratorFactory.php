@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\PathGenerator;
+namespace Maniaba\AssetConnect\PathGenerator;
 
-use Maniaba\FileConnect\AssetCollection\AssetCollection;
+use Maniaba\AssetConnect\AssetCollection\AssetCollection;
 
 final class PathGeneratorFactory
 {

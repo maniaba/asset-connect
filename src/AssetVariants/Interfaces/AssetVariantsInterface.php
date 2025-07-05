@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\AssetVariants\Interfaces;
+namespace Maniaba\AssetConnect\AssetVariants\Interfaces;
 
-use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\AssetCollection\Interfaces\CreateAssetVariantsInterface;
-use Maniaba\FileConnect\Exceptions\FileVariantException;
+use Maniaba\AssetConnect\Asset\Asset;
+use Maniaba\AssetConnect\AssetCollection\Interfaces\CreateAssetVariantsInterface;
+use Maniaba\AssetConnect\Exceptions\FileVariantException;
 
 interface AssetVariantsInterface
 {

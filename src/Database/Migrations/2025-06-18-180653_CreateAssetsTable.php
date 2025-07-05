@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Database\Migrations;
+namespace Maniaba\AssetConnect\Database\Migrations;
 
-use Maniaba\FileConnect\Database\BaseMigration;
+use Maniaba\AssetConnect\Database\BaseMigration;
 use Override;
 
 class CreateAssetsTable extends BaseMigration

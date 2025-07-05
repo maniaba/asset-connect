@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Asset;
+namespace Maniaba\AssetConnect\Asset;
 
 use Closure;
 use CodeIgniter\Entity\Entity;
 use CodeIgniter\HTTP\Files\UploadedFile;
-use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
-use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
-use Maniaba\FileConnect\Traits\UseAssetConnectTrait;
+use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
+use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
+use Maniaba\AssetConnect\Traits\UseAssetConnectTrait;
 
 final readonly class AssetAdderMultiple
 {

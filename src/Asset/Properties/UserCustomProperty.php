@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Asset\Properties;
+namespace Maniaba\AssetConnect\Asset\Properties;
 
 use Override;
 

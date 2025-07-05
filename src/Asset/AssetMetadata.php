@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Asset;
+namespace Maniaba\AssetConnect\Asset;
 
 use JsonSerializable;
-use Maniaba\FileConnect\Asset\Properties\AssetVariantProperty;
-use Maniaba\FileConnect\Asset\Properties\BasicInfoProperty;
-use Maniaba\FileConnect\Asset\Properties\UserCustomProperty;
+use Maniaba\AssetConnect\Asset\Properties\AssetVariantProperty;
+use Maniaba\AssetConnect\Asset\Properties\BasicInfoProperty;
+use Maniaba\AssetConnect\Asset\Properties\UserCustomProperty;
 use Override;
 use Stringable;
 

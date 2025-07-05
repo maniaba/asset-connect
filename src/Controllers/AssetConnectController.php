@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Controllers;
+namespace Maniaba\AssetConnect\Controllers;
 
 use CodeIgniter\Controller;
 use CodeIgniter\HTTP\ResponseInterface;
-use Maniaba\FileConnect\Services\AssetAccessService;
+use Maniaba\AssetConnect\Services\AssetAccessService;
 
 final class AssetConnectController extends Controller
 {

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\AssetCollection;
 
 use CodeIgniter\Test\CIUnitTestCase;
-use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
-use Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory;
-use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
+use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
+use Maniaba\AssetConnect\AssetCollection\AssetCollectionDefinitionFactory;
+use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 use stdClass;

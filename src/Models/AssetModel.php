@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Models;
+namespace Maniaba\AssetConnect\Models;
 
 use CodeIgniter\Entity\Entity;
-use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
-use Maniaba\FileConnect\AssetCollection\AssetCollectionDefinitionFactory;
-use Maniaba\FileConnect\Traits\UseAssetConnectTrait;
+use Maniaba\AssetConnect\Asset\Asset;
+use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
+use Maniaba\AssetConnect\AssetCollection\AssetCollectionDefinitionFactory;
+use Maniaba\AssetConnect\Traits\UseAssetConnectTrait;
 use Override;
 
 /**

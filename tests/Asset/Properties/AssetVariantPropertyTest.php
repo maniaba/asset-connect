@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Asset\Properties;
 
 use CodeIgniter\Test\CIUnitTestCase;
-use Maniaba\FileConnect\Asset\Properties\AssetVariantProperty;
-use Maniaba\FileConnect\AssetVariants\AssetVariant;
-use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
+use Maniaba\AssetConnect\Asset\Properties\AssetVariantProperty;
+use Maniaba\AssetConnect\AssetVariants\AssetVariant;
+use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Override;
 use ReflectionClass;
 

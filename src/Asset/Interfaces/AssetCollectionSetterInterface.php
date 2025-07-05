@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Asset\Interfaces;
+namespace Maniaba\AssetConnect\Asset\Interfaces;
 
-use Maniaba\FileConnect\Enums\AssetExtension;
-use Maniaba\FileConnect\Enums\AssetMimeType;
-use Maniaba\FileConnect\PathGenerator\Interfaces\PathGeneratorInterface;
+use Maniaba\AssetConnect\Enums\AssetExtension;
+use Maniaba\AssetConnect\Enums\AssetMimeType;
+use Maniaba\AssetConnect\PathGenerator\Interfaces\PathGeneratorInterface;
 
 interface AssetCollectionSetterInterface
 {

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Models;
+namespace Maniaba\AssetConnect\Models;
 
 use CodeIgniter\Database\ConnectionInterface;
 use CodeIgniter\Model;
 use CodeIgniter\Validation\ValidationInterface;
 use Exception;
-use Maniaba\FileConnect\Config\Asset;
+use Maniaba\AssetConnect\Config\Asset;
 use Override;
 
 abstract class BaseModel extends Model

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Asset\Interfaces;
+namespace Maniaba\AssetConnect\Asset\Interfaces;
 
 interface AssetCollectionDefinitionInterface
 {

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\AssetVariants;
+namespace Maniaba\AssetConnect\AssetVariants;
 
 use CodeIgniter\Queue\Config\Services;
-use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
-use Maniaba\FileConnect\AssetVariants\Interfaces\AssetVariantsInterface;
-use Maniaba\FileConnect\Exceptions\FileVariantException;
+use Maniaba\AssetConnect\Asset\Asset;
+use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
+use Maniaba\AssetConnect\AssetVariants\Interfaces\AssetVariantsInterface;
+use Maniaba\AssetConnect\Exceptions\FileVariantException;
 use Throwable;
 
 final class AssetVariantsProcess
@@ -21,7 +21,7 @@ final class AssetVariantsProcess
         log_message('info', 'Asset variants processing is queued for asset ID: {id}', ['id' => $asset->id]);
 
         // You can dispatch a job to process the variants here if you have a queue system set up.
-        /** @var \Maniaba\FileConnect\Config\Asset $config */
+        /** @var \Maniaba\AssetConnect\Config\Asset $config */
         $config     = config('Asset');
         $queue      = $config->queue['name'] ?? self::QUEUE_NAME;
         $jobHandler = $config->queue['jobHandler']['name'] ?? self::JOB_HANDLER;

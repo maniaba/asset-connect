@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Tests\AssetCollection;
 
 use CodeIgniter\Test\CIUnitTestCase;
-use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
-use Maniaba\FileConnect\Asset\Interfaces\AuthorizableAssetCollectionDefinitionInterface;
-use Maniaba\FileConnect\AssetCollection\AssetCollection;
-use Maniaba\FileConnect\AssetCollection\SetupAssetCollection;
-use Maniaba\FileConnect\Enums\AssetExtension;
-use Maniaba\FileConnect\Enums\AssetMimeType;
-use Maniaba\FileConnect\Enums\AssetVisibility;
-use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
-use Maniaba\FileConnect\PathGenerator\Interfaces\PathGeneratorInterface;
+use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
+use Maniaba\AssetConnect\Asset\Interfaces\AuthorizableAssetCollectionDefinitionInterface;
+use Maniaba\AssetConnect\AssetCollection\AssetCollection;
+use Maniaba\AssetConnect\AssetCollection\SetupAssetCollection;
+use Maniaba\AssetConnect\Enums\AssetExtension;
+use Maniaba\AssetConnect\Enums\AssetMimeType;
+use Maniaba\AssetConnect\Enums\AssetVisibility;
+use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
+use Maniaba\AssetConnect\PathGenerator\Interfaces\PathGeneratorInterface;
 use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionClass;
@@ -64,7 +64,7 @@ final class AssetCollectionTest extends CIUnitTestCase
         global $mockFunctions;
 
         // Mock PhpIni::uploadMaxFilesizeBytes
-        $mockFunctions['Maniaba\FileConnect\Utils\PhpIni::uploadMaxFilesizeBytes'] = static fn () => 2097152; // 2MB
+        $mockFunctions['Maniaba\AssetConnect\Utils\PhpIni::uploadMaxFilesizeBytes'] = static fn () => 2097152; // 2MB
     }
 
     /**

@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\AssetCollection;
+namespace Maniaba\AssetConnect\AssetCollection;
 
 use Closure;
 use CodeIgniter\Config\BaseConfig;
 use CodeIgniter\Model;
-use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
-use Maniaba\FileConnect\AssetCollection\Interfaces\SetupAssetCollectionInterface;
-use Maniaba\FileConnect\Config\Asset;
-use Maniaba\FileConnect\Exceptions\AssetException;
-use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
-use Maniaba\FileConnect\PathGenerator\Interfaces\PathGeneratorInterface;
+use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
+use Maniaba\AssetConnect\AssetCollection\Interfaces\SetupAssetCollectionInterface;
+use Maniaba\AssetConnect\Config\Asset;
+use Maniaba\AssetConnect\Exceptions\AssetException;
+use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
+use Maniaba\AssetConnect\PathGenerator\Interfaces\PathGeneratorInterface;
 use Override;
 
 final class SetupAssetCollection implements SetupAssetCollectionInterface

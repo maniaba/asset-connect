@@ -8,8 +8,8 @@ use CodeIgniter\Cache\CacheInterface;
 use CodeIgniter\I18n\Time;
 use CodeIgniter\Test\CIUnitTestCase;
 use Config\Services;
-use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\UrlGenerator\TempUrlToken;
+use Maniaba\AssetConnect\Asset\Asset;
+use Maniaba\AssetConnect\UrlGenerator\TempUrlToken;
 use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 

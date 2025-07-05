@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Asset\Interfaces;
+namespace Maniaba\AssetConnect\Asset\Interfaces;
 
 use CodeIgniter\Files\File;
-use Maniaba\FileConnect\Asset\Asset;
+use Maniaba\AssetConnect\Asset\Asset;
 
 /**
  * Interface for asset adders.

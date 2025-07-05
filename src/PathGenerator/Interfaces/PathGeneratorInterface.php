@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\PathGenerator\Interfaces;
+namespace Maniaba\AssetConnect\PathGenerator\Interfaces;
 
-use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionGetterInterface;
-use Maniaba\FileConnect\PathGenerator\PathGeneratorHelper;
+use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionGetterInterface;
+use Maniaba\AssetConnect\PathGenerator\PathGeneratorHelper;
 
 interface PathGeneratorInterface
 {

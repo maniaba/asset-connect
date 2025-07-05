@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Config;
+namespace Maniaba\AssetConnect\Config;
 
 use CodeIgniter\Config\BaseConfig;
-use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
-use Maniaba\FileConnect\AssetCollection\DefaultAssetCollection;
-use Maniaba\FileConnect\AssetVariants\AssetVariantsProcess;
-use Maniaba\FileConnect\Jobs\AssetConnectJob;
-use Maniaba\FileConnect\PathGenerator\DefaultPathGenerator;
-use Maniaba\FileConnect\PathGenerator\Interfaces\PathGeneratorInterface;
-use Maniaba\FileConnect\UrlGenerator\DefaultUrlGenerator;
-use Maniaba\FileConnect\UrlGenerator\Interfaces\UrlGeneratorInterface;
+use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
+use Maniaba\AssetConnect\AssetCollection\DefaultAssetCollection;
+use Maniaba\AssetConnect\AssetVariants\AssetVariantsProcess;
+use Maniaba\AssetConnect\Jobs\AssetConnectJob;
+use Maniaba\AssetConnect\PathGenerator\DefaultPathGenerator;
+use Maniaba\AssetConnect\PathGenerator\Interfaces\PathGeneratorInterface;
+use Maniaba\AssetConnect\UrlGenerator\DefaultUrlGenerator;
+use Maniaba\AssetConnect\UrlGenerator\Interfaces\UrlGeneratorInterface;
 
 class Asset extends BaseConfig
 {

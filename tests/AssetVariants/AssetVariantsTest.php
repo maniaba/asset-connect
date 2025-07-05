@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests\AssetVariants;
 
 use CodeIgniter\Test\CIUnitTestCase;
-use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\AssetCollection\Interfaces\CreateAssetVariantsInterface;
-use Maniaba\FileConnect\AssetVariants\AssetVariant;
-use Maniaba\FileConnect\AssetVariants\AssetVariants;
-use Maniaba\FileConnect\PathGenerator\PathGenerator;
+use Maniaba\AssetConnect\Asset\Asset;
+use Maniaba\AssetConnect\AssetCollection\Interfaces\CreateAssetVariantsInterface;
+use Maniaba\AssetConnect\AssetVariants\AssetVariant;
+use Maniaba\AssetConnect\AssetVariants\AssetVariants;
+use Maniaba\AssetConnect\PathGenerator\PathGenerator;
 use Override;
 
 /**

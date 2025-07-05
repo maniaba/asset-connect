@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Traits;
+namespace Maniaba\AssetConnect\Traits;
 
 use CodeIgniter\Entity\Entity;
 use CodeIgniter\Files\File;
 use CodeIgniter\HTTP\Files\UploadedFile;
 use Config\Services;
-use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\Asset\AssetAdder;
-use Maniaba\FileConnect\Asset\AssetAdderMultiple;
-use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
-use Maniaba\FileConnect\AssetCollection\Interfaces\SetupAssetCollectionInterface;
-use Maniaba\FileConnect\AssetConnect;
-use Maniaba\FileConnect\Exceptions\AssetException;
-use Maniaba\FileConnect\Exceptions\FileException;
-use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
+use Maniaba\AssetConnect\Asset\Asset;
+use Maniaba\AssetConnect\Asset\AssetAdder;
+use Maniaba\AssetConnect\Asset\AssetAdderMultiple;
+use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
+use Maniaba\AssetConnect\AssetCollection\Interfaces\SetupAssetCollectionInterface;
+use Maniaba\AssetConnect\AssetConnect;
+use Maniaba\AssetConnect\Exceptions\AssetException;
+use Maniaba\AssetConnect\Exceptions\FileException;
+use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 
 /**
  * Trait UseAssetConnectTrait

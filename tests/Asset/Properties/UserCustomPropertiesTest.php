@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Asset\Properties;
 
 use CodeIgniter\Test\CIUnitTestCase;
-use Maniaba\FileConnect\Asset\Properties\UserCustomProperty;
+use Maniaba\AssetConnect\Asset\Properties\UserCustomProperty;
 use Override;
 
 /**

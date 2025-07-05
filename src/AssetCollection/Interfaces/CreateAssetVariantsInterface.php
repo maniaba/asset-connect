@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\AssetCollection\Interfaces;
+namespace Maniaba\AssetConnect\AssetCollection\Interfaces;
 
 use Closure;
-use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\AssetVariants\AssetVariant;
+use Maniaba\AssetConnect\Asset\Asset;
+use Maniaba\AssetConnect\AssetVariants\AssetVariant;
 
 interface CreateAssetVariantsInterface
 {

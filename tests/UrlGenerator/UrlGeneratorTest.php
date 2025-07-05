@@ -8,9 +8,9 @@ use CodeIgniter\Config\Factories;
 use CodeIgniter\Config\Services;
 use CodeIgniter\I18n\Time;
 use CodeIgniter\Test\CIUnitTestCase;
-use Maniaba\FileConnect\Asset\Asset;
-use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
-use Maniaba\FileConnect\UrlGenerator\UrlGenerator;
+use Maniaba\AssetConnect\Asset\Asset;
+use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
+use Maniaba\AssetConnect\UrlGenerator\UrlGenerator;
 use Override;
 use stdClass;
 
@@ -91,7 +91,7 @@ final class UrlGeneratorTest extends CIUnitTestCase
         $mockFunctions['config'] = static function ($name) {
             if ($name === 'Asset') {
                 $config                      = new stdClass();
-                $config->defaultUrlGenerator = 'Maniaba\FileConnect\UrlGenerator\DefaultUrlGenerator';
+                $config->defaultUrlGenerator = 'Maniaba\AssetConnect\UrlGenerator\DefaultUrlGenerator';
 
                 return $config;
             }
@@ -144,7 +144,7 @@ final class UrlGeneratorTest extends CIUnitTestCase
             'metadata'  => json_encode([
                 'basic_info' => [
                     'file_relative_path' => 'uploads',
-                    'collection_class'   => 'Maniaba\FileConnect\Asset\Interfaces\AuthorizableAssetCollectionDefinitionInterface', // Protected collection
+                    'collection_class'   => 'Maniaba\AssetConnect\Asset\Interfaces\AuthorizableAssetCollectionDefinitionInterface', // Protected collection
                 ],
                 'asset_variants' => [
                     'thumbnail' => [
@@ -203,7 +203,7 @@ final class UrlGeneratorTest extends CIUnitTestCase
         $mockFunctions['is_subclass_of'] = static fn ($class, $interface) => true;
 
         // Mock the DefaultUrlGenerator::params method
-        $mockFunctions['Maniaba\FileConnect\UrlGenerator\DefaultUrlGenerator::params'] = function ($id, $variant, $file, $token) use ($assetId, $variantName, $filename) {
+        $mockFunctions['Maniaba\AssetConnect\UrlGenerator\DefaultUrlGenerator::params'] = function ($id, $variant, $file, $token) use ($assetId, $variantName, $filename) {
             $this->assertSame($assetId, $id);
             $this->assertSame($variantName, $variant);
             $this->assertSame($filename, $file);
@@ -235,7 +235,7 @@ final class UrlGeneratorTest extends CIUnitTestCase
         $variantName = null;
         $filename    = 'test.jpg';
 
-        $assetConfig = new class () extends \Maniaba\FileConnect\Config\Asset {
+        $assetConfig = new class () extends \Maniaba\AssetConnect\Config\Asset {
             public ?string $defaultUrlGenerator = null;
         };
 
@@ -264,7 +264,7 @@ final class UrlGeneratorTest extends CIUnitTestCase
         $mockFunctions['is_subclass_of'] = static fn ($class, $interface) => true;
 
         // Mock the DefaultUrlGenerator::params method
-        $mockFunctions['Maniaba\FileConnect\UrlGenerator\DefaultUrlGenerator::params'] = static fn ($id, $variant, $file, $token) => [
+        $mockFunctions['Maniaba\AssetConnect\UrlGenerator\DefaultUrlGenerator::params'] = static fn ($id, $variant, $file, $token) => [
             'asset-connect.show'              => [$id, $file],
             'asset-connect.show_variant'      => [$id, $variant, $file],
             'asset-connect.temporary'         => [$token, $file],

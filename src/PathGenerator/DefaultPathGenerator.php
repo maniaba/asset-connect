@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\PathGenerator;
+namespace Maniaba\AssetConnect\PathGenerator;
 
-use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionGetterInterface;
-use Maniaba\FileConnect\PathGenerator\Interfaces\PathGeneratorInterface;
+use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionGetterInterface;
+use Maniaba\AssetConnect\PathGenerator\Interfaces\PathGeneratorInterface;
 use Override;
 
 final class DefaultPathGenerator implements PathGeneratorInterface

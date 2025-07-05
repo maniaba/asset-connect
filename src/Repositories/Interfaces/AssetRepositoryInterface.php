@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\Repositories\Interfaces;
+namespace Maniaba\AssetConnect\Repositories\Interfaces;
 
-use Maniaba\FileConnect\Asset\Asset;
+use Maniaba\AssetConnect\Asset\Asset;
 
 interface AssetRepositoryInterface
 {

@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\FileConnect\AssetCollection;
+namespace Maniaba\AssetConnect\AssetCollection;
 
-use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionGetterInterface;
-use Maniaba\FileConnect\Asset\Interfaces\AssetCollectionSetterInterface;
-use Maniaba\FileConnect\Asset\Interfaces\AuthorizableAssetCollectionDefinitionInterface;
-use Maniaba\FileConnect\Enums\AssetExtension;
-use Maniaba\FileConnect\Enums\AssetMimeType;
-use Maniaba\FileConnect\Enums\AssetVisibility;
-use Maniaba\FileConnect\Exceptions\InvalidArgumentException;
-use Maniaba\FileConnect\PathGenerator\Interfaces\PathGeneratorInterface;
-use Maniaba\FileConnect\Utils\PhpIni;
+use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionGetterInterface;
+use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionSetterInterface;
+use Maniaba\AssetConnect\Asset\Interfaces\AuthorizableAssetCollectionDefinitionInterface;
+use Maniaba\AssetConnect\Enums\AssetExtension;
+use Maniaba\AssetConnect\Enums\AssetMimeType;
+use Maniaba\AssetConnect\Enums\AssetVisibility;
+use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
+use Maniaba\AssetConnect\PathGenerator\Interfaces\PathGeneratorInterface;
+use Maniaba\AssetConnect\Utils\PhpIni;
 use Override;
 
 final class AssetCollection implements AssetCollectionSetterInterface, AssetCollectionGetterInterface

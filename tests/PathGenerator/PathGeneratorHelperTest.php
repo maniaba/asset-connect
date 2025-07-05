@@ -6,7 +6,7 @@ namespace Tests\PathGenerator;
 
 use CodeIgniter\I18n\Time;
 use CodeIgniter\Test\CIUnitTestCase;
-use Maniaba\FileConnect\PathGenerator\PathGeneratorHelper;
+use Maniaba\AssetConnect\PathGenerator\PathGeneratorHelper;
 use Override;
 
 /**

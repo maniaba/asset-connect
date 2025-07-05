@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Utils;
 
 use CodeIgniter\Test\CIUnitTestCase;
-use Maniaba\FileConnect\Utils\Format;
+use Maniaba\AssetConnect\Utils\Format;
 
 /**
  * @internal
