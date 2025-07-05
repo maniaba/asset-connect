@@ -81,7 +81,7 @@ class ProfilePicturesCollection implements AssetCollectionDefinitionInterface, A
 
 ## Understanding AssetCollectionDefinitionInterface
 
-The `AssetCollectionDefinitionInterface` requires you to implement the following methods:
+The `AssetCollectionDefinitionInterface` requires you to implement the following method:
 
 ### definition
 
@@ -91,13 +91,51 @@ public function definition(AssetCollectionSetterInterface $definition): void
 
 This method is where you configure the collection's settings, such as allowed file types, maximum file size, and other constraints.
 
+## Understanding AuthorizableAssetCollectionDefinitionInterface
+
+The `AuthorizableAssetCollectionDefinitionInterface` extends `AssetCollectionDefinitionInterface` and adds authorization capabilities to asset collections. This interface is used when you need to control access to assets based on user permissions or other criteria.
+
 ### checkAuthorization
 
 ```php
-public function checkAuthorization(array|Entity $entity, Asset $asset): bool
+public function checkAuthorization(Asset $asset): bool
 ```
 
-This method determines whether a user is authorized to access an asset. It's called when an asset is requested through the AssetConnectController.
+This method determines whether a user is authorized to access an asset. It's called when an asset is requested through the AssetConnectController. The method should return `true` if access is allowed and `false` if access should be denied.
+
+Files typically stored in collections implementing this interface are user-specific, such as profile pictures or documents that should only be accessible to certain users.
+
+### Example Implementation
+
+```php
+class SecureDocumentsCollection implements AuthorizableAssetCollectionDefinitionInterface
+{
+    public function definition(AssetCollectionSetterInterface $definition): void
+    {
+        $definition
+            ->allowedExtensions(
+                AssetExtension::PDF,
+                AssetExtension::DOC,
+                AssetExtension::DOCX
+            )
+            ->setMaxFileSize(10 * 1024 * 1024); // 10MB
+    }
+
+    public function checkAuthorization(Asset $asset): bool
+    {
+        // Get the current user
+        $user = service('auth')->user();
+
+        // Get the entity that owns the asset
+        $entity = $asset->getSubjectEntity();
+
+        // Check if the user is the owner of the entity or an admin
+        return ($user->id === $entity->user_id) || $user->isAdmin();
+    }
+}
+```
+
+In this example, the `checkAuthorization` method checks if the current user is either the owner of the entity that the asset belongs to or an admin. If either condition is true, access is granted; otherwise, it's denied.
 
 ## Understanding AssetVariantsInterface
 
