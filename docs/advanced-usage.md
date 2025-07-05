@@ -206,10 +206,9 @@ You can listen for these events in your application's `app/Config/Events.php` fi
 // ...
 
 Events::on('asset.created', function (AssetCreated $event) {
-    $asset = $event->asset;
+    $asset = $event->getAsset();
 
     // Do something with the asset
     log_message('info', 'Asset created: ' . $asset->id);
 });
 ```
-
