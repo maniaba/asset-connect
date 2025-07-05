@@ -5,8 +5,8 @@ It provides a robust, flexible solution for handling file uploads, storage, and 
 
 ## Requirements
 
-- PHP 8.1 or higher
-- CodeIgniter 4.3 or higher
+- PHP 8.3 or higher
+- CodeIgniter 4.6 or higher
 - CodeIgniter Queue
 
 ## Example Usage

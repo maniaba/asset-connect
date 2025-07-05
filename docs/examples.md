@@ -9,7 +9,7 @@ You can filter assets using the `filterAssets` method on your model:
 ```php
 // Filter assets by size range
 $user = model(User::class, false)
-    ->filterAssets(fn(AssetModel $model) => $model->filterBySizeRange(1, 10000000000000))
+    ->filterAssets(fn(AssetModel $model) => $model->filterBySizeRange(1, 10000))
     ->first();
 ```
 

@@ -4,8 +4,8 @@
 
 Before installing CodeIgniter Asset Connect, ensure your environment meets the following requirements:
 
-- PHP 8.1 or higher
-- CodeIgniter 4.3 or higher
+- PHP 8.3 or higher
+- CodeIgniter 4.6 or higher
 - CodeIgniter Queue
 - Composer
 
