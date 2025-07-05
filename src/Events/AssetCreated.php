@@ -11,7 +11,7 @@ use Override;
 /**
  * Event fired when an asset is created
  */
-final class AssetCreated implements AssetEventInterface
+final readonly class AssetCreated implements AssetEventInterface
 {
     /**
      * Constructor
@@ -19,8 +19,8 @@ final class AssetCreated implements AssetEventInterface
      * @param Asset $asset The asset that was created
      */
     private function __construct(
-        private readonly Asset $asset,
-        private readonly Entity $subjectEntity,
+        private Asset $asset,
+        private Entity $subjectEntity,
     ) {
     }
 

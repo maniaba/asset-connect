@@ -11,7 +11,7 @@ use Override;
 /**
  * Event fired when a variant is created
  */
-final class VariantCreated implements AssetEventInterface
+final readonly class VariantCreated implements AssetEventInterface
 {
     /**
      * Constructor
@@ -20,8 +20,8 @@ final class VariantCreated implements AssetEventInterface
      * @param Asset        $asset   The asset that the variant belongs to
      */
     public function __construct(
-        private readonly AssetVariant $variant,
-        private readonly Asset $asset,
+        private AssetVariant $variant,
+        private Asset $asset,
     ) {
     }
 

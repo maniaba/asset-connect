@@ -10,10 +10,10 @@ use Override;
 /**
  * Event fired when an asset is deleted
  */
-final class AssetDeleted implements AssetEventInterface
+final readonly class AssetDeleted implements AssetEventInterface
 {
     private function __construct(
-        private readonly Asset $asset,
+        private Asset $asset,
     ) {
     }
 
