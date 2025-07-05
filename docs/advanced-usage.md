@@ -188,27 +188,3 @@ $asset = $product->getFirstAsset(ImagesCollection::class);
 // Get the URL to a variant
 $thumbnailUrl = $asset->properties->fileVariant->getAssetVariant('thumbnail')->getUrl();
 ```
-
-## Events
-
-Asset Connect fires several events that you can listen for in your application:
-
-- `asset.created` - Fired when an asset is created
-- `asset.updated` - Fired when an asset is updated
-- `asset.deleted` - Fired when an asset is deleted
-- `variant.created` - Fired when a variant is created
-
-### Listening for Events
-
-You can listen for these events in your application's `app/Config/Events.php` file:
-
-```php
-// ...
-
-Events::on('asset.created', function (AssetCreated $event) {
-    $asset = $event->getAsset();
-
-    // Do something with the asset
-    log_message('info', 'Asset created: ' . $asset->id);
-});
-```
