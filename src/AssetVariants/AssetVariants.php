@@ -7,7 +7,7 @@ namespace Maniaba\AssetConnect\AssetVariants;
 use Closure;
 use CodeIgniter\Events\Events;
 use Maniaba\AssetConnect\Asset\Asset;
-use Maniaba\AssetConnect\AssetCollection\Interfaces\CreateAssetVariantsInterface;
+use Maniaba\AssetConnect\AssetVariants\Interfaces\CreateAssetVariantsInterface;
 use Maniaba\AssetConnect\Events\VariantCreated;
 use Maniaba\AssetConnect\PathGenerator\PathGenerator;
 use Override;

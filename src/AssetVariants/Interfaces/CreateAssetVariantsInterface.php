@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Maniaba\AssetConnect\AssetCollection\Interfaces;
+namespace Maniaba\AssetConnect\AssetVariants\Interfaces;
 
 use Closure;
 use Maniaba\AssetConnect\Asset\Asset;

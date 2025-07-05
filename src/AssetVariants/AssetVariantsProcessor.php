@@ -6,7 +6,7 @@ namespace Maniaba\AssetConnect\AssetVariants;
 
 use Closure;
 use Maniaba\AssetConnect\Asset\Asset;
-use Maniaba\AssetConnect\AssetCollection\Interfaces\CreateAssetVariantsInterface;
+use Maniaba\AssetConnect\AssetVariants\Interfaces\CreateAssetVariantsInterface;
 use Maniaba\AssetConnect\Exceptions\FileVariantException;
 use Override;
 use Throwable;
