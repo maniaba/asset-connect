@@ -76,8 +76,9 @@ nav:
   - Configuration: configuration.md
   - Basic usage: basic-usage.md
   - Examples: examples.md
-  - Advanced usage: advanced-usage.md
-  - Asset Collections: asset-collections.md
+  - Asset: asset.md
   - Asset Adder: asset-adder.md
+  - Asset Collections: asset-collections.md
   - Validation: validation.md
+  - Advanced usage: advanced-usage.md
   - Troubleshooting: troubleshooting.md
