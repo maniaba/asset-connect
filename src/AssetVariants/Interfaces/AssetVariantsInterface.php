@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Maniaba\AssetConnect\AssetVariants\Interfaces;
 
 use Maniaba\AssetConnect\Asset\Asset;
-use Maniaba\AssetConnect\AssetVariants\Interfaces\CreateAssetVariantsInterface;
 use Maniaba\AssetConnect\Exceptions\FileVariantException;
 
 interface AssetVariantsInterface

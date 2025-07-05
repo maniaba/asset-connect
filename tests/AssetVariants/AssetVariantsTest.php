@@ -6,9 +6,9 @@ namespace Tests\AssetVariants;
 
 use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\AssetConnect\Asset\Asset;
-use Maniaba\AssetConnect\AssetVariants\Interfaces\CreateAssetVariantsInterface;
 use Maniaba\AssetConnect\AssetVariants\AssetVariant;
 use Maniaba\AssetConnect\AssetVariants\AssetVariants;
+use Maniaba\AssetConnect\AssetVariants\Interfaces\CreateAssetVariantsInterface;
 use Maniaba\AssetConnect\PathGenerator\PathGenerator;
 use Override;
 

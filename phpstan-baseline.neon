@@ -148,7 +148,7 @@ parameters:
 			path: tests/AssetCollection/SetupAssetCollectionTest.php
 
 		-
-			message: '#^Access to an undefined property Maniaba\\AssetConnect\\AssetCollection\\Interfaces\\CreateAssetVariantsInterface\:\:\$onQueue\.$#'
+			message: '#^Access to an undefined property Maniaba\\AssetConnect\\AssetVariants\\Interfaces\\CreateAssetVariantsInterface\:\:\$onQueue\.$#'
 			identifier: property.notFound
 			count: 1
 			path: tests/AssetVariants/AssetVariantsTest.php
