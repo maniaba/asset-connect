@@ -184,8 +184,60 @@ class CustomPathGenerator implements PathGeneratorInterface
         // Add a 'variants' subdirectory
         return $basePath . $generatorHelper->getPathString('variants');
     }
+
+    // This method is called when a directory is created by the system.
+    // You can use it to perform additional operations on the directory,
+    // such as setting permissions, creating additional subdirectories,
+    // or logging directory creation events.
+    public function onCreatedDirectory(string $path): void
+    {
+        // Example: Set specific permissions on the created directory
+        // chmod($path, 0755);
+
+        // Example: Log directory creation
+        // log_message('info', 'Directory created: ' . $path);
+
+        // Example: Create additional subdirectories if needed
+        // mkdir($path . 'thumbnails', 0755, true);
+
+        // Example: Create an index.html file to prevent directory listing
+        // file_put_contents($path . 'index.html', '<html><head><title>403 Forbidden</title></head><body><p>Directory access is forbidden.</p></body></html>');
+
+        // Example: Create a .htaccess file to restrict direct access
+        // file_put_contents($path . '.htaccess', "Options -Indexes\nDeny from all");
+    }
 }
 ```
+
+### Securing Asset Directories
+
+When storing assets, especially in public directories, it's important to consider security. The `onCreatedDirectory` method provides an excellent opportunity to add security measures to your asset directories. Here are two common approaches:
+
+#### Creating index.html Files
+
+Adding an index.html file to each directory prevents users from browsing the directory contents directly. If someone tries to access the directory in a browser, they'll see the contents of the index.html file instead of a listing of all files:
+
+```php
+// Create an index.html file to prevent directory listing
+file_put_contents($path . 'index.html', '<html><head><title>403 Forbidden</title></head><body><p>Directory access is forbidden.</p></body></html>');
+```
+
+This is a simple and effective approach that works on virtually all web servers.
+
+#### Creating .htaccess Files
+
+For Apache servers, you can create a .htaccess file to have more control over directory access:
+
+```php
+// Create a .htaccess file to restrict direct access
+file_put_contents($path . '.htaccess', "Options -Indexes\nDeny from all");
+```
+
+This .htaccess file does two things:
+1. `Options -Indexes` - Prevents directory listing
+2. `Deny from all` - Blocks direct access to files in this directory
+
+Note that when using .htaccess to deny all access, you'll need to create specific rules in your application's main .htaccess file to allow access to the files through your application's controllers.
 
 ### Understanding PathGeneratorHelper
 
