@@ -154,16 +154,16 @@ final class AssetVariantTest extends CIUnitTestCase
 
         // First get the relative path
         $getRelativePathMethod = $this->getPrivateMethodInvoker($this->assetVariant, 'getRelativePath');
-        $relativePath = $getRelativePathMethod();
+        $relativePath          = (string) $getRelativePathMethod();
 
         // Verify the relative path contains backslashes
         $this->assertStringContainsString('\\', $relativePath);
 
         // Now test the getRelativePathForUrl method
-        $getRelativePathForUrlMethod = $this->getPrivateMethodInvoker($this->assetVariant,'getRelativePathForUrl');
+        $getRelativePathForUrlMethod = $this->getPrivateMethodInvoker($this->assetVariant, 'getRelativePathForUrl');
 
         // Act
-        $result = $getRelativePathForUrlMethod();
+        $result = (string) $getRelativePathForUrlMethod();
 
         // Assert
         $this->assertStringNotContainsString('\\', $result);
