@@ -4,19 +4,22 @@ declare(strict_types=1);
 
 namespace Maniaba\AssetConnect\Models;
 
+use CodeIgniter\Database\ConnectionInterface;
 use CodeIgniter\Entity\Entity;
+use CodeIgniter\Validation\ValidationInterface;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\AssetConnect\AssetCollection\AssetCollectionDefinitionFactory;
 use Maniaba\AssetConnect\Traits\UseAssetConnectTrait;
 use Override;
+use RuntimeException;
 
 /**
  * @method Asset|list<Asset>|null find($id = null)
  * @method list<Asset>            findAll(int $limit = 0, int $offset = 0)
  * @method Asset|null             first()
  */
-final class AssetModel extends BaseModel
+class AssetModel extends BaseModel
 {
     protected $allowedFields = [
         'entity_type', 'entity_id', 'collection', 'name', 'file_name', 'mime_type', 'size', 'path', 'order', 'metadata', 'created_at', 'updated_at', 'deleted_at',
@@ -40,6 +43,18 @@ final class AssetModel extends BaseModel
         'order'       => 'permit_empty|integer',
         'metadata'    => 'permit_empty|valid_json|max_length[65535]',
     ];
+
+    /**
+     * Constructor, we make it final to prevent overriding the constructor
+     * and ensure that the model is always initialized with the correct database connection and validation instance in AssetModel::init() method.
+     *
+     * @param ConnectionInterface|null $db         Database connection instance
+     * @param ValidationInterface|null $validation Validation instance
+     */
+    final public function __construct(?ConnectionInterface $db = null, ?ValidationInterface $validation = null)
+    {
+        parent::__construct($db, $validation);
+    }
 
     #[Override]
     protected function setConfigTableName(): string
@@ -401,5 +416,23 @@ final class AssetModel extends BaseModel
         $this->where('entity_type', $entityTypeHash);
 
         return $this;
+    }
+
+    public static function init(bool $getShared = true, ?ConnectionInterface &$conn = null): static
+    {
+        /** @var class-string<AssetModel> $modelClass */
+        $modelClass = config('Asset')->assetModel ?? static::class;
+
+        if (! is_subclass_of($modelClass, self::class) && $modelClass !== self::class) {
+            throw new RuntimeException('Asset model class must extend ' . self::class);
+        }
+
+        $model = model($modelClass, $getShared, $conn);
+
+        if (! $model instanceof self) {
+            throw new RuntimeException('Asset model class must be an instance of ' . self::class);
+        }
+
+        return $model;
     }
 }

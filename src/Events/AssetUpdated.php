@@ -33,7 +33,7 @@ final class AssetUpdated implements AssetEventInterface
     public function getAsset(): Asset
     {
         if ($this->asset === null) {
-            $this->asset = model(AssetModel::class, false)->find($this->assetId);
+            $this->asset = AssetModel::init(false)->find($this->assetId);
 
             if (! $this->asset instanceof Asset) {
                 $message = 'Asset not found for ID: ' . $this->assetId;

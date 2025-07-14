@@ -9,6 +9,7 @@ use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\AssetConnect\AssetCollection\DefaultAssetCollection;
 use Maniaba\AssetConnect\AssetVariants\AssetVariantsProcess;
 use Maniaba\AssetConnect\Jobs\AssetConnectJob;
+use Maniaba\AssetConnect\Models\AssetModel;
 use Maniaba\AssetConnect\PathGenerator\DefaultPathGenerator;
 use Maniaba\AssetConnect\PathGenerator\Interfaces\PathGeneratorInterface;
 use Maniaba\AssetConnect\UrlGenerator\DefaultUrlGenerator;
@@ -80,6 +81,17 @@ class Asset extends BaseConfig
     public array $tables = [
         'assets' => 'assets',
     ];
+
+    /**
+     * --------------------------------------------------------------------
+     * Asset Model
+     * --------------------------------------------------------------------
+     * This is the model that will be used to interact with the assets table.
+     * You can change this to any model that extends the AssetModel.
+     *
+     * @var class-string<AssetModel>
+     */
+    public string $assetModel = AssetModel::class;
 
     /**
      * --------------------------------------------------------------------

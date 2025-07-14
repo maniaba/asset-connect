@@ -17,7 +17,7 @@ final class AssetRepository implements AssetRepositoryInterface
     #[Override]
     public function find(int $id): ?Asset
     {
-        $assetModel = model(AssetModel::class, false);
+        $assetModel = AssetModel::init(false);
 
         return $assetModel->find($id);
     }

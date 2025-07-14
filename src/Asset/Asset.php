@@ -291,7 +291,7 @@ final class Asset extends Entity implements JsonSerializable
             'updated_at' => $this->updated_at,
         ]);
 
-        $model  = model(AssetModel::class, false);
+        $model  = AssetModel::init(false);
         $result = $model->save($data);
 
         if ($result) {

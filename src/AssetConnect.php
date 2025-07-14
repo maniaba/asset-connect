@@ -40,7 +40,7 @@ final class AssetConnect
      */
     public function __construct()
     {
-        $this->assetModel           = model(AssetModel::class, false);
+        $this->assetModel           = AssetModel::init(false);
         $this->setupAssetCollection = new SetupAssetCollection();
     }
 
