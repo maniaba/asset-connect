@@ -418,7 +418,7 @@ class AssetModel extends BaseModel
         return $this;
     }
 
-    final public static function init(bool $getShared = true, ?ConnectionInterface &$conn = null): AssetModel
+    public static function init(bool $getShared = true, ?ConnectionInterface &$conn = null): AssetModel
     {
         $modelClass = config('Asset')->assetModel ?? static::class;
 
