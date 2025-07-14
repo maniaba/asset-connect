@@ -7,8 +7,10 @@ namespace Tests\Models;
 use CodeIgniter\Config\Factories;
 use CodeIgniter\Database\ConnectionInterface;
 use CodeIgniter\Test\CIUnitTestCase;
+use Maniaba\AssetConnect\Config\Asset;
 use Maniaba\AssetConnect\Config\Asset as AssetConfig;
 use Maniaba\AssetConnect\Models\AssetModel;
+use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 use RuntimeException;
 use stdClass;
@@ -18,9 +20,17 @@ use stdClass;
  */
 final class AssetModelTest extends CIUnitTestCase
 {
+    /**
+     * @var ConnectionInterface&MockObject
+     */
     private MockObject $mockConnection;
+
+    /**
+     * @var Asset&MockObject
+     */
     private MockObject $mockAssetConfig;
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
