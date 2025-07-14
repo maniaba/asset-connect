@@ -18,6 +18,8 @@ use RuntimeException;
  * @method Asset|list<Asset>|null find($id = null)
  * @method list<Asset>            findAll(int $limit = 0, int $offset = 0)
  * @method Asset|null             first()
+ *
+ * @property class-string<Asset> $returnType
  */
 class AssetModel extends BaseModel
 {

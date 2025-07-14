@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Asset;
 
+use CodeIgniter\Config\Factories;
 use CodeIgniter\Entity\Entity;
 use CodeIgniter\Files\File;
 use CodeIgniter\Test\CIUnitTestCase;
@@ -11,6 +12,7 @@ use InvalidArgumentException;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Asset\AssetMetadata;
 use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
+use Maniaba\AssetConnect\Models\AssetModel;
 use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -46,6 +48,9 @@ final class AssetTest extends CIUnitTestCase
         // Mock AssetCollectionDefinitionFactory::validateStringClass
         global $mockFunctions;
         $mockFunctions['Maniaba\AssetConnect\AssetCollection\AssetCollectionDefinitionFactory::validateStringClass'] = static fn () => null;
+
+        // For testCreateWithInvalidReturnType
+        $mockFunctions['Maniaba\AssetConnect\Models\AssetModel::init'] = null;
     }
 
     /**
@@ -194,4 +199,37 @@ final class AssetTest extends CIUnitTestCase
         // Assert
         $this->assertSame(dirname($path) . DIRECTORY_SEPARATOR, $dirname);
     }
+
+    /**
+     * Test create method with data
+     */
+    public function testCreateWithData(): void
+    {
+        // Arrange
+        $data = [
+            'name' => 'Test Asset',
+            'file_name' => 'test.jpg',
+        ];
+
+        // Act
+        $asset = Asset::create($data);
+
+        // Assert
+        $this->assertInstanceOf(Asset::class, $asset);
+        $this->assertSame('Test Asset', $asset->name);
+        $this->assertSame('test.jpg', $asset->file_name);
+    }
+
+    /**
+     * Test create method with null data
+     */
+    public function testCreateWithNullData(): void
+    {
+        // Act
+        $asset = Asset::create();
+
+        // Assert
+        $this->assertInstanceOf(Asset::class, $asset);
+    }
+
 }
