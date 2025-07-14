@@ -11,7 +11,6 @@ use Maniaba\AssetConnect\Config\Asset;
 use Maniaba\AssetConnect\Config\Asset as AssetConfig;
 use Maniaba\AssetConnect\Models\AssetModel;
 use Override;
-use PHPUnit\Framework\MockObject\MockObject;
 use RuntimeException;
 use stdClass;
 
@@ -20,15 +19,9 @@ use stdClass;
  */
 final class AssetModelTest extends CIUnitTestCase
 {
-    /**
-     * @var ConnectionInterface&MockObject
-     */
-    private MockObject $mockConnection;
+    private ConnectionInterface $mockConnection;
 
-    /**
-     * @var Asset&MockObject
-     */
-    private MockObject $mockAssetConfig;
+    private Asset $mockAssetConfig;
 
     #[Override]
     protected function setUp(): void
@@ -76,7 +69,7 @@ final class AssetModelTest extends CIUnitTestCase
     public function testInitWithInvalidModelClass(): void
     {
         // Arrange
-        $this->mockAssetConfig->assetModel = 'InvalidClass';
+        $this->mockAssetConfig->assetModel = stdClass::class;
 
         // Act & Assert
         $this->expectException(RuntimeException::class);
