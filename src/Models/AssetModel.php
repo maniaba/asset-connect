@@ -423,6 +423,7 @@ class AssetModel extends BaseModel
         /** @var class-string<AssetModel> $modelClass */
         $modelClass = config('Asset')->assetModel ?? static::class;
 
+        // Validate that the model class is a valid AssetModel subclass
         if (! is_subclass_of($modelClass, self::class) && $modelClass !== self::class) {
             throw new RuntimeException('Asset model class must extend ' . self::class);
         }
@@ -431,6 +432,11 @@ class AssetModel extends BaseModel
 
         if (! $model instanceof self) {
             throw new RuntimeException('Asset model class must be an instance of ' . self::class);
+        }
+
+        // Ensure the return type is Asset or a subclass of Asset
+        if (! is_a($model->returnType, Asset::class, true) && $model->returnType !== Asset::class) {
+            throw new RuntimeException('Asset model return type must be an instance of ' . Asset::class);
         }
 
         return $model;
