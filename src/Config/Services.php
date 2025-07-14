@@ -15,7 +15,7 @@ class Services extends BaseService
     public static function assetAccessService(?AssetRepositoryInterface $assetRepository = null, bool $getShared = true): AssetAccessServiceInterface
     {
         if ($getShared) {
-            return static::getSharedInstance('assetAccessService');
+            return static::getSharedInstance('assetAccessService', $assetRepository);
         }
 
         $assetRepository ??= new AssetRepository();

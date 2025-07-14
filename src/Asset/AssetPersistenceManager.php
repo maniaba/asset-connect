@@ -172,7 +172,7 @@ final class AssetPersistenceManager
         $this->asset->updated_at = Time::now();
 
         // If variants are processed on the queue, we must add queue job for processing
-        if ($this->assetVariants->onQueue) {
+        if (isset($this->assetVariants) && $this->assetVariants->onQueue) {
             AssetVariantsProcess::onQueue(
                 $this->asset,
                 $this->setupAssetCollection->getCollectionDefinition(),
