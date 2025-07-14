@@ -20,7 +20,6 @@ use stdClass;
 final class AssetModelTest extends CIUnitTestCase
 {
     private ConnectionInterface $mockConnection;
-
     private Asset $mockAssetConfig;
 
     #[Override]
@@ -59,7 +58,7 @@ final class AssetModelTest extends CIUnitTestCase
         // Act
         $result = AssetModel::init(true, $this->mockConnection);
 
-        // Assert
+        // @phpstan-ignore-next-line No throws expected
         $this->assertInstanceOf(AssetModel::class, $result);
     }
 
@@ -68,7 +67,7 @@ final class AssetModelTest extends CIUnitTestCase
      */
     public function testInitWithInvalidModelClass(): void
     {
-        // Arrange
+        // @phpstan-ignore-next-line
         $this->mockAssetConfig->assetModel = stdClass::class;
 
         // Act & Assert
