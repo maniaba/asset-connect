@@ -11,12 +11,14 @@ use Maniaba\AssetConnect\Config\Asset;
 use Maniaba\AssetConnect\Config\Asset as AssetConfig;
 use Maniaba\AssetConnect\Models\AssetModel;
 use Override;
+use PHPUnit\Framework\Attributes\CoversClass;
 use RuntimeException;
 use stdClass;
 
 /**
  * @internal
  */
+#[CoversClass(AssetModel::class)]
 final class AssetModelTest extends CIUnitTestCase
 {
     private ConnectionInterface $mockConnection;
