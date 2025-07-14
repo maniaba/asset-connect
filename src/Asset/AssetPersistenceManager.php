@@ -157,7 +157,7 @@ final class AssetPersistenceManager
     private function saveAsset(): void
     {
         // Save the asset to the database
-        $model = model(AssetModel::class, false);
+        $model = AssetModel::init(false);
         $model->save($this->asset);
 
         $errors = $model->errors();
@@ -230,7 +230,7 @@ final class AssetPersistenceManager
 
         if ($this->asset->id > 0) {
             // If the asset was saved, delete it from the database
-            $model = model(AssetModel::class, false);
+            $model = AssetModel::init(false);
             $model->delete($this->asset->id, true);
         }
     }
@@ -266,8 +266,8 @@ final class AssetPersistenceManager
         }
 
         // Get the AssetModel
-        $model = model(AssetModel::class, false);
-        $ids   = model(AssetModel::class, false)
+        $model = AssetModel::init(false);
+        $ids   = AssetModel::init(false)
             ->where([
                 'collection'  => $this->asset->collection,
                 'entity_type' => $this->asset->entity_type,

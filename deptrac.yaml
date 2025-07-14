@@ -154,3 +154,5 @@ parameters:
       - Vendor Model
       - Vendor View
   skip_violations:
+    Maniaba\AssetConnect\Config\Asset:
+      - Maniaba\AssetConnect\Models\AssetModel

@@ -54,7 +54,7 @@ final class AssetConnectJob extends BaseJob implements JobInterface
             'id'       => $this->getAsset()->id,
             'metadata' => $this->getAsset()->metadata,
         ]);
-        model(AssetModel::class, false)->save($newAsset);
+        AssetModel::init(false)->save($newAsset);
 
         // Trigger the asset updated event
         Events::trigger(AssetUpdated::name(), AssetUpdated::createFromId($this->getAsset()->id));
@@ -68,7 +68,7 @@ final class AssetConnectJob extends BaseJob implements JobInterface
     private function getAsset(): ?Asset
     {
         if (! isset($this->asset)) {
-            $this->asset = model(AssetModel::class, false)->find($this->data['assetId'] ?? 0);
+            $this->asset = AssetModel::init(false)->find($this->data['assetId'] ?? 0);
         }
 
         return $this->asset;
@@ -98,7 +98,7 @@ final class AssetConnectJob extends BaseJob implements JobInterface
     // clean garbage, soft delete assets from database
     public function cleanGarbage(): void
     {
-        $deletedAssets = model(AssetModel::class, false)->onlyDeleted()->findAll(1000);
+        $deletedAssets = AssetModel::init(false)->onlyDeleted()->findAll(1000);
         if ($deletedAssets === []) {
             return;
         }
@@ -112,7 +112,7 @@ final class AssetConnectJob extends BaseJob implements JobInterface
 
             AssetPersistenceManager::removeStoragePath($asset->path);
 
-            model(AssetModel::class, false)->delete((int) $asset->id, true);
+            AssetModel::init(false)->delete((int) $asset->id, true);
 
             log_message('info', 'Asset with ID {id} has been permanently deleted.', ['id' => $asset->id]);
         }
