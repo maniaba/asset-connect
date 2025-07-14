@@ -341,6 +341,7 @@ final class Asset extends Entity implements JsonSerializable
         // need to hide file path on storage
         $data = [
             'id'                  => $this->id,
+            'entity_id'           => $this->entity_id,
             'name'                => $this->name,
             'file_name'           => $this->file_name,
             'mime_type'           => $this->mime_type,
@@ -358,9 +359,12 @@ final class Asset extends Entity implements JsonSerializable
 
         foreach ($this->getMetadata()->assetVariant->getVariants() as $variant) {
             $data['variants'][$variant->name] = [
-                'name' => $variant->name,
-                'size' => $variant->size,
-                'url'  => $this->getUrl($variant->name),
+                'name'                => $variant->name,
+                'size'                => $variant->size,
+                'size_human_readable' => Format::formatBytesHumanReadable($variant->size),
+                'url'                 => $this->getUrl($variant->name),
+                'url_relative'        => $this->getUrlRelative($variant->name),
+                'processed'           => $variant->processed,
             ];
         }
 
