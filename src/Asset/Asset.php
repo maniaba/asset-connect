@@ -45,7 +45,7 @@ use Override;
  * @property-read string            $url                        URL to access the asset
  * @property      Time              $updated_at                 timestamp when the asset was last updated
  */
-final class Asset extends Entity implements JsonSerializable
+class Asset extends Entity implements JsonSerializable
 {
     use AssetMimeTypeTrait;
     use UrlGeneratorTrait;
@@ -60,7 +60,7 @@ final class Asset extends Entity implements JsonSerializable
     ];
     private AssetMetadata $metadata;
 
-    public function setEntityType(Entity|string $entityType): static
+    final public function setEntityType(Entity|string $entityType): static
     {
         if ($entityType instanceof Entity) {
             $entityType = $entityType::class;
@@ -75,7 +75,7 @@ final class Asset extends Entity implements JsonSerializable
         return $this;
     }
 
-    protected function getRelativePathForUrl(): string
+    final protected function getRelativePathForUrl(): string
     {
         $relativePath = $this->getRelativePath();
 
@@ -90,7 +90,7 @@ final class Asset extends Entity implements JsonSerializable
      *
      * @throws InvalidArgumentException If $collection is not a valid AssetCollectionDefinitionInterface instance or string
      */
-    public function setCollection(AssetCollectionDefinitionInterface|string $collection): static
+    final public function setCollection(AssetCollectionDefinitionInterface|string $collection): static
     {
         if ($collection instanceof AssetCollectionDefinitionInterface) {
             $collection = $collection::class;
@@ -105,7 +105,7 @@ final class Asset extends Entity implements JsonSerializable
         return $this;
     }
 
-    protected function setMetadata(AssetMetadata|string|null $metadata): static
+    final protected function setMetadata(AssetMetadata|string|null $metadata): static
     {
         if (is_string($metadata)) {
             $metadata = new AssetMetadata(json_decode($metadata, true));
@@ -118,7 +118,7 @@ final class Asset extends Entity implements JsonSerializable
         return $this;
     }
 
-    protected function getMetadata(): AssetMetadata
+    final protected function getMetadata(): AssetMetadata
     {
         if (! isset($this->metadata)) {
             $value = $this->attributes['metadata'] ?? null;
