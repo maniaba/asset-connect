@@ -418,9 +418,8 @@ class AssetModel extends BaseModel
         return $this;
     }
 
-    public static function init(bool $getShared = true, ?ConnectionInterface &$conn = null): static
+    final public static function init(bool $getShared = true, ?ConnectionInterface &$conn = null): AssetModel
     {
-        /** @var class-string<AssetModel> $modelClass */
         $modelClass = config('Asset')->assetModel ?? static::class;
 
         // Validate that the model class is a valid AssetModel subclass
@@ -430,13 +429,14 @@ class AssetModel extends BaseModel
 
         $model = model($modelClass, $getShared, $conn);
 
-        if (! $model instanceof self) {
-            throw new RuntimeException('Asset model class must be an instance of ' . self::class);
+        // Ensure the model is an instance of AssetModel or a subclass of AssetModel
+        if (! $model instanceof AssetModel && ! is_subclass_of($model, self::class)) {
+            throw new RuntimeException('Asset model must be an instance of ' . self::class . ' or a subclass of it');
         }
 
         // Ensure the return type is Asset or a subclass of Asset
-        if (! is_a($model->returnType, Asset::class, true) && $model->returnType !== Asset::class) {
-            throw new RuntimeException('Asset model return type must be an instance of ' . Asset::class);
+        if (! is_subclass_of($model->returnType, Asset::class) && $model->returnType !== Asset::class) {
+            throw new RuntimeException('Asset model return type must be Asset or a subclass of Asset');
         }
 
         return $model;

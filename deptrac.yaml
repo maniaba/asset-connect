@@ -154,3 +154,7 @@ parameters:
       - Vendor Model
       - Vendor View
   skip_violations:
+    -
+      caller: "Maniaba\\AssetConnect\\Config\\Asset"
+      callee: "Maniaba\\AssetConnect\\Models\\AssetModel"
+      message: "Allowed circular dependency between Config and Model"
