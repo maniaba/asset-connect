@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Asset;
 
-use CodeIgniter\Config\Factories;
 use CodeIgniter\Entity\Entity;
 use CodeIgniter\Files\File;
 use CodeIgniter\Test\CIUnitTestCase;
@@ -12,7 +11,6 @@ use InvalidArgumentException;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Asset\AssetMetadata;
 use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
-use Maniaba\AssetConnect\Models\AssetModel;
 use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -207,14 +205,14 @@ final class AssetTest extends CIUnitTestCase
     {
         // Arrange
         $data = [
-            'name' => 'Test Asset',
+            'name'      => 'Test Asset',
             'file_name' => 'test.jpg',
         ];
 
         // Act
         $asset = Asset::create($data);
 
-        // Assert
+        /** @phpstan-ignore-next-line Assert */
         $this->assertInstanceOf(Asset::class, $asset);
         $this->assertSame('Test Asset', $asset->name);
         $this->assertSame('test.jpg', $asset->file_name);
@@ -228,8 +226,7 @@ final class AssetTest extends CIUnitTestCase
         // Act
         $asset = Asset::create();
 
-        // Assert
+        /** @phpstan-ignore-next-line Assert */
         $this->assertInstanceOf(Asset::class, $asset);
     }
-
 }
