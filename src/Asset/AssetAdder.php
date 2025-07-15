@@ -60,7 +60,7 @@ final class AssetAdder implements AssetAdderInterface
 
         $fileName = $file instanceof UploadedFile ? $file->getClientName() : $file->getBasename();
 
-        $this->asset = new Asset([
+        $this->asset = Asset::create([
             'file'        => $file,
             'path'        => $file->getRealPath(),
             'file_name'   => $fileName,

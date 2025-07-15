@@ -283,7 +283,7 @@ class Asset extends Entity implements JsonSerializable
      */
     public function save(): bool
     {
-        $data = new Asset([
+        $data = Asset::create([
             'id'         => $this->id,
             'metadata'   => $this->getMetadata(),
             'name'       => $this->name,
@@ -374,5 +374,19 @@ class Asset extends Entity implements JsonSerializable
     public function getHumanReadableSize(int $precision = 2): string
     {
         return Format::formatBytesHumanReadable($this->size, $precision);
+    }
+
+    public static function create(?array $data = null): Asset
+    {
+        $modelReturnType = AssetModel::init(false)->returnType;
+
+        if (! is_subclass_of($modelReturnType, Asset::class) && $modelReturnType !== Asset::class) {
+            throw new InvalidArgumentException(
+                'Asset model return type must be a subclass of Asset.',
+                500,
+            );
+        }
+
+        return new $modelReturnType($data);
     }
 }

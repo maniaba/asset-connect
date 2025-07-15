@@ -46,6 +46,9 @@ final class AssetTest extends CIUnitTestCase
         // Mock AssetCollectionDefinitionFactory::validateStringClass
         global $mockFunctions;
         $mockFunctions['Maniaba\AssetConnect\AssetCollection\AssetCollectionDefinitionFactory::validateStringClass'] = static fn () => null;
+
+        // For testCreateWithInvalidReturnType
+        $mockFunctions['Maniaba\AssetConnect\Models\AssetModel::init'] = null;
     }
 
     /**
@@ -193,5 +196,37 @@ final class AssetTest extends CIUnitTestCase
 
         // Assert
         $this->assertSame(dirname($path) . DIRECTORY_SEPARATOR, $dirname);
+    }
+
+    /**
+     * Test create method with data
+     */
+    public function testCreateWithData(): void
+    {
+        // Arrange
+        $data = [
+            'name'      => 'Test Asset',
+            'file_name' => 'test.jpg',
+        ];
+
+        // Act
+        $asset = Asset::create($data);
+
+        /** @phpstan-ignore-next-line Assert */
+        $this->assertInstanceOf(Asset::class, $asset);
+        $this->assertSame('Test Asset', $asset->name);
+        $this->assertSame('test.jpg', $asset->file_name);
+    }
+
+    /**
+     * Test create method with null data
+     */
+    public function testCreateWithNullData(): void
+    {
+        // Act
+        $asset = Asset::create();
+
+        /** @phpstan-ignore-next-line Assert */
+        $this->assertInstanceOf(Asset::class, $asset);
     }
 }
