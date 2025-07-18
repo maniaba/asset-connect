@@ -56,6 +56,11 @@ final class AssetConnect
         $setupDone = false;
 
         foreach ($rows as $row) {
+            if (is_array($row)) {
+                // If the row is an array, skip it as it is not an entity instance and cannot use the trait
+                continue;
+            }
+
             if (! in_array(UseAssetConnectTrait::class, class_uses($row), true)) {
                 throw new RuntimeException('The entity(Model::$returnType) must use the UseAssetConnectTrait trait.');
             }
