@@ -128,4 +128,134 @@ final class AssetVariantsTest extends CIUnitTestCase
         // Assert
         $this->assertFalse($this->assetVariants->onQueue);
     }
+
+    /**
+     * Test assetVariant method with custom extension
+     */
+    public function testAssetVariantWithCustomExtension(): void
+    {
+        // Arrange
+        $variantName     = 'webp_variant';
+        $customExtension = 'webp';
+        $variantPath     = HOMEPATH . '/build/path/to/variants/';
+
+        // Define a simple closure for the variant
+        $closure = static function (AssetVariant $variant, Asset $asset) {
+            // This closure is just a placeholder and won't be executed in this test
+        };
+
+        // Act
+        $result = $this->assetVariants->assetVariant($variantName, $closure, $customExtension);
+
+        // Assert
+        $this->assertInstanceOf(AssetVariant::class, $result);
+        $this->assertSame($variantName, $result->name);
+        $this->assertSame($variantPath . 'test_image-' . $variantName . '.webp', $result->path);
+        $this->assertSame(0, $result->size);
+        $this->assertFalse($result->processed);
+
+        // Verify the variant was added to the asset's metadata
+        $variants = $this->asset->metadata->assetVariant->getVariants();
+        $this->assertArrayHasKey($variantName, $variants);
+        $this->assertSame($result, $variants[$variantName]);
+    }
+
+    /**
+     * Test assetVariant method uses original extension when extension parameter is null
+     */
+    public function testAssetVariantWithNullExtensionUsesOriginal(): void
+    {
+        // Arrange
+        $variantName = 'null_extension_test';
+        $variantPath = HOMEPATH . '/build/path/to/variants/';
+
+        // Define a simple closure for the variant
+        $closure = static function (AssetVariant $variant, Asset $asset) {
+            // This closure is just a placeholder and won't be executed in this test
+        };
+
+        // Act
+        $result = $this->assetVariants->assetVariant($variantName, $closure, null);
+
+        // Assert
+        $this->assertInstanceOf(AssetVariant::class, $result);
+        $this->assertSame($variantName, $result->name);
+        $this->assertSame($variantPath . 'test_image-' . $variantName . '.jpg', $result->path);
+    }
+
+    /**
+     * Test assetVariant method with various custom extensions
+     */
+    public function testAssetVariantWithVariousCustomExtensions(): void
+    {
+        $variantPath = HOMEPATH . '/build/path/to/variants/';
+        $closure     = static function (AssetVariant $variant, Asset $asset) {};
+
+        $testCases = [
+            ['png', 'test_image-variant.png'],
+            ['webp', 'test_image-variant.webp'],
+            ['avif', 'test_image-variant.avif'],
+            ['gif', 'test_image-variant.gif'],
+            ['bmp', 'test_image-variant.bmp'],
+            ['svg', 'test_image-variant.svg'],
+        ];
+
+        foreach ($testCases as [$extension, $expectedFileName]) {
+            // Act
+            $result = $this->assetVariants->assetVariant('variant', $closure, $extension);
+
+            // Assert
+            $this->assertSame($variantPath . $expectedFileName, $result->path, "Failed for extension: {$extension}");
+        }
+    }
+
+    /**
+     * Test assetVariant method with different original file extensions
+     */
+    public function testAssetVariantWithDifferentOriginalExtensions(): void
+    {
+        $variantPath = HOMEPATH . '/build/path/to/variants/';
+        $closure     = static function (AssetVariant $variant, Asset $asset) {};
+
+        $testCases = [
+            ['document.pdf', 'pdf', 'document-variant.pdf'],
+            ['video.mp4', 'mp4', 'video-variant.mp4'],
+            ['audio.mp3', 'mp3', 'audio-variant.mp3'],
+            ['archive.zip', 'zip', 'archive-variant.zip'],
+            ['text.txt', 'txt', 'text-variant.txt'],
+        ];
+
+        foreach ($testCases as [$fileName, $expectedExt, $expectedFileName]) {
+            // Arrange - change the asset file name for each test
+            $this->asset->file_name = $fileName;
+
+            // Act - without custom extension (should use original)
+            $result = $this->assetVariants->assetVariant('variant', $closure);
+
+            // Assert
+            $this->assertSame($variantPath . $expectedFileName, $result->path, "Failed for file: {$fileName}");
+        }
+    }
+
+    /**
+     * Test assetVariant method custom extension overrides original extension
+     */
+    public function testAssetVariantCustomExtensionOverridesOriginal(): void
+    {
+        // Arrange
+        $this->asset->file_name = 'image.jpg'; // Original is JPG
+        $variantName            = 'converted';
+        $customExtension        = 'png'; // Convert to PNG
+        $variantPath            = HOMEPATH . '/build/path/to/variants/';
+
+        $closure = static function (AssetVariant $variant, Asset $asset) {};
+
+        // Act
+        $result = $this->assetVariants->assetVariant($variantName, $closure, $customExtension);
+
+        // Assert
+        $this->assertSame($variantPath . 'image-' . $variantName . '.png', $result->path);
+        $this->assertStringEndsWith('.png', $result->path);
+        $this->assertStringNotContainsString('.jpg', $result->path);
+    }
 }
