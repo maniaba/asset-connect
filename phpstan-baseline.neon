@@ -190,7 +190,7 @@ parameters:
 			path: tests/Events/AssetUpdatedTest.php
 
 		-
-			message: '#^Method Maniaba\\AssetConnect\\Models\\AssetModel@anonymous/tests/Events/AssetUpdatedTest\.php\:134\:\:find\(\) never returns array\<int\|string, array\<int\|string, bool\|float\|int\|object\|string\|null\>\|bool\|float\|int\|object\|string\|null\> so it can be removed from the return type\.$#'
+			message: '#^Method Maniaba\\AssetConnect\\Models\\AssetModel@anonymous/tests/Events/AssetUpdatedTest\.php\:136\:\:find\(\) never returns array\<int\|string, array\<int\|string, bool\|float\|int\|object\|string\|null\>\|bool\|float\|int\|object\|string\|null\> so it can be removed from the return type\.$#'
 			identifier: return.unusedType
 			count: 1
 			path: tests/Events/AssetUpdatedTest.php
