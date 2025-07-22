@@ -7,6 +7,7 @@ namespace Maniaba\AssetConnect\AssetVariants;
 use Closure;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\AssetVariants\Interfaces\CreateAssetVariantsInterface;
+use Maniaba\AssetConnect\Exceptions\AssetException;
 use Maniaba\AssetConnect\Exceptions\FileVariantException;
 use Override;
 use Throwable;
@@ -21,7 +22,7 @@ final class AssetVariantsProcessor implements CreateAssetVariantsInterface
     }
 
     #[Override]
-    public function assetVariant(string $name, Closure $closure): ?AssetVariant
+    public function assetVariant(string $name, Closure $closure, AssetException|string|null $extension = null): ?AssetVariant
     {
         $variant = $this->asset->metadata->assetVariant->getAssetVariant($name);
 

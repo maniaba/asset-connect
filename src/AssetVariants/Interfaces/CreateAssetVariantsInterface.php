@@ -7,14 +7,16 @@ namespace Maniaba\AssetConnect\AssetVariants\Interfaces;
 use Closure;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\AssetVariants\AssetVariant;
+use Maniaba\AssetConnect\Exceptions\AssetException;
 
 interface CreateAssetVariantsInterface
 {
     /**
      * Creates a new asset variant with the given name and closure.
      *
-     * @param string                            $name    The name of the variant.
-     * @param Closure(AssetVariant, Asset):void $closure A closure that defines how to process the variant.
+     * @param string                            $name      The name of the variant.
+     * @param Closure(AssetVariant, Asset):void $closure   A closure that defines how to process the variant.
+     * @param AssetException|string|null        $extension Optional custom file extension. If null, uses original file's extension.
      */
-    public function assetVariant(string $name, Closure $closure): ?AssetVariant;
+    public function assetVariant(string $name, Closure $closure, AssetException|string|null $extension = null): ?AssetVariant;
 }

@@ -9,6 +9,7 @@ use CodeIgniter\Events\Events;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\AssetVariants\Interfaces\CreateAssetVariantsInterface;
 use Maniaba\AssetConnect\Events\VariantCreated;
+use Maniaba\AssetConnect\Exceptions\AssetException;
 use Maniaba\AssetConnect\PathGenerator\PathGenerator;
 use Override;
 
@@ -26,10 +27,10 @@ final class AssetVariants implements CreateAssetVariantsInterface
      * {@inheritDoc}
      */
     #[Override]
-    public function assetVariant(string $name, Closure $closure): AssetVariant
+    public function assetVariant(string $name, Closure $closure, AssetException|string|null $extension = null): AssetVariant
     {
         $fileNameWithoutExtension = pathinfo($this->asset->file_name, PATHINFO_FILENAME);
-        $fileExtension            = pathinfo($this->asset->file_name, PATHINFO_EXTENSION);
+        $fileExtension            = $extension ?? pathinfo($this->asset->file_name, PATHINFO_EXTENSION);
 
         $variantFileName = $fileNameWithoutExtension . '-' . $name . '.' . $fileExtension;
 
