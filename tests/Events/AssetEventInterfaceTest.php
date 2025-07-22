@@ -105,11 +105,13 @@ final class AssetEventInterfaceTest extends CIUnitTestCase
             {
             }
 
+            #[Override]
             public function getAsset(): Asset
             {
                 return $this->asset;
             }
 
+            #[Override]
             public static function name(): string
             {
                 return 'test.event';

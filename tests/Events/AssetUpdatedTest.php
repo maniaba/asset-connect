@@ -75,6 +75,7 @@ final class AssetUpdatedTest extends CIUnitTestCase
                 self::$staticMockAsset = $asset;
             }
 
+            #[Override]
             public function find($id = null)
             {
                 return self::$staticMockAsset;
@@ -103,6 +104,7 @@ final class AssetUpdatedTest extends CIUnitTestCase
 
         // Create a real AssetModel instance that returns null
         $realAssetModel = new class () extends AssetModel {
+            #[Override]
             public function find($id = null)
             {
                 return null;
@@ -141,6 +143,7 @@ final class AssetUpdatedTest extends CIUnitTestCase
                 self::$callCount       = 0; // Reset counter
             }
 
+            #[Override]
             public function find($id = null)
             {
                 self::$callCount++;
