@@ -10,7 +10,6 @@ use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Events\AssetCreated;
 use Maniaba\AssetConnect\Events\AssetEventInterface;
 use Override;
-use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionClass;
 use ReflectionMethod;
 
@@ -19,8 +18,8 @@ use ReflectionMethod;
  */
 final class AssetCreatedTest extends CIUnitTestCase
 {
-    private MockObject $mockAsset;
-    private MockObject $mockEntity;
+    private Asset $mockAsset;
+    private Entity $mockEntity;
 
     #[Override]
     protected function setUp(): void
@@ -39,7 +38,7 @@ final class AssetCreatedTest extends CIUnitTestCase
         // Arrange & Act
         $event = AssetCreated::createFromAsset($this->mockAsset, $this->mockEntity);
 
-        // Assert
+        /** @phpstan-ignore-next-line  */
         $this->assertInstanceOf(AssetEventInterface::class, $event);
     }
 
@@ -52,7 +51,6 @@ final class AssetCreatedTest extends CIUnitTestCase
         $event = AssetCreated::createFromAsset($this->mockAsset, $this->mockEntity);
 
         // Assert
-        $this->assertInstanceOf(AssetCreated::class, $event);
         $this->assertSame($this->mockAsset, $event->getAsset());
         $this->assertSame($this->mockEntity, $event->getSubjectEntity());
     }

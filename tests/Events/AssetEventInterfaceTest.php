@@ -8,7 +8,6 @@ use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Events\AssetEventInterface;
 use Override;
-use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionClass;
 use ReflectionType;
 
@@ -17,7 +16,7 @@ use ReflectionType;
  */
 final class AssetEventInterfaceTest extends CIUnitTestCase
 {
-    private MockObject $mockAsset;
+    private Asset $mockAsset;
 
     #[Override]
     protected function setUp(): void

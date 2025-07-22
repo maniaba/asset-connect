@@ -10,7 +10,6 @@ use Maniaba\AssetConnect\AssetVariants\AssetVariant;
 use Maniaba\AssetConnect\Events\AssetEventInterface;
 use Maniaba\AssetConnect\Events\VariantCreated;
 use Override;
-use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionClass;
 use ReflectionMethod;
 
@@ -19,8 +18,8 @@ use ReflectionMethod;
  */
 final class VariantCreatedTest extends CIUnitTestCase
 {
-    private MockObject $mockAsset;
-    private MockObject $mockVariant;
+    private Asset $mockAsset;
+    private AssetVariant $mockVariant;
 
     #[Override]
     protected function setUp(): void
