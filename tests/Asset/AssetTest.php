@@ -20,8 +20,20 @@ use PHPUnit\Framework\MockObject\MockObject;
 final class AssetTest extends CIUnitTestCase
 {
     private Asset $asset;
+
+    /**
+     * @var File&MockObject
+     */
     private MockObject $mockFile;
+
+    /**
+     * @var Entity&MockObject
+     */
     private MockObject $mockEntity;
+
+    /**
+     * @var AssetCollectionDefinitionInterface&MockObject
+     */
     private MockObject $mockCollectionDefinition;
 
     #[Override]
@@ -172,7 +184,7 @@ final class AssetTest extends CIUnitTestCase
         // Arrange
         $this->mockFile->method('getExtension')
             ->willReturn('jpg');
-        // @phpstan-ignore-next-line
+
         $this->asset->file = $this->mockFile;
 
         // Act

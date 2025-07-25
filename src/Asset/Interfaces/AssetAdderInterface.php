@@ -6,6 +6,7 @@ namespace Maniaba\AssetConnect\Asset\Interfaces;
 
 use CodeIgniter\Files\File;
 use Maniaba\AssetConnect\Asset\Asset;
+use Maniaba\AssetConnect\Asset\AssetMetadata;
 
 /**
  * Interface for asset adders.
@@ -58,4 +59,11 @@ interface AssetAdderInterface
      * @return Asset The stored asset
      */
     public function toAssetCollection(AssetCollectionDefinitionInterface|string|null $collection = null): Asset;
+
+    /**
+     * Get the metadata of the asset being added.
+     *
+     * @return AssetMetadata The metadata of the asset.
+     */
+    public function metadata(): AssetMetadata;
 }
