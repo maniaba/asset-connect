@@ -70,16 +70,40 @@ parameters:
 			path: src/Traits/UseAssetConnectModelTrait.php
 
 		-
-			message: '#^Trait Maniaba\\AssetConnect\\Traits\\UseAssetConnectTrait is used zero times and is not analysed\.$#'
-			identifier: trait.unused
-			count: 1
-			path: src/Traits/UseAssetConnectTrait.php
-
-		-
 			message: '#^Property Maniaba\\AssetConnect\\Validation\\ValidationRuleCollector\:\:\$rules \(non\-empty\-array\<string, list\<string\>\|non\-falsy\-string\>\) does not accept non\-empty\-array\<string, \(Closure\(mixed, array\|null, string\|null, string\)\: bool\)\|list\<string\>\|non\-falsy\-string\>\.$#'
 			identifier: assign.propertyType
 			count: 1
 			path: src/Validation/ValidationRuleCollector.php
+
+		-
+			message: '#^Call to function method_exists\(\) with Maniaba\\AssetConnect\\Asset\\AssetAdder and ''toAssetCollection'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 2
+			path: tests/Asset/AssetAdderTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\AssetConnect\\\\Asset\\\\AssetAdder'' and Maniaba\\AssetConnect\\Asset\\AssetAdder will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 3
+			path: tests/Asset/AssetAdderTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\AssetConnect\\\\Asset\\\\AssetMetadata'' and Maniaba\\AssetConnect\\Asset\\AssetMetadata will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 1
+			path: tests/Asset/AssetAdderTest.php
+
+		-
+			message: '#^PHPDoc tag @var for property Tests\\Asset\\AssetAdderTest\:\:\$mockEntity contains unresolvable type\.$#'
+			identifier: property.unresolvableType
+			count: 1
+			path: tests/Asset/AssetAdderTest.php
+
+		-
+			message: '#^PHPDoc tag @var for variable \$this contains unresolvable type\.$#'
+			identifier: varTag.unresolvableType
+			count: 4
+			path: tests/Asset/AssetAdderTest.php
 
 		-
 			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\AssetConnect\\\\Asset\\\\Properties\\\\AssetVariantProperty'' and Maniaba\\AssetConnect\\Asset\\Properties\\AssetVariantProperty will always evaluate to true\.$#'

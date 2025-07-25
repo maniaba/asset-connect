@@ -12,6 +12,7 @@ use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Asset\AssetMetadata;
 use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Override;
+use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * @internal
@@ -19,9 +20,12 @@ use Override;
 final class AssetTest extends CIUnitTestCase
 {
     private Asset $asset;
-    private File $mockFile;
-    private Entity $mockEntity;
-    private AssetCollectionDefinitionInterface $mockCollectionDefinition;
+    /** @var MockObject&File */
+    private MockObject $mockFile;
+    /** @var MockObject&Entity */
+    private MockObject $mockEntity;
+    /** @var MockObject&AssetCollectionDefinitionInterface */
+    private MockObject $mockCollectionDefinition;
 
     #[Override]
     protected function setUp(): void
@@ -171,7 +175,7 @@ final class AssetTest extends CIUnitTestCase
         // Arrange
         $this->mockFile->method('getExtension')
             ->willReturn('jpg');
-        // @phpstan-ignore-next-line
+
         $this->asset->file = $this->mockFile;
 
         // Act
