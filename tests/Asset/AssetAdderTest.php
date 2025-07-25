@@ -27,13 +27,19 @@ final class AssetAdderTest extends CIUnitTestCase
 {
     use ReflectionHelper;
 
-    /** @var Entity&UseAssetConnectTrait */
+    /**
+     * @var Entity&UseAssetConnectTrait
+     */
     private Entity $mockEntity;
 
-    /** @var MockObject&File */
+    /**
+     * @var File&MockObject
+     */
     private MockObject $mockFile;
 
-    /** @var MockObject&UploadedFile */
+    /**
+     * @var MockObject&UploadedFile
+     */
     private MockObject $mockUploadedFile;
 
     #[Override]

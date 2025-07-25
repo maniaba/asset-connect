@@ -20,11 +20,20 @@ use PHPUnit\Framework\MockObject\MockObject;
 final class AssetTest extends CIUnitTestCase
 {
     private Asset $asset;
-    /** @var MockObject&File */
+
+    /**
+     * @var File&MockObject
+     */
     private MockObject $mockFile;
-    /** @var MockObject&Entity */
+
+    /**
+     * @var Entity&MockObject
+     */
     private MockObject $mockEntity;
-    /** @var MockObject&AssetCollectionDefinitionInterface */
+
+    /**
+     * @var AssetCollectionDefinitionInterface&MockObject
+     */
     private MockObject $mockCollectionDefinition;
 
     #[Override]
