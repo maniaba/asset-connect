@@ -74,6 +74,7 @@
         <exclude>
             <directory suffix=".php">./src/Config</directory>
             <directory suffix=".php">./src/Views</directory>
+            <directory suffix=".php">./src/Language</directory>
         </exclude>
     </source>
 </phpunit>
