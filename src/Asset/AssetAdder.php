@@ -167,6 +167,11 @@ final class AssetAdder implements AssetAdderInterface
         return $this;
     }
 
+    public function metadata(): AssetMetadata
+    {
+        return $this->asset->metadata;
+    }
+
     /**
      * Store the asset in the specified collection
      *
