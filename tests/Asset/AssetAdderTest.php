@@ -12,7 +12,6 @@ use CodeIgniter\Test\ReflectionHelper;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Asset\AssetAdder;
 use Maniaba\AssetConnect\Asset\AssetMetadata;
-use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\AssetConnect\AssetCollection\SetupAssetCollection;
 use Maniaba\AssetConnect\Exceptions\AssetException;
 use Maniaba\AssetConnect\Traits\UseAssetConnectTrait;
@@ -254,8 +253,7 @@ final class AssetAdderTest extends CIUnitTestCase
 
     public function testToAssetCollectionWithCollectionDefinitionInterface(): void
     {
-        $mockCollection = $this->createMock(AssetCollectionDefinitionInterface::class);
-        $assetAdder     = new AssetAdder($this->mockEntity, $this->mockFile);
+        $assetAdder = new AssetAdder($this->mockEntity, $this->mockFile);
 
         // Test that the method exists and accepts the proper parameter types
         $reflection = new ReflectionClass($assetAdder);
@@ -334,7 +332,7 @@ final class AssetAdderTest extends CIUnitTestCase
         $this->assertSame(0, $asset->order); // default order
         $this->assertSame($this->mockFile, $asset->file);
         // Test md5 hash
-        $this->assertSame(md5(get_class($this->mockEntity)), $asset->entity_type, 'Entity type should match the hash of the entity class name');
+        $this->assertSame(md5($this->mockEntity::class), $asset->entity_type, 'Entity type should match the hash of the entity class name');
         $this->assertSame(123, $asset->entity_id, "Entity ID should match the mock entity's ID");
     }
 

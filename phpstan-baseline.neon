@@ -94,12 +94,6 @@ parameters:
 			path: tests/Asset/AssetAdderTest.php
 
 		-
-			message: '#^PHPDoc tag @var for property Tests\\Asset\\AssetAdderTest\:\:\$mockEntity contains unresolvable type\.$#'
-			identifier: property.unresolvableType
-			count: 1
-			path: tests/Asset/AssetAdderTest.php
-
-		-
 			message: '#^PHPDoc tag @var for variable \$this contains unresolvable type\.$#'
 			identifier: varTag.unresolvableType
 			count: 4
