@@ -75,6 +75,14 @@
             <directory suffix=".php">./src/Config</directory>
             <directory suffix=".php">./src/Views</directory>
             <directory suffix=".php">./src/Language</directory>
+            <file>./src/Events/AssetEventInterface.php</file>
+            <directory suffix=".php">./src/Asset/Interfaces</directory>
+            <directory suffix=".php">./src/AssetCollection/Interfaces</directory>
+            <directory suffix=".php">./src/AssetVariants/Interfaces</directory>
+            <directory suffix=".php">./src/PathGenerator/Interfaces</directory>
+            <directory suffix=".php">./src/Repositories/Interfaces</directory>
+            <directory suffix=".php">./src/Services/Interfaces</directory>
+            <directory suffix=".php">./src/UrlGenerator/Interfaces</directory>
         </exclude>
     </source>
 </phpunit>
