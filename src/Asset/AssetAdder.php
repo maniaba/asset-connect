@@ -167,6 +167,7 @@ final class AssetAdder implements AssetAdderInterface
         return $this;
     }
 
+    #[Override]
     public function metadata(): AssetMetadata
     {
         return $this->asset->metadata;

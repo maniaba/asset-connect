@@ -409,6 +409,7 @@ final class AssetAdderTest extends CIUnitTestCase
 
             public int $id = 123;
 
+            #[Override]
             public function setupAssetConnect($setup): void
             {
                 // Mock implementation - the setup collection will handle the actual setup
