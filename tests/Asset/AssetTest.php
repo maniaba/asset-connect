@@ -12,7 +12,6 @@ use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Asset\AssetMetadata;
 use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Override;
-use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * @internal
@@ -20,9 +19,9 @@ use PHPUnit\Framework\MockObject\MockObject;
 final class AssetTest extends CIUnitTestCase
 {
     private Asset $asset;
-    private MockObject $mockFile;
-    private MockObject $mockEntity;
-    private MockObject $mockCollectionDefinition;
+    private File $mockFile;
+    private Entity $mockEntity;
+    private AssetCollectionDefinitionInterface $mockCollectionDefinition;
 
     #[Override]
     protected function setUp(): void
