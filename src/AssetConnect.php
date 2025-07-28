@@ -17,6 +17,7 @@ use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Maniaba\AssetConnect\Models\AssetModel;
 use Maniaba\AssetConnect\Traits\UseAssetConnectTrait;
 use RuntimeException;
+use stdClass;
 
 final class AssetConnect
 {
@@ -56,8 +57,8 @@ final class AssetConnect
         $setupDone = false;
 
         foreach ($rows as $row) {
-            if (is_array($row)) {
-                // If the row is an array, skip it as it is not an entity instance and cannot use the trait
+            if (is_array($row) || ($row instanceof stdClass)) {
+                // Skip the row if it is an array or an instance of stdClass, as neither can use the UseAssetConnectTrait trait
                 continue;
             }
 
