@@ -58,7 +58,7 @@ final class AssetConnect
 
         foreach ($rows as $row) {
             if (is_array($row) || ($row instanceof stdClass)) {
-                // If the row is an array, skip it as it is not an entity instance and cannot use the trait
+                // Skip the row if it is an array or an instance of stdClass, as neither can use the UseAssetConnectTrait trait
                 continue;
             }
 
