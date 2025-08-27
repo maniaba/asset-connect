@@ -89,9 +89,11 @@
         "sa": "@analyze",
         "style": "@cs-fix",
         "test": "phpunit",
+        "phpstan": "phpstan analyze",
         "phpstan-gb": "phpstan analyze --generate-baseline=phpstan-baseline.neon",
         "rector": "rector process --dry-run",
         "rector-fix": "rector process",
-        "psalm": "psalm --alter --issues=MissingOverrideAttribute"
+        "psalm": "psalm --alter --issues=MissingOverrideAttribute",
+        "psalm-gb": "psalm --set-baseline=psalm-baseline.xml"
     }
 }

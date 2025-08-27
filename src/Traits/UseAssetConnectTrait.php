@@ -14,7 +14,6 @@ use Maniaba\AssetConnect\Asset\AssetAdderMultiple;
 use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\AssetConnect\AssetCollection\Interfaces\SetupAssetCollectionInterface;
 use Maniaba\AssetConnect\AssetConnect;
-use Maniaba\AssetConnect\Contracts\AssetConnectEntityInterface;
 use Maniaba\AssetConnect\Exceptions\AssetException;
 use Maniaba\AssetConnect\Exceptions\FileException;
 use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
@@ -85,7 +84,6 @@ trait UseAssetConnectTrait
             throw FileException::forInvalidFile($file->getRealPath());
         }
 
-        /** @var AssetConnectEntityInterface&Entity $this */
         return new AssetAdder($this, $file);
     }
 
@@ -98,7 +96,6 @@ trait UseAssetConnectTrait
      */
     final public function getAssets(?string $collection = null): array
     {
-        /** @var AssetConnectEntityInterface&Entity $this */
         return $this->assetConnectInstance->getAssetsForEntity($this, $collection);
     }
 
@@ -147,7 +144,6 @@ trait UseAssetConnectTrait
      */
     final public function deleteAssets(?string $collection = null): bool
     {
-        /** @var AssetConnectEntityInterface&Entity $this */
         return $this->assetConnectInstance->deleteAssetsForEntity($this, $collection);
     }
 
@@ -189,7 +185,6 @@ trait UseAssetConnectTrait
             }
         }
 
-        /** @var AssetConnectEntityInterface&Entity $this */
         return new AssetAdderMultiple($uploadedFiles, $this);
     }
 

@@ -13,11 +13,13 @@ use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Asset\AssetAdder;
 use Maniaba\AssetConnect\Asset\AssetMetadata;
 use Maniaba\AssetConnect\AssetCollection\SetupAssetCollection;
+use Maniaba\AssetConnect\Contracts\AssetConnectEntityInterface;
 use Maniaba\AssetConnect\Exceptions\AssetException;
 use Maniaba\AssetConnect\Traits\UseAssetConnectTrait;
 use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionClass;
+use Test\Support\TestEntity;
 
 /**
  * @internal
@@ -26,7 +28,7 @@ final class AssetAdderTest extends CIUnitTestCase
 {
     use ReflectionHelper;
 
-    private Entity $mockEntity;
+    private AssetConnectEntityInterface&Entity $mockEntity;
 
     /**
      * @var File&MockObject
@@ -95,6 +97,7 @@ final class AssetAdderTest extends CIUnitTestCase
 
         $this->expectException(AssetException::class);
 
+        /** @phpstan-ignore-next-line We know this is invalid for testing */
         new AssetAdder($invalidEntity, $this->mockFile);
     }
 
@@ -396,24 +399,8 @@ final class AssetAdderTest extends CIUnitTestCase
     /**
      * Helper method to create a mock entity with UseAssetConnectTrait
      */
-    private function createMockEntityWithTrait(): Entity
+    private function createMockEntityWithTrait(): AssetConnectEntityInterface&Entity
     {
-        // Create an anonymous class that extends Entity and uses the trait
-        return new class () extends Entity {
-            use UseAssetConnectTrait;
-
-            public int $id = 123;
-
-            #[Override]
-            public function setupAssetConnect($setup): void
-            {
-                // Mock implementation - the setup collection will handle the actual setup
-                if ($setup instanceof SetupAssetCollection) {
-                    // Set some default values for testing
-                    $setup->setFileNameSanitizer(static fn (string $fileName): string => $fileName);
-                    $setup->setSubjectPrimaryKeyAttribute('id');
-                }
-            }
-        };
+        return new TestEntity();
     }
 }
