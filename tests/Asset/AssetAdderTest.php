@@ -19,7 +19,7 @@ use Maniaba\AssetConnect\Traits\UseAssetConnectTrait;
 use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionClass;
-use Test\Support\TestEntity;
+use Tests\Support\TestEntity;
 
 /**
  * @internal

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Test\Support;
+namespace Tests\Support;
 
 use CodeIgniter\Entity\Entity;
 use Maniaba\AssetConnect\AssetCollection\SetupAssetCollection;
