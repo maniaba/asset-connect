@@ -16,7 +16,6 @@ use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Maniaba\AssetConnect\PathGenerator\Interfaces\PathGeneratorInterface;
 use Override;
 use PHPUnit\Framework\MockObject\MockObject;
-use ReflectionClass;
 use stdClass;
 
 /**
@@ -71,11 +70,8 @@ final class SetupAssetCollectionTest extends CIUnitTestCase
         // Assert
         $this->assertSame($this->setupAssetCollection, $result);
 
-        // Get the collection definition using reflection
-        $reflection = new ReflectionClass($this->setupAssetCollection);
-        $property   = $reflection->getProperty('collectionDefinition');
-        $property->setAccessible(true);
-        $collectionDefinition = $property->getValue($this->setupAssetCollection);
+        // Get the collection definition using getPrivateProperty
+        $collectionDefinition = $this->getPrivateProperty($this->setupAssetCollection, 'collectionDefinition');
 
         $this->assertInstanceOf(DefaultAssetCollection::class, $collectionDefinition);
     }
@@ -91,11 +87,8 @@ final class SetupAssetCollectionTest extends CIUnitTestCase
         // Assert
         $this->assertSame($this->setupAssetCollection, $result);
 
-        // Get the collection definition using reflection
-        $reflection = new ReflectionClass($this->setupAssetCollection);
-        $property   = $reflection->getProperty('collectionDefinition');
-        $property->setAccessible(true);
-        $collectionDefinition = $property->getValue($this->setupAssetCollection);
+        // Get the collection definition using getPrivateProperty
+        $collectionDefinition = $this->getPrivateProperty($this->setupAssetCollection, 'collectionDefinition');
 
         $this->assertSame($this->mockCollectionDefinition, $collectionDefinition);
     }
@@ -114,11 +107,8 @@ final class SetupAssetCollectionTest extends CIUnitTestCase
         // Assert
         $this->assertSame($this->setupAssetCollection, $result);
 
-        // Get the path generator using reflection
-        $reflection = new ReflectionClass($this->setupAssetCollection);
-        $property   = $reflection->getProperty('pathGenerator');
-        $property->setAccessible(true);
-        $pathGenerator = $property->getValue($this->setupAssetCollection);
+        // Get the path generator using getPrivateProperty
+        $pathGenerator = $this->getPrivateProperty($this->setupAssetCollection, 'pathGenerator');
 
         $this->assertInstanceOf(TestPathGenerator::class, $pathGenerator);
     }
@@ -134,11 +124,8 @@ final class SetupAssetCollectionTest extends CIUnitTestCase
         // Assert
         $this->assertSame($this->setupAssetCollection, $result);
 
-        // Get the path generator using reflection
-        $reflection = new ReflectionClass($this->setupAssetCollection);
-        $property   = $reflection->getProperty('pathGenerator');
-        $property->setAccessible(true);
-        $pathGenerator = $property->getValue($this->setupAssetCollection);
+        // Get the path generator using getPrivateProperty
+        $pathGenerator = $this->getPrivateProperty($this->setupAssetCollection, 'pathGenerator');
 
         $this->assertSame($this->mockPathGenerator, $pathGenerator);
     }

@@ -16,7 +16,6 @@ use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Maniaba\AssetConnect\PathGenerator\Interfaces\PathGeneratorInterface;
 use Override;
 use PHPUnit\Framework\MockObject\MockObject;
-use ReflectionClass;
 
 /**
  * @internal
@@ -353,10 +352,7 @@ final class AssetCollectionTest extends CIUnitTestCase
     {
         // Arrange
         // Setup SetupAssetCollection to use our mock path generator
-        $reflection = new ReflectionClass($this->setupAssetCollection);
-        $property   = $reflection->getProperty('pathGenerator');
-        $property->setAccessible(true);
-        $property->setValue($this->setupAssetCollection, $this->mockPathGenerator);
+        $this->setPrivateProperty($this->setupAssetCollection, 'pathGenerator', $this->mockPathGenerator);
 
         // Act
         $result = $this->assetCollection->getPathGenerator();

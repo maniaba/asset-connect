@@ -35,10 +35,8 @@ final class PathGeneratorTest extends CIUnitTestCase
         // Create a mock PathGeneratorInterface
         $this->mockPathGeneratorInterface = $this->createMock(PathGeneratorInterface::class);
 
-        // Use reflection to set the private property in AssetCollection
-        $reflectionProperty = $reflectionClass->getProperty('pathGenerator');
-        $reflectionProperty->setAccessible(true);
-        $reflectionProperty->setValue($assetCollection, $this->mockPathGeneratorInterface);
+        // Use setPrivateProperty to set the private property in AssetCollection
+        $this->setPrivateProperty($assetCollection, 'pathGenerator', $this->mockPathGeneratorInterface);
 
         // Create the PathGenerator
         $this->pathGenerator = new PathGenerator($assetCollection);

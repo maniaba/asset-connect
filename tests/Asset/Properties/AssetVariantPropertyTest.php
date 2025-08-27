@@ -9,7 +9,6 @@ use Maniaba\AssetConnect\Asset\Properties\AssetVariantProperty;
 use Maniaba\AssetConnect\AssetVariants\AssetVariant;
 use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Override;
-use ReflectionClass;
 
 /**
  * @internal
@@ -149,12 +148,7 @@ final class AssetVariantPropertyTest extends CIUnitTestCase
     {
         // Arrange
         $variantData = ['name' => 'test_variant', 'path' => '/path/to/variant'];
-
-        // Use reflection to set the properties directly
-        $reflection         = new ReflectionClass($this->assetVariantProperty);
-        $propertiesProperty = $reflection->getProperty('properties');
-        $propertiesProperty->setAccessible(true);
-        $propertiesProperty->setValue($this->assetVariantProperty, ['test_variant' => $variantData]);
+        $this->setPrivateProperty($this->assetVariantProperty, 'properties', ['test_variant' => $variantData]);
 
         // Act
         $variants = $this->assetVariantProperty->getVariants();

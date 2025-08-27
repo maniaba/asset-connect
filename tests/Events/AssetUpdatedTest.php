@@ -254,12 +254,8 @@ final class AssetUpdatedTest extends CIUnitTestCase
         $this->assertInstanceOf(AssetUpdated::class, $event1);
         $this->assertInstanceOf(AssetUpdated::class, $event2);
 
-        // Test that they have different internal IDs using reflection
-        $reflection = new ReflectionClass(AssetUpdated::class);
-        $idProperty = $reflection->getProperty('assetId');
-        $idProperty->setAccessible(true);
-
-        $this->assertSame(1, $idProperty->getValue($event1));
-        $this->assertSame(2, $idProperty->getValue($event2));
+        // Test that they have different internal IDs using getPrivateProperty
+        $this->assertSame(1, $this->getPrivateProperty($event1, 'assetId'));
+        $this->assertSame(2, $this->getPrivateProperty($event2, 'assetId'));
     }
 }

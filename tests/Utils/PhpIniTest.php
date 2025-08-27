@@ -6,7 +6,6 @@ namespace Tests\Utils;
 
 use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\AssetConnect\Utils\PhpIni;
-use ReflectionClass;
 
 /**
  * @internal
@@ -109,7 +108,7 @@ final class PhpIniTest extends CIUnitTestCase
     }
 
     /**
-     * Helper method to invoke private methods for testing
+     * Helper method to invoke private methods using ReflectionHelper
      *
      * @param string $class      The class name
      * @param string $methodName The method name
@@ -119,10 +118,8 @@ final class PhpIniTest extends CIUnitTestCase
      */
     private function invokePrivateMethod(string $class, string $methodName, array $parameters = []): mixed
     {
-        $reflection = new ReflectionClass($class);
-        $method     = $reflection->getMethod($methodName);
-        $method->setAccessible(true);
+        $invoker = $this->getPrivateMethodInvoker($class, $methodName);
 
-        return $method->invokeArgs(null, $parameters);
+        return $invoker(...$parameters);
     }
 }
