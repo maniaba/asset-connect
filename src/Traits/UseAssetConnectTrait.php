@@ -14,6 +14,7 @@ use Maniaba\AssetConnect\Asset\AssetAdderMultiple;
 use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\AssetConnect\AssetCollection\Interfaces\SetupAssetCollectionInterface;
 use Maniaba\AssetConnect\AssetConnect;
+use Maniaba\AssetConnect\Contracts\AssetConnectEntityInterface;
 use Maniaba\AssetConnect\Exceptions\AssetException;
 use Maniaba\AssetConnect\Exceptions\FileException;
 use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
@@ -29,6 +30,11 @@ use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 trait UseAssetConnectTrait
 {
     private AssetConnect $assetConnectInstance;
+
+    /**
+     * Ensure that classes using this trait implement the required interface
+     */
+    abstract public function __construct();
 
     /**
      * Initialize the asset connection for this entity
@@ -79,7 +85,7 @@ trait UseAssetConnectTrait
             throw FileException::forInvalidFile($file->getRealPath());
         }
 
-        /** @var Entity&UseAssetConnectTrait $this */
+        /** @var AssetConnectEntityInterface&Entity $this */
         return new AssetAdder($this, $file);
     }
 
@@ -92,7 +98,7 @@ trait UseAssetConnectTrait
      */
     final public function getAssets(?string $collection = null): array
     {
-        /** @var Entity&UseAssetConnectTrait $this */
+        /** @var AssetConnectEntityInterface&Entity $this */
         return $this->assetConnectInstance->getAssetsForEntity($this, $collection);
     }
 
@@ -141,7 +147,7 @@ trait UseAssetConnectTrait
      */
     final public function deleteAssets(?string $collection = null): bool
     {
-        /** @var Entity&UseAssetConnectTrait $this */
+        /** @var AssetConnectEntityInterface&Entity $this */
         return $this->assetConnectInstance->deleteAssetsForEntity($this, $collection);
     }
 
@@ -183,7 +189,7 @@ trait UseAssetConnectTrait
             }
         }
 
-        /** @var Entity&UseAssetConnectTrait $this */
+        /** @var AssetConnectEntityInterface&Entity $this */
         return new AssetAdderMultiple($uploadedFiles, $this);
     }
 
