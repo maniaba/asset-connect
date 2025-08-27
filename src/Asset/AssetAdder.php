@@ -32,7 +32,9 @@ final class AssetAdder implements AssetAdderInterface
     private readonly SetupAssetCollection $setupAssetCollection;
 
     public function __construct(
-        /** @var Entity&UseAssetConnectTrait $subjectEntity The entity to which the asset is being added */
+        /**
+         * @var Entity&UseAssetConnectTrait $subjectEntity The entity to which the asset is being added
+         */
         private readonly Entity $subjectEntity,
         File|string|UploadedFile $file,
     ) {

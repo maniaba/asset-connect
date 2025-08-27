@@ -14,9 +14,13 @@ use Maniaba\AssetConnect\Traits\UseAssetConnectTrait;
 final readonly class AssetAdderMultiple
 {
     public function __construct(
-        /** @var array<string, list<UploadedFile>> $uploadedFiles */
+        /**
+         * @var array<string, list<UploadedFile>> $uploadedFiles
+         */
         private array $uploadedFiles,
-        /** @var Entity&UseAssetConnectTrait $subjectEntity */
+        /**
+         * @var Entity&UseAssetConnectTrait $subjectEntity
+         */
         private Entity $subjectEntity,
     ) {
     }

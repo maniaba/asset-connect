@@ -8,7 +8,6 @@ use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\AssetConnect\AssetVariants\AssetVariant;
 use Maniaba\AssetConnect\Exceptions\FileVariantException;
 use Override;
-use ReflectionClass;
 
 /**
  * @internal
@@ -106,14 +105,12 @@ final class AssetVariantTest extends CIUnitTestCase
             'file_relative_path' => 'path/to',
         ];
 
-        // Use reflection to access protected method
-        $reflection = new ReflectionClass($this->assetVariant);
-        $method     = $reflection->getMethod('getRelativePath');
-        $method->setAccessible(true);
+        // Use getPrivateMethodInvoker to access protected method
+        $invoker = $this->getPrivateMethodInvoker($this->assetVariant, 'getRelativePath');
 
         // Act & Assert
         $this->expectException(FileVariantException::class);
-        $method->invoke($this->assetVariant);
+        $invoker();
     }
 
     /**
@@ -128,13 +125,11 @@ final class AssetVariantTest extends CIUnitTestCase
             'file_relative_path'          => 'path/to',
         ];
 
-        // Use reflection to access protected method
-        $reflection = new ReflectionClass($this->assetVariant);
-        $method     = $reflection->getMethod('getRelativePathForUrl');
-        $method->setAccessible(true);
+        // Use getPrivateMethodInvoker to access protected method
+        $invoker = $this->getPrivateMethodInvoker($this->assetVariant, 'getRelativePathForUrl');
 
         // Act
-        $result = $method->invoke($this->assetVariant);
+        $result = $invoker();
 
         // Assert
         $this->assertSame('/path/to/file.jpg', $result);

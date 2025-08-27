@@ -19,7 +19,13 @@ use RuntimeException;
  * @method list<Asset>            findAll(int $limit = 0, int $offset = 0)
  * @method Asset|null             first()
  *
- * @property class-string<Asset> $returnType
+ * @property-read string              $createdField
+ * @property-read string              $deletedField
+ * @property-read string              $primaryKey
+ * @property-read class-string<Asset> $returnType
+ * @property-read string              $updatedField
+ * @property-read bool                $useSoftDeletes
+ * @property-read bool                $useTimestamps
  */
 class AssetModel extends BaseModel
 {

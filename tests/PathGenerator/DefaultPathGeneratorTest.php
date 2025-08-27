@@ -10,7 +10,6 @@ use Maniaba\AssetConnect\PathGenerator\DefaultPathGenerator;
 use Maniaba\AssetConnect\PathGenerator\PathGeneratorHelper;
 use Override;
 use PHPUnit\Framework\MockObject\MockObject;
-use ReflectionClass;
 
 /**
  * @internal
@@ -76,16 +75,9 @@ final class DefaultPathGeneratorTest extends CIUnitTestCase
         $storeDirectory   = '/root/public/';
         $fileRelativePath = 'assets/2023-01-01/120000.000000/';
 
-        // Use reflection to set the private properties
-        $reflectionClass = new ReflectionClass(DefaultPathGenerator::class);
-
-        $storeDirectoryProperty = $reflectionClass->getProperty('storeDirectory');
-        $storeDirectoryProperty->setAccessible(true);
-        $storeDirectoryProperty->setValue($this->pathGenerator, $storeDirectory);
-
-        $fileRelativePathProperty = $reflectionClass->getProperty('fileRelativePath');
-        $fileRelativePathProperty->setAccessible(true);
-        $fileRelativePathProperty->setValue($this->pathGenerator, $fileRelativePath);
+        // Use setPrivateProperty to set the private properties
+        $this->setPrivateProperty($this->pathGenerator, 'storeDirectory', $storeDirectory);
+        $this->setPrivateProperty($this->pathGenerator, 'fileRelativePath', $fileRelativePath);
 
         // Act
         $path = $this->pathGenerator->getPath($this->helper, $this->mockCollection);
@@ -102,12 +94,8 @@ final class DefaultPathGeneratorTest extends CIUnitTestCase
         // Arrange
         $storeDirectory = '/root/public/';
 
-        // Use reflection to set the private property
-        $reflectionClass = new ReflectionClass(DefaultPathGenerator::class);
-
-        $storeDirectoryProperty = $reflectionClass->getProperty('storeDirectory');
-        $storeDirectoryProperty->setAccessible(true);
-        $storeDirectoryProperty->setValue($this->pathGenerator, $storeDirectory);
+        // Use setPrivateProperty to set the private property
+        $this->setPrivateProperty($this->pathGenerator, 'storeDirectory', $storeDirectory);
 
         // Act
         $storeDirectoryForVariants = $this->pathGenerator->getStoreDirectoryForVariants($this->helper, $this->mockCollection);
@@ -124,12 +112,8 @@ final class DefaultPathGeneratorTest extends CIUnitTestCase
         // Arrange
         $fileRelativePath = 'assets/2023-01-01/120000.000000/';
 
-        // Use reflection to set the private property
-        $reflectionClass = new ReflectionClass(DefaultPathGenerator::class);
-
-        $fileRelativePathProperty = $reflectionClass->getProperty('fileRelativePath');
-        $fileRelativePathProperty->setAccessible(true);
-        $fileRelativePathProperty->setValue($this->pathGenerator, $fileRelativePath);
+        // Use setPrivateProperty to set the private property
+        $this->setPrivateProperty($this->pathGenerator, 'fileRelativePath', $fileRelativePath);
 
         // Act
         $fileRelativePathForVariants = $this->pathGenerator->getFileRelativePathForVariants($this->helper, $this->mockCollection);
@@ -162,10 +146,7 @@ final class DefaultPathGeneratorTest extends CIUnitTestCase
 
         // Then, get the file relative path for variants
         // We need to set the fileRelativePath property first
-        $reflectionClass          = new ReflectionClass(DefaultPathGenerator::class);
-        $fileRelativePathProperty = $reflectionClass->getProperty('fileRelativePath');
-        $fileRelativePathProperty->setAccessible(true);
-        $fileRelativePathProperty->setValue($pathGenerator, 'assets/2023-01-01/120000.000000/');
+        $this->setPrivateProperty($pathGenerator, 'fileRelativePath', 'assets/2023-01-01/120000.000000/');
 
         $fileRelativePathForVariants = $pathGenerator->getFileRelativePathForVariants($this->helper, $mockCollection);
 
