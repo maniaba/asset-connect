@@ -33,7 +33,9 @@ final class AssetPersistenceManager
     private AssetVariants $assetVariants;
 
     public function __construct(
-        /** @var Entity&UseAssetConnectTrait $subjectEntity The entity to which the asset is being added */
+        /**
+         * @var Entity&UseAssetConnectTrait $subjectEntity The entity to which the asset is being added
+         */
         private readonly Entity $subjectEntity,
         private Asset $asset,
         private readonly SetupAssetCollection $setupAssetCollection,
