@@ -8,8 +8,8 @@ use Closure;
 use CodeIgniter\Entity\Entity;
 use CodeIgniter\HTTP\Files\UploadedFile;
 use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
+use Maniaba\AssetConnect\Contracts\AssetConnectEntityInterface;
 use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
-use Maniaba\AssetConnect\Traits\UseAssetConnectTrait;
 
 final readonly class AssetAdderMultiple
 {
@@ -19,7 +19,7 @@ final readonly class AssetAdderMultiple
          */
         private array $uploadedFiles,
         /**
-         * @var Entity&UseAssetConnectTrait $subjectEntity
+         * @var AssetConnectEntityInterface&Entity $subjectEntity
          */
         private Entity $subjectEntity,
     ) {

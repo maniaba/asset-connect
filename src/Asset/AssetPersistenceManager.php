@@ -15,6 +15,7 @@ use Maniaba\AssetConnect\AssetCollection\SetupAssetCollection;
 use Maniaba\AssetConnect\AssetVariants\AssetVariants;
 use Maniaba\AssetConnect\AssetVariants\AssetVariantsProcess;
 use Maniaba\AssetConnect\AssetVariants\Interfaces\AssetVariantsInterface;
+use Maniaba\AssetConnect\Contracts\AssetConnectEntityInterface;
 use Maniaba\AssetConnect\Events\AssetCreated;
 use Maniaba\AssetConnect\Exceptions\AssetException;
 use Maniaba\AssetConnect\Exceptions\FileException;
@@ -22,7 +23,6 @@ use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Maniaba\AssetConnect\Models\AssetModel;
 use Maniaba\AssetConnect\PathGenerator\PathGenerator;
 use Maniaba\AssetConnect\PathGenerator\PathGeneratorFactory;
-use Maniaba\AssetConnect\Traits\UseAssetConnectTrait;
 use Throwable;
 
 final class AssetPersistenceManager
@@ -34,7 +34,7 @@ final class AssetPersistenceManager
 
     public function __construct(
         /**
-         * @var Entity&UseAssetConnectTrait $subjectEntity The entity to which the asset is being added
+         * @var AssetConnectEntityInterface&Entity $subjectEntity The entity to which the asset is being added
          */
         private readonly Entity $subjectEntity,
         private Asset $asset,

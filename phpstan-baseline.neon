@@ -1,42 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '#^Call to an undefined method CodeIgniter\\Entity\\Entity\:\:setupAssetConnect\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: src/Asset/AssetAdder.php
-
-		-
-			message: '#^PHPDoc type for property Maniaba\\AssetConnect\\Asset\\AssetAdder\:\:\$subjectEntity contains unresolvable type\.$#'
-			identifier: property.unresolvableType
-			count: 1
-			path: src/Asset/AssetAdder.php
-
-		-
-			message: '#^Call to an undefined method CodeIgniter\\Entity\\Entity\:\:addAsset\(\)\.$#'
-			identifier: method.notFound
-			count: 2
-			path: src/Asset/AssetAdderMultiple.php
-
-		-
-			message: '#^PHPDoc type for property Maniaba\\AssetConnect\\Asset\\AssetAdderMultiple\:\:\$subjectEntity contains unresolvable type\.$#'
-			identifier: property.unresolvableType
-			count: 1
-			path: src/Asset/AssetAdderMultiple.php
-
-		-
-			message: '#^Call to an undefined method CodeIgniter\\Entity\\Entity\:\:assetConnectInstance\(\)\.$#'
-			identifier: method.notFound
-			count: 2
-			path: src/Asset/AssetPersistenceManager.php
-
-		-
-			message: '#^PHPDoc type for property Maniaba\\AssetConnect\\Asset\\AssetPersistenceManager\:\:\$subjectEntity contains unresolvable type\.$#'
-			identifier: property.unresolvableType
-			count: 1
-			path: src/Asset/AssetPersistenceManager.php
-
-		-
 			message: '#^Access to protected property CodeIgniter\\Model\:\:\$primaryKey\.$#'
 			identifier: property.protected
 			count: 1
@@ -93,11 +57,6 @@ parameters:
 			count: 1
 			path: tests/Asset/AssetAdderTest.php
 
-		-
-			message: '#^PHPDoc tag @var for variable \$this contains unresolvable type\.$#'
-			identifier: varTag.unresolvableType
-			count: 4
-			path: tests/Asset/AssetAdderTest.php
 
 		-
 			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\AssetConnect\\\\Asset\\\\Properties\\\\AssetVariantProperty'' and Maniaba\\AssetConnect\\Asset\\Properties\\AssetVariantProperty will always evaluate to true\.$#'

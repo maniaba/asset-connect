@@ -11,6 +11,7 @@ use CodeIgniter\HTTP\Files\UploadedFile;
 use Maniaba\AssetConnect\Asset\Interfaces\AssetAdderInterface;
 use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\AssetConnect\AssetCollection\SetupAssetCollection;
+use Maniaba\AssetConnect\Contracts\AssetConnectEntityInterface;
 use Maniaba\AssetConnect\Exceptions\AssetException;
 use Maniaba\AssetConnect\Exceptions\FileException;
 use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
@@ -33,7 +34,7 @@ final class AssetAdder implements AssetAdderInterface
 
     public function __construct(
         /**
-         * @var Entity&UseAssetConnectTrait $subjectEntity The entity to which the asset is being added
+         * @var AssetConnectEntityInterface&Entity $subjectEntity The entity to which the asset is being added
          */
         private readonly Entity $subjectEntity,
         File|string|UploadedFile $file,

@@ -31,6 +31,11 @@ trait UseAssetConnectTrait
     private AssetConnect $assetConnectInstance;
 
     /**
+     * Ensure that classes using this trait implement the required interface
+     */
+    abstract public function __construct();
+
+    /**
      * Initialize the asset connection for this entity
      *
      * This method should be called in the constructor of the entity to set up the asset connection.
@@ -79,7 +84,6 @@ trait UseAssetConnectTrait
             throw FileException::forInvalidFile($file->getRealPath());
         }
 
-        /** @var Entity&UseAssetConnectTrait $this */
         return new AssetAdder($this, $file);
     }
 
@@ -92,7 +96,6 @@ trait UseAssetConnectTrait
      */
     final public function getAssets(?string $collection = null): array
     {
-        /** @var Entity&UseAssetConnectTrait $this */
         return $this->assetConnectInstance->getAssetsForEntity($this, $collection);
     }
 
@@ -141,7 +144,6 @@ trait UseAssetConnectTrait
      */
     final public function deleteAssets(?string $collection = null): bool
     {
-        /** @var Entity&UseAssetConnectTrait $this */
         return $this->assetConnectInstance->deleteAssetsForEntity($this, $collection);
     }
 
@@ -183,7 +185,6 @@ trait UseAssetConnectTrait
             }
         }
 
-        /** @var Entity&UseAssetConnectTrait $this */
         return new AssetAdderMultiple($uploadedFiles, $this);
     }
 
