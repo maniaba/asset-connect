@@ -69,9 +69,7 @@ final class AssetTest extends CIUnitTestCase
     public function testSetEntityTypeWithEntityInstance(): void
     {
         // Arrange
-        $this->mockEntity = $this->getMockBuilder(Entity::class)
-            ->disableOriginalConstructor()
-            ->getMock();
+        $this->mockEntity = $this->createMock(Entity::class);
 
         // Act
         $result = $this->asset->setEntityType($this->mockEntity);
