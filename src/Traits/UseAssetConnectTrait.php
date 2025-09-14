@@ -28,6 +28,7 @@ use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 trait UseAssetConnectTrait
 {
     private AssetConnect $assetConnectInstance;
+
     /**
      * Initialize the asset connection for this entity
      *
