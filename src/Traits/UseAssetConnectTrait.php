@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Maniaba\AssetConnect\Traits;
 
-use CodeIgniter\Entity\Entity;
 use CodeIgniter\Files\File;
 use CodeIgniter\HTTP\Files\UploadedFile;
 use Config\Services;
