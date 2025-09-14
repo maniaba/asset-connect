@@ -29,12 +29,6 @@ use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 trait UseAssetConnectTrait
 {
     private AssetConnect $assetConnectInstance;
-
-    /**
-     * Ensure that classes using this trait implement the required interface
-     */
-    abstract public function __construct();
-
     /**
      * Initialize the asset connection for this entity
      *
