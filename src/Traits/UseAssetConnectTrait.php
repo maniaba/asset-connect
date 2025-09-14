@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Maniaba\AssetConnect\Traits;
 
-use CodeIgniter\Entity\Entity;
 use CodeIgniter\Files\File;
 use CodeIgniter\HTTP\Files\UploadedFile;
 use Config\Services;
@@ -29,11 +28,6 @@ use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 trait UseAssetConnectTrait
 {
     private AssetConnect $assetConnectInstance;
-
-    /**
-     * Ensure that classes using this trait implement the required interface
-     */
-    abstract public function __construct();
 
     /**
      * Initialize the asset connection for this entity

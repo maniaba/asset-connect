@@ -17,7 +17,6 @@ use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Maniaba\AssetConnect\Models\AssetModel;
 use Maniaba\AssetConnect\Traits\UseAssetConnectTrait;
 use RuntimeException;
-use stdClass;
 
 final class AssetConnect
 {
