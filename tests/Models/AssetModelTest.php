@@ -7,7 +7,6 @@ namespace Tests\Models;
 use CodeIgniter\Config\Factories;
 use CodeIgniter\Database\ConnectionInterface;
 use CodeIgniter\Test\CIUnitTestCase;
-use Maniaba\AssetConnect\Config\Asset;
 use Maniaba\AssetConnect\Config\Asset as AssetConfig;
 use Maniaba\AssetConnect\Models\AssetModel;
 use Override;
@@ -20,7 +19,7 @@ use stdClass;
 final class AssetModelTest extends CIUnitTestCase
 {
     private ConnectionInterface $mockConnection;
-    private Asset $mockAssetConfig;
+    private AssetConfig $mockAssetConfig;
 
     #[Override]
     protected function setUp(): void
