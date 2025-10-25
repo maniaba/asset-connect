@@ -8,8 +8,8 @@ use Closure;
 use CodeIgniter\Events\Events;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\AssetVariants\Interfaces\CreateAssetVariantsInterface;
+use Maniaba\AssetConnect\Enums\AssetExtension;
 use Maniaba\AssetConnect\Events\VariantCreated;
-use Maniaba\AssetConnect\Exceptions\AssetException;
 use Maniaba\AssetConnect\PathGenerator\PathGenerator;
 use Override;
 
@@ -27,8 +27,9 @@ final class AssetVariants implements CreateAssetVariantsInterface
      * {@inheritDoc}
      */
     #[Override]
-    public function assetVariant(string $name, Closure $closure, AssetException|string|null $extension = null): AssetVariant
+    public function assetVariant(string $name, Closure $closure, AssetExtension|string|null $extension = null): AssetVariant
     {
+        $extension                = $extension instanceof AssetExtension ? $extension->value : $extension;
         $fileNameWithoutExtension = pathinfo($this->asset->file_name, PATHINFO_FILENAME);
         $fileExtension            = $extension ?? pathinfo($this->asset->file_name, PATHINFO_EXTENSION);
 

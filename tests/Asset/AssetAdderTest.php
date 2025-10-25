@@ -171,7 +171,7 @@ final class AssetAdderTest extends CIUnitTestCase
     {
         $assetAdder = new AssetAdder($this->mockEntity, $this->mockFile);
 
-        $customSanitizer = static fn (string $fileName): string => strtoupper($fileName);
+        $customSanitizer = strtoupper(...);
         $result          = $assetAdder->sanitizingFileName($customSanitizer);
 
         $this->assertSame($assetAdder, $result);
