@@ -39,6 +39,7 @@ final class UrlGeneratorTest extends CIUnitTestCase
                 'asset_variants' => [
                     'thumbnail' => [
                         'name'                  => 'thumbnail',
+                        'path'                  => 'uploads/variants/test_thumbnail.jpg',
                         'relative_path_for_url' => 'uploads/variants/test_thumbnail.jpg',
                         'paths'                 => [
                             'storage_base_directory_path' => '/path/to',
@@ -184,7 +185,7 @@ final class UrlGeneratorTest extends CIUnitTestCase
         $url = $urlGenerator->getTemporaryUrl($expiration, $variantName);
 
         // Assert
-        $this->assertSame('/assets/temporary/b0a4ae59595b37c409e6196189b3f22854f578e66a1fe526cee293792c8b166c/variant/thumbnail/test.jpg', $url);
+        $this->assertSame('/assets/temporary/b0a4ae59595b37c409e6196189b3f22854f578e66a1fe526cee293792c8b166c/variant/thumbnail/test_thumbnail.jpg', $url);
     }
 
     /**
@@ -193,32 +194,38 @@ final class UrlGeneratorTest extends CIUnitTestCase
     public function testRouteTo(): void
     {
         // Arrange
-        $routeName   = 'asset-connect.show';
-        $assetId     = 123;
-        $variantName = null;
-        $filename    = 'test.jpg';
+        $routeName = 'asset-connect.show';
+
+        // Build an Asset instance (instead of passing raw id/filename)
+        $asset = new Asset([
+            'id'        => 123,
+            'file_name' => 'test.jpg',
+        ]);
 
         // Mock is_subclass_of
         global $mockFunctions;
         $mockFunctions['is_subclass_of'] = static fn ($class, $interface) => true;
 
-        // Mock the DefaultUrlGenerator::params method
-        $mockFunctions['Maniaba\AssetConnect\UrlGenerator\DefaultUrlGenerator::params'] = function ($id, $variant, $file, $token) use ($assetId, $variantName, $filename) {
-            $this->assertSame($assetId, $id);
-            $this->assertSame($variantName, $variant);
-            $this->assertSame($filename, $file);
+        // Mock the DefaultUrlGenerator::params method to accept new signature
+        // Expected signature now: params(Asset $asset, ?object $variant = null, ?string $token = null)
+        $mockFunctions['Maniaba\AssetConnect\UrlGenerator\DefaultUrlGenerator::params'] = function ($passedAsset, $variant, $token) {
+            $this->assertInstanceOf(Asset::class, $passedAsset);
+            $this->assertSame(123, $passedAsset->id);
+            $this->assertSame('test.jpg', $passedAsset->file_name);
+            $this->assertNull($variant);
             $this->assertNull($token);
 
+            // Return route params that router expects (scalars), derived from the Asset
             return [
-                'asset-connect.show'              => [$id, $file],
-                'asset-connect.show_variant'      => [$id, $variant, $file],
-                'asset-connect.temporary'         => [$token, $file],
-                'asset-connect.temporary_variant' => [$token, $variant, $file],
+                'asset-connect.show'              => [$passedAsset->id, $passedAsset->file_name],
+                'asset-connect.show_variant'      => [$passedAsset->id, $variant?->name ?? null, $passedAsset->file_name],
+                'asset-connect.temporary'         => [$token, $passedAsset->file_name],
+                'asset-connect.temporary_variant' => [$token, $variant?->name ?? null, $passedAsset->file_name],
             ];
         };
 
         // Act
-        $url = UrlGenerator::routeTo($routeName, $assetId, $variantName, $filename);
+        $url = UrlGenerator::routeTo($routeName, $asset, null);
 
         // Assert
         $this->assertSame('/assets/123/test.jpg', $url);
@@ -230,10 +237,11 @@ final class UrlGeneratorTest extends CIUnitTestCase
     public function testRouteToWithNoDefaultUrlGenerator(): void
     {
         // Arrange
-        $routeName   = 'asset-connect.show';
-        $assetId     = 123;
-        $variantName = null;
-        $filename    = 'test.jpg';
+        $routeName = 'asset-connect.show';
+        $asset     = new Asset([
+            'id'        => 123,
+            'file_name' => 'test.jpg',
+        ]);
 
         $assetConfig = new class () extends \Maniaba\AssetConnect\Config\Asset {
             public ?string $defaultUrlGenerator = null;
@@ -242,7 +250,7 @@ final class UrlGeneratorTest extends CIUnitTestCase
         Factories::injectMock('config', 'Asset', $assetConfig);
 
         // Act
-        $url = UrlGenerator::routeTo($routeName, $assetId, $variantName, $filename);
+        $url = UrlGenerator::routeTo($routeName, $asset, null);
 
         // Assert
         $this->assertSame('', $url);
@@ -254,26 +262,27 @@ final class UrlGeneratorTest extends CIUnitTestCase
     public function testRouteToWithUndefinedRoute(): void
     {
         // Arrange
-        $routeName   = 'undefined-route';
-        $assetId     = 123;
-        $variantName = null;
-        $filename    = 'test.jpg';
+        $routeName = 'undefined-route';
+        $asset     = new Asset([
+            'id'        => 123,
+            'file_name' => 'test.jpg',
+        ]);
 
         // Mock is_subclass_of
         global $mockFunctions;
         $mockFunctions['is_subclass_of'] = static fn ($class, $interface) => true;
 
-        // Mock the DefaultUrlGenerator::params method
-        $mockFunctions['Maniaba\AssetConnect\UrlGenerator\DefaultUrlGenerator::params'] = static fn ($id, $variant, $file, $token) => [
-            'asset-connect.show'              => [$id, $file],
-            'asset-connect.show_variant'      => [$id, $variant, $file],
-            'asset-connect.temporary'         => [$token, $file],
-            'asset-connect.temporary_variant' => [$token, $variant, $file],
+        // Mock the DefaultUrlGenerator::params method for new signature
+        $mockFunctions['Maniaba\AssetConnect\UrlGenerator\DefaultUrlGenerator::params'] = static fn ($passedAsset, $variant, $token) => [
+            'asset-connect.show'              => [$passedAsset->id, $passedAsset->file_name],
+            'asset-connect.show_variant'      => [$passedAsset->id, $variant?->name ?? null, $passedAsset->file_name],
+            'asset-connect.temporary'         => [$token, $passedAsset->file_name],
+            'asset-connect.temporary_variant' => [$token, $variant?->name ?? null, $passedAsset->file_name],
         ];
 
         // Act & Assert
         $this->expectException(InvalidArgumentException::class);
-        UrlGenerator::routeTo($routeName, $assetId, $variantName, $filename);
+        UrlGenerator::routeTo($routeName, $asset, null);
     }
 
     /**
