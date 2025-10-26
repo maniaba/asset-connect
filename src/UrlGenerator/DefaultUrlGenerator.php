@@ -43,12 +43,14 @@ class DefaultUrlGenerator implements UrlGeneratorInterface
     #[Override]
     public static function params(Asset $asset, ?AssetVariant $variant, ?string $token = null): array
     {
+        $variantName     = $variant->name ?? null;
+        $variantFileName = $variant->file_name ?? null;
+
         return [
-            'asset-connect.show' => [$asset->id, $asset->file_name],
-            // For variant routes, the filename should still be the asset's original filename
-            'asset-connect.show_variant'      => [$asset->id, $variant?->name, $variant?->file_name],
+            'asset-connect.show'              => [$asset->id, $asset->file_name],
+            'asset-connect.show_variant'      => [$asset->id, $variantName, $variantFileName],
             'asset-connect.temporary'         => [$token, $asset->file_name],
-            'asset-connect.temporary_variant' => [$token, $variant?->name, $variant?->file_name],
+            'asset-connect.temporary_variant' => [$token, $variantName, $variantFileName],
         ];
     }
 }

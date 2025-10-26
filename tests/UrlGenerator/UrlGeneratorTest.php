@@ -218,9 +218,9 @@ final class UrlGeneratorTest extends CIUnitTestCase
             // Return route params that router expects (scalars), derived from the Asset
             return [
                 'asset-connect.show'              => [$passedAsset->id, $passedAsset->file_name],
-                'asset-connect.show_variant'      => [$passedAsset->id, $variant?->name ?? null, $passedAsset->file_name],
+                'asset-connect.show_variant'      => [$passedAsset->id, null, $passedAsset->file_name],
                 'asset-connect.temporary'         => [$token, $passedAsset->file_name],
-                'asset-connect.temporary_variant' => [$token, $variant?->name ?? null, $passedAsset->file_name],
+                'asset-connect.temporary_variant' => [$token, null, $passedAsset->file_name],
             ];
         };
 
@@ -275,9 +275,9 @@ final class UrlGeneratorTest extends CIUnitTestCase
         // Mock the DefaultUrlGenerator::params method for new signature
         $mockFunctions['Maniaba\AssetConnect\UrlGenerator\DefaultUrlGenerator::params'] = static fn ($passedAsset, $variant, $token) => [
             'asset-connect.show'              => [$passedAsset->id, $passedAsset->file_name],
-            'asset-connect.show_variant'      => [$passedAsset->id, $variant?->name ?? null, $passedAsset->file_name],
+            'asset-connect.show_variant'      => [$passedAsset->id, null, $passedAsset->file_name],
             'asset-connect.temporary'         => [$token, $passedAsset->file_name],
-            'asset-connect.temporary_variant' => [$token, $variant?->name ?? null, $passedAsset->file_name],
+            'asset-connect.temporary_variant' => [$token, null, $passedAsset->file_name],
         ];
 
         // Act & Assert

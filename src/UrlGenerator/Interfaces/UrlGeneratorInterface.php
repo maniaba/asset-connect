@@ -15,5 +15,5 @@ interface UrlGeneratorInterface
     /**
      * Params for the URL generation, route_to()
      */
-    public static function params(Asset $asset, ?AssetVariant $variantName, ?string $token = null): array;
+    public static function params(Asset $asset, ?AssetVariant $variant, ?string $token = null): array;
 }
