@@ -95,6 +95,10 @@ final class AssetVariant extends Entity
     // get file mime type
     protected function getMimeType(): string
     {
+        if (! file_exists($this->path)) {
+            return 'application/octet-stream';
+        }
+
         $file = new File($this->path);
 
         return $file->getMimeType();
