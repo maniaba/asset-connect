@@ -92,9 +92,12 @@ final class AssetVariant extends Entity
         return pathinfo($this->path, PATHINFO_EXTENSION);
     }
 
-    // get file mime type
     protected function getMimeType(): string
     {
+        if (! file_exists($this->path)) {
+            return '';
+        }
+
         $file = new File($this->path);
 
         return $file->getMimeType();
