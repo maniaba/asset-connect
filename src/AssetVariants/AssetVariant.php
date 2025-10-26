@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Maniaba\AssetConnect\AssetVariants;
 
 use CodeIgniter\Entity\Entity;
+use CodeIgniter\Files\File;
 use Maniaba\AssetConnect\Exceptions\FileVariantException;
 use stdClass;
 
@@ -14,6 +15,9 @@ use stdClass;
  * @property      array{storage_base_directory_path: string, file_relative_path: string}|stdClass $paths
  * @property      bool                                                                            $processed
  * @property      int                                                                             $size
+ * @property-read string                                                                          $extension
+ * @property-read string                                                                          $file_name
+ * @property-read string                                                                          $mime_type
  * @property-read string                                                                          $relative_path
  * @property-read string                                                                          $relative_path_for_url
  */
@@ -75,5 +79,24 @@ final class AssetVariant extends Entity
 
         // Replace backslashes with forward slashes for URL compatibility
         return str_replace('\\', '/', $relativePath);
+    }
+
+    protected function getFileName(): string
+    {
+        // extract filename from path
+        return basename($this->path);
+    }
+
+    protected function getExtension(): string
+    {
+        return pathinfo($this->path, PATHINFO_EXTENSION);
+    }
+
+    // get file mime type
+    protected function getMimeType(): string
+    {
+        $file = new File($this->path);
+
+        return $file->getMimeType();
     }
 }

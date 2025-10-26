@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Maniaba\AssetConnect\UrlGenerator\Interfaces;
 
 use CodeIgniter\Router\RouteCollection;
+use Maniaba\AssetConnect\Asset\Asset;
+use Maniaba\AssetConnect\AssetVariants\AssetVariant;
 
 interface UrlGeneratorInterface
 {
@@ -13,5 +15,5 @@ interface UrlGeneratorInterface
     /**
      * Params for the URL generation, route_to()
      */
-    public static function params(int $assetId, ?string $variantName, string $filename, ?string $token = null): array;
+    public static function params(Asset $asset, ?AssetVariant $variant, ?string $token = null): array;
 }

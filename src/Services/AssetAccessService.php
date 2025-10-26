@@ -42,6 +42,8 @@ final readonly class AssetAccessService implements AssetAccessServiceInterface
         // Get the file path
         $filePath     = $asset->path;
         $relativePath = $asset->relative_path;
+        $fileName     = $asset->name . '.' . $asset->extension;
+        $mimeType     = $asset->mime_type;
 
         // If a variant is requested, get the variant path
         if ($variantName !== null && $variantName !== '') {
@@ -54,6 +56,8 @@ final readonly class AssetAccessService implements AssetAccessServiceInterface
 
             $filePath     = $variant->path;
             $relativePath = $variant->relative_path;
+            $fileName     = "{$asset->name}-{$variantName}.{$variant->extension}";
+            $mimeType     = $variant->mime_type;
         }
 
         // Check if the file exists
@@ -64,9 +68,8 @@ final readonly class AssetAccessService implements AssetAccessServiceInterface
         // download the file
 
         // Create a download response
-        $response = new DownloadResponse($asset->file_name, false);
-        $response->setFileName($asset->name . (in_array($variantName, [null, ''], true) ? " ({$variantName})" : '') . '.' . $asset->extension);
-        $response->setContentType($asset->mime_type);
+        $response = new DownloadResponse($fileName, false);
+        $response->setContentType($mimeType);
 
         $response->setFilePath($filePath);
 
