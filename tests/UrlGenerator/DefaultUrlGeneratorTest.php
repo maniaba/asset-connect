@@ -6,6 +6,8 @@ namespace Tests\UrlGenerator;
 
 use CodeIgniter\Router\RouteCollection;
 use CodeIgniter\Test\CIUnitTestCase;
+use Maniaba\AssetConnect\Asset\Asset;
+use Maniaba\AssetConnect\AssetVariants\AssetVariant;
 use Maniaba\AssetConnect\Controllers\AssetConnectController;
 use Maniaba\AssetConnect\UrlGenerator\DefaultUrlGenerator;
 use Override;
@@ -107,13 +109,20 @@ final class DefaultUrlGeneratorTest extends CIUnitTestCase
     public function testParams(): void
     {
         // Arrange
-        $assetId     = 123;
-        $variantName = 'thumbnail';
-        $filename    = 'test.jpg';
-        $token       = 'test_token';
+        $asset = new Asset([
+            'id'        => 123,
+            'file_name' => 'test.jpg',
+        ]);
+        $asset->metadata->assetVariant->addAssetVariant(new AssetVariant([
+            'name' => 'thumbnail',
+            'path' => '/fake/thumbnail.png',
+        ]));
+
+        $variant = $asset->metadata->assetVariant->getAssetVariant('thumbnail');
+        $token   = 'test_token';
 
         // Act
-        $params = DefaultUrlGenerator::params($assetId, $variantName, $filename, $token);
+        $params = DefaultUrlGenerator::params($asset, $variant, $token);
 
         // Assert
         $this->assertIsArray($params);
@@ -124,10 +133,10 @@ final class DefaultUrlGeneratorTest extends CIUnitTestCase
         $this->assertArrayHasKey('asset-connect.temporary_variant', $params);
 
         // Check the params for each route
-        $this->assertSame([$assetId, $filename], $params['asset-connect.show']);
-        $this->assertSame([$assetId, $variantName, $filename], $params['asset-connect.show_variant']);
-        $this->assertSame([$token, $filename], $params['asset-connect.temporary']);
-        $this->assertSame([$token, $variantName, $filename], $params['asset-connect.temporary_variant']);
+        $this->assertSame([$asset->id, $asset->file_name], $params['asset-connect.show']);
+        $this->assertSame([$asset->id, $variant->name, $variant->file_name], $params['asset-connect.show_variant']);
+        $this->assertSame([$token, $asset->file_name], $params['asset-connect.temporary']);
+        $this->assertSame([$token, $variant->name, $variant->file_name], $params['asset-connect.temporary_variant']);
     }
 
     /**
@@ -136,13 +145,17 @@ final class DefaultUrlGeneratorTest extends CIUnitTestCase
     public function testParamsWithNullVariantName(): void
     {
         // Arrange
-        $assetId     = 123;
+        $asset = new Asset([
+            'id'        => 123,
+            'file_name' => 'test.jpg',
+        ]);
+        $assetId     = $asset->id;
         $variantName = null;
-        $filename    = 'test.jpg';
+        $filename    = $asset->file_name;
         $token       = 'test_token';
 
         // Act
-        $params = DefaultUrlGenerator::params($assetId, $variantName, $filename, $token);
+        $params = DefaultUrlGenerator::params($asset, $variantName, $token);
 
         // Assert
         $this->assertIsArray($params);
@@ -150,9 +163,9 @@ final class DefaultUrlGeneratorTest extends CIUnitTestCase
 
         // Check the params for each route
         $this->assertSame([$assetId, $filename], $params['asset-connect.show']);
-        $this->assertSame([$assetId, $variantName, $filename], $params['asset-connect.show_variant']);
+        $this->assertSame([$assetId, $variantName, $variantName], $params['asset-connect.show_variant']);
         $this->assertSame([$token, $filename], $params['asset-connect.temporary']);
-        $this->assertSame([$token, $variantName, $filename], $params['asset-connect.temporary_variant']);
+        $this->assertSame([$token, $variantName, $variantName], $params['asset-connect.temporary_variant']);
     }
 
     /**
@@ -161,13 +174,22 @@ final class DefaultUrlGeneratorTest extends CIUnitTestCase
     public function testParamsWithNullToken(): void
     {
         // Arrange
-        $assetId     = 123;
-        $variantName = 'thumbnail';
-        $filename    = 'test.jpg';
-        $token       = null;
+        $asset = new Asset([
+            'id'        => 123,
+            'file_name' => 'test.jpg',
+        ]);
+        $asset->metadata->assetVariant->addAssetVariant(new AssetVariant([
+            'name' => 'thumbnail',
+            'path' => '/fake/thumbnail.png',
+        ]));
+
+        $variant  = $asset->metadata->assetVariant->getAssetVariant('thumbnail');
+        $assetId  = $asset->id;
+        $filename = $asset->file_name;
+        $token    = null;
 
         // Act
-        $params = DefaultUrlGenerator::params($assetId, $variantName, $filename, $token);
+        $params = DefaultUrlGenerator::params($asset, $variant, $token);
 
         // Assert
         $this->assertIsArray($params);
@@ -175,8 +197,8 @@ final class DefaultUrlGeneratorTest extends CIUnitTestCase
 
         // Check the params for each route
         $this->assertSame([$assetId, $filename], $params['asset-connect.show']);
-        $this->assertSame([$assetId, $variantName, $filename], $params['asset-connect.show_variant']);
+        $this->assertSame([$assetId, $variant->name, $variant->file_name], $params['asset-connect.show_variant']);
         $this->assertSame([$token, $filename], $params['asset-connect.temporary']);
-        $this->assertSame([$token, $variantName, $filename], $params['asset-connect.temporary_variant']);
+        $this->assertSame([$token, $variant->name, $variant->file_name], $params['asset-connect.temporary_variant']);
     }
 }

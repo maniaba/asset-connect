@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Maniaba\AssetConnect\UrlGenerator;
 
 use CodeIgniter\Router\RouteCollection;
+use Maniaba\AssetConnect\Asset\Asset;
+use Maniaba\AssetConnect\AssetVariants\AssetVariant;
 use Maniaba\AssetConnect\Controllers\AssetConnectController;
 use Maniaba\AssetConnect\UrlGenerator\Interfaces\UrlGeneratorInterface;
 use Override;
@@ -39,13 +41,13 @@ class DefaultUrlGenerator implements UrlGeneratorInterface
     }
 
     #[Override]
-    public static function params(int $assetId, ?string $variantName, string $filename, ?string $token = null): array
+    public static function params(Asset $asset, ?AssetVariant $variantName, ?string $token = null): array
     {
         return [
-            'asset-connect.show'              => [$assetId, $filename],
-            'asset-connect.show_variant'      => [$assetId, $variantName, $filename],
-            'asset-connect.temporary'         => [$token, $filename],
-            'asset-connect.temporary_variant' => [$token, $variantName, $filename],
+            'asset-connect.show'              => [$asset->id, $asset->file_name],
+            'asset-connect.show_variant'      => [$asset->id, $variantName?->name, $variantName?->file_name],
+            'asset-connect.temporary'         => [$token, $asset->file_name],
+            'asset-connect.temporary_variant' => [$token, $variantName?->name, $variantName?->file_name],
         ];
     }
 }
