@@ -175,7 +175,7 @@ final class AssetVariantsTest extends CIUnitTestCase
         };
 
         // Act
-        $result = $this->assetVariants->assetVariant($variantName, $closure, null);
+        $result = $this->assetVariants->assetVariant($variantName, $closure);
 
         // Assert
         $this->assertInstanceOf(AssetVariant::class, $result);
