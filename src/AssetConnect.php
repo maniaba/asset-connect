@@ -74,9 +74,10 @@ final class AssetConnect
 
             if (is_string($primaryKey) || is_int($primaryKey)) {
                 $this->addToCollectionPrimaryKey($primaryKey);
-
-                $row->loadAssetConnect($this);
             }
+
+            // Load the asset connection into the entity
+            $row->loadAssetConnect($this);
         }
 
         return $data;
