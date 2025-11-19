@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Maniaba\AssetConnect\Pending;
 
 use Maniaba\AssetConnect\Config\Asset as AssetConfig;
-use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Maniaba\AssetConnect\Exceptions\PendingAssetException;
 use Maniaba\AssetConnect\Pending\Interfaces\PendingStorageInterface;
 use Throwable;
 
-final class PendingAssetManager
+final readonly class PendingAssetManager
 {
     private PendingStorageInterface $storage;
 
@@ -71,32 +70,6 @@ final class PendingAssetManager
         }
 
         return $pendingAsset;
-    }
-
-    /**
-     * @param string ...$ids IDs of the pending assets to fetch.
-     *
-     * @return list<PendingAsset> Array of PendingAsset objects or empty array if none found.
-     *
-     * @throws InvalidArgumentException if no IDs are provided.
-     * @throws PendingAssetException    if unable to read metadata for any asset.
-     */
-    private function fetchByIds(string ...$ids): array
-    {
-        if ($ids === []) {
-            throw new InvalidArgumentException('At least one ID must be provided');
-        }
-
-        $assets = [];
-
-        foreach ($ids as $id) {
-            $asset = $this->fetchById($id);
-            if ($asset !== null) {
-                $assets[] = $asset;
-            }
-        }
-
-        return $assets;
     }
 
     public function deleteById(string $id): bool

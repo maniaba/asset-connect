@@ -65,7 +65,7 @@ final class PendingAssetManagerTest extends CIUnitTestCase
     private function setupGlobalFunctionMocks(): void
     {
         // Inject mock for config
-        $this->mockAssetConfig->pendingStorage = get_class($this->mockStorage);
+        $this->mockAssetConfig->pendingStorage = $this->mockStorage::class;
         Factories::injectMock('config', 'Asset', $this->mockAssetConfig);
     }
 
@@ -140,7 +140,7 @@ final class PendingAssetManagerTest extends CIUnitTestCase
         $result = $manager->fetchById($id);
 
         // Assert
-        $this->assertNull($result);
+        $this->assertNotInstanceOf(PendingAsset::class, $result);
     }
 
     /**
@@ -167,7 +167,7 @@ final class PendingAssetManagerTest extends CIUnitTestCase
         $result = $manager->fetchById($id);
 
         // Assert
-        $this->assertNull($result);
+        $this->assertNotInstanceOf(PendingAsset::class, $result);
     }
 
     /**
@@ -196,7 +196,7 @@ final class PendingAssetManagerTest extends CIUnitTestCase
         $result = $manager->fetchById($id);
 
         // Assert - should return null even if deletion fails
-        $this->assertNull($result);
+        $this->assertNotInstanceOf(PendingAsset::class, $result);
     }
 
     /**
@@ -253,7 +253,7 @@ final class PendingAssetManagerTest extends CIUnitTestCase
         $result = $manager->fetchById($id);
 
         // Assert - should be expired
-        $this->assertNull($result);
+        $this->assertNotInstanceOf(PendingAsset::class, $result);
     }
 
     /**
@@ -455,7 +455,7 @@ final class PendingAssetManagerTest extends CIUnitTestCase
         $result = $manager->fetchById($id);
 
         // Assert - should be expired immediately
-        $this->assertNull($result);
+        $this->assertNotInstanceOf(PendingAsset::class, $result);
     }
 
     /**
@@ -554,8 +554,8 @@ final class PendingAssetManagerTest extends CIUnitTestCase
 
         $this->mockStorage->method('fetchById')->with($id)->willReturn($pendingAsset);
         $this->mockStorage->method('getDefaultTTLSeconds')->willReturn($ttlSeconds);
-        $this->mockStorage->method('deleteById')->will(
-            $this->throwException(new RuntimeException('Unexpected error')),
+        $this->mockStorage->method('deleteById')->willThrowException(
+            new RuntimeException('Unexpected error'),
         );
 
         $manager = PendingAssetManager::make($this->mockStorage);
@@ -564,6 +564,6 @@ final class PendingAssetManagerTest extends CIUnitTestCase
         $result = $manager->fetchById($id);
 
         // Assert - should handle exception gracefully and return null
-        $this->assertNull($result);
+        $this->assertNotInstanceOf(PendingAsset::class, $result);
     }
 }

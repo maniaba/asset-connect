@@ -7,10 +7,11 @@ namespace Maniaba\AssetConnect\Pending;
 use CodeIgniter\I18n\Time;
 use Maniaba\AssetConnect\Exceptions\PendingAssetException;
 use Maniaba\AssetConnect\Pending\Interfaces\PendingSecurityTokenInterface;
+use Maniaba\AssetConnect\Pending\Interfaces\PendingStorageInterface;
 use Maniaba\AssetConnect\Pending\PendingSecurityToken\SessionPendingSecurityToken;
 use Random\RandomException;
 
-class DefaultPendingStorage implements Interfaces\PendingStorageInterface
+class DefaultPendingStorage implements PendingStorageInterface
 {
     protected PendingSecurityTokenInterface $tokenProvider;
 
@@ -203,7 +204,7 @@ class DefaultPendingStorage implements Interfaces\PendingStorageInterface
         }
 
         foreach ($directories as $directory) {
-            $pendingId    = rtrim($directory, DIRECTORY_SEPARATOR);
+            $pendingId    = rtrim((string) $directory, DIRECTORY_SEPARATOR);
             $metadataPath = $this->getPendingMetadataFilePath($pendingId);
 
             if (! is_file($metadataPath)) {
@@ -220,7 +221,7 @@ class DefaultPendingStorage implements Interfaces\PendingStorageInterface
                 continue; // Invalid metadata, skip
             }
 
-            $createdAt = strtotime($metadata['created_at']);
+            $createdAt = strtotime((string) $metadata['created_at']);
             if ($createdAt === false) {
                 continue; // Invalid created_at format, skip
             }

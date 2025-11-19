@@ -49,7 +49,6 @@ final class PendingAsset implements AssetDefinitionInterface, JsonSerializable
     private int $order;
     private bool $preserve_original;
     private array $custom_properties;
-    private File|UploadedFile $file;
 
     public function usingName(string $name): AssetDefinitionInterface
     {
@@ -112,20 +111,19 @@ final class PendingAsset implements AssetDefinitionInterface, JsonSerializable
         ];
     }
 
-    private function __construct(File|UploadedFile $file, array $attributes = [])
+    private function __construct(private File|UploadedFile $file, array $attributes = [])
     {
-        $this->file = $file;
-        $fileName   = $file instanceof UploadedFile ? $file->getClientName() : $file->getBasename();
+        $fileName = $this->file instanceof UploadedFile ? $this->file->getClientName() : $this->file->getBasename();
 
         $this->file_name         = $fileName;
-        $this->name              = (string) pathinfo($fileName, PATHINFO_FILENAME);
-        $this->mime_type         = $file->getMimeType();
-        $this->size              = $file->getSize() ?? 0;
+        $this->name              = pathinfo($fileName, PATHINFO_FILENAME);
+        $this->mime_type         = $this->file->getMimeType();
+        $this->size              = $this->file->getSize() ?? 0;
         $this->preserve_original = false;
         $this->custom_properties = [];
         $this->order             = 0;
-        $this->created_at        = Time::createFromTimestamp($file->getCTime() ?? 0);
-        $this->updated_at        = Time::createFromTimestamp($file->getMTime() ?? 0);
+        $this->created_at        = Time::createFromTimestamp($this->file->getCTime() ?? 0);
+        $this->updated_at        = Time::createFromTimestamp($this->file->getMTime() ?? 0);
         $this->ttl               = 0;
 
         foreach ($attributes as $key => $value) {
@@ -133,7 +131,7 @@ final class PendingAsset implements AssetDefinitionInterface, JsonSerializable
                 // try to set the property
                 try {
                     $this->{$key} = $value;
-                } catch (TypeError $e) {
+                } catch (TypeError) {
                     // ignore type errors
                 }
             }

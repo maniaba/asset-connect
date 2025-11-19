@@ -14,9 +14,9 @@ class RequestPendingSecurityToken implements PendingSecurityTokenInterface
      * The field/header names that are checked when retrieving user token.
      */
     public function __construct(
-        private string $requestKey = 'pending_token',
-        private string $headerKey = 'X-Pending-Token',
-        private int $tokenLength = 16,
+        private readonly string $requestKey = 'pending_token',
+        private readonly string $headerKey = 'X-Pending-Token',
+        private readonly int $tokenLength = 16,
     ) {
         if ($this->tokenLength <= 0 || $this->tokenLength > 64) {
             throw new InvalidArgumentException('Token length must be between 1 and 64 bytes.');
