@@ -12,6 +12,7 @@ use JsonSerializable;
 use Maniaba\AssetConnect\Asset\Interfaces\AssetDefinitionInterface;
 use Maniaba\AssetConnect\Asset\Traits\AssetFileInfoTrait;
 use Maniaba\AssetConnect\Exceptions\FileException;
+use Override;
 use TypeError;
 
 /**
