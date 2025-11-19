@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Maniaba\AssetConnect\Pending;
 
 use CodeIgniter\I18n\Time;
+use ErrorException;
 use Maniaba\AssetConnect\Exceptions\PendingAssetException;
 use Maniaba\AssetConnect\Pending\Interfaces\PendingSecurityTokenInterface;
 use Maniaba\AssetConnect\Pending\Interfaces\PendingStorageInterface;
@@ -160,6 +161,9 @@ class DefaultPendingStorage implements PendingStorageInterface
     {
         $id ??= $this->generatePendingId();
 
+        // Set the ID on the asset
+        $asset->setId($id);
+
         // store file on  getPendingFilePath
         $storeFilePath = $this->getPendingRawFilePath($id);
         $directory     = dirname($storeFilePath);
@@ -181,8 +185,13 @@ class DefaultPendingStorage implements PendingStorageInterface
         // Store metadata as JSON
         $metadataJson = json_encode($asset);
 
-        if (file_put_contents($metadataPath, $metadataJson) === false) {
-            throw PendingAssetException::forUnableToStorePendingAsset($id, 'Failed to write metadata file.');
+        try {
+            $result = file_put_contents($metadataPath, $metadataJson);
+            if ($result === false) {
+                throw PendingAssetException::forUnableToStorePendingAsset($id, 'Failed to write metadata file.');
+            }
+        } catch (ErrorException $e) {
+            throw PendingAssetException::forUnableToStorePendingAsset($id, 'Failed to write metadata file: ' . $e->getMessage());
         }
     }
 
