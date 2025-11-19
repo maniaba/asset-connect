@@ -13,6 +13,7 @@ use CodeIgniter\I18n\Time;
 use InvalidArgumentException;
 use JsonSerializable;
 use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
+use Maniaba\AssetConnect\Asset\Traits\AssetFileInfoTrait;
 use Maniaba\AssetConnect\Asset\Traits\AssetMimeTypeTrait;
 use Maniaba\AssetConnect\AssetCollection\AssetCollectionDefinitionFactory;
 use Maniaba\AssetConnect\Events\AssetUpdated;
@@ -49,6 +50,7 @@ class Asset extends Entity implements JsonSerializable
 {
     use AssetMimeTypeTrait;
     use UrlGeneratorTrait;
+    use AssetFileInfoTrait;
 
     protected $casts = [
         'id'          => 'int',
@@ -369,11 +371,6 @@ class Asset extends Entity implements JsonSerializable
         }
 
         return $data;
-    }
-
-    public function getHumanReadableSize(int $precision = 2): string
-    {
-        return Format::formatBytesHumanReadable($this->size, $precision);
     }
 
     public static function create(?array $data = null): Asset

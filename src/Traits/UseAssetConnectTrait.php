@@ -225,7 +225,7 @@ trait UseAssetConnectTrait
      *
      * @throws AssetException|FileException
      */
-    public function addMediaFromString(string $string, string $filename): AssetAdder
+    public function addAssetFromString(string $string, string $filename): AssetAdder
     {
         // Create a temporary file
         $tempFile = tempnam(sys_get_temp_dir(), 'asset');

@@ -12,6 +12,8 @@ use Maniaba\AssetConnect\Jobs\AssetConnectJob;
 use Maniaba\AssetConnect\Models\AssetModel;
 use Maniaba\AssetConnect\PathGenerator\DefaultPathGenerator;
 use Maniaba\AssetConnect\PathGenerator\Interfaces\PathGeneratorInterface;
+use Maniaba\AssetConnect\Pending\DefaultPendingStorage;
+use Maniaba\AssetConnect\Pending\Interfaces\PendingStorageInterface;
 use Maniaba\AssetConnect\UrlGenerator\DefaultUrlGenerator;
 use Maniaba\AssetConnect\UrlGenerator\Interfaces\UrlGeneratorInterface;
 
@@ -63,6 +65,17 @@ class Asset extends BaseConfig
      * @var class-string<UrlGeneratorInterface>|null If null, the default URL generator will be used and routes not registered.
      */
     public ?string $defaultUrlGenerator = DefaultUrlGenerator::class;
+
+    /**
+     * --------------------------------------------------------------------
+     * Pending Assets Storage
+     * --------------------------------------------------------------------
+     * This is the class that will be used to store pending assets.
+     * You can change this to any class that implements the PendingStorageInterface.
+     *
+     * @var class-string<PendingStorageInterface>
+     */
+    public string $pendingStorage = DefaultPendingStorage::class;
 
     /**
      * --------------------------------------------------------------------

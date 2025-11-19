@@ -71,7 +71,6 @@ final class AssetAdder implements AssetAdderInterface
             'mime_type'   => $file->getMimeType(),
             'entity_id'   => $this->subjectEntity->{$this->setupAssetCollection->getSubjectPrimaryKeyAttribute()},
             'entity_type' => $this->subjectEntity,
-            'size'        => $file->getSize(),
             'order'       => 0, // Default order, can be set later
         ]);
 

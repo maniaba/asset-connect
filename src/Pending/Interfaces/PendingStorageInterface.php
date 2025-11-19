@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Maniaba\AssetConnect\Pending\Interfaces;
 
+use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
+use Maniaba\AssetConnect\Exceptions\PendingAssetException;
+use Maniaba\AssetConnect\Pending\PendingAsset;
+
 /**
  * Interface for managing pending storage operations.
  * Defines methods for generating and validating security tokens,
@@ -11,6 +15,8 @@ namespace Maniaba\AssetConnect\Pending\Interfaces;
  */
 interface PendingStorageInterface
 {
+    public function __construct(?PendingSecurityTokenInterface $tokenProvider = null);
+
     /**
      * Generates a new unique pending ID as a string. UUID v4 or 32/64 hex string can be used.
      *
@@ -24,52 +30,32 @@ interface PendingStorageInterface
     public function pendingSecurityToken(): ?PendingSecurityTokenInterface;
 
     /**
-     * Retrieves the base path for pending operations or resources.
-     *  Example:
-     *    base: pending/
-     *    pendingId: abc123
-     *
-     *  Resulting path:
-     *    pending/abc123/
-     *
-     * @return string The base path designated for pending items.
-     */
-    public function getBasePendingPath(): string;
-
-    /**
-     * Retrieves the file path associated with a pending operation using the provided pending ID.
-     *
-     * Example:
-     *   base: pending/
-     *   pendingId: abc123
-     * Resulting path:
-     *   pending/abc123/data.json
-     *
-     * @param string $pendingId The unique identifier for the pending operation.
-     *
-     * @return string The file path corresponding to the provided pending ID.
-     */
-    public function getPendingFilePath(string $pendingId): string;
-
-    /**
-     * Retrieves the metadata path associated with a pending operation using the provided pending ID.
-     *
-     * Example:
-     *   base: pending/
-     *   pendingId: abc123
-     * Resulting path:
-     *   pending/abc123/metadata.json
-     *
-     * @param string $pendingId The unique identifier for the pending operation.
-     *
-     * @return string The metadata path corresponding to the provided pending ID.
-     */
-    public function getPendingMetadataPath(string $pendingId): string;
-
-    /**
      * Retrieves the default time-to-live (TTL) in seconds.
      *
      * @return int The default TTL value in seconds.
      */
     public function getDefaultTTLSeconds(): int;
+
+    /**
+     * Fetch a single pending asset by its ID.
+     *
+     * @param string $id ID of the pending asset to fetch.
+     *
+     * @return PendingAsset|null The PendingAsset object or null if not found.
+     *
+     * @throws InvalidArgumentException|PendingAssetException if unable to read metadata or invalid argument provided.
+     */
+    public function fetchById(string $id): ?PendingAsset;
+
+    /**
+     * Deletes a pending asset by its ID.
+     *
+     * @param string $id ID of the pending asset to delete.
+     */
+    public function deleteById(string $id): bool;
+
+    /**
+     * Cleans up expired pending assets.
+     */
+    public function cleanExpiredPendingAssets(): void;
 }
