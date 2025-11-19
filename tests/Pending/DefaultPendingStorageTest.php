@@ -291,7 +291,7 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
         $result = $this->storage->fetchById('non-existent-id');
 
         // Assert
-        $this->assertNull($result);
+        $this->assertNotInstanceOf(PendingAsset::class, $result);
     }
 
     /**
@@ -310,7 +310,7 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
         $result = $this->storage->fetchById($id);
 
         // Assert
-        $this->assertNull($result);
+        $this->assertNotInstanceOf(PendingAsset::class, $result);
     }
 
     /**
@@ -329,7 +329,7 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
         $result = $this->storage->fetchById($id);
 
         // Assert
-        $this->assertNull($result);
+        $this->assertNotInstanceOf(PendingAsset::class, $result);
     }
 
     /**
@@ -577,7 +577,7 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
 
         // Verify deleted
         $fetchedAfterDelete = $this->storage->fetchById($id);
-        $this->assertNull($fetchedAfterDelete);
+        $this->assertNotInstanceOf(PendingAsset::class, $fetchedAfterDelete);
     }
 
     /**

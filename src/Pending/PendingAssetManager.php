@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Maniaba\AssetConnect\Pending;
 
+use InvalidArgumentException;
 use Maniaba\AssetConnect\Config\Asset as AssetConfig;
 use Maniaba\AssetConnect\Exceptions\PendingAssetException;
 use Maniaba\AssetConnect\Pending\Interfaces\PendingStorageInterface;
@@ -21,7 +22,7 @@ final readonly class PendingAssetManager
         $defaultStorage = $config->pendingStorage;
 
         if (! is_a($defaultStorage, PendingStorageInterface::class, true)) {
-            throw new \InvalidArgumentException('Pending storage must be an instance of PendingStorageInterface');
+            throw new InvalidArgumentException('Pending storage must be an instance of PendingStorageInterface');
         }
 
         $this->storage = $storage ?? new $defaultStorage();
