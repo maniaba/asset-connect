@@ -48,6 +48,16 @@ interface PendingStorageInterface
     public function fetchById(string $id): ?PendingAsset;
 
     /**
+     * Stores a pending asset.
+     *
+     * @param PendingAsset $asset The pending asset to store.
+     * @param string|null  $id    Optional ID to use for storage. If not provided, a new ID will be generated.
+     *
+     * @throws PendingAssetException if unable to store the pending asset.
+     */
+    public function store(PendingAsset $asset, ?string $id = null): void;
+
+    /**
      * Deletes a pending asset by its ID.
      *
      * @param string $id ID of the pending asset to delete.

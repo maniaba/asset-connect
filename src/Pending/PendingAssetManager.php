@@ -21,7 +21,7 @@ final class PendingAssetManager
 
         $defaultStorage = $config->pendingStorage;
 
-        if ($defaultStorage instanceof PendingStorageInterface) {
+        if (! is_a($defaultStorage, PendingStorageInterface::class, true)) {
             throw new \InvalidArgumentException('Pending storage must be an instance of PendingStorageInterface');
         }
 
