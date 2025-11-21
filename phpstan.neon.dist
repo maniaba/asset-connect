@@ -1,6 +1,7 @@
 parameters:
+	phpVersion: 80300
 	tmpDir: build/phpstan
-	level: 5
+	level: 10
 	paths:
 		- src/
 		- tests/
