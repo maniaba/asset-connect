@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Maniaba\AssetConnect\Pending;
 
+use AllowDynamicProperties;
 use CodeIgniter\Entity\Entity;
 use CodeIgniter\Files\File;
 use CodeIgniter\HTTP\Files\UploadedFile;
@@ -18,22 +19,20 @@ use TypeError;
 /**
  * Class PendingAsset
  *
- * Represents an asset that is pending addition to an entity.
+ * Represents an asset pending addition to an entity.
  *
  * @property-read Time                 $created_at
  * @property-read array<string, mixed> $custom_properties
- * @property-read File                 $file
  * @property-read string               $file_name
  * @property-read string               $id
  * @property-read string               $mime_type
  * @property-read string               $name
  * @property-read int                  $order
  * @property-read bool                 $preserve_original
- * @property-read int                  $size
- * @property-read int                  $size_human_readable
  * @property-read int                  $ttl
  * @property-read Time                 $updated_at
  */
+#[AllowDynamicProperties]
 final class PendingAsset implements AssetDefinitionInterface, JsonSerializable
 {
     use AssetFileInfoTrait;
