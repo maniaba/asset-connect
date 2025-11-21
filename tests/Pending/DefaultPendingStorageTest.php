@@ -675,7 +675,7 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
 
         // Metadata should be updated
         $fetchedAsset = $this->storage->fetchById($id);
-        $this->assertNotNull($fetchedAsset, 'Asset should be fetchable');
+        $this->assertInstanceOf(PendingAsset::class, $fetchedAsset, 'Asset should be fetchable');
         $this->assertSame($updatedName, $fetchedAsset->name, 'Name should be updated');
         $this->assertSame(2, $fetchedAsset->custom_properties['version'], 'Custom property version should be updated');
         $this->assertSame('modified', $fetchedAsset->custom_properties['status'], 'New custom property should be added');
