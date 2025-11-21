@@ -106,19 +106,8 @@ final class PendingAssetManagerTest extends CIUnitTestCase
         $ttlSeconds = 3600;
         $createdAt  = Time::now()->subSeconds(1800); // Created 30 minutes ago
 
-        $pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
-        $pendingAsset->setId($id);
-        $this->setPrivateProperty($pendingAsset, 'created_at', $createdAt);
-
-        $this->mockStorage->method('fetchById')->with($id)->willReturn($pendingAsset);
-        $this->mockStorage->method('getDefaultTTLSeconds')->willReturn($ttlSeconds);
-        // Ensure deleteById is not called for non-expired assets
-        $this->mockStorage->expects($this->never())->method('deleteById');
-
-        $manager = PendingAssetManager::make($this->mockStorage);
-
         // Act
-        $result = $manager->fetchById($id);
+        $result = $this->assertNonExpiredAssetIsReturned($id, $ttlSeconds, $createdAt);
 
         // Assert
         $this->assertInstanceOf(PendingAsset::class, $result);
@@ -201,18 +190,8 @@ final class PendingAssetManagerTest extends CIUnitTestCase
         $ttlSeconds = 3600;
         $createdAt  = Time::now()->subSeconds(3600); // Created exactly TTL seconds ago
 
-        $pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
-        $pendingAsset->setId($id);
-        $this->setPrivateProperty($pendingAsset, 'created_at', $createdAt);
-
-        $this->mockStorage->method('fetchById')->with($id)->willReturn($pendingAsset);
-        $this->mockStorage->method('getDefaultTTLSeconds')->willReturn($ttlSeconds);
-        $this->mockStorage->expects($this->never())->method('deleteById'); // Should not be deleted
-
-        $manager = PendingAssetManager::make($this->mockStorage);
-
         // Act
-        $result = $manager->fetchById($id);
+        $result = $this->assertNonExpiredAssetIsReturned($id, $ttlSeconds, $createdAt);
 
         // Assert - should NOT be expired (< is used in comparison, not <=)
         // expiresAt = createdAt + TTL = now - 3600 + 3600 = now
@@ -537,6 +516,30 @@ final class PendingAssetManagerTest extends CIUnitTestCase
 
         // Assert - should handle exception gracefully and return null
         $this->assertNotInstanceOf(PendingAsset::class, $result);
+    }
+
+    /**
+     * Helper method to create and setup a non-expired pending asset
+     *
+     * @param string $id         The asset ID
+     * @param int    $ttlSeconds The TTL in seconds
+     * @param Time   $createdAt  The creation time
+     *
+     * @return mixed The result of fetchById
+     */
+    private function assertNonExpiredAssetIsReturned(string $id, int $ttlSeconds, Time $createdAt)
+    {
+        $pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
+        $pendingAsset->setId($id);
+        $this->setPrivateProperty($pendingAsset, 'created_at', $createdAt);
+
+        $this->mockStorage->method('fetchById')->with($id)->willReturn($pendingAsset);
+        $this->mockStorage->method('getDefaultTTLSeconds')->willReturn($ttlSeconds);
+        $this->mockStorage->expects($this->never())->method('deleteById');
+
+        $manager = PendingAssetManager::make($this->mockStorage);
+
+        return $manager->fetchById($id);
     }
 
     /**
