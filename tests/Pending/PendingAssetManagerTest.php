@@ -153,18 +153,8 @@ final class PendingAssetManagerTest extends CIUnitTestCase
         $ttlSeconds = 3600;
         $createdAt  = Time::now()->subSeconds(7200); // Created 2 hours ago
 
-        $pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
-        $pendingAsset->setId($id);
-        $this->setPrivateProperty($pendingAsset, 'created_at', $createdAt);
-
-        $this->mockStorage->method('fetchById')->with($id)->willReturn($pendingAsset);
-        $this->mockStorage->method('getDefaultTTLSeconds')->willReturn($ttlSeconds);
-        $this->mockStorage->expects($this->once())->method('deleteById')->with($id)->willReturn(true);
-
-        $manager = PendingAssetManager::make($this->mockStorage);
-
         // Act
-        $result = $manager->fetchById($id);
+        $result = $this->assertExpiredAssetIsDeleted($id, $ttlSeconds, $createdAt);
 
         // Assert
         $this->assertNotInstanceOf(PendingAsset::class, $result);
@@ -239,18 +229,8 @@ final class PendingAssetManagerTest extends CIUnitTestCase
         $ttlSeconds = 3600;
         $createdAt  = Time::now()->subSeconds(3601); // Created 1 second past TTL
 
-        $pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
-        $pendingAsset->setId($id);
-        $this->setPrivateProperty($pendingAsset, 'created_at', $createdAt);
-
-        $this->mockStorage->method('fetchById')->with($id)->willReturn($pendingAsset);
-        $this->mockStorage->method('getDefaultTTLSeconds')->willReturn($ttlSeconds);
-        $this->mockStorage->expects($this->once())->method('deleteById')->with($id)->willReturn(true);
-
-        $manager = PendingAssetManager::make($this->mockStorage);
-
         // Act
-        $result = $manager->fetchById($id);
+        $result = $this->assertExpiredAssetIsDeleted($id, $ttlSeconds, $createdAt);
 
         // Assert - should be expired
         $this->assertNotInstanceOf(PendingAsset::class, $result);
@@ -441,18 +421,8 @@ final class PendingAssetManagerTest extends CIUnitTestCase
         $ttlSeconds = 0;
         $createdAt  = Time::now()->subSeconds(1);
 
-        $pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
-        $pendingAsset->setId($id);
-        $this->setPrivateProperty($pendingAsset, 'created_at', $createdAt);
-
-        $this->mockStorage->method('fetchById')->with($id)->willReturn($pendingAsset);
-        $this->mockStorage->method('getDefaultTTLSeconds')->willReturn($ttlSeconds);
-        $this->mockStorage->expects($this->once())->method('deleteById')->with($id)->willReturn(true);
-
-        $manager = PendingAssetManager::make($this->mockStorage);
-
         // Act
-        $result = $manager->fetchById($id);
+        $result = $this->assertExpiredAssetIsDeleted($id, $ttlSeconds, $createdAt);
 
         // Assert - should be expired immediately
         $this->assertNotInstanceOf(PendingAsset::class, $result);
@@ -565,5 +535,29 @@ final class PendingAssetManagerTest extends CIUnitTestCase
 
         // Assert - should handle exception gracefully and return null
         $this->assertNotInstanceOf(PendingAsset::class, $result);
+    }
+
+    /**
+     * Helper method to test expired asset scenario with automatic deletion
+     *
+     * @param string $id         The asset ID
+     * @param int    $ttlSeconds The TTL in seconds
+     * @param Time   $createdAt  The creation time
+     *
+     * @return mixed The result of fetchById
+     */
+    private function assertExpiredAssetIsDeleted(string $id, int $ttlSeconds, Time $createdAt)
+    {
+        $pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
+        $pendingAsset->setId($id);
+        $this->setPrivateProperty($pendingAsset, 'created_at', $createdAt);
+
+        $this->mockStorage->method('fetchById')->with($id)->willReturn($pendingAsset);
+        $this->mockStorage->method('getDefaultTTLSeconds')->willReturn($ttlSeconds);
+        $this->mockStorage->expects($this->once())->method('deleteById')->with($id)->willReturn(true);
+
+        $manager = PendingAssetManager::make($this->mockStorage);
+
+        return $manager->fetchById($id);
     }
 }
