@@ -136,7 +136,6 @@ final class PendingAsset implements AssetDefinitionInterface, JsonSerializable
                 // try to set the property
                 try {
                     $this->{$key} = $value;
-                    /** @phpstan-ignore-next-line Dead catch - TypeError is never thrown in the try block. */
                 } catch (TypeError) {
                     // ignore type errors - can occur with typed properties when value doesn't match expected type
                 }
