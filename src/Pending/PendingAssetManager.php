@@ -9,6 +9,7 @@ use InvalidArgumentException;
 use Maniaba\AssetConnect\Config\Asset as AssetConfig;
 use Maniaba\AssetConnect\Exceptions\PendingAssetException;
 use Maniaba\AssetConnect\Pending\Interfaces\PendingStorageInterface;
+use Random\RandomException;
 use Throwable;
 
 final readonly class PendingAssetManager
@@ -79,14 +80,20 @@ final readonly class PendingAssetManager
         return $this->storage->deleteById($id);
     }
 
+    /**
+     * @throws RandomException
+     */
     public function store(PendingAsset $pendingAsset, ?int $ttlSeconds = null): void
     {
-        $generateId = $this->storage->generatePendingId();
+        if ($pendingAsset->id === '') {
+            $generateId = $this->storage->generatePendingId();
+            $pendingAsset->setId($generateId);
+        }
+
         $ttlSeconds ??= $this->storage->getDefaultTTLSeconds();
+        $pendingAsset->setTTL($ttlSeconds);
 
-        $pendingAsset->setId($generateId)->setTTL($ttlSeconds);
-
-        $this->storage->store($pendingAsset, $generateId);
+        $this->storage->store($pendingAsset, $pendingAsset->id);
     }
 
     public function cleanExpiredPendingAssets(): void

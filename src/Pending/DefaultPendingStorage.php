@@ -161,7 +161,11 @@ class DefaultPendingStorage implements PendingStorageInterface
     }
 
     /**
+     * Stores a pending asset. If an ID is provided, it will be updated only metadata.
+     *
      * @param PendingAsset $asset The pending asset to be stored.
+     *
+     * @throws PendingAssetException|RandomException if unable to store the asset.
      */
     #[Override]
     public function store(PendingAsset $asset, ?string $id = null): void
@@ -174,11 +178,18 @@ class DefaultPendingStorage implements PendingStorageInterface
         // store file on  getPendingFilePath
         $storeFilePath = $this->getPendingRawFilePath($id);
         $directory     = dirname($storeFilePath);
-        $metadataPath  = $this->getPendingMetadataFilePath($id);
 
         // Ensure the directory exists
         if (! is_dir($directory)) {
             mkdir($directory, 0755, true);
+        }
+
+        // Store metadata file
+        $this->storeMetadataFile($asset);
+
+        // if file already exists at path, return because we do not want to overwrite
+        if (file_exists($storeFilePath)) {
+            return;
         }
 
         // Move or copy the file to the pending file path to $filePath
@@ -188,6 +199,16 @@ class DefaultPendingStorage implements PendingStorageInterface
         }
         // Delete the temporary file if it was created
         @unlink($asset->file->getRealPath());
+    }
+
+    private function storeMetadataFile(PendingAsset $asset): void
+    {
+        $metadataPath = $this->getPendingMetadataFilePath($asset->id);
+
+        if (file_exists($metadataPath)) {
+            // unlink an existing file to update it
+            @unlink($metadataPath);
+        }
 
         // Store metadata as JSON
         $metadataJson = json_encode($asset);
@@ -195,10 +216,10 @@ class DefaultPendingStorage implements PendingStorageInterface
         try {
             $result = file_put_contents($metadataPath, $metadataJson);
             if ($result === false) {
-                throw PendingAssetException::forUnableToStorePendingAsset($id, 'Failed to write metadata file.');
+                throw PendingAssetException::forUnableToStorePendingAsset($asset->id, 'Failed to write metadata file.');
             }
         } catch (ErrorException $e) {
-            throw PendingAssetException::forUnableToStorePendingAsset($id, 'Failed to write metadata file: ' . $e->getMessage());
+            throw PendingAssetException::forUnableToStorePendingAsset($asset->id, 'Failed to write metadata file: ' . $e->getMessage());
         }
     }
 

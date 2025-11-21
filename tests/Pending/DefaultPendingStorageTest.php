@@ -614,6 +614,131 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
     }
 
     /**
+     * Test update scenario - metadata is updated but file remains the same
+     */
+    public function testUpdateExistingAssetUpdatesMetadataButKeepsFile(): void
+    {
+        // Arrange - Create and store initial asset
+        $id          = 'update-test-id';
+        $initialName = 'initial-name';
+        $updatedName = 'updated-name';
+
+        $tempFile1 = tempnam(sys_get_temp_dir(), 'update_test_1_');
+        file_put_contents($tempFile1, 'original file content for update test');
+
+        $initialAsset = PendingAsset::createFromFile($tempFile1);
+        $initialAsset->usingName($initialName)
+            ->withCustomProperty('version', 1)
+            ->setOrder(1);
+
+        // Store initial asset (tempFile1 will be deleted by store)
+        $this->storage->store($initialAsset, $id);
+
+        // Get file path and stats
+        $storedFilePath = $this->basePendingPath . $id . DIRECTORY_SEPARATOR . 'file';
+        $this->assertFileExists($storedFilePath);
+        $originalFileContent = file_get_contents($storedFilePath);
+        $originalFileModTime = filemtime($storedFilePath);
+        $originalFileInode   = fileinode($storedFilePath);
+
+        // Small delay to ensure different modification time if file was touched
+        usleep(100000); // 0.1 second
+
+        // Act - Create NEW temp file for update (since tempFile1 was deleted)
+        $tempFile2 = tempnam(sys_get_temp_dir(), 'update_test_2_');
+        file_put_contents($tempFile2, 'this content should NOT be used on update');
+
+        $updatedAsset = PendingAsset::createFromFile($tempFile2);
+        $updatedAsset->usingName($updatedName)
+            ->withCustomProperty('version', 2)
+            ->withCustomProperty('status', 'modified')
+            ->setOrder(5);
+
+        $this->storage->store($updatedAsset, $id); // Same ID = update
+
+        // Assert - File should remain unchanged
+        $this->assertFileExists($storedFilePath, 'File should still exist');
+
+        $newFileContent = file_get_contents($storedFilePath);
+        $newFileModTime = filemtime($storedFilePath);
+        $newFileInode   = fileinode($storedFilePath);
+
+        // File content should be exactly the same as original (NOT tempFile2 content)
+        $this->assertSame($originalFileContent, $newFileContent, 'File content should not change on update');
+        $this->assertNotSame('this content should NOT be used on update', $newFileContent, 'New file content should not be used');
+
+        // File should not have been modified (same modification time)
+        $this->assertSame($originalFileModTime, $newFileModTime, 'File modification time should not change');
+
+        // File inode should be the same (same physical file)
+        $this->assertSame($originalFileInode, $newFileInode, 'File inode should be the same (not replaced)');
+
+        // Metadata should be updated
+        $fetchedAsset = $this->storage->fetchById($id);
+        $this->assertNotNull($fetchedAsset, 'Asset should be fetchable');
+        $this->assertSame($updatedName, $fetchedAsset->name, 'Name should be updated');
+        $this->assertSame(2, $fetchedAsset->custom_properties['version'], 'Custom property version should be updated');
+        $this->assertSame('modified', $fetchedAsset->custom_properties['status'], 'New custom property should be added');
+        $this->assertSame(5, $fetchedAsset->order, 'Order should be updated');
+
+        // Note: temp files are already deleted by storage->store()
+        $this->assertFileDoesNotExist($tempFile1, 'Initial temp file should be deleted');
+        $this->assertFileDoesNotExist($tempFile2, 'Updated temp file should be deleted');
+    }
+
+    /**
+     * Test that storing with same ID multiple times keeps updating metadata
+     */
+    public function testMultipleUpdatesKeepUpdatingMetadata(): void
+    {
+        // Arrange - Create initial asset
+        $id              = 'multiple-updates-id';
+        $originalContent = 'original file content';
+        $tempFiles       = [];
+
+        // Create and store initial asset
+        $tempFiles[] = tempnam(sys_get_temp_dir(), 'multi_update_0_');
+        file_put_contents($tempFiles[0], $originalContent);
+
+        $initialAsset = PendingAsset::createFromFile($tempFiles[0]);
+        $initialAsset->usingName('initial-name');
+        $this->storage->store($initialAsset, $id);
+
+        // Get original file stats
+        $storedFilePath  = $this->basePendingPath . $id . DIRECTORY_SEPARATOR . 'file';
+        $originalContent = file_get_contents($storedFilePath);
+        $originalInode   = fileinode($storedFilePath);
+
+        // Act & Assert - Update metadata multiple times
+        for ($i = 1; $i <= 3; $i++) {
+            // Create new temp file for each iteration (since previous one is deleted)
+            $tempFiles[] = tempnam(sys_get_temp_dir(), "multi_update_{$i}_");
+            file_put_contents($tempFiles[$i], "different content {$i}");
+
+            $asset = PendingAsset::createFromFile($tempFiles[$i]);
+            $asset->usingName("name-version-{$i}")
+                ->withCustomProperty('iteration', $i)
+                ->setOrder($i * 10);
+
+            $this->storage->store($asset, $id);
+
+            // Fetch and verify metadata was updated
+            $fetched = $this->storage->fetchById($id);
+            $this->assertSame("name-version-{$i}", $fetched->name);
+            $this->assertSame($i, $fetched->custom_properties['iteration']);
+            $this->assertSame($i * 10, $fetched->order);
+
+            // Verify file content hasn't changed
+            $currentContent = file_get_contents($storedFilePath);
+            $this->assertSame($originalContent, $currentContent, "File content should remain unchanged after update {$i}");
+
+            // Verify it's the same physical file
+            $currentInode = fileinode($storedFilePath);
+            $this->assertSame($originalInode, $currentInode, "File inode should remain the same after update {$i}");
+        }
+    }
+
+    /**
      * Helper method to update metadata timestamp
      */
     private function updateMetadataTimestamp(string $id, Time $createdAt): void

@@ -458,6 +458,79 @@ final class PendingAssetManagerTest extends CIUnitTestCase
     }
 
     /**
+     * Test store with existing ID updates metadata only (not file)
+     * When ID is provided, it's an update operation - only metadata should be updated
+     */
+    public function testStoreWithExistingIdUpdatesMetadataOnly(): void
+    {
+        // Arrange
+        $existingId   = 'existing-asset-id';
+        $customTTL    = 7200;
+        $pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
+
+        // Simulate an asset that already has an ID (update scenario)
+        $pendingAsset->setId($existingId);
+
+        // Storage should NOT generate a new ID when one is already set
+        $this->mockStorage->expects($this->never())->method('generatePendingId');
+
+        // Storage should receive the store call with the existing ID
+        $this->mockStorage->expects($this->once())
+            ->method('store')
+            ->with(
+                $this->identicalTo($pendingAsset),
+                $existingId, // The existing ID should be passed
+            );
+
+        $manager = PendingAssetManager::make($this->mockStorage);
+
+        // Act - store with existing ID (update scenario)
+        $manager->store($pendingAsset, $customTTL);
+
+        // Assert - ID should remain the same (update, not create)
+        $this->assertSame($existingId, $pendingAsset->id);
+        $this->assertSame($customTTL, $pendingAsset->ttl);
+    }
+
+    /**
+     * Test store without ID generates new ID (create scenario)
+     */
+    public function testStoreWithoutIdGeneratesNewId(): void
+    {
+        // Arrange
+        $newGeneratedId = 'newly-generated-id';
+        $defaultTTL     = 3600;
+        $pendingAsset   = PendingAsset::createFromFile($this->tempFilePath);
+
+        // Asset has no ID initially (create scenario)
+        $this->assertSame('', $pendingAsset->id);
+
+        // Storage should generate a new ID
+        $this->mockStorage->expects($this->once())
+            ->method('generatePendingId')
+            ->willReturn($newGeneratedId);
+
+        $this->mockStorage->method('getDefaultTTLSeconds')->willReturn($defaultTTL);
+
+        // Storage should receive the store call with the newly generated ID
+        $this->mockStorage->expects($this->once())
+            ->method('store')
+            ->with(
+                $this->identicalTo($pendingAsset),
+                $newGeneratedId,
+            );
+
+        $manager = PendingAssetManager::make($this->mockStorage);
+
+        // Act - store without ID (create scenario)
+        $manager->store($pendingAsset);
+
+        // Assert - new ID should be assigned
+        $this->assertSame($newGeneratedId, $pendingAsset->id);
+        $this->assertSame($defaultTTL, $pendingAsset->ttl);
+    }
+
+    /**
      * Test multiple sequential operations
      */
     public function testMultipleSequentialOperations(): void
