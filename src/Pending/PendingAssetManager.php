@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Maniaba\AssetConnect\Pending;
 
+use CodeIgniter\I18n\Time;
 use InvalidArgumentException;
 use Maniaba\AssetConnect\Config\Asset as AssetConfig;
 use Maniaba\AssetConnect\Exceptions\PendingAssetException;
@@ -51,7 +52,7 @@ final readonly class PendingAssetManager
         if ($pendingAsset !== null) {
             $createdAt = $pendingAsset->created_at;
             $expiresAt = $createdAt->getTimestamp() + $ttl;
-            $now       = time();
+            $now       = Time::now()->getTimestamp();
 
             if ($expiresAt < $now) {
                 // try to delete the expired asset

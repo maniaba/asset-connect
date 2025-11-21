@@ -112,6 +112,8 @@ final class PendingAssetManagerTest extends CIUnitTestCase
 
         $this->mockStorage->method('fetchById')->with($id)->willReturn($pendingAsset);
         $this->mockStorage->method('getDefaultTTLSeconds')->willReturn($ttlSeconds);
+        // Ensure deleteById is not called for non-expired assets
+        $this->mockStorage->expects($this->never())->method('deleteById');
 
         $manager = PendingAssetManager::make($this->mockStorage);
 
