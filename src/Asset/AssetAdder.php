@@ -142,11 +142,12 @@ final class AssetAdder implements AssetAdderInterface
     }
 
     /**
-     * Adds a custom property to the asset.
+     * Add a single custom property to the asset metadata.
      *
      * @param string $key   The key for the custom property.
      * @param mixed  $value The value for the custom property.
      */
+    #[Override]
     public function withCustomProperty(string $key, mixed $value): self
     {
         $this->asset->metadata->userCustom->set($key, $value);

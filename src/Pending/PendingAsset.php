@@ -50,6 +50,7 @@ final class PendingAsset implements AssetDefinitionInterface, JsonSerializable
     private bool $preserve_original;
     private array $custom_properties;
 
+    #[Override]
     public function usingName(string $name): AssetDefinitionInterface
     {
         $this->name = $name;
@@ -57,6 +58,7 @@ final class PendingAsset implements AssetDefinitionInterface, JsonSerializable
         return $this;
     }
 
+    #[Override]
     public function usingFileName(string $fileName): AssetDefinitionInterface
     {
         $this->file_name = $fileName;
@@ -64,6 +66,7 @@ final class PendingAsset implements AssetDefinitionInterface, JsonSerializable
         return $this;
     }
 
+    #[Override]
     public function preservingOriginal(bool $preserveOriginal = true): AssetDefinitionInterface
     {
         $this->preserve_original = $preserveOriginal;
@@ -71,6 +74,7 @@ final class PendingAsset implements AssetDefinitionInterface, JsonSerializable
         return $this;
     }
 
+    #[Override]
     public function setOrder(int $order): AssetDefinitionInterface
     {
         $this->order = $order;
@@ -78,6 +82,7 @@ final class PendingAsset implements AssetDefinitionInterface, JsonSerializable
         return $this;
     }
 
+    #[Override]
     public function withCustomProperties(array $customProperties): AssetDefinitionInterface
     {
         $this->custom_properties = $customProperties;
@@ -85,6 +90,7 @@ final class PendingAsset implements AssetDefinitionInterface, JsonSerializable
         return $this;
     }
 
+    #[Override]
     public function withCustomProperty(string $key, mixed $value): AssetDefinitionInterface
     {
         $this->custom_properties[$key] = $value;

@@ -10,6 +10,7 @@ use Maniaba\AssetConnect\Exceptions\PendingAssetException;
 use Maniaba\AssetConnect\Pending\Interfaces\PendingSecurityTokenInterface;
 use Maniaba\AssetConnect\Pending\Interfaces\PendingStorageInterface;
 use Maniaba\AssetConnect\Pending\PendingSecurityToken\SessionPendingSecurityToken;
+use Override;
 use Random\RandomException;
 
 class DefaultPendingStorage implements PendingStorageInterface
@@ -24,6 +25,7 @@ class DefaultPendingStorage implements PendingStorageInterface
     /**
      * @throws PendingAssetException|RandomException if unable to generate unique ID
      */
+    #[Override]
     public function generatePendingId(): string
     {
         $randomId = bin2hex(random_bytes(16));
@@ -42,6 +44,7 @@ class DefaultPendingStorage implements PendingStorageInterface
         return $randomId;
     }
 
+    #[Override]
     public function pendingSecurityToken(): ?PendingSecurityTokenInterface
     {
         return $this->tokenProvider;
@@ -56,6 +59,7 @@ class DefaultPendingStorage implements PendingStorageInterface
      *
      * @throws PendingAssetException if unable to read metadata.
      */
+    #[Override]
     public function fetchById(string $id): ?PendingAsset
     {
         $filePath     = $this->getPendingRawFilePath($id);
@@ -80,6 +84,7 @@ class DefaultPendingStorage implements PendingStorageInterface
         return PendingAsset::createFromFile($filePath, $metadata);
     }
 
+    #[Override]
     public function deleteById(string $id): bool
     {
         $basePath = $this->getBasePendingPath() . $id . DIRECTORY_SEPARATOR;
@@ -149,6 +154,7 @@ class DefaultPendingStorage implements PendingStorageInterface
         return $this->getBasePendingPath() . $pendingId . DIRECTORY_SEPARATOR . 'metadata.json';
     }
 
+    #[Override]
     public function getDefaultTTLSeconds(): int
     {
         return 86400; // 24 hours
@@ -157,6 +163,7 @@ class DefaultPendingStorage implements PendingStorageInterface
     /**
      * @param PendingAsset $asset The pending asset to be stored.
      */
+    #[Override]
     public function store(PendingAsset $asset, ?string $id = null): void
     {
         $id ??= $this->generatePendingId();
@@ -195,6 +202,7 @@ class DefaultPendingStorage implements PendingStorageInterface
         }
     }
 
+    #[Override]
     public function cleanExpiredPendingAssets(): void
     {
         $basePath   = $this->getBasePendingPath();

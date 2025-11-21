@@ -7,6 +7,7 @@ namespace Maniaba\AssetConnect\Pending\PendingSecurityToken;
 use CodeIgniter\HTTP\IncomingRequest;
 use InvalidArgumentException;
 use Maniaba\AssetConnect\Pending\Interfaces\PendingSecurityTokenInterface;
+use Override;
 
 class RequestPendingSecurityToken implements PendingSecurityTokenInterface
 {
@@ -23,11 +24,13 @@ class RequestPendingSecurityToken implements PendingSecurityTokenInterface
         }
     }
 
+    #[Override]
     public function generateToken(string $pendingId): string
     {
         return bin2hex(random_bytes($this->tokenLength));
     }
 
+    #[Override]
     public function retrieveToken(string $pendingId): ?string
     {
         /**
@@ -50,6 +53,7 @@ class RequestPendingSecurityToken implements PendingSecurityTokenInterface
         return null;
     }
 
+    #[Override]
     public function validateToken(string $pendingId, ?string $provided = null): bool
     {
         $provided = (string) $provided;
@@ -58,6 +62,7 @@ class RequestPendingSecurityToken implements PendingSecurityTokenInterface
         return hash_equals($stored, $provided);
     }
 
+    #[Override]
     public function deleteToken(string $pendingId): void
     {
         // No persistent storage, so nothing to delete.

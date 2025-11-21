@@ -7,6 +7,7 @@ namespace Maniaba\AssetConnect\Pending\PendingSecurityToken;
 use CodeIgniter\Session\Session;
 use InvalidArgumentException;
 use Maniaba\AssetConnect\Pending\Interfaces\PendingSecurityTokenInterface;
+use Override;
 
 readonly class SessionPendingSecurityToken implements PendingSecurityTokenInterface
 {
@@ -23,6 +24,7 @@ readonly class SessionPendingSecurityToken implements PendingSecurityTokenInterf
         }
     }
 
+    #[Override]
     public function generateToken(string $pendingId): string
     {
         $token = bin2hex(random_bytes($this->tokenLength));
@@ -41,6 +43,7 @@ readonly class SessionPendingSecurityToken implements PendingSecurityTokenInterf
     /**
      * {@inheritDoc}
      */
+    #[Override]
     public function retrieveToken(string $pendingId): ?string
     {
         /**
@@ -54,6 +57,7 @@ readonly class SessionPendingSecurityToken implements PendingSecurityTokenInterf
     /**
      * {@inheritDoc}
      */
+    #[Override]
     public function validateToken(string $pendingId, ?string $provided = null): bool
     {
         $provided = (string) $provided;
@@ -67,6 +71,7 @@ readonly class SessionPendingSecurityToken implements PendingSecurityTokenInterf
         return self::SESSION_KEY_PREFIX . $pendingId;
     }
 
+    #[Override]
     public function deleteToken(string $pendingId): void
     {
         /**
