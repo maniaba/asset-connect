@@ -151,7 +151,7 @@ final class SessionPendingSecurityTokenTest extends CIUnitTestCase
             ->method('setTempdata')
             ->with(
                 $this->stringContains('__pending_security_token_' . $pendingId),
-                $this->isType('string'),
+                $this->isString(),
                 $ttl,
             );
 

@@ -213,3 +213,58 @@ parameters:
 			identifier: argument.type
 			count: 3
 			path: tests/Validation/AssetConnectValidatorTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\AssetConnect\\\\Pending\\\\DefaultPendingStorage'' and Maniaba\\AssetConnect\\Pending\\DefaultPendingStorage will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 2
+			path: tests/Pending/DefaultPendingStorageTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertTrue\(\) with true will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 2
+			path: tests/Pending/DefaultPendingStorageTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\AssetConnect\\\\Pending\\\\PendingAssetManager'' and Maniaba\\AssetConnect\\Pending\\PendingAssetManager will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 2
+			path: tests/Pending/PendingAssetManagerTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertTrue\(\) with true will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 1
+			path: tests/Pending/PendingAssetManagerTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\AssetConnect\\\\Pending\\\\PendingAsset'' and Maniaba\\AssetConnect\\Pending\\PendingAsset will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 6
+			path: tests/Pending/PendingAssetTest.php
+
+		-
+			message: '#^Call to an undefined method Maniaba\\AssetConnect\\Asset\\Interfaces\\AssetDefinitionInterface\:\:setId\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Pending/PendingAssetTest.php
+
+		-
+			message: '#^Access to an undefined property Maniaba\\AssetConnect\\Pending\\PendingAsset\:\:\$nonExistentProperty\.$#'
+			identifier: property.notFound
+			count: 1
+			path: tests/Pending/PendingAssetTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\AssetConnect\\\\Pending\\\\PendingSecurityToken\\\\SessionPendingSecurityToken'' and Maniaba\\AssetConnect\\Pending\\PendingSecurityToken\\SessionPendingSecurityToken will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 2
+			path: tests\Pending\SessionPendingSecurityTokenTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertTrue\(\) with true will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 2
+			path: tests\Pending\SessionPendingSecurityTokenTest.php
+
