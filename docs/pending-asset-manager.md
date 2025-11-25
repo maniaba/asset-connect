@@ -237,8 +237,7 @@ public function confirm()
 
     // Add to entity
     $user->addAssetFromPending($pending)
-        ->toAssetCollection(Photos::class)
-        ->save();
+        ->toAssetCollection(Photos::class);
 
     // Clean up
     $manager->deleteById($pendingId);
@@ -303,9 +302,7 @@ public function confirmUpload()
     }
 
     $user->addAssetFromPending($pending)
-        ->toAssetCollection(Images::class)
-        ->save();
-
+        ->toAssetCollection(Images::class);
 
     return $this->response->setJSON(['success' => true]);
 }
@@ -316,16 +313,17 @@ public function confirmUpload()
 ```php
 public function batchUpload()
 {
-    $files = $this->request->getFiles();
+    $result = PendingAsset::createFromRequest('photos');
+
+    if (empty($result['photos'])) {
+        return $this->response->setStatusCode(400)
+            ->setJSON(['error' => 'No files uploaded']);
+    }
+
     $manager = PendingAssetManager::make();
     $pendingIds = [];
 
-    foreach ($files['photos'] as $file) {
-        if (!$file->isValid()) {
-            continue;
-        }
-
-        $pending = PendingAsset::createFromFile($file);
+    foreach ($result['photos'] as $pending) {
         $manager->store($pending);
 
         $pendingIds[] = $pending->id;
@@ -349,8 +347,7 @@ public function confirmBatch()
         }
 
         $product->addAssetFromPending($pending)
-            ->toAssetCollection(ProductImages::class)
-            ->save();
+            ->toAssetCollection(ProductImages::class);
     }
 
     return $this->response->setJSON(['success' => true]);
@@ -394,26 +391,34 @@ try {
 ### Validation Before Storing
 
 ```php
-$file = $this->request->getFile('photo');
+try {
+    // createFromRequest automatically validates uploaded files
+    $result = PendingAsset::createFromRequest('photo');
 
-// Validate before creating pending asset
-if (!$file->isValid()) {
-    throw new \RuntimeException('Invalid file upload');
+    if (empty($result['photo'])) {
+        throw new \RuntimeException('No file uploaded');
+    }
+
+    $pending = $result['photo'][0];
+
+    // Additional validation
+    if ($pending->size > 10 * 1024 * 1024) { // 10MB
+        throw new \RuntimeException('File too large');
+    }
+
+    $allowedMimes = ['image/jpeg', 'image/png', 'image/gif'];
+    if (!in_array($pending->mime_type, $allowedMimes)) {
+        throw new \RuntimeException('Invalid file type');
+    }
+
+    // Now safe to store
+    $manager = PendingAssetManager::make();
+    $manager->store($pending);
+
+} catch (\Exception $e) {
+    return $this->response->setStatusCode(400)
+        ->setJSON(['error' => $e->getMessage()]);
 }
-
-if ($file->getSize() > 10 * 1024 * 1024) { // 10MB
-    throw new \RuntimeException('File too large');
-}
-
-$allowedMimes = ['image/jpeg', 'image/png', 'image/gif'];
-if (!in_array($file->getMimeType(), $allowedMimes)) {
-    throw new \RuntimeException('Invalid file type');
-}
-
-// Now safe to create and store
-$pending = PendingAsset::createFromFile($file);
-$manager = PendingAssetManager::make();
-$manager->store($pending);
 ```
 
 ## Best Practices
@@ -423,8 +428,7 @@ $manager->store($pending);
 ```php
 // Pending assets are automatically cleaned up after successful addition
 $user->addAssetFromPending($pendingId)
-    ->toAssetCollection(Photos::class)
-    ->save();
+    ->toAssetCollection(Photos::class);
 // File is automatically removed from pending storage
 ```
 

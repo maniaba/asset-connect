@@ -161,6 +161,90 @@ $pending = PendingAsset::createFromBase64($base64, [
 ]);
 ```
 
+### createFromRequest
+
+Creates pending assets directly from HTTP request uploaded files. This is the recommended method for handling file uploads from forms.
+
+```php
+public static function createFromRequest(string ...$keyNames): array
+```
+
+**Parameters:**
+- `...$keyNames` - One or more field names from the request to process
+
+**Returns:** Array of pending assets grouped by field name: `['fieldName' => [PendingAsset, ...]]`
+
+**Throws:**
+
+- `InvalidArgumentException` if no key names are provided
+- `FileException` if uploaded file is invalid
+
+**Features:**
+
+- Automatically handles both single and multiple file uploads
+- Only processes specified field names (ignores other files)
+- Validates uploaded files before creating pending assets
+- Returns empty array if specified fields don't exist or contain no files
+
+**Example - Single file upload:**
+```php
+use Maniaba\AssetConnect\Pending\PendingAsset;
+
+// HTML: <input type="file" name="avatar">
+
+// Process uploaded file
+$result = PendingAsset::createFromRequest('avatar');
+
+if (!empty($result['avatar'])) {
+    $pending = $result['avatar'][0]; // Get first (and only) file
+
+    $pending->usingName('Profile Photo')
+        ->toAssetCollection(ProfilePhotos::class)
+        ->store();
+
+    return $this->response->setJSON(['pending_id' => $pending->id]);
+}
+```
+
+**Example - Multiple files in one field:**
+```php
+// HTML: <input type="file" name="documents[]" multiple>
+
+// Process all uploaded documents
+$result = PendingAsset::createFromRequest('documents');
+
+foreach ($result['documents'] as $pending) {
+    $pending->setOrder($index++)
+        ->withCustomProperty('uploaded_by', auth()->id())
+        ->store();
+
+    $pendingIds[] = $pending->id;
+}
+
+return $this->response->setJSON(['pending_ids' => $pendingIds]);
+```
+
+**Example - Multiple different fields:**
+```php
+// HTML:
+// <input type="file" name="avatar">
+// <input type="file" name="cover">
+// <input type="file" name="documents[]" multiple>
+
+// Process only avatar and cover, ignore documents
+$result = PendingAsset::createFromRequest('avatar', 'cover');
+
+if (!empty($result['avatar'])) {
+    $avatarPending = $result['avatar'][0];
+    $avatarPending->usingName('User Avatar')->store();
+}
+
+if (!empty($result['cover'])) {
+    $coverPending = $result['cover'][0];
+    $coverPending->usingName('Cover Photo')->store();
+}
+```
+
 ## Setting Metadata
 
 Pending asset supports a fluent interface for setting metadata:
@@ -341,8 +425,7 @@ public function confirmUpload()
 
     // Add asset from pending
     $user->addAssetFromPending($pendingId)
-        ->toAssetCollection(ProfilePhotos::class)
-        ->save();
+        ->toAssetCollection(ProfilePhotos::class);
 
 
     return $this->response->setJSON(['success' => true]);
@@ -366,8 +449,7 @@ if ($pending->size > 5 * 1024 * 1024) {
 
 // Add asset
 $user->addAssetFromPending($pending)
-    ->toAssetCollection(Documents::class)
-    ->save();
+    ->toAssetCollection(Documents::class);
 ```
 
 #### 3. Additional configuration before saving
@@ -380,8 +462,6 @@ $assetAdder->usingName('New Title')
     ->withCustomProperty('verified', true)
     ->toAssetCollection(Images::class);
 
-// Save
-$assetAdder->save();
 ```
 
 #### 4. Working with multiple pending assets
@@ -394,8 +474,7 @@ $manager = PendingAssetManager::make();
 foreach ($pendingIds as $pendingId) {
     try {
         $product->addAssetFromPending($pendingId)
-            ->toAssetCollection(ProductImages::class)
-            ->save();
+            ->toAssetCollection(ProductImages::class);
     } catch (\Exception $e) {
         log_message('error', 'Failed to add pending asset: ' . $e->getMessage());
     }
@@ -410,8 +489,7 @@ use App\CustomPendingStorage;
 $customStorage = new CustomPendingStorage();
 
 $user->addAssetFromPending($pendingId, $customStorage)
-    ->toAssetCollection(Avatars::class)
-    ->save();
+    ->toAssetCollection(Avatars::class);
 ```
 
 ### Complete Example: Upload Flow with Front-end
@@ -422,28 +500,36 @@ $user->addAssetFromPending($pendingId, $customStorage)
 // app/Controllers/Upload.php
 public function uploadPending()
 {
-    $file = $this->request->getFile('file');
+    try {
+        // Create pending asset from request using 'file' field
+        $result = PendingAsset::createFromRequest('file');
 
-    if (!$file->isValid()) {
+        if (empty($result['file'])) {
+            return $this->response->setStatusCode(400)
+                ->setJSON(['error' => 'No file uploaded']);
+        }
+
+        $pending = $result['file'][0];
+
+        // Set additional metadata
+        $pending->usingName($this->request->getPost('name') ?? $pending->file_name)
+            ->withCustomProperty('user_id', auth()->id());
+
+        // Store in pending storage
+        $pending->store();
+
+        // Return ID to client
+        return $this->response->setJSON([
+            'success' => true,
+            'pending_id' => $pending->id,
+            'file_name' => $pending->file_name,
+            'size' => $pending->size
+        ]);
+
+    } catch (\Exception $e) {
         return $this->response->setStatusCode(400)
-            ->setJSON(['error' => 'Invalid file']);
+            ->setJSON(['error' => $e->getMessage()]);
     }
-
-    // Create pending asset
-    $pending = PendingAsset::createFromFile($file);
-    $pending->usingName($this->request->getPost('name') ?? $file->getClientName())
-        ->withCustomProperty('user_id', auth()->id());
-
-    // Store in pending storage
-    $pending->store();
-
-    // Return ID to client
-    return $this->response->setJSON([
-        'success' => true,
-        'pending_id' => $pending->id,
-        'file_name' => $pending->file_name,
-        'size' => $pending->size
-    ]);
 }
 ```
 
@@ -461,9 +547,8 @@ public function confirmPending()
     try {
         // Add asset from pending
         $user->addAssetFromPending($pendingId)
-            ->toAssetCollection(ProfilePhotos::class)
             ->withCustomProperty('confirmed_at', date('Y-m-d H:i:s'))
-            ->save();
+            ->toAssetCollection(ProfilePhotos::class);
 
 
         return $this->response->setJSON([
@@ -633,8 +718,7 @@ This error is thrown when:
 ```php
 try {
     $user->addAssetFromPending($pendingId)
-        ->toAssetCollection(Images::class)
-        ->save();
+        ->toAssetCollection(Images::class);
 } catch (AssetException $e) {
     // Notify user that asset has expired
     return $this->response->setStatusCode(404)

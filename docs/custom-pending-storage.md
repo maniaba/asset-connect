@@ -294,8 +294,7 @@ $manager = PendingAssetManager::make($customStorage);
 
 // With addAssetFromPending
 $user->addAssetFromPending($pendingId, $customStorage)
-    ->toAssetCollection(Photos::class)
-    ->save();
+    ->toAssetCollection(Photos::class);
 ```
 
 ## Best Practices
