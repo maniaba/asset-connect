@@ -196,40 +196,11 @@ $manager->cleanExpiredPendingAssets();
 echo "Expired assets cleaned";
 ```
 
-**Scheduled Cleanup:**
+**Automatic Cleanup:**
 
-It's recommended to set up a cron job or scheduled task to periodically clean expired assets:
+Expired pending assets are automatically cleaned up by the `AssetConnectJob` queue job. When assets are processed, the job also handles cleanup of expired pending assets from the default pending storage. This ensures that temporary files don't accumulate over time.
 
-```php
-// app/Commands/CleanPendingAssets.php
-namespace App\Commands;
-
-use CodeIgniter\CLI\BaseCommand;
-use Maniaba\AssetConnect\Pending\PendingAssetManager;
-
-class CleanPendingAssets extends BaseCommand
-{
-    protected $group = 'Maintenance';
-    protected $name = 'pending:clean';
-    protected $description = 'Clean expired pending assets';
-
-    public function run(array $params)
-    {
-        $manager = PendingAssetManager::make();
-        $manager->cleanExpiredPendingAssets();
-
-        $this->write('Expired pending assets cleaned successfully.', 'green');
-    }
-}
-```
-
-Run with: `php spark pending:clean`
-
-**Cron setup (Linux):**
-```bash
-# Run cleanup daily at 2 AM
-0 2 * * * cd /path/to/project && php spark pending:clean
-```
+If you need to manually trigger cleanup outside of the queue job, you can use the method shown above.
 
 ## Complete Usage Examples
 
@@ -481,16 +452,7 @@ $manager->store($pending, 1800); // 30 minutes
 $manager->store($pending, 86400 * 7); // 7 days
 ```
 
-### 4. Set Up Automated Cleanup
-
-```php
-// Create scheduled task
-// app/Config/Tasks.php
-public function init()
-{
-    $this->call('pending:clean')->daily('2:00');
-}
-```
+> **Note:** Expired pending assets are automatically cleaned up by the `AssetConnectJob` queue job when processing assets. No additional setup is required for automatic cleanup.
 
 ## Configuration
 

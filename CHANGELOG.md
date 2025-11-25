@@ -14,5 +14,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Custom properties for assets
 - Secure asset storage with access control
 - Type-safe API with full IDE support
+- **Pending Assets system** for temporary file storage before final attachment
 
 [Unreleased]: https://github.com/maniaba/asset-connect/compare/main...HEAD

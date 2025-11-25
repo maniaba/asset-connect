@@ -668,7 +668,7 @@ chown -R www-data:www-data writable/assets_pending
 - **Create vs Update**: if pending has an ID, `store()` updates only metadata without overwriting the file
 - **`addAssetFromPending()`** converts a pending asset into a real asset - simple and fast
 - **Automatic cleanup**: pending assets are automatically removed from storage after successful addition to an entity
-- **Set up a cron job** for automatic cleanup of expired assets
+- **Expired assets cleanup**: expired pending assets are automatically cleaned up by the `AssetConnectJob` queue job when processing assets
 
 Pending assets make upload processes more flexible and allow users to first upload a file, then edit metadata, and finally confirm where the asset will be added.
 
