@@ -86,7 +86,10 @@ nav:
       - Overview: asset.md
       - Asset Adder: asset-adder.md
       - Asset Collections: asset-collections.md
-      - Pending Assets: pending.md
+  - Pending Assets:
+      - Overview: pending.md
+      - Pending Asset Manager: pending-asset-manager.md
+      - Custom Pending Storage: custom-pending-storage.md
   - Events: events.md
   - Validation: validation.md
   - Troubleshooting: troubleshooting.md

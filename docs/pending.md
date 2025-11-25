@@ -61,11 +61,13 @@ A class that represents a pending asset. Contains the file and metadata.
 | `custom_properties` | array | Additional custom properties |
 | `file` | File\|UploadedFile | Reference to the actual file |
 
-### PendingAssetManager
+### Pending Asset Manager
 
 Manager class for working with pending assets. Provides a high-level API for storing, fetching, and deleting.
 
 **Namespace:** `Maniaba\AssetConnect\Pending\PendingAssetManager`
+
+For detailed documentation, see [Pending Asset Manager](pending-asset-manager.md).
 
 ### DefaultPendingStorage
 
@@ -191,21 +193,21 @@ $pending->usingName('Profile Picture')
 | `setId(string $id)` | Sets the ID (usually internal) |
 | `setTTL(int $ttl)` | Sets the time to live in seconds |
 
-## Storing and Retrieving
+## Storing Pending Assets
 
-### Storing a pending asset
+The `store()` method is used to save pending assets. It automatically handles both creating new pending assets and updating metadata of existing ones.
+
+### Basic Store Example
 
 ```php
-use Maniaba\AssetConnect\Pending\PendingAssetManager;
-
-$manager = PendingAssetManager::make();
+use Maniaba\AssetConnect\Pending\PendingAsset;
 
 // Create pending asset
 $pending = PendingAsset::createFromFile('/path/to/photo.jpg');
 $pending->usingName('My Photo');
 
 // Store (automatically generates ID)
-$manager->store($pending);
+$pending->store();
 
 // ID is now available
 $pendingId = $pending->id; // e.g., "a1b2c3d4e5f6789012345678"
@@ -214,47 +216,36 @@ $pendingId = $pending->id; // e.g., "a1b2c3d4e5f6789012345678"
 return $this->response->setJSON(['pending_id' => $pendingId]);
 ```
 
-### Retrieving a pending asset
+### Store with Custom TTL
 
 ```php
-$manager = PendingAssetManager::make();
+$pending = PendingAsset::createFromFile('/path/to/document.pdf');
 
-$pendingId = $this->request->getPost('pending_id');
-$pending = $manager->fetchById($pendingId);
+// Store with 1 hour TTL instead of default 24 hours
+$pending->store(null, 3600);
 
-if ($pending === null) {
-    // Asset not found or expired
-    return $this->response->setStatusCode(404)
-        ->setJSON(['error' => 'Pending asset not found or expired']);
-}
-
-// Use pending asset
-echo $pending->name;
-echo $pending->file_name;
-echo $pending->getCustomProperty('alt');
+echo "Pending ID: " . $pending->id;
 ```
 
-### Deleting a pending asset
+### Update Metadata (Store with Existing ID)
 
 ```php
-$manager = PendingAssetManager::make();
+use Maniaba\AssetConnect\Pending\PendingAssetManager;
 
-$success = $manager->deleteById($pendingId);
+// Fetch existing pending asset
+$pending = PendingAssetManager::make()->fetchById($existingId);
 
-if ($success) {
-    echo "Asset has been deleted";
+if ($pending) {
+    // Update metadata
+    $pending->withCustomProperty('status', 'reviewed');
+    $pending->usingName('Updated Name');
+
+    // Store - only updates metadata.json, file remains unchanged
+    $pending->store();
 }
 ```
 
-### Cleaning expired assets
-
-```php
-// Delete all expired pending assets
-$manager = PendingAssetManager::make();
-$manager->cleanExpiredPendingAssets();
-```
-
-**Note:** You can set up a cron job or scheduled task to periodically call this method.
+**Note:** For complete `PendingAssetManager` API documentation (fetching, deleting, cleaning), see [Pending Asset Manager](pending-asset-manager.md).
 
 ## Create vs Update (Important!)
 
@@ -268,12 +259,10 @@ When a pending asset **does not have** an ID, `store()` will:
 3. Store metadata in `WRITEPATH/assets_pending/<id>/metadata.json`
 
 ```php
-$manager = PendingAssetManager::make();
-
 $pending = PendingAsset::createFromFile('/path/to/photo.jpg');
 // $pending->id is an empty string ""
 
-$manager->store($pending);
+$pending->store();
 // Now $pending->id has a value like "a1b2c3d4e5f6"
 ```
 
@@ -284,17 +273,15 @@ When a pending asset **has** an ID, `store()` will:
 2. **WILL NOT** overwrite the existing `file` on disk
 
 ```php
-$manager = PendingAssetManager::make();
-
 // Fetch existing pending asset
-$pending = $manager->fetchById('a1b2c3d4e5f6');
+$pending = PendingAssetManager::make()->fetchById('a1b2c3d4e5f6');
 
 // Change metadata
 $pending->withCustomProperty('caption', 'New caption');
 $pending->usingName('Changed name');
 
 // Store - updates only metadata.json
-$manager->store($pending);
+$pending->store();
 
 // Raw file remains identical!
 ```
@@ -337,7 +324,7 @@ The `addAssetFromPending` method:
    - `preservingOriginal()` - preserve original
 5. Returns the `AssetAdder` which you can further configure (e.g., set collection) and save
 
-**Important:** The method **DOES NOT automatically delete** the pending asset after adding. You must manually call `PendingAssetManager::deleteById()` if you want to clean up pending storage.
+**Note:** Pending assets are automatically cleaned up from storage after being successfully added to an entity.
 
 ### Usage Examples
 
@@ -354,11 +341,9 @@ public function confirmUpload()
 
     // Add asset from pending
     $user->addAssetFromPending($pendingId)
-        ->toCollection(ProfilePhotos::class)
+        ->toAssetCollection(ProfilePhotos::class)
         ->save();
 
-    // Delete pending asset after successful addition
-    PendingAssetManager::make()->deleteById($pendingId);
 
     return $this->response->setJSON(['success' => true]);
 }
@@ -381,11 +366,8 @@ if ($pending->size > 5 * 1024 * 1024) {
 
 // Add asset
 $user->addAssetFromPending($pending)
-    ->toCollection(Documents::class)
+    ->toAssetCollection(Documents::class)
     ->save();
-
-// Clean up pending
-$manager->deleteById($pendingId);
 ```
 
 #### 3. Additional configuration before saving
@@ -396,13 +378,10 @@ $assetAdder = $user->addAssetFromPending($pendingId);
 // Override some properties from pending
 $assetAdder->usingName('New Title')
     ->withCustomProperty('verified', true)
-    ->toCollection(Images::class);
+    ->toAssetCollection(Images::class);
 
 // Save
 $assetAdder->save();
-
-// Delete pending
-PendingAssetManager::make()->deleteById($pendingId);
 ```
 
 #### 4. Working with multiple pending assets
@@ -415,11 +394,8 @@ $manager = PendingAssetManager::make();
 foreach ($pendingIds as $pendingId) {
     try {
         $product->addAssetFromPending($pendingId)
-            ->toCollection(ProductImages::class)
+            ->toAssetCollection(ProductImages::class)
             ->save();
-
-        // Delete after successful addition
-        $manager->deleteById($pendingId);
     } catch (\Exception $e) {
         log_message('error', 'Failed to add pending asset: ' . $e->getMessage());
     }
@@ -434,7 +410,7 @@ use App\CustomPendingStorage;
 $customStorage = new CustomPendingStorage();
 
 $user->addAssetFromPending($pendingId, $customStorage)
-    ->toCollection(Avatars::class)
+    ->toAssetCollection(Avatars::class)
     ->save();
 ```
 
@@ -459,8 +435,7 @@ public function uploadPending()
         ->withCustomProperty('user_id', auth()->id());
 
     // Store in pending storage
-    $manager = PendingAssetManager::make();
-    $manager->store($pending);
+    $pending->store();
 
     // Return ID to client
     return $this->response->setJSON([
@@ -486,12 +461,10 @@ public function confirmPending()
     try {
         // Add asset from pending
         $user->addAssetFromPending($pendingId)
-            ->toCollection(ProfilePhotos::class)
+            ->toAssetCollection(ProfilePhotos::class)
             ->withCustomProperty('confirmed_at', date('Y-m-d H:i:s'))
             ->save();
 
-        // Delete pending after success
-        PendingAssetManager::make()->deleteById($pendingId);
 
         return $this->response->setJSON([
             'success' => true,
@@ -564,20 +537,19 @@ An important characteristic of pending storage is the ability to update metadata
 ```php
 // User first uploads file
 $pending = PendingAsset::createFromFile($_FILES['photo']['tmp_name']);
-$manager = PendingAssetManager::make();
-$manager->store($pending);
+$pending->store();
 
 $pendingId = $pending->id;
 // Return ID to front-end
 
 // Later user edits metadata (e.g., adds alt text, caption)
-$pending = $manager->fetchById($pendingId);
+$pending = PendingAssetManager::make()->fetchById($pendingId);
 $pending->withCustomProperty('alt', 'Beautiful sunset')
     ->withCustomProperty('caption', 'Sunset in Croatia')
     ->usingName('Sunset Photo');
 
 // Save - only metadata.json is updated, file remains the same
-$manager->store($pending);
+$pending->store();
 ```
 
 ### PHPUnit test: Verify that file remains unchanged
@@ -585,14 +557,12 @@ $manager->store($pending);
 ```php
 public function testUpdatingPendingMetadataDoesNotOverwriteFile()
 {
-    $manager = PendingAssetManager::make();
-
     // Create and store pending asset
     $originalContent = 'original file contents';
     $pending = PendingAsset::createFromString($originalContent);
     $pending->withCustomProperty('version', 1);
 
-    $manager->store($pending);
+    $pending->store();
     $id = $pending->id;
 
     // Check file checksum
@@ -603,10 +573,10 @@ public function testUpdatingPendingMetadataDoesNotOverwriteFile()
     // Update only metadata
     $pending->withCustomProperty('version', 2);
     $pending->usingName('Updated name');
-    $manager->store($pending);
+    $pending->store();
 
     // Re-fetch and verify metadata
-    $reloaded = $manager->fetchById($id);
+    $reloaded = PendingAssetManager::make()->fetchById($id);
     $this->assertNotNull($reloaded);
     $this->assertEquals(2, $reloaded->custom_properties['version']);
     $this->assertEquals('Updated name', $reloaded->name);
@@ -620,125 +590,11 @@ public function testUpdatingPendingMetadataDoesNotOverwriteFile()
 }
 ```
 
-## Advanced Techniques
+## Advanced Usage
 
-### Custom Pending Storage
+For advanced topics including custom storage implementations (S3, Redis, etc.), see:
 
-You can implement your own storage (e.g., S3, Redis) by implementing `PendingStorageInterface`:
-
-```php
-use Maniaba\AssetConnect\Pending\Interfaces\PendingStorageInterface;
-
-class S3PendingStorage implements PendingStorageInterface
-{
-    public function generatePendingId(): string
-    {
-        return uniqid('s3_', true);
-    }
-
-    public function fetchById(string $id): ?PendingAsset
-    {
-        // Fetch from S3
-    }
-
-    public function store(PendingAsset $asset, ?string $id = null): void
-    {
-        // Store to S3
-    }
-
-    public function deleteById(string $id): bool
-    {
-        // Delete from S3
-    }
-
-    public function getDefaultTTLSeconds(): int
-    {
-        return 3600; // 1 hour
-    }
-
-    public function cleanExpiredPendingAssets(): void
-    {
-        // Clean expired from S3
-    }
-
-    public function pendingSecurityToken(): ?PendingSecurityTokenInterface
-    {
-        return new MyS3SecurityToken();
-    }
-}
-```
-
-### Configuring custom storage
-
-In `app/Config/Asset.php`:
-
-```php
-use App\CustomPendingStorage;
-
-class Asset extends BaseConfig
-{
-    public string $pendingStorage = CustomPendingStorage::class;
-}
-```
-
-### Automatic cleanup of expired assets
-
-Add to cron or scheduled task:
-
-```php
-// app/Commands/CleanPendingAssets.php
-namespace App\Commands;
-
-use CodeIgniter\CLI\BaseCommand;
-use Maniaba\AssetConnect\Pending\PendingAssetManager;
-
-class CleanPendingAssets extends BaseCommand
-{
-    protected $group = 'Maintenance';
-    protected $name = 'pending:clean';
-    protected $description = 'Clean expired pending assets';
-
-    public function run(array $params)
-    {
-        $manager = PendingAssetManager::make();
-        $manager->cleanExpiredPendingAssets();
-
-        $this->write('Expired pending assets cleaned successfully.', 'green');
-    }
-}
-```
-
-Run with: `php spark pending:clean`
-
-### Validation before adding
-
-```php
-$manager = PendingAssetManager::make();
-$pending = $manager->fetchById($pendingId);
-
-if (!$pending) {
-    throw new \RuntimeException('Pending asset not found');
-}
-
-// MIME type validation
-$allowedMimes = ['image/jpeg', 'image/png', 'image/gif'];
-if (!in_array($pending->mime_type, $allowedMimes)) {
-    throw new \RuntimeException('Invalid file type');
-}
-
-// Size validation
-if ($pending->size > 5 * 1024 * 1024) { // 5MB
-    throw new \RuntimeException('File too large');
-}
-
-// Add to entity
-$user->addAssetFromPending($pending)
-    ->toCollection(Avatars::class)
-    ->save();
-
-// Delete pending
-$manager->deleteById($pendingId);
-```
+- [Custom Pending Storage](custom-pending-storage.md) - Implementing custom storage backends
 
 ## Troubleshooting
 
@@ -777,7 +633,7 @@ This error is thrown when:
 ```php
 try {
     $user->addAssetFromPending($pendingId)
-        ->toCollection(Images::class)
+        ->toAssetCollection(Images::class)
         ->save();
 } catch (AssetException $e) {
     // Notify user that asset has expired
@@ -811,7 +667,7 @@ chown -R www-data:www-data writable/assets_pending
 - **TTL** (default 24h) automatically deletes old pending assets
 - **Create vs Update**: if pending has an ID, `store()` updates only metadata without overwriting the file
 - **`addAssetFromPending()`** converts a pending asset into a real asset - simple and fast
-- **Don't forget** to delete the pending asset after successful addition using `deleteById()`
+- **Automatic cleanup**: pending assets are automatically removed from storage after successful addition to an entity
 - **Set up a cron job** for automatic cleanup of expired assets
 
 Pending assets make upload processes more flexible and allow users to first upload a file, then edit metadata, and finally confirm where the asset will be added.
