@@ -6,12 +6,16 @@ namespace Tests\Pending;
 
 use CodeIgniter\Files\File;
 use CodeIgniter\HTTP\Files\UploadedFile;
+use CodeIgniter\HTTP\IncomingRequest;
 use CodeIgniter\I18n\Time;
 use CodeIgniter\Test\CIUnitTestCase;
+use Config\Services;
 use Maniaba\AssetConnect\Exceptions\FileException;
+use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Maniaba\AssetConnect\Pending\PendingAsset;
 use Override;
 use PHPUnit\Framework\MockObject\MockObject;
+use stdClass;
 
 /**
  * @internal
@@ -573,5 +577,281 @@ final class PendingAssetTest extends CIUnitTestCase
 
         // Assert
         $this->assertInstanceOf(File::class, $fileProperty);
+    }
+
+    /**
+     * Test createFromRequest with no key names throws exception
+     */
+    public function testCreateFromRequestWithNoKeyNamesThrowsException(): void
+    {
+        // Act & Assert
+        $this->expectException(InvalidArgumentException::class);
+        PendingAsset::createFromRequest();
+    }
+
+    /**
+     * Test createFromRequest with single file field
+     */
+    public function testCreateFromRequestWithSingleFileField(): void
+    {
+        // Arrange
+        $mockFile = $this->createMock(UploadedFile::class);
+        $mockFile->method('isValid')->willReturn(true);
+        $mockFile->method('isFile')->willReturn(true);
+        $mockFile->method('getClientName')->willReturn('uploaded.jpg');
+        $mockFile->method('getMimeType')->willReturn('image/jpeg');
+        $mockFile->method('getSize')->willReturn(2048);
+        $mockFile->method('getCTime')->willReturn(time());
+        $mockFile->method('getMTime')->willReturn(time());
+        $mockFile->method('getRealPath')->willReturn($this->tempFilePath);
+
+        $mockRequest = $this->createMock(IncomingRequest::class);
+        $mockRequest->method('getFiles')->willReturn([
+            'avatar' => $mockFile,
+        ]);
+
+        Services::injectMock('request', $mockRequest);
+
+        // Act
+        $result = PendingAsset::createFromRequest('avatar');
+
+        // Assert
+        $this->assertIsArray($result);
+        $this->assertArrayHasKey('avatar', $result);
+        $this->assertCount(1, $result['avatar']);
+        $this->assertInstanceOf(PendingAsset::class, $result['avatar'][0]);
+        $this->assertSame('uploaded.jpg', $result['avatar'][0]->file_name);
+    }
+
+    /**
+     * Test createFromRequest with multiple files in single field
+     */
+    public function testCreateFromRequestWithMultipleFilesInSingleField(): void
+    {
+        // Arrange
+        $mockFile1 = $this->createMock(UploadedFile::class);
+        $mockFile1->method('isValid')->willReturn(true);
+        $mockFile1->method('isFile')->willReturn(true);
+        $mockFile1->method('getClientName')->willReturn('file1.jpg');
+        $mockFile1->method('getMimeType')->willReturn('image/jpeg');
+        $mockFile1->method('getSize')->willReturn(1024);
+        $mockFile1->method('getCTime')->willReturn(time());
+        $mockFile1->method('getMTime')->willReturn(time());
+        $mockFile1->method('getRealPath')->willReturn($this->tempFilePath);
+
+        $mockFile2 = $this->createMock(UploadedFile::class);
+        $mockFile2->method('isValid')->willReturn(true);
+        $mockFile2->method('isFile')->willReturn(true);
+        $mockFile2->method('getClientName')->willReturn('file2.jpg');
+        $mockFile2->method('getMimeType')->willReturn('image/jpeg');
+        $mockFile2->method('getSize')->willReturn(2048);
+        $mockFile2->method('getCTime')->willReturn(time());
+        $mockFile2->method('getMTime')->willReturn(time());
+        $mockFile2->method('getRealPath')->willReturn($this->tempFilePath);
+
+        $mockRequest = $this->createMock(IncomingRequest::class);
+        $mockRequest->method('getFiles')->willReturn([
+            'documents' => [$mockFile1, $mockFile2],
+        ]);
+
+        Services::injectMock('request', $mockRequest);
+
+        // Act
+        $result = PendingAsset::createFromRequest('documents');
+
+        // Assert
+        $this->assertIsArray($result);
+        $this->assertArrayHasKey('documents', $result);
+        $this->assertCount(2, $result['documents']);
+        $this->assertInstanceOf(PendingAsset::class, $result['documents'][0]);
+        $this->assertInstanceOf(PendingAsset::class, $result['documents'][1]);
+        $this->assertSame('file1.jpg', $result['documents'][0]->file_name);
+        $this->assertSame('file2.jpg', $result['documents'][1]->file_name);
+    }
+
+    /**
+     * Test createFromRequest with multiple field names
+     */
+    public function testCreateFromRequestWithMultipleFieldNames(): void
+    {
+        // Arrange
+        $mockFile1 = $this->createMock(UploadedFile::class);
+        $mockFile1->method('isValid')->willReturn(true);
+        $mockFile1->method('isFile')->willReturn(true);
+        $mockFile1->method('getClientName')->willReturn('avatar.jpg');
+        $mockFile1->method('getMimeType')->willReturn('image/jpeg');
+        $mockFile1->method('getSize')->willReturn(1024);
+        $mockFile1->method('getCTime')->willReturn(time());
+        $mockFile1->method('getMTime')->willReturn(time());
+        $mockFile1->method('getRealPath')->willReturn($this->tempFilePath);
+
+        $mockFile2 = $this->createMock(UploadedFile::class);
+        $mockFile2->method('isValid')->willReturn(true);
+        $mockFile2->method('isFile')->willReturn(true);
+        $mockFile2->method('getClientName')->willReturn('cover.jpg');
+        $mockFile2->method('getMimeType')->willReturn('image/jpeg');
+        $mockFile2->method('getSize')->willReturn(2048);
+        $mockFile2->method('getCTime')->willReturn(time());
+        $mockFile2->method('getMTime')->willReturn(time());
+        $mockFile2->method('getRealPath')->willReturn($this->tempFilePath);
+
+        $mockRequest = $this->createMock(IncomingRequest::class);
+        $mockRequest->method('getFiles')->willReturn([
+            'avatar' => $mockFile1,
+            'cover'  => $mockFile2,
+            'other'  => $this->createMock(UploadedFile::class), // This should be ignored
+        ]);
+
+        Services::injectMock('request', $mockRequest);
+
+        // Act
+        $result = PendingAsset::createFromRequest('avatar', 'cover');
+
+        // Assert
+        $this->assertIsArray($result);
+        $this->assertArrayHasKey('avatar', $result);
+        $this->assertArrayHasKey('cover', $result);
+        $this->assertArrayNotHasKey('other', $result);
+        $this->assertCount(1, $result['avatar']);
+        $this->assertCount(1, $result['cover']);
+        $this->assertSame('avatar.jpg', $result['avatar'][0]->file_name);
+        $this->assertSame('cover.jpg', $result['cover'][0]->file_name);
+    }
+
+    /**
+     * Test createFromRequest with invalid file throws exception
+     */
+    public function testCreateFromRequestWithInvalidFileThrowsException(): void
+    {
+        // Arrange
+        $mockFile = $this->createMock(UploadedFile::class);
+        $mockFile->method('isValid')->willReturn(false);
+
+        $mockRequest = $this->createMock(IncomingRequest::class);
+        $mockRequest->method('getFiles')->willReturn([
+            'avatar' => $mockFile,
+        ]);
+
+        Services::injectMock('request', $mockRequest);
+
+        // Act & Assert
+        $this->expectException(FileException::class);
+        PendingAsset::createFromRequest('avatar');
+    }
+
+    /**
+     * Test createFromRequest with non-UploadedFile instance throws exception
+     */
+    public function testCreateFromRequestWithNonUploadedFileThrowsException(): void
+    {
+        // Arrange
+        $mockRequest = $this->createMock(IncomingRequest::class);
+        $mockRequest->method('getFiles')->willReturn([
+            'avatar' => new stdClass(), // Not an UploadedFile
+        ]);
+
+        Services::injectMock('request', $mockRequest);
+
+        // Act & Assert
+        $this->expectException(FileException::class);
+        PendingAsset::createFromRequest('avatar');
+    }
+
+    /**
+     * Test createFromRequest with non-existent field returns empty array
+     */
+    public function testCreateFromRequestWithNonExistentFieldReturnsEmptyArray(): void
+    {
+        // Arrange
+        $mockRequest = $this->createMock(IncomingRequest::class);
+        $mockRequest->method('getFiles')->willReturn([
+            'avatar' => $this->createMock(UploadedFile::class),
+        ]);
+
+        Services::injectMock('request', $mockRequest);
+
+        // Act
+        $result = PendingAsset::createFromRequest('nonexistent');
+
+        // Assert
+        $this->assertIsArray($result);
+        $this->assertEmpty($result);
+    }
+
+    /**
+     * Test createFromRequest when request has no files
+     */
+    public function testCreateFromRequestWhenRequestHasNoFiles(): void
+    {
+        // Arrange
+        $mockRequest = $this->createMock(IncomingRequest::class);
+        $mockRequest->method('getFiles')->willReturn([]);
+
+        Services::injectMock('request', $mockRequest);
+
+        // Act
+        $result = PendingAsset::createFromRequest('avatar');
+
+        // Assert
+        $this->assertIsArray($result);
+        $this->assertEmpty($result);
+    }
+
+    /**
+     * Test createFromRequest with mixed single and multiple files
+     */
+    public function testCreateFromRequestWithMixedSingleAndMultipleFiles(): void
+    {
+        // Arrange
+        $mockFileSingle = $this->createMock(UploadedFile::class);
+        $mockFileSingle->method('isValid')->willReturn(true);
+        $mockFileSingle->method('isFile')->willReturn(true);
+        $mockFileSingle->method('getClientName')->willReturn('single.jpg');
+        $mockFileSingle->method('getMimeType')->willReturn('image/jpeg');
+        $mockFileSingle->method('getSize')->willReturn(1024);
+        $mockFileSingle->method('getCTime')->willReturn(time());
+        $mockFileSingle->method('getMTime')->willReturn(time());
+        $mockFileSingle->method('getRealPath')->willReturn($this->tempFilePath);
+
+        $mockFileMultiple1 = $this->createMock(UploadedFile::class);
+        $mockFileMultiple1->method('isValid')->willReturn(true);
+        $mockFileMultiple1->method('isFile')->willReturn(true);
+        $mockFileMultiple1->method('getClientName')->willReturn('multi1.jpg');
+        $mockFileMultiple1->method('getMimeType')->willReturn('image/jpeg');
+        $mockFileMultiple1->method('getSize')->willReturn(2048);
+        $mockFileMultiple1->method('getCTime')->willReturn(time());
+        $mockFileMultiple1->method('getMTime')->willReturn(time());
+        $mockFileMultiple1->method('getRealPath')->willReturn($this->tempFilePath);
+
+        $mockFileMultiple2 = $this->createMock(UploadedFile::class);
+        $mockFileMultiple2->method('isValid')->willReturn(true);
+        $mockFileMultiple2->method('isFile')->willReturn(true);
+        $mockFileMultiple2->method('getClientName')->willReturn('multi2.jpg');
+        $mockFileMultiple2->method('getMimeType')->willReturn('image/jpeg');
+        $mockFileMultiple2->method('getSize')->willReturn(3072);
+        $mockFileMultiple2->method('getCTime')->willReturn(time());
+        $mockFileMultiple2->method('getMTime')->willReturn(time());
+        $mockFileMultiple2->method('getRealPath')->willReturn($this->tempFilePath);
+
+        $mockRequest = $this->createMock(IncomingRequest::class);
+        $mockRequest->method('getFiles')->willReturn([
+            'avatar'    => $mockFileSingle,
+            'documents' => [$mockFileMultiple1, $mockFileMultiple2],
+        ]);
+
+        Services::injectMock('request', $mockRequest);
+
+        // Act
+        $result = PendingAsset::createFromRequest('avatar', 'documents');
+
+        // Assert
+        $this->assertIsArray($result);
+        $this->assertArrayHasKey('avatar', $result);
+        $this->assertArrayHasKey('documents', $result);
+        $this->assertCount(1, $result['avatar']);
+        $this->assertCount(2, $result['documents']);
+        $this->assertSame('single.jpg', $result['avatar'][0]->file_name);
+        $this->assertSame('multi1.jpg', $result['documents'][0]->file_name);
+        $this->assertSame('multi2.jpg', $result['documents'][1]->file_name);
     }
 }

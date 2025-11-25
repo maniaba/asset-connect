@@ -9,10 +9,12 @@ use CodeIgniter\Entity\Entity;
 use CodeIgniter\Files\File;
 use CodeIgniter\HTTP\Files\UploadedFile;
 use CodeIgniter\I18n\Time;
+use Config\Services;
 use JsonSerializable;
 use Maniaba\AssetConnect\Asset\Interfaces\AssetDefinitionInterface;
 use Maniaba\AssetConnect\Asset\Traits\AssetFileInfoTrait;
 use Maniaba\AssetConnect\Exceptions\FileException;
+use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Maniaba\AssetConnect\Exceptions\PendingAssetException;
 use Maniaba\AssetConnect\Pending\Interfaces\PendingStorageInterface;
 use Override;
@@ -189,6 +191,47 @@ final class PendingAsset implements AssetDefinitionInterface, JsonSerializable
         }
 
         return self::createFromString($data, $attributes);
+    }
+
+    /**
+     * Create PendingAsset(s) from request file(s)
+     *
+     * @param string ...$keyNames The name of the file input field(s) in the request
+     *
+     * @return array<string, list<self>> An associative array where keys are field names and values are arrays of PendingAsset instances
+     *
+     * @throws FileException
+     */
+    public static function createFromRequest(string ...$keyNames): array
+    {
+        if ($keyNames === []) {
+            throw new InvalidArgumentException('At least one key name must be provided.');
+        }
+
+        $request = Services::request();
+
+        $pendingAssets = [];
+
+        foreach ($request->getFiles() as $field => $files) {
+            if (! in_array($field, $keyNames, true)) {
+                continue;
+            }
+            $files = is_array($files) ? $files : [$files];
+
+            foreach ($files as $file) {
+                if (! $file instanceof UploadedFile || ! $file->isValid()) {
+                    throw FileException::forInvalidFile($field);
+                }
+
+                if (! isset($pendingAssets[$field])) {
+                    $pendingAssets[$field] = [];
+                }
+
+                $pendingAssets[$field][] = self::createFromFile($file);
+            }
+        }
+
+        return $pendingAssets;
     }
 
     public function setId(string $id): self
