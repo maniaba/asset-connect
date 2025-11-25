@@ -86,6 +86,7 @@ nav:
       - Overview: asset.md
       - Asset Adder: asset-adder.md
       - Asset Collections: asset-collections.md
+      - Pending Assets: pending.md
   - Events: events.md
   - Validation: validation.md
   - Troubleshooting: troubleshooting.md

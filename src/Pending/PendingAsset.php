@@ -13,7 +13,10 @@ use JsonSerializable;
 use Maniaba\AssetConnect\Asset\Interfaces\AssetDefinitionInterface;
 use Maniaba\AssetConnect\Asset\Traits\AssetFileInfoTrait;
 use Maniaba\AssetConnect\Exceptions\FileException;
+use Maniaba\AssetConnect\Exceptions\PendingAssetException;
+use Maniaba\AssetConnect\Pending\Interfaces\PendingStorageInterface;
 use Override;
+use Random\RandomException;
 use TypeError;
 
 /**
@@ -116,7 +119,7 @@ final class PendingAsset implements AssetDefinitionInterface, JsonSerializable
         ];
     }
 
-    private function __construct(private File|UploadedFile $file, array $attributes = [])
+    private function __construct(public readonly File|UploadedFile $file, array $attributes = [])
     {
         $fileName = $this->file instanceof UploadedFile ? $this->file->getClientName() : $this->file->getBasename();
 
@@ -213,5 +216,16 @@ final class PendingAsset implements AssetDefinitionInterface, JsonSerializable
         $file = new File($tempFilePath);
 
         return self::createFromFile($file, $attributes);
+    }
+
+    /**
+     * @throws PendingAssetException|RandomException
+     */
+    public function store(?PendingStorageInterface $storage = null, ?int $ttlSeconds = null): void
+    {
+        $ttlSeconds ??= $this->ttl;
+        $manager = PendingAssetManager::make($storage);
+
+        $manager->store($this, $ttlSeconds);
     }
 }

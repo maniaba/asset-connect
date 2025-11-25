@@ -16,6 +16,7 @@ use Maniaba\AssetConnect\AssetVariants\Interfaces\AssetVariantsInterface;
 use Maniaba\AssetConnect\Events\AssetUpdated;
 use Maniaba\AssetConnect\Exceptions\AssetException;
 use Maniaba\AssetConnect\Models\AssetModel;
+use Maniaba\AssetConnect\Pending\PendingAssetManager;
 use Override;
 
 /**
@@ -117,5 +118,9 @@ final class AssetConnectJob extends BaseJob implements JobInterface
 
             log_message('info', 'Asset with ID {id} has been permanently deleted.', ['id' => $asset->id]);
         }
+
+        // Clean expired pending assets as well from default pending storage
+        $manager = PendingAssetManager::make();
+        $manager->cleanExpiredPendingAssets();
     }
 }
