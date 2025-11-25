@@ -61,6 +61,31 @@ A class that represents a pending asset. Contains the file and metadata.
 | `custom_properties` | array | Additional custom properties |
 | `file` | File\|UploadedFile | Reference to the actual file |
 
+
+### Available Methods
+
+| Method | Description |
+|--------|-------------|
+| `usingName(string $name)` | Sets the display name of the asset |
+| `usingFileName(string $fileName)` | Sets the file name |
+| `preservingOriginal(bool $preserve = true)` | Sets whether to preserve the original |
+| `setOrder(int $order)` | Sets the order |
+| `withCustomProperty(string $key, mixed $value)` | Adds a single custom property |
+| `withCustomProperties(array $properties)` | Sets all custom properties |
+| `setId(string $id)` | Sets the ID (usually internal) |
+| `setTTL(int $ttl)` | Sets the time to live in seconds |
+| `store(?PendingStorageInterface $storage = null, ?int $ttlSeconds = null)` | Stores the pending asset. If ID exists, updates metadata only; if no ID, creates new storage. Optional custom storage and TTL parameters. |
+
+#### Creation Methods (Static)
+
+| Method | Description |
+|--------|-------------|
+| `createFromFile(File\|string\|UploadedFile $file, array\|string $attributes = [])` | Creates a pending asset from a file object, file path, or uploaded file |
+| `createFromBase64(string $base64data, array\|string $attributes = [])` | Creates a pending asset from base64 encoded string |
+| `createFromString(string $string, array\|string $attributes = [])` | Creates a pending asset from string content (e.g., downloaded file content) |
+| `createFromRequest(string ...$keyNames)` | Creates pending assets from HTTP request uploaded files (returns array grouped by field name) |
+
+
 ### Pending Asset Manager
 
 Manager class for working with pending assets. Provides a high-level API for storing, fetching, and deleting.
@@ -263,19 +288,6 @@ $pending->usingName('Profile Picture')
         'location' => 'Zagreb'
     ]);
 ```
-
-### Available Methods
-
-| Method | Description |
-|--------|-------------|
-| `usingName(string $name)` | Sets the display name of the asset |
-| `usingFileName(string $fileName)` | Sets the file name |
-| `preservingOriginal(bool $preserve = true)` | Sets whether to preserve the original |
-| `setOrder(int $order)` | Sets the order |
-| `withCustomProperty(string $key, mixed $value)` | Adds a single custom property |
-| `withCustomProperties(array $properties)` | Sets all custom properties |
-| `setId(string $id)` | Sets the ID (usually internal) |
-| `setTTL(int $ttl)` | Sets the time to live in seconds |
 
 ## Storing Pending Assets
 
