@@ -15,7 +15,7 @@ use Throwable;
 
 final class PendingAssetManager
 {
-    private PendingStorageInterface $storage;
+    private readonly PendingStorageInterface $storage;
     private ?PendingSecurityTokenInterface $tokenProvider = null;
 
     private function __construct(
