@@ -45,6 +45,7 @@ final class SessionPendingSecurityToken extends AbstractPendingSecurityToken
         $this->session->removeTempdata($this->sessionKey($pendingId));
     }
 
+    #[Override]
     protected function initialize(): void
     {
         /**
