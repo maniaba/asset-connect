@@ -86,6 +86,7 @@ class Asset extends BaseConfig
      *
      * This is the class that will be used to generate and validate
      * security tokens for pending assets.
+     * Security tokens help to ensure that only authorized/uploading user can access the pending assets.
      *
      * You can change this to any class that implements the PendingSecurityTokenInterface.
      *
