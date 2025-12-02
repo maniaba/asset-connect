@@ -146,6 +146,15 @@ class Asset extends Entity implements JsonSerializable
         $rawArray             = parent::toRawArray($onlyChanged, $recursive);
         $rawArray['metadata'] = json_encode($this->getMetadata());
 
+        // if not exists key size, path or mime_type, we need to add them by calling their getters
+        $requiredKeys = ['size', 'path', 'mime_type'];
+
+        foreach ($requiredKeys as $key) {
+            if (! array_key_exists($key, $rawArray)) {
+                $rawArray[$key] = $this->{$key};
+            }
+        }
+
         return $rawArray;
     }
 

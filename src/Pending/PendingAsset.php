@@ -124,7 +124,14 @@ final class PendingAsset implements AssetDefinitionInterface, JsonSerializable
         ];
     }
 
-    private function __construct(public readonly File|UploadedFile $file, array $attributes = [])
+    public function setFile(File $file): self
+    {
+        $this->file = $file;
+
+        return $this;
+    }
+
+    private function __construct(public File|UploadedFile $file, array $attributes = [])
     {
         $fileName = $this->file instanceof UploadedFile ? $this->file->getClientName() : $this->file->getBasename();
 

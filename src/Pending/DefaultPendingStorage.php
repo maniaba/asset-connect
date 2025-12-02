@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Maniaba\AssetConnect\Pending;
 
+use CodeIgniter\Files\File;
 use CodeIgniter\I18n\Time;
 use ErrorException;
 use Maniaba\AssetConnect\Exceptions\PendingAssetException;
@@ -187,6 +188,8 @@ class DefaultPendingStorage implements PendingStorageInterface
         }
         // Delete the temporary file if it was created
         @unlink($asset->file->getRealPath());
+
+        $asset->setFile(new File($storeFilePath));
     }
 
     private function storeMetadataFile(PendingAsset $asset): void
