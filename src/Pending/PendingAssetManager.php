@@ -113,18 +113,20 @@ final class PendingAssetManager
     public function store(PendingAsset $pendingAsset, ?int $ttlSeconds = null): void
     {
         if ($pendingAsset->id === '') {
+            // Generate and set ID
             $generateId = $this->storage->generatePendingId();
             $pendingAsset->setId($generateId);
         }
 
+        // Set TTL
         $ttlSeconds ??= $this->storage->getDefaultTTLSeconds();
         $pendingAsset->setTTL($ttlSeconds);
 
-        $this->storage->store($pendingAsset, $pendingAsset->id);
-
+        // Generate and set security token if token provider is available
         $token = $this->tokenProvider?->generateToken($pendingAsset->id) ?? null;
-
         $pendingAsset->setSecurityToken($token);
+
+        $this->storage->store($pendingAsset, $pendingAsset->id);
     }
 
     public function cleanExpiredPendingAssets(): void
