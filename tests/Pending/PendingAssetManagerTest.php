@@ -566,7 +566,7 @@ final class PendingAssetManagerTest extends CIUnitTestCase
         $this->mockStorage->method('store');
 
         // Mock fetchById to return assets with proper timestamps for deleteById to work
-        $this->mockStorage->method('fetchById')->willReturnCallback(function ($id) use ($asset1, $asset2, $id1, $id2) {
+        $this->mockStorage->method('fetchById')->willReturnCallback(function (string $id) use ($asset1, $asset2, $id1, $id2): ?PendingAsset {
             if ($id === $id1) {
                 $this->setPrivateProperty($asset1, 'created_at', Time::now());
 

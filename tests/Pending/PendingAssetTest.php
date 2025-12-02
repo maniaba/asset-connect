@@ -474,7 +474,7 @@ final class PendingAssetTest extends CIUnitTestCase
         // Arrange
         $pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
 
-        // Act
+        /** @phpstan-ignore-next-line Act */
         $nonExistent = $pendingAsset->nonExistentProperty;
 
         // Assert

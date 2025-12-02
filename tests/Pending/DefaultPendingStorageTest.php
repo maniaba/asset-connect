@@ -8,10 +8,8 @@ use CodeIgniter\I18n\Time;
 use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\AssetConnect\Exceptions\PendingAssetException;
 use Maniaba\AssetConnect\Pending\DefaultPendingStorage;
-use Maniaba\AssetConnect\Pending\Interfaces\PendingSecurityTokenInterface;
 use Maniaba\AssetConnect\Pending\PendingAsset;
 use Override;
-use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * @internal
@@ -19,7 +17,6 @@ use PHPUnit\Framework\MockObject\MockObject;
 final class DefaultPendingStorageTest extends CIUnitTestCase
 {
     private DefaultPendingStorage $storage;
-
     private string $tempFilePath;
     private string $basePendingPath;
 
@@ -28,7 +25,7 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
     {
         parent::setUp();
 
-        $this->storage           = new DefaultPendingStorage();
+        $this->storage = new DefaultPendingStorage();
 
         // Create a temporary file for testing
         $this->tempFilePath = tempnam(sys_get_temp_dir(), 'test_storage_');
