@@ -90,6 +90,7 @@ nav:
           - Overview: pending.md
           - Pending Asset Manager: pending-asset-manager.md
           - Custom Pending Storage: custom-pending-storage.md
+          - Pending Security Token: pending-security-token.md
   - Events: events.md
   - Validation: validation.md
   - Troubleshooting: troubleshooting.md

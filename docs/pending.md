@@ -60,6 +60,7 @@ A class that represents a pending asset. Contains the file and metadata.
 | `preserve_original` | bool | Whether to preserve the original file |
 | `custom_properties` | array | Additional custom properties |
 | `file` | File\|UploadedFile | Reference to the actual file |
+| `security_token` | string\|null | Short-lived security token assigned to the pending asset (set by PendingAssetManager when a token provider is configured) |
 
 
 ### Available Methods
@@ -75,6 +76,7 @@ A class that represents a pending asset. Contains the file and metadata.
 | `setId(string $id)` | Sets the ID (usually internal) |
 | `setTTL(int $ttl)` | Sets the time to live in seconds |
 | `store(?PendingStorageInterface $storage = null, ?int $ttlSeconds = null)` | Stores the pending asset. If ID exists, updates metadata only; if no ID, creates new storage. Optional custom storage and TTL parameters. |
+| `setSecurityToken(?string $token)` | Sets the security token on the `PendingAsset` (used internally by `PendingAssetManager`/storage after token generation) |
 
 #### Creation Methods (Static)
 
@@ -768,3 +770,85 @@ chown -R www-data:www-data writable/assets_pending
 
 Pending assets make upload processes more flexible and allow users to first upload a file, then edit metadata, and finally confirm where the asset will be added.
 
+## Security Tokens
+
+Pending assets support security tokens to verify and control access to pending assets.
+
+### What are Security Tokens?
+
+Security tokens are short-lived tokens that ensure only authorized actions are performed on pending assets. They prevent misuse of pending asset IDs and allow validating requests from the client.
+
+### Usage pattern
+
+1. Token generation is automatic when you store a pending asset via `PendingAsset::store()` (which delegates to `PendingAssetManager::store()`). The manager will:
+
+   - Generate a pending ID (when creating a new pending asset)
+   - Persist the pending file/metadata using the configured pending storage
+   - Invoke the configured token provider's `generateToken($pendingId)` and set the resulting token on the `PendingAsset` instance (`$pending->security_token`).
+
+   Therefore you do NOT need to instantiate the token provider or call `generateToken()` manually in typical flows. Example:
+
+```php
+use Maniaba\AssetConnect\Pending\PendingAsset;
+
+$result = PendingAsset::createFromRequest('file');
+$pending = $result['file'][0];
+
+// Persist pending asset - the PendingAssetManager will generate and persist the token
+$pending->store();
+
+// After storing, the token is available on the PendingAsset object (if a token provider is configured)
+return $this->response->setJSON([
+    'pending_id' => $pending->id,
+    'security_token' => $pending->security_token,
+]);
+```
+
+2. Token validation / retrieval behavior
+
+   - `PendingSecurityTokenInterface::validateToken(PendingAsset $pendingAsset, ?string $tokenProvided = null): bool` validates the provided token against the pending asset's stored `security_token`.
+   - If you don't pass a `$tokenProvided`, most built-in token providers (the abstract implementation) will automatically call `retrieveToken($pendingId)` and validate the retrieved value. For example, `SessionPendingSecurityToken::retrieveToken()` reads the token from session tempdata.
+
+   Example — validating a token that the client passed explicitly:
+
+```php
+use Maniaba\AssetConnect\Pending\PendingAssetManager;
+use Maniaba\AssetConnect\Pending\PendingSecurityToken\SessionPendingSecurityToken;
+
+$manager = PendingAssetManager::make();
+$pending = $manager->fetchById($pendingId);
+
+if (! $pending) {
+    throw new \RuntimeException('Pending asset not found');
+}
+
+// Validate by passing the token explicitly into fetchById().
+// If token is invalid the method returns null.
+$pending = $manager->fetchById($pendingId, $providedTokenFromClient);
+
+if ($pending === null) {
+    // Either asset not found, expired, or invalid token
+    throw new \RuntimeException('Pending asset not found or invalid security token.');
+}
+
+// proceed to convert pending asset into a real asset
+```
+
+   Example — let the provider retrieve the token itself (no explicit token passed):
+
+```php
+$pending = $manager->fetchById($pendingId);
+
+if ($pending === null) {
+    // Asset not found, expired, or provider failed to validate token
+    throw new \RuntimeException('Pending asset not found or invalid/expired token.');
+}
+
+// proceed to convert pending asset into a real asset
+```
+
+Notes:
+
+- Token validation is executed inside `PendingAssetManager::fetchById(string $id, ?string $token = null): ?PendingAsset`. If the token provider is configured, `fetchById()` will call the provider's `validateToken()` internally. When validation fails `fetchById()` returns `null`.
+- You can explicitly pass the token into `fetchById()` (useful when the client sends token in the request body). If you omit the token, the configured provider will usually attempt `retrieveToken($pendingId)` itself (for example, `SessionPendingSecurityToken` reads session tempdata).
+- If `Config\Asset::$pendingSecurityToken` is `null`, token generation and validation are disabled and `fetchById()` will behave like a normal read (subject to expiration checks).
