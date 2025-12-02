@@ -34,6 +34,7 @@ use TypeError;
  * @property-read string               $name
  * @property-read int                  $order
  * @property-read bool                 $preserve_original
+ * @property-read string|null          $security_token
  * @property-read int                  $ttl
  * @property-read Time                 $updated_at
  */
@@ -53,6 +54,7 @@ final class PendingAsset implements AssetDefinitionInterface, JsonSerializable
     private int $order;
     private bool $preserve_original;
     private array $custom_properties;
+    private ?string $security_token = null;
 
     #[Override]
     public function usingName(string $name): AssetDefinitionInterface
@@ -118,6 +120,7 @@ final class PendingAsset implements AssetDefinitionInterface, JsonSerializable
             'preserve_original'   => $this->preserve_original,
             'ttl'                 => $this->ttl,
             'custom_properties'   => $this->custom_properties,
+            'security_token'      => $this->security_token,
         ];
     }
 
@@ -244,6 +247,13 @@ final class PendingAsset implements AssetDefinitionInterface, JsonSerializable
     public function setTTL(int $ttl): self
     {
         $this->ttl = $ttl;
+
+        return $this;
+    }
+
+    public function setSecurityToken(?string $token): self
+    {
+        $this->security_token = $token;
 
         return $this;
     }

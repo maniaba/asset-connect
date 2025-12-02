@@ -8,16 +8,20 @@ use CodeIgniter\I18n\Time;
 use InvalidArgumentException;
 use Maniaba\AssetConnect\Config\Asset as AssetConfig;
 use Maniaba\AssetConnect\Exceptions\PendingAssetException;
+use Maniaba\AssetConnect\Pending\Interfaces\PendingSecurityTokenInterface;
 use Maniaba\AssetConnect\Pending\Interfaces\PendingStorageInterface;
 use Random\RandomException;
 use Throwable;
 
-final readonly class PendingAssetManager
+final class PendingAssetManager
 {
     private PendingStorageInterface $storage;
+    private ?PendingSecurityTokenInterface $tokenProvider = null;
 
-    private function __construct(?PendingStorageInterface $storage = null)
-    {
+    private function __construct(
+        ?PendingStorageInterface $storage = null,
+        ?PendingSecurityTokenInterface $tokenProvider = null,
+    ) {
         /** @var AssetConfig $config */
         $config = config('Asset');
 
@@ -28,6 +32,14 @@ final readonly class PendingAssetManager
         }
 
         $this->storage = $storage ?? new $defaultStorage();
+
+        $defaultTokenProvider = $config->pendingSecurityToken;
+
+        if (! is_a($defaultTokenProvider, PendingSecurityTokenInterface::class, true) && $defaultTokenProvider !== null) {
+            throw new InvalidArgumentException('Pending security token provider must be an instance of PendingSecurityTokenInterface');
+        }
+
+        $this->tokenProvider = $tokenProvider ?? ($defaultTokenProvider === null ? null : new $defaultTokenProvider());
     }
 
     public static function make(?PendingStorageInterface $storage = null): PendingAssetManager
@@ -44,7 +56,7 @@ final readonly class PendingAssetManager
      *
      * @throws PendingAssetException if unable to read metadata.
      */
-    public function fetchById(string $id): ?PendingAsset
+    public function fetchById(string $id, ?string $token = null): ?PendingAsset
     {
         $pendingAsset = $this->storage->fetchById($id);
         $ttl          = $this->storage->getDefaultTTLSeconds();
@@ -72,11 +84,26 @@ final readonly class PendingAssetManager
             }
         }
 
+        if ($this->tokenProvider !== null) {
+            $result = $this->tokenProvider->validateToken($pendingAsset, $token);
+            if (! $result) {
+                // Invalid token
+                return null;
+            }
+        }
+
         return $pendingAsset;
     }
 
-    public function deleteById(string $id): bool
+    public function deleteById(string $id, ?string $token = null): bool
     {
+        $asset = $this->fetchById($id, $token);
+
+        if ($asset === null) {
+            // Asset does not exist
+            return false;
+        }
+
         return $this->storage->deleteById($id);
     }
 
@@ -94,6 +121,10 @@ final readonly class PendingAssetManager
         $pendingAsset->setTTL($ttlSeconds);
 
         $this->storage->store($pendingAsset, $pendingAsset->id);
+
+        $token = $this->tokenProvider?->generateToken($pendingAsset->id) ?? null;
+
+        $pendingAsset->setSecurityToken($token);
     }
 
     public function cleanExpiredPendingAssets(): void

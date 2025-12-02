@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Maniaba\AssetConnect\Pending\Interfaces;
 
+use Maniaba\AssetConnect\Pending\PendingAsset;
+
 interface PendingSecurityTokenInterface
 {
     /**
@@ -20,7 +22,7 @@ interface PendingSecurityTokenInterface
     /**
      * Validate user-provided token against the stored one.
      */
-    public function validateToken(string $pendingId, ?string $provided = null): bool;
+    public function validateToken(PendingAsset $pendingAsset, ?string $tokenProvided = null): bool;
 
     /**
      * Delete the stored token for the given pending ID.

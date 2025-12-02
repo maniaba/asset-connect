@@ -15,19 +15,12 @@ use Maniaba\AssetConnect\Pending\PendingAsset;
  */
 interface PendingStorageInterface
 {
-    public function __construct(?PendingSecurityTokenInterface $tokenProvider = null);
-
     /**
      * Generates a new unique pending ID as a string. UUID v4 or 32/64 hex string can be used.
      *
      * @return string The generated pending ID.
      */
     public function generatePendingId(): string;
-
-    /**
-     * Manages the creation of a pending security token.
-     */
-    public function pendingSecurityToken(): ?PendingSecurityTokenInterface;
 
     /**
      * Retrieves the default time-to-live (TTL) in seconds.

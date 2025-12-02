@@ -6,36 +6,21 @@ namespace Maniaba\AssetConnect\Pending\PendingSecurityToken;
 
 use CodeIgniter\Session\Session;
 use InvalidArgumentException;
-use Maniaba\AssetConnect\Pending\Interfaces\PendingSecurityTokenInterface;
 use Override;
 
-readonly class SessionPendingSecurityToken implements PendingSecurityTokenInterface
+final class SessionPendingSecurityToken extends AbstractPendingSecurityToken
 {
-    private const string SESSION_KEY_PREFIX = '__pending_security_token_';
+    private const string SESSION_KEY_PREFIX = '__pending_asset_security_token_';
 
-    public function __construct(private int $tokenTTLSeconds = WEEK, private int $tokenLength = 16)
-    {
-        if ($this->tokenTTLSeconds <= 0) {
-            throw new InvalidArgumentException('Token TTL must be a positive integer.');
-        }
-
-        if ($this->tokenLength <= 0 || $this->tokenLength > 64) {
-            throw new InvalidArgumentException('Token length must be between 1 and 64 bytes.');
-        }
-    }
+    private Session $session;
 
     #[Override]
     public function generateToken(string $pendingId): string
     {
-        $token = bin2hex(random_bytes($this->tokenLength));
+        $token = $this->randomStringToken();
 
         // Store the token in the session or other storage mechanism
-        /**
-         * @var Session $session
-         */
-        $session = service('session');
-
-        $session->setTempdata($this->sessionKey($pendingId), $token, $this->tokenTTLSeconds);
+        $this->session->setTempdata($this->sessionKey($pendingId), $token, $this->tokenTTLSeconds);
 
         return $token;
     }
@@ -46,24 +31,7 @@ readonly class SessionPendingSecurityToken implements PendingSecurityTokenInterf
     #[Override]
     public function retrieveToken(string $pendingId): ?string
     {
-        /**
-         * @var Session $session
-         */
-        $session = service('session');
-
-        return $session->get($this->sessionKey($pendingId));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    #[Override]
-    public function validateToken(string $pendingId, ?string $provided = null): bool
-    {
-        $provided = (string) $provided;
-        $stored   = (string) $this->retrieveToken($pendingId);
-
-        return hash_equals($stored, $provided);
+        return $this->session->getTempdata($this->sessionKey($pendingId));
     }
 
     private function sessionKey(string $pendingId): string
@@ -74,11 +42,20 @@ readonly class SessionPendingSecurityToken implements PendingSecurityTokenInterf
     #[Override]
     public function deleteToken(string $pendingId): void
     {
+        $this->session->removeTempdata($this->sessionKey($pendingId));
+    }
+
+    protected function initialize(): void
+    {
         /**
-         * @var Session $session
+         * @var Session|null $session
          */
         $session = service('session');
 
-        $session->remove($this->sessionKey($pendingId));
+        if ($session === null) {
+            throw new InvalidArgumentException('Session service is not available. Ensure that sessions are properly configured.');
+        }
+
+        $this->session = $session;
     }
 }

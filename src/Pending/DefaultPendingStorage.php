@@ -7,21 +7,12 @@ namespace Maniaba\AssetConnect\Pending;
 use CodeIgniter\I18n\Time;
 use ErrorException;
 use Maniaba\AssetConnect\Exceptions\PendingAssetException;
-use Maniaba\AssetConnect\Pending\Interfaces\PendingSecurityTokenInterface;
 use Maniaba\AssetConnect\Pending\Interfaces\PendingStorageInterface;
-use Maniaba\AssetConnect\Pending\PendingSecurityToken\SessionPendingSecurityToken;
 use Override;
 use Random\RandomException;
 
 class DefaultPendingStorage implements PendingStorageInterface
 {
-    protected PendingSecurityTokenInterface $tokenProvider;
-
-    public function __construct(?PendingSecurityTokenInterface $tokenProvider = null)
-    {
-        $this->tokenProvider = $tokenProvider ?? new SessionPendingSecurityToken($this->getDefaultTTLSeconds());
-    }
-
     /**
      * @throws PendingAssetException|RandomException if unable to generate unique ID
      */
@@ -42,12 +33,6 @@ class DefaultPendingStorage implements PendingStorageInterface
         }
 
         return $randomId;
-    }
-
-    #[Override]
-    public function pendingSecurityToken(): ?PendingSecurityTokenInterface
-    {
-        return $this->tokenProvider;
     }
 
     /**
