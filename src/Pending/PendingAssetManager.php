@@ -82,13 +82,13 @@ final class PendingAssetManager
                 // Asset has expired
                 return null;
             }
-        }
 
-        if ($this->tokenProvider !== null) {
-            $result = $this->tokenProvider->validateToken($pendingAsset, $token);
-            if (! $result) {
-                // Invalid token
-                return null;
+            if ($this->tokenProvider !== null) {
+                $result = $this->tokenProvider->validateToken($pendingAsset, $token);
+                if (! $result) {
+                    // Invalid token
+                    return null;
+                }
             }
         }
 

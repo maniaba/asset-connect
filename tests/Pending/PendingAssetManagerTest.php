@@ -36,7 +36,7 @@ final class PendingAssetManagerTest extends CIUnitTestCase
         parent::setUp();
 
         $this->mockStorage     = $this->createMock(PendingStorageInterface::class);
-        $this->mockAssetConfig = $this->createMock(AssetConfig::class);
+        $this->mockAssetConfig = new AssetConfig();
 
         // Create a temporary file for testing
         $this->tempFilePath = tempnam(sys_get_temp_dir(), 'test_manager_');
@@ -65,7 +65,8 @@ final class PendingAssetManagerTest extends CIUnitTestCase
     private function setupGlobalFunctionMocks(): void
     {
         // Inject mock for config
-        $this->mockAssetConfig->pendingStorage = $this->mockStorage::class;
+        $this->mockAssetConfig->pendingStorage       = $this->mockStorage::class;
+        $this->mockAssetConfig->pendingSecurityToken = null; // Disable token validation for tests
         Factories::injectMock('config', 'Asset', $this->mockAssetConfig);
     }
 
@@ -225,6 +226,12 @@ final class PendingAssetManagerTest extends CIUnitTestCase
         // Arrange
         $id = 'delete-id';
 
+        $pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
+        $pendingAsset->setId($id);
+        $this->setPrivateProperty($pendingAsset, 'created_at', Time::now());
+
+        $this->mockStorage->method('fetchById')->with($id)->willReturn($pendingAsset);
+        $this->mockStorage->method('getDefaultTTLSeconds')->willReturn(3600);
         $this->mockStorage->method('deleteById')->with($id)->willReturn(true);
 
         $manager = PendingAssetManager::make($this->mockStorage);
@@ -244,6 +251,12 @@ final class PendingAssetManagerTest extends CIUnitTestCase
         // Arrange
         $id = 'delete-id';
 
+        $pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
+        $pendingAsset->setId($id);
+        $this->setPrivateProperty($pendingAsset, 'created_at', Time::now());
+
+        $this->mockStorage->method('fetchById')->with($id)->willReturn($pendingAsset);
+        $this->mockStorage->method('getDefaultTTLSeconds')->willReturn(3600);
         $this->mockStorage->method('deleteById')->with($id)->willReturn(false);
 
         $manager = PendingAssetManager::make($this->mockStorage);
@@ -382,6 +395,12 @@ final class PendingAssetManagerTest extends CIUnitTestCase
         $id        = 'error-id';
         $exception = new PendingAssetException('Delete error');
 
+        $pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
+        $pendingAsset->setId($id);
+        $this->setPrivateProperty($pendingAsset, 'created_at', Time::now());
+
+        $this->mockStorage->method('fetchById')->with($id)->willReturn($pendingAsset);
+        $this->mockStorage->method('getDefaultTTLSeconds')->willReturn(3600);
         $this->mockStorage->method('deleteById')->with($id)->willThrowException($exception);
 
         $manager = PendingAssetManager::make($this->mockStorage);
@@ -545,6 +564,23 @@ final class PendingAssetManagerTest extends CIUnitTestCase
         $this->mockStorage->method('generatePendingId')->willReturnOnConsecutiveCalls($id1, $id2);
         $this->mockStorage->method('getDefaultTTLSeconds')->willReturn(3600);
         $this->mockStorage->method('store');
+
+        // Mock fetchById to return assets with proper timestamps for deleteById to work
+        $this->mockStorage->method('fetchById')->willReturnCallback(function ($id) use ($asset1, $asset2, $id1, $id2) {
+            if ($id === $id1) {
+                $this->setPrivateProperty($asset1, 'created_at', Time::now());
+
+                return $asset1;
+            }
+            if ($id === $id2) {
+                $this->setPrivateProperty($asset2, 'created_at', Time::now());
+
+                return $asset2;
+            }
+
+            return null;
+        });
+
         $this->mockStorage->method('deleteById')->willReturn(true);
 
         $manager = PendingAssetManager::make($this->mockStorage);

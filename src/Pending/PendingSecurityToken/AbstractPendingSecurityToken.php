@@ -36,7 +36,12 @@ abstract class AbstractPendingSecurityToken implements PendingSecurityTokenInter
     #[Override]
     public function validateToken(PendingAsset $pendingAsset, ?string $tokenProvided = null): bool
     {
-        $tokenProvided ??= (string) $this->retrieveToken($pendingAsset->id);
+        $tokenProvided ??= $this->retrieveToken($pendingAsset->id);
+
+        // If no token is provided and none is stored, validation fails
+        if ($tokenProvided === null || $pendingAsset->security_token === null) {
+            return false;
+        }
 
         return hash_equals($pendingAsset->security_token, $tokenProvided);
     }

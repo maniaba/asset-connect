@@ -20,11 +20,6 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
 {
     private DefaultPendingStorage $storage;
 
-    /**
-     * @var MockObject&PendingSecurityTokenInterface
-     */
-    private MockObject $mockTokenProvider;
-
     private string $tempFilePath;
     private string $basePendingPath;
 
@@ -33,8 +28,7 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
     {
         parent::setUp();
 
-        $this->mockTokenProvider = $this->createMock(PendingSecurityTokenInterface::class);
-        $this->storage           = new DefaultPendingStorage($this->mockTokenProvider);
+        $this->storage           = new DefaultPendingStorage();
 
         // Create a temporary file for testing
         $this->tempFilePath = tempnam(sys_get_temp_dir(), 'test_storage_');
@@ -68,29 +62,15 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
     }
 
     /**
-     * Test constructor with custom token provider
+     * Test DefaultPendingStorage can be instantiated
      */
-    public function testConstructorWithCustomTokenProvider(): void
-    {
-        // Arrange & Act
-        $storage = new DefaultPendingStorage($this->mockTokenProvider);
-
-        // Assert
-        $this->assertInstanceOf(DefaultPendingStorage::class, $storage);
-        $this->assertSame($this->mockTokenProvider, $storage->pendingSecurityToken());
-    }
-
-    /**
-     * Test constructor with default token provider
-     */
-    public function testConstructorWithDefaultTokenProvider(): void
+    public function testCanBeInstantiated(): void
     {
         // Act
         $storage = new DefaultPendingStorage();
 
         // Assert
         $this->assertInstanceOf(DefaultPendingStorage::class, $storage);
-        $this->assertInstanceOf(PendingSecurityTokenInterface::class, $storage->pendingSecurityToken());
     }
 
     /**
@@ -141,18 +121,6 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
 
         // Cleanup
         rmdir($existingDir);
-    }
-
-    /**
-     * Test pendingSecurityToken returns token provider
-     */
-    public function testPendingSecurityTokenReturnsTokenProvider(): void
-    {
-        // Act
-        $tokenProvider = $this->storage->pendingSecurityToken();
-
-        // Assert
-        $this->assertSame($this->mockTokenProvider, $tokenProvider);
     }
 
     /**
