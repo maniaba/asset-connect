@@ -16,5 +16,9 @@ return [
         'page_forbidden'         => 'You do not have permission to access this page.',
         'variant_not_found'      => 'The requested variant "{variantName}" was not found.',
         'token_invalid'          => 'The provided token is invalid or has expired.',
+
+        'unable_to_read_metadata'       => 'Unable to read metadata for pending asset with ID: {id}',
+        'unable_to_store_pending_asset' => 'Unable to store pending asset with ID: {id} : {message}',
+        'pending_asset_not_found'       => 'Pending asset with ID "{id}" was not found.',
     ],
 ];

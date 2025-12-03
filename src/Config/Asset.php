@@ -12,6 +12,10 @@ use Maniaba\AssetConnect\Jobs\AssetConnectJob;
 use Maniaba\AssetConnect\Models\AssetModel;
 use Maniaba\AssetConnect\PathGenerator\DefaultPathGenerator;
 use Maniaba\AssetConnect\PathGenerator\Interfaces\PathGeneratorInterface;
+use Maniaba\AssetConnect\Pending\DefaultPendingStorage;
+use Maniaba\AssetConnect\Pending\Interfaces\PendingSecurityTokenInterface;
+use Maniaba\AssetConnect\Pending\Interfaces\PendingStorageInterface;
+use Maniaba\AssetConnect\Pending\PendingSecurityToken\SessionPendingSecurityToken;
 use Maniaba\AssetConnect\UrlGenerator\DefaultUrlGenerator;
 use Maniaba\AssetConnect\UrlGenerator\Interfaces\UrlGeneratorInterface;
 
@@ -66,6 +70,37 @@ class Asset extends BaseConfig
 
     /**
      * --------------------------------------------------------------------
+     * Pending Assets Storage
+     * --------------------------------------------------------------------
+     * This is the class that will be used to store pending assets.
+     * You can change this to any class that implements the PendingStorageInterface.
+     *
+     * @var class-string<PendingStorageInterface>
+     */
+    public string $pendingStorage = DefaultPendingStorage::class;
+
+    /**
+     * --------------------------------------------------------------------
+     * Pending Assets Security Token
+     * --------------------------------------------------------------------
+     *
+     * This is the class that will be used to generate and validate
+     * security tokens for pending assets.
+     * Security tokens help to ensure that only authorized/uploading user can access the pending assets.
+     *
+     * You can change this to any class that implements the PendingSecurityTokenInterface.
+     *
+     * Available options:
+     * - SessionPendingSecurityToken: Uses session to store the token.
+     * - CookiePendingSecurityToken: Uses cookies to store the token.
+     * - Null: Disables security token validation for pending assets.
+     *
+     * @var class-string<PendingSecurityTokenInterface>|null If null, no security token will be used.
+     */
+    public ?string $pendingSecurityToken = SessionPendingSecurityToken::class;
+
+    /**
+     * --------------------------------------------------------------------
      * Customize Name of Asset Table
      * --------------------------------------------------------------------
      * Only change if you want to rename the default Asset Connect table names.
@@ -74,7 +109,7 @@ class Asset extends BaseConfig
      * security reasons, to prevent the conflict of table names,
      * the internal policy of the companies or any other reason.
      *
-     * - assets                  : The table that stores the assets metadata.
+     * - Assets: The table that stores the asset metadata.
      *
      * @var array<string, string>
      */

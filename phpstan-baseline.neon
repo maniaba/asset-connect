@@ -19,6 +19,12 @@ parameters:
 			path: src/Models/AssetModel.php
 
 		-
+			message: '#^Dead catch \- TypeError is never thrown in the try block\.$#'
+			identifier: catch.neverThrown
+			count: 1
+			path: src/Pending/PendingAsset.php
+
+		-
 			message: '''
 				#^Call to deprecated method __construct\(\) of class CodeIgniter\\HTTP\\DownloadResponse\:
 				4\.5\.0 The param \$config is no longer used\.$#
@@ -56,7 +62,6 @@ parameters:
 			identifier: method.alreadyNarrowedType
 			count: 1
 			path: tests/Asset/AssetAdderTest.php
-
 
 		-
 			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\AssetConnect\\\\Asset\\\\Properties\\\\AssetVariantProperty'' and Maniaba\\AssetConnect\\Asset\\Properties\\AssetVariantProperty will always evaluate to true\.$#'
@@ -201,6 +206,54 @@ parameters:
 			identifier: argument.unresolvableType
 			count: 4
 			path: tests/Events/VariantCreatedTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\AssetConnect\\\\Pending\\\\DefaultPendingStorage'' and Maniaba\\AssetConnect\\Pending\\DefaultPendingStorage will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 1
+			path: tests/Pending/DefaultPendingStorageTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertTrue\(\) with true will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 2
+			path: tests/Pending/DefaultPendingStorageTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\AssetConnect\\\\Pending\\\\PendingAssetManager'' and Maniaba\\AssetConnect\\Pending\\PendingAssetManager will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 2
+			path: tests/Pending/PendingAssetManagerTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertTrue\(\) with true will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 1
+			path: tests/Pending/PendingAssetManagerTest.php
+
+		-
+			message: '#^Call to an undefined method Maniaba\\AssetConnect\\Asset\\Interfaces\\AssetDefinitionInterface\:\:setId\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Pending/PendingAssetTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\AssetConnect\\\\Pending\\\\PendingAsset'' and Maniaba\\AssetConnect\\Pending\\PendingAsset will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 9
+			path: tests/Pending/PendingAssetTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\AssetConnect\\\\Pending\\\\PendingSecurityToken\\\\SessionPendingSecurityToken'' and Maniaba\\AssetConnect\\Pending\\PendingSecurityToken\\SessionPendingSecurityToken will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 2
+			path: tests/Pending/SessionPendingSecurityTokenTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertTrue\(\) with true will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 2
+			path: tests/Pending/SessionPendingSecurityTokenTest.php
 
 		-
 			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\AssetConnect\\\\UrlGenerator\\\\UrlGenerator'' and Maniaba\\AssetConnect\\UrlGenerator\\UrlGenerator will always evaluate to true\.$#'

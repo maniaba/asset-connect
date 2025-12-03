@@ -74,4 +74,11 @@ class AssetException extends LogicException
 
         return new self($errors, $message, 500);
     }
+
+    public static function forPendingAssetNotFound(string $id): self
+    {
+        $message = lang('Asset.exception.pending_asset_not_found', ['id' => $id]);
+
+        return new self($message, $message, 404);
+    }
 }

@@ -16,6 +16,9 @@ use Maniaba\AssetConnect\AssetConnect;
 use Maniaba\AssetConnect\Exceptions\AssetException;
 use Maniaba\AssetConnect\Exceptions\FileException;
 use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
+use Maniaba\AssetConnect\Pending\Interfaces\PendingStorageInterface;
+use Maniaba\AssetConnect\Pending\PendingAsset;
+use Maniaba\AssetConnect\Pending\PendingAssetManager;
 
 /**
  * Trait UseAssetConnectTrait
@@ -225,7 +228,7 @@ trait UseAssetConnectTrait
      *
      * @throws AssetException|FileException
      */
-    public function addMediaFromString(string $string, string $filename): AssetAdder
+    public function addAssetFromString(string $string, string $filename): AssetAdder
     {
         // Create a temporary file
         $tempFile = tempnam(sys_get_temp_dir(), 'asset');
@@ -241,6 +244,42 @@ trait UseAssetConnectTrait
 
         // Set up a callback to delete the temporary file after the asset is stored
         $assetAdder->preservingOriginal(false);
+
+        return $assetAdder;
+    }
+
+    /**
+     * Add an asset from a pending asset
+     *
+     * @param PendingAsset|string          $pendingAsset The pending asset or its ID
+     * @param PendingStorageInterface|null $storage      The pending storage to use (optional)
+     *
+     * @return AssetAdder An instance of AssetAdder to configure and save the asset
+     *
+     * @throws AssetException|FileException
+     */
+    public function addAssetFromPending(PendingAsset|string $pendingAsset, ?PendingStorageInterface $storage = null): AssetAdder
+    {
+        if (is_string($pendingAsset)) {
+            $manager            = PendingAssetManager::make($storage);
+            $pendingAssetEntity = $manager->fetchById($pendingAsset);
+
+            if (! $pendingAssetEntity instanceof PendingAsset) {
+                throw AssetException::forPendingAssetNotFound($pendingAsset);
+            }
+
+            $pendingAsset = $pendingAssetEntity;
+            unset($manager, $pendingAssetEntity);
+        }
+
+        $assetAdder = $this->addAsset($pendingAsset->file);
+
+        // Set attributes from pending asset
+        $assetAdder->usingName($pendingAsset->name);
+        $assetAdder->usingFileName($pendingAsset->file_name);
+        $assetAdder->setOrder($pendingAsset->order);
+        $assetAdder->withCustomProperties($pendingAsset->custom_properties);
+        $assetAdder->preservingOriginal($pendingAsset->preserve_original);
 
         return $assetAdder;
     }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Maniaba\AssetConnect\Exceptions;
 
-class FileException extends AssetException
+final class FileException extends AssetException
 {
     public static function forInvalidFile(string $filePath): self
     {
