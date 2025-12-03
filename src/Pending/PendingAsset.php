@@ -146,6 +146,11 @@ final class PendingAsset implements AssetDefinitionInterface, JsonSerializable
         $this->updated_at        = Time::createFromTimestamp($this->file->getMTime() ?? 0);
         $this->ttl               = 0;
 
+        $this->updateAttributes($attributes);
+    }
+
+    public function updateAttributes(array $attributes): self
+    {
         foreach ($attributes as $key => $value) {
             if (property_exists($this, $key)) {
                 // try to set the property
@@ -156,6 +161,8 @@ final class PendingAsset implements AssetDefinitionInterface, JsonSerializable
                 }
             }
         }
+
+        return $this;
     }
 
     public function __get(string $name): mixed
