@@ -10,7 +10,7 @@ use Override;
 
 final class SessionPendingSecurityToken extends AbstractPendingSecurityToken
 {
-    private const string SESSION_KEY = '__asset_pending_security_token__';
+    public const string SESSION_KEY = '__asset_pending_security_token__';
 
     private Session $session;
 

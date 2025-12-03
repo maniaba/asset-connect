@@ -169,7 +169,7 @@ final class SessionPendingSecurityTokenTest extends CIUnitTestCase
         $this->mockSession->expects($this->once())
             ->method('setTempdata')
             ->with(
-                $this->stringContains('__pending_asset_security_token_' . $pendingId),
+                $this->stringContains(SessionPendingSecurityToken::SESSION_KEY),
                 $this->isString(),
                 $ttl,
             );
@@ -224,7 +224,7 @@ final class SessionPendingSecurityTokenTest extends CIUnitTestCase
 
         $this->mockSession->expects($this->once())
             ->method('getTempdata')
-            ->with($this->stringContains('__pending_asset_security_token_' . $pendingId))
+            ->with($this->stringContains(SessionPendingSecurityToken::SESSION_KEY))
             ->willReturn($storedToken);
 
         $tokenService = new SessionPendingSecurityToken();
@@ -246,7 +246,7 @@ final class SessionPendingSecurityTokenTest extends CIUnitTestCase
 
         $this->mockSession->expects($this->once())
             ->method('getTempdata')
-            ->with($this->stringContains('__pending_asset_security_token_' . $pendingId))
+            ->with($this->stringContains(SessionPendingSecurityToken::SESSION_KEY))
             ->willReturn(null);
 
         $tokenService = new SessionPendingSecurityToken();
@@ -334,7 +334,7 @@ final class SessionPendingSecurityTokenTest extends CIUnitTestCase
 
         $this->mockSession->expects($this->once())
             ->method('getTempdata')
-            ->with($this->stringContains('__pending_asset_security_token_' . $pendingId))
+            ->with($this->stringContains(SessionPendingSecurityToken::SESSION_KEY))
             ->willReturn(null);
 
         $tokenService = new SessionPendingSecurityToken();
@@ -377,7 +377,7 @@ final class SessionPendingSecurityTokenTest extends CIUnitTestCase
 
         $this->mockSession->expects($this->once())
             ->method('removeTempdata')
-            ->with($this->stringContains('__pending_asset_security_token_' . $pendingId));
+            ->with($this->stringContains(SessionPendingSecurityToken::SESSION_KEY));
 
         $tokenService = new SessionPendingSecurityToken();
 
@@ -394,12 +394,11 @@ final class SessionPendingSecurityTokenTest extends CIUnitTestCase
     public function testSessionKeyFormatIsConsistent(): void
     {
         // Arrange
-        $pendingId          = 'test-id-123';
-        $expectedKeyPattern = '__pending_asset_security_token_test-id-123';
+        $pendingId = 'test-id-123';
 
         $this->mockSession->expects($this->exactly(2))
             ->method('getTempdata')
-            ->with($expectedKeyPattern)
+            ->with(SessionPendingSecurityToken::SESSION_KEY)
             ->willReturn('token-value');
 
         $tokenService = new SessionPendingSecurityToken();
@@ -514,7 +513,7 @@ final class SessionPendingSecurityTokenTest extends CIUnitTestCase
 
         // getTempdata is called once in retrieveToken() only
         // When validateToken is called with a provided token, it doesn't call retrieveToken
-        $this->mockSession->expects($this->once())
+        $this->mockSession->expects($this->exactly(2))
             ->method('getTempdata')
             ->willReturnCallback(static function () use (&$generatedToken) {
                 return $generatedToken;
