@@ -175,8 +175,10 @@ class DefaultPendingStorage implements PendingStorageInterface
 
         // if file already exists at path, return because we do not want to overwrite
         if (file_exists($storeFilePath)) {
-            // Delete the temporary file if it was created (since we're not using it for update)
-            @unlink($asset->file->getRealPath());
+            if ($storeFilePath !== $asset->file->getRealPath()) {
+                // Delete the temporary file if it was created (since we're not using it for update)
+                @unlink($asset->file->getRealPath());
+            }
 
             return;
         }
