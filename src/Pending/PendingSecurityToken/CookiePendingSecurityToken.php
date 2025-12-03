@@ -8,7 +8,7 @@ use Override;
 
 final class CookiePendingSecurityToken extends AbstractPendingSecurityToken
 {
-    private const string COOKIE_NAME = '__asset_pending_security_token_';
+    private const string COOKIE_NAME = '__asset_pending_security_token__';
 
     #[Override]
     protected function initialize(): void
@@ -19,7 +19,7 @@ final class CookiePendingSecurityToken extends AbstractPendingSecurityToken
     #[Override]
     public function generateToken(string $pendingId): string
     {
-        $token = get_cookie(self::COOKIE_NAME);
+        $token = $this->retrieveToken($pendingId);
 
         if ($token === null) {
             $token = $this->randomStringToken();

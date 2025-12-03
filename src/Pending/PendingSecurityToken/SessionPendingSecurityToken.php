@@ -10,17 +10,21 @@ use Override;
 
 final class SessionPendingSecurityToken extends AbstractPendingSecurityToken
 {
-    private const string SESSION_KEY_PREFIX = '__pending_asset_security_token_';
+    private const string SESSION_KEY = '__asset_pending_security_token__';
 
     private Session $session;
 
     #[Override]
     public function generateToken(string $pendingId): string
     {
-        $token = $this->randomStringToken();
+        $token = $this->retrieveToken($pendingId);
 
-        // Store the token in the session or other storage mechanism
-        $this->session->setTempdata($this->sessionKey($pendingId), $token, $this->tokenTTLSeconds);
+        if ($token === null) {
+            $token = $this->randomStringToken();
+
+            // Store the token in the session or other storage mechanism
+            $this->session->setTempdata(self::SESSION_KEY, $token, $this->tokenTTLSeconds);
+        }
 
         return $token;
     }
@@ -31,18 +35,13 @@ final class SessionPendingSecurityToken extends AbstractPendingSecurityToken
     #[Override]
     public function retrieveToken(string $pendingId): ?string
     {
-        return $this->session->getTempdata($this->sessionKey($pendingId));
-    }
-
-    private function sessionKey(string $pendingId): string
-    {
-        return self::SESSION_KEY_PREFIX . $pendingId;
+        return $this->session->getTempdata(self::SESSION_KEY);
     }
 
     #[Override]
     public function deleteToken(string $pendingId): void
     {
-        $this->session->removeTempdata($this->sessionKey($pendingId));
+        $this->session->removeTempdata(self::SESSION_KEY);
     }
 
     #[Override]
