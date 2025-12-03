@@ -104,6 +104,8 @@ final class PendingAssetManager
             return false;
         }
 
+        $this->tokenProvider?->deleteToken($id);
+
         return $this->storage->deleteById($id);
     }
 
