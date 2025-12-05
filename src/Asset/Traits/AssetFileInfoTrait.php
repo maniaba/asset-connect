@@ -29,7 +29,8 @@ trait AssetFileInfoTrait
             return $this->file->getSize() ?? 0;
         }
 
-        if (isset($this->attributes['size'])) {
+        // Fallback to attributes if file is not set
+        if (isset($this->attributes) && array_key_exists('size', $this->attributes)) {
             return (int) $this->attributes['size'];
         }
 
