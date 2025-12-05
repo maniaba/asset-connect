@@ -29,6 +29,6 @@ trait AssetFileInfoTrait
             return $this->file->getSize() ?? 0;
         }
 
-        return 0;
+        return $this->attributes['size'] ?? 0;
     }
 }
