@@ -24,6 +24,6 @@ trait AssetFileInfoTrait
 
     protected function getSize(): int
     {
-        return $this->file->getSize() ?? 0;
+        return $this->file?->getSize() ?? 0;
     }
 }
