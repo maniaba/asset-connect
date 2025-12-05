@@ -26,11 +26,11 @@ use Override;
 /**
  * @property      string            $collection                 name of the collection to which the asset belongs (md5 hash of the class name)
  * @property      Time              $created_at                 timestamp when the asset was created
- * @property      Time|null         $deleted_at                 timestamp when the asset was deleted, null if not deleted
- * @property      int               $entity_id                  identifier for the entity to which the asset belongs
- * @property      string            $entity_type                type of the entity to which the asset belongs(md5 hash of the class name)
- * @property      File|UploadedFile $file                       file object associated with the asset, null if not set
- * @property      string            $file_name                  name of the file associated with the asset
+ * @property      Time|null              $deleted_at                 timestamp when the asset was deleted, null if not deleted
+ * @property      int                    $entity_id                  identifier for the entity to which the asset belongs
+ * @property      string                 $entity_type                type of the entity to which the asset belongs(md5 hash of the class name)
+ * @property      File|UploadedFile|null $file                       file object associated with the asset, null if not set
+ * @property      string                 $file_name                  name of the file associated with the asset
  * @property-read string            $extension                  file extension of the asset
  * @property      int               $id                         identifier for the asset
  * @property-read string            $format_human_readable_size human-readable format of the file size

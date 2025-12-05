@@ -12,7 +12,7 @@ use Maniaba\AssetConnect\Utils\Format;
  * Trait providing file information methods for assets.
  *
  * @property      int                    $size                The size of the asset in bytes.
- * @property      File|UploadedFile|null $file                The file associated with the asset.
+ * @property      File|UploadedFile|null $file                The file associated with the asset (nullable in Asset context, non-nullable in PendingAsset).
  * @property-read string                 $size_human_readable The human-readable size of the asset.
  */
 trait AssetFileInfoTrait
@@ -24,6 +24,11 @@ trait AssetFileInfoTrait
 
     protected function getSize(): int
     {
-        return $this->file?->getSize() ?? 0;
+        // Handle both nullable (Asset) and non-nullable (PendingAsset) contexts
+        if (isset($this->file)) {
+            return $this->file->getSize() ?? 0;
+        }
+
+        return 0;
     }
 }
