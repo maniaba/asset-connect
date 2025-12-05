@@ -21,19 +21,4 @@ trait AssetFileInfoTrait
     {
         return Format::formatBytesHumanReadable($this->size, $precision);
     }
-
-    protected function getSize(): int
-    {
-        // Handle both nullable (Asset) and non-nullable (PendingAsset) contexts
-        if (isset($this->file)) {
-            return $this->file->getSize() ?? 0;
-        }
-
-        // Fallback to attributes if file is not set
-        if (isset($this->attributes) && array_key_exists('size', $this->attributes)) {
-            return (int) $this->attributes['size'];
-        }
-
-        return 0;
-    }
 }

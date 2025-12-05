@@ -131,6 +131,11 @@ final class PendingAsset implements AssetDefinitionInterface, JsonSerializable
         return $this;
     }
 
+    public function getSize(): int
+    {
+        return $this->file->getSize() ?? 0;
+    }
+
     private function __construct(public File|UploadedFile $file, array $attributes = [])
     {
         $fileName = $this->file instanceof UploadedFile ? $this->file->getClientName() : $this->file->getBasename();
@@ -138,7 +143,7 @@ final class PendingAsset implements AssetDefinitionInterface, JsonSerializable
         $this->file_name         = $fileName;
         $this->name              = pathinfo($fileName, PATHINFO_FILENAME);
         $this->mime_type         = $this->file->getMimeType();
-        $this->size              = $this->file->getSize() ?? 0;
+        $this->size              = $this->getSize();
         $this->preserve_original = false;
         $this->custom_properties = [];
         $this->order             = 0;
