@@ -69,6 +69,7 @@ final class AssetAdder implements AssetAdderInterface
             'file_name'   => $fileName,
             'name'        => pathinfo($fileName, PATHINFO_FILENAME),
             'mime_type'   => $file->getMimeType(),
+            'size'        => $file->getSize() ?? 0,
             'entity_id'   => $this->subjectEntity->{$this->setupAssetCollection->getSubjectPrimaryKeyAttribute()},
             'entity_type' => $this->subjectEntity,
             'order'       => 0, // Default order, can be set later

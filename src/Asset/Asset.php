@@ -158,6 +158,17 @@ class Asset extends Entity implements JsonSerializable
         return $rawArray;
     }
 
+    protected function getSize(): int
+    {
+        // For Asset (Entity): Try file first, then fallback to stored attribute
+        if (isset($this->file)) {
+            return $this->file->getSize() ?? 0;
+        }
+
+        // Fallback to stored size in attributes
+        return (int) ($this->attributes['size'] ?? 0);
+    }
+
     public function getExtension(): string
     {
         // If file is set, we try to get extension from it
