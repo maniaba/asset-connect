@@ -24,27 +24,27 @@ use Maniaba\AssetConnect\Utils\Format;
 use Override;
 
 /**
- * @property      string            $collection                 name of the collection to which the asset belongs (md5 hash of the class name)
- * @property      Time              $created_at                 timestamp when the asset was created
- * @property      Time|null         $deleted_at                 timestamp when the asset was deleted, null if not deleted
- * @property      int               $entity_id                  identifier for the entity to which the asset belongs
- * @property      string            $entity_type                type of the entity to which the asset belongs(md5 hash of the class name)
- * @property      File|UploadedFile $file                       file object associated with the asset, null if not set
- * @property      string            $file_name                  name of the file associated with the asset
- * @property-read string            $extension                  file extension of the asset
- * @property      int               $id                         identifier for the asset
- * @property-read string            $format_human_readable_size human-readable format of the file size
- * @property      string            $mime_type                  MIME type of the file
- * @property      string            $name                       name of the asset
- * @property      int               $order                      order of the asset in the collection
- * @property      string            $path                       path to the file on the server
- * @property-read AssetMetadata     $metadata
- * @property-read string            $path_dirname               directory path of the file on the server
- * @property-read string            $relative_path              relative path of the file in the storage
- * @property      int               $size                       size of the file in bytes
- * @property-read string            $relative_path_for_url      relative path of the file in the storage
- * @property-read string            $url                        URL to access the asset
- * @property      Time              $updated_at                 timestamp when the asset was last updated
+ * @property      string                 $collection                 name of the collection to which the asset belongs (md5 hash of the class name)
+ * @property      Time                   $created_at                 timestamp when the asset was created
+ * @property      Time|null              $deleted_at                 timestamp when the asset was deleted, null if not deleted
+ * @property      int                    $entity_id                  identifier for the entity to which the asset belongs
+ * @property      string                 $entity_type                type of the entity to which the asset belongs(md5 hash of the class name)
+ * @property      File|UploadedFile|null $file                       file object associated with the asset, null if not set
+ * @property      string                 $file_name                  name of the file associated with the asset
+ * @property-read string                 $extension                  file extension of the asset
+ * @property      int                    $id                         identifier for the asset
+ * @property-read string                 $format_human_readable_size human-readable format of the file size
+ * @property      string                 $mime_type                  MIME type of the file
+ * @property      string                 $name                       name of the asset
+ * @property      int                    $order                      order of the asset in the collection
+ * @property      string                 $path                       path to the file on the server
+ * @property-read AssetMetadata          $metadata
+ * @property-read string                 $path_dirname               directory path of the file on the server
+ * @property-read string                 $relative_path              relative path of the file in the storage
+ * @property      int                    $size                       size of the file in bytes
+ * @property-read string                 $relative_path_for_url      relative path of the file in the storage
+ * @property-read string                 $url                        URL to access the asset
+ * @property      Time                   $updated_at                 timestamp when the asset was last updated
  */
 class Asset extends Entity implements JsonSerializable
 {

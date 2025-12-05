@@ -575,8 +575,10 @@ final class PendingAssetTest extends CIUnitTestCase
         // Act
         $fileProperty = $pendingAsset->file;
 
-        // Assert
-        $this->assertInstanceOf(File::class, $fileProperty);
+        // Assert - verify file properties instead of redundant type check
+        $this->assertSame($file->getRealPath(), $fileProperty->getRealPath());
+        $this->assertSame($file->getSize(), $fileProperty->getSize());
+        $this->assertSame($file->getMimeType(), $fileProperty->getMimeType());
     }
 
     /**
