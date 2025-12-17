@@ -93,7 +93,7 @@ trait UseAssetConnectTrait
      */
     final public function getAssets(?string $collection = null): array
     {
-        return $this->assetConnectInstance->getAssetsForEntity($this, $collection);
+        return $this->assetConnectInstance()?->getAssetsForEntity($this, $collection) ?? [];
     }
 
     /**
@@ -141,7 +141,7 @@ trait UseAssetConnectTrait
      */
     final public function deleteAssets(?string $collection = null): bool
     {
-        return $this->assetConnectInstance->deleteAssetsForEntity($this, $collection);
+        return $this->assetConnectInstance()?->deleteAssetsForEntity($this, $collection) ?? true;
     }
 
     /**
