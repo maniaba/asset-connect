@@ -9,10 +9,11 @@ use CodeIgniter\Entity\Entity;
 use CodeIgniter\Validation\ValidationInterface;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
-use Maniaba\AssetConnect\AssetCollection\AssetCollectionDefinitionFactory;
+use Maniaba\AssetConnect\Config\Asset as AssetConfig;
 use Maniaba\AssetConnect\Traits\UseAssetConnectTrait;
 use Override;
 use RuntimeException;
+use Throwable;
 
 /**
  * @method Asset|list<Asset>|null find($id = null)
@@ -397,15 +398,16 @@ class AssetModel extends BaseModel
      */
     public function whereCollection(AssetCollectionDefinitionInterface|string $collection): self
     {
-        if (is_string($collection)) {
-            AssetCollectionDefinitionFactory::validateStringClass($collection);
+        /** @var AssetConfig $config */
+        $config = config('Asset');
 
-            $collectionHash = md5($collection);
-        } else {
-            $collectionHash = md5($collection::class);
+        try {
+            $collectionKey = $config->getCollectionKey($collection);
+        } catch (Throwable) {
+            $collectionKey = null;
         }
 
-        $this->where('collection', $collectionHash);
+        $this->where('collection', $collectionKey);
 
         return $this;
     }
@@ -419,9 +421,16 @@ class AssetModel extends BaseModel
      */
     public function whereEntityType(Entity|string $entityType): self
     {
-        $entityTypeHash = is_string($entityType) ? md5($entityType) : md5($entityType::class);
+        /** @var AssetConfig $config */
+        $config = config('Asset');
 
-        $this->where('entity_type', $entityTypeHash);
+        try {
+            $entityTypeKey = $config->getEntityTypeKey($entityType);
+        } catch (Throwable) {
+            $entityTypeKey = null;
+        }
+
+        $this->where('entity_type', $entityTypeKey);
 
         return $this;
     }
