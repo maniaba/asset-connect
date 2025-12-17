@@ -214,7 +214,7 @@ class Asset extends BaseConfig
      *                          This must match an existing key in the entity key
      *                          definitions.
      *
-     * @return string The fully qualified class name corresponding to the specified
+     * @return class-string<Entity> The fully qualified class name corresponding to the specified
      *                entity key.
      *
      * @throws InvalidArgumentException If the provided entity key is not registered
@@ -281,7 +281,7 @@ class Asset extends BaseConfig
      *                              This must match an existing key in the collection
      *                              key definitions.
      *
-     * @return string The fully qualified class name corresponding to the specified
+     * @return class-string<AssetCollectionDefinitionInterface> The fully qualified class name corresponding to the specified
      *                collection key.
      *
      * @throws InvalidArgumentException If the provided collection key is not registered
