@@ -175,6 +175,15 @@ class Asset extends BaseConfig
         ],
     ];
 
+    /**
+     * --------------------------------------------------------------------
+     * Methods to get entity and collection keys and classes
+     * --------------------------------------------------------------------
+     * These methods help to retrieve the entity type keys and collection keys
+     * based on the provided entity or collection class names or instances.
+     *
+     * @throws InvalidArgumentException
+     */
     final public function getEntityTypeKey(Entity|string $entityType): string
     {
         if ($entityType instanceof Entity || class_exists($entityType)) {
@@ -198,6 +207,19 @@ class Asset extends BaseConfig
         return $entityType;
     }
 
+    /**
+     * Retrieves the entity class name associated with the given entity key.
+     *
+     * @param string $entityKey The key used to identify the entity class.
+     *                          This must match an existing key in the entity key
+     *                          definitions.
+     *
+     * @return string The fully qualified class name corresponding to the specified
+     *                entity key.
+     *
+     * @throws InvalidArgumentException If the provided entity key is not registered
+     *                                  in the entity key definitions.
+     */
     final public function getEntityClassFromKey(string $entityKey): string
     {
         $entityClass = array_search($entityKey, $this->entityKeyDefinitions, true);
@@ -209,6 +231,25 @@ class Asset extends BaseConfig
         return $entityClass;
     }
 
+    /**
+     * Retrieves the collection key associated with the given collection definition
+     * or class name.
+     *
+     * @param AssetCollectionDefinitionInterface|string $collection The collection definition
+     *                                                              instance or the fully qualified
+     *                                                              class name of the collection. This
+     *                                                              must either implement the
+     *                                                              AssetCollectionDefinitionInterface
+     *                                                              or be a registered class in asset
+     *                                                              collection definitions.
+     *
+     * @return string The collection key corresponding to the specified collection definition
+     *                or class name.
+     *
+     * @throws InvalidArgumentException If the provided collection is not registered in
+     *                                  the asset collection definitions or does not conform to
+     *                                  the required interface.
+     */
     final public function getCollectionKey(AssetCollectionDefinitionInterface|string $collection): string
     {
         if ($collection instanceof AssetCollectionDefinitionInterface || (class_exists($collection) && is_subclass_of($collection, AssetCollectionDefinitionInterface::class))) {
@@ -233,6 +274,19 @@ class Asset extends BaseConfig
         return $collection;
     }
 
+    /**
+     * Retrieves the collection class name associated with the given collection key.
+     *
+     * @param string $collectionKey The key used to identify the collection class.
+     *                              This must match an existing key in the collection
+     *                              key definitions.
+     *
+     * @return string The fully qualified class name corresponding to the specified
+     *                collection key.
+     *
+     * @throws InvalidArgumentException If the provided collection key is not registered
+     *                                  in the collection key definitions.
+     */
     final public function getCollectionClassFromKey(string $collectionKey): string
     {
         $collectionClass = array_search($collectionKey, $this->collectionKeyDefinitions, true);
