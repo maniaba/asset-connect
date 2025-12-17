@@ -27,8 +27,7 @@ final class UrlGeneratorTest extends CIUnitTestCase
         parent::setUp();
 
         // Inject test config after parent::setUp() using the full class name
-        $config = new TestAssetConfig();
-        Factories::injectMock('config', \Maniaba\AssetConnect\Config\Asset::class, $config);
+        Factories::injectMock('config', \Maniaba\AssetConnect\Config\Asset::class, new TestAssetConfig());
 
         // Create a real Asset object with metadata via constructor
         $this->asset = new Asset([

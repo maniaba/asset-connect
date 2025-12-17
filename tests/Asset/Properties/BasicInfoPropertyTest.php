@@ -69,7 +69,6 @@ final class BasicInfoPropertyTest extends CIUnitTestCase
         $this->assertSame('value', $result->get('key'));
     }
 
-
     /**
      * Test setStorageBaseDirectoryPath and storageBaseDirectoryPath
      */

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Asset;
 
+use CodeIgniter\Config\Factories;
 use CodeIgniter\Entity\Entity;
 use CodeIgniter\Files\File;
 use CodeIgniter\HTTP\Files\UploadedFile;
@@ -19,6 +20,7 @@ use Maniaba\AssetConnect\Traits\UseAssetConnectTrait;
 use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionClass;
+use Tests\Support\Config\TestAssetConfig;
 use Tests\Support\TestEntity;
 
 /**
@@ -44,6 +46,8 @@ final class AssetAdderTest extends CIUnitTestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        Factories::injectMock('config', \Maniaba\AssetConnect\Config\Asset::class, new TestAssetConfig());
 
         // Create mock entity with UseAssetConnectTrait
         $this->mockEntity = $this->createMockEntityWithTrait();

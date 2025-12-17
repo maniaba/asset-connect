@@ -139,8 +139,8 @@ final class AssetTest extends CIUnitTestCase
     public function testSetCollectionWithInterfaceInstance(): void
     {
         // Arrange
-        $this->mockCollectionDefinition = $this->createMock(AssetCollectionDefinitionInterface::class);
-        $config                                                 = config('Asset');
+        $this->mockCollectionDefinition                                           = $this->createMock(AssetCollectionDefinitionInterface::class);
+        $config                                                                   = config('Asset');
         $config->collectionKeyDefinitions[$this->mockCollectionDefinition::class] = 'mock_definition';
         // Act
         $result = $this->asset->setCollection($this->mockCollectionDefinition);
