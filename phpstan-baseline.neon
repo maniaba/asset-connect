@@ -76,10 +76,10 @@ parameters:
 			path: tests/Asset/Properties/AssetVariantPropertyTest.php
 
 		-
-			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\AssetConnect\\\\Asset\\\\Properties\\\\BasicInfoProperty'' and Maniaba\\AssetConnect\\Asset\\Properties\\BasicInfoProperty will always evaluate to true\.$#'
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\AssetConnect\\\\Asset\\\\Properties\\\\StorageProperty'' and Maniaba\\AssetConnect\\Asset\\Properties\\StorageProperty will always evaluate to true\.$#'
 			identifier: method.alreadyNarrowedType
 			count: 1
-			path: tests/Asset/Properties/BasicInfoPropertyTest.php
+			path: tests/Asset/Properties/StoragePropertyTest.php
 
 		-
 			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\AssetConnect\\\\Asset\\\\Properties\\\\UserCustomProperty'' and Maniaba\\AssetConnect\\Asset\\Properties\\UserCustomProperty will always evaluate to true\.$#'

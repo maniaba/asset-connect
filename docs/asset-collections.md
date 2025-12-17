@@ -13,6 +13,29 @@ Each collection can have its own configuration, such as:
 - Authorization rules
 - File variants (e.g., thumbnails)
 
+## Registering Asset Collections (Required)
+
+**You must register all asset collections** in the `Config\Asset.php` file with unique identifiers. This is a required step for Asset Connect to function properly:
+
+```php
+public array $collectionKeyDefinitions = [
+    ProfilePicturesCollection::class => 'profile_pictures',
+    DocumentsCollection::class => 'documents',
+    VideosCollection::class => 'videos',
+];
+```
+
+**Why this is required:**
+
+- **Collection Identification**: Asset Connect uses these identifiers to determine which collection an asset belongs to
+- **Database Storage**: The identifier is stored in the database as part of the asset record
+- **Essential Functionality**: Without this registration, Asset Connect cannot process or manage assets for that collection
+- **Data Integrity**: These mappings are crucial for maintaining proper relationships between assets and their collections
+
+**Important:** Every asset collection class you create must be registered in the `collectionKeyDefinitions` array. Failure to register a collection will prevent Asset Connect from working with that collection.
+
+For more information, see the [Configuration](configuration.md) documentation.
+
 ## Core Interfaces
 
 Asset Connect uses several interfaces to define and configure asset collections. Understanding these interfaces is essential for creating custom asset collections.

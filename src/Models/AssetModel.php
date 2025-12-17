@@ -40,9 +40,9 @@ class AssetModel extends BaseModel
     protected $deletedField    = 'deleted_at';
     protected $returnType      = Asset::class;
     protected $validationRules = [
-        'entity_type' => 'required|alpha_numeric_space|max_length[32]',
+        'entity_type' => 'required|alpha_dash|max_length[32]',
         'entity_id'   => 'required|integer',
-        'collection'  => 'required|alpha_numeric_space|max_length[32]',
+        'collection'  => 'required|alpha_dash|max_length[32]',
         'name'        => 'permit_empty|max_length[255]',
         'file_name'   => 'permit_empty|max_length[255]',
         'mime_type'   => 'permit_empty|max_length[255]',
@@ -54,7 +54,7 @@ class AssetModel extends BaseModel
 
     /**
      * Constructor, we make it final to prevent overriding the constructor
-     * and ensure that the model is always initialized with the correct database connection and validation instance in AssetModel::init() method.
+     * and ensure that the model is always initialized with the correct database connection and validation instance in the AssetModel::init() method.
      *
      * @param ConnectionInterface|null $db         Database connection instance
      * @param ValidationInterface|null $validation Validation instance

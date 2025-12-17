@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Asset;
 
+use CodeIgniter\Config\Factories;
 use CodeIgniter\Entity\Entity;
 use CodeIgniter\Files\File;
 use CodeIgniter\HTTP\Files\UploadedFile;
@@ -19,6 +20,7 @@ use Maniaba\AssetConnect\Traits\UseAssetConnectTrait;
 use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionClass;
+use Tests\Support\Config\TestAssetConfig;
 use Tests\Support\TestEntity;
 
 /**
@@ -44,6 +46,8 @@ final class AssetAdderTest extends CIUnitTestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        Factories::injectMock('config', \Maniaba\AssetConnect\Config\Asset::class, new TestAssetConfig());
 
         // Create mock entity with UseAssetConnectTrait
         $this->mockEntity = $this->createMockEntityWithTrait();
@@ -334,8 +338,8 @@ final class AssetAdderTest extends CIUnitTestCase
         $this->assertSame(1024, $asset->size);
         $this->assertSame(0, $asset->order); // default order
         $this->assertSame($this->mockFile, $asset->file);
-        // Test md5 hash
-        $this->assertSame(md5($this->mockEntity::class), $asset->entity_type, 'Entity type should match the hash of the entity class name');
+        // Test entity type key
+        $this->assertSame('test_entity', $asset->entity_type, 'Entity type should match the registered key');
         $this->assertSame(123, $asset->entity_id, "Entity ID should match the mock entity's ID");
     }
 

@@ -432,5 +432,5 @@ public function fetchById(string $id): ?PendingAsset
 
 - [Pending Assets](pending.md) - Overview of pending assets functionality
 - [Pending Asset Manager](pending-asset-manager.md) - Manager class documentation
-- [DefaultPendingStorage](pending-storage.md) - Default filesystem implementation
+- [DefaultPendingStorage](pending.md#defaultpendingstorage) - Default filesystem implementation
 

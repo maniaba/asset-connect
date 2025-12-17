@@ -141,7 +141,7 @@ trait UseAssetConnectTrait
      */
     final public function deleteAssets(?string $collection = null): bool
     {
-        return $this->assetConnectInstance()?->deleteAssetsForEntity($this, $collection) ?? true;
+        return $this->assetConnectInstance()?->deleteAssetsForEntity($this, $collection) ?? false;
     }
 
     /**

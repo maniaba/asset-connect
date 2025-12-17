@@ -109,6 +109,56 @@ class UserModel extends Model
 }
 ```
 
+### 5. Configure Entity and Collection Definitions (Required)
+
+**This is a required step for Asset Connect to function properly.**
+
+You **must** register your entity types and asset collections in the configuration file. Create or extend the `Config\Asset.php` file in your application:
+
+```php
+<?php
+
+namespace Config;
+
+use App\Entities\User;
+use App\Entities\Product;
+use App\AssetCollections\ProfilePicturesCollection;
+use App\AssetCollections\ProductImagesCollection;
+use Maniaba\AssetConnect\Config\Asset as BaseAssetConfig;
+
+class Asset extends BaseAssetConfig
+{
+    /**
+     * REQUIRED: Define entity types and their unique identifiers
+     * Every entity that uses UseAssetConnectTrait must be registered here
+     */
+    public array $entityKeyDefinitions = [
+        User::class => 'user',
+        Product::class => 'product',
+    ];
+
+    /**
+     * REQUIRED: Define collection definitions and their unique identifiers
+     * Every asset collection class you create must be registered here
+     */
+    public array $collectionKeyDefinitions = [
+        ProfilePicturesCollection::class => 'profile_pictures',
+        ProductImagesCollection::class => 'product_images',
+    ];
+}
+```
+
+**Why this is required:**
+
+- Asset Connect uses these identifiers to store and retrieve asset associations
+- Without these definitions, the library cannot identify which entity or collection an asset belongs to
+- These mappings are stored in the database and are essential for data integrity
+- They enable proper querying and filtering of assets by type
+
+**Important:** You must add every entity and collection to these arrays as you create them. Failure to do so will prevent Asset Connect from working with those entities or collections.
+
+For more details, see the [Configuration](configuration.md) documentation.
+
 ## Next Steps
 
 After installation, you may want to:
