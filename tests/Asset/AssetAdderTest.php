@@ -334,8 +334,8 @@ final class AssetAdderTest extends CIUnitTestCase
         $this->assertSame(1024, $asset->size);
         $this->assertSame(0, $asset->order); // default order
         $this->assertSame($this->mockFile, $asset->file);
-        // Test md5 hash
-        $this->assertSame(md5($this->mockEntity::class), $asset->entity_type, 'Entity type should match the hash of the entity class name');
+        // Test entity type key
+        $this->assertSame('test_entity', $asset->entity_type, 'Entity type should match the registered key');
         $this->assertSame(123, $asset->entity_id, "Entity ID should match the mock entity's ID");
     }
 

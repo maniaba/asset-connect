@@ -12,7 +12,7 @@ use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Maniaba\AssetConnect\UrlGenerator\UrlGenerator;
 use Override;
-use stdClass;
+use Tests\Support\Config\TestAssetConfig;
 
 /**
  * @internal
@@ -26,15 +26,19 @@ final class UrlGeneratorTest extends CIUnitTestCase
     {
         parent::setUp();
 
+        // Inject test config after parent::setUp() using the full class name
+        $config = new TestAssetConfig();
+        Factories::injectMock('config', \Maniaba\AssetConnect\Config\Asset::class, $config);
+
         // Create a real Asset object with metadata via constructor
         $this->asset = new Asset([
-            'id'        => '123',
-            'file_name' => 'test.jpg',
-            'path'      => '/path/to/test.jpg',
-            'metadata'  => json_encode([
-                'basic_info' => [
+            'id'         => '123',
+            'file_name'  => 'test.jpg',
+            'path'       => '/path/to/test.jpg',
+            'collection' => 'default_collection',
+            'metadata'   => json_encode([
+                'storage_info' => [
                     'file_relative_path' => 'uploads',
-                    'collection_class'   => null, // Not a protected collection
                 ],
                 'asset_variants' => [
                     'thumbnail' => [
@@ -87,18 +91,6 @@ final class UrlGeneratorTest extends CIUnitTestCase
 
             return false;
         };
-
-        // Mock config function
-        $mockFunctions['config'] = static function ($name) {
-            if ($name === 'Asset') {
-                $config                      = new stdClass();
-                $config->defaultUrlGenerator = 'Maniaba\AssetConnect\UrlGenerator\DefaultUrlGenerator';
-
-                return $config;
-            }
-
-            return null;
-        };
     }
 
     /**
@@ -139,13 +131,13 @@ final class UrlGeneratorTest extends CIUnitTestCase
         // Arrange
         // Create a new Asset object with a protected collection
         $asset = new Asset([
-            'id'        => '123',
-            'file_name' => 'test.jpg',
-            'path'      => '/path/to/test.jpg',
-            'metadata'  => json_encode([
-                'basic_info' => [
+            'id'         => '123',
+            'file_name'  => 'test.jpg',
+            'path'       => '/path/to/test.jpg',
+            'collection' => 'default_collection',
+            'metadata'   => json_encode([
+                'storage_info' => [
                     'file_relative_path' => 'uploads',
-                    'collection_class'   => 'Maniaba\AssetConnect\Asset\Interfaces\AuthorizableAssetCollectionDefinitionInterface', // Protected collection
                 ],
                 'asset_variants' => [
                     'thumbnail' => [

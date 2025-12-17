@@ -85,8 +85,8 @@ class Asset extends Entity implements JsonSerializable
         /** @var AssetConfig $config */
         $config = config('Asset');
 
-        if ($entityType instanceof Entity) {
-            $entityType = $entityType::class;
+        if ($entityType instanceof Entity || class_exists($entityType)) {
+            $entityType = is_string($entityType) ? $entityType : $entityType::class;
 
             $entityKey = $config->entityKeyDefinitions[$entityType] ?? null;
 
@@ -105,7 +105,7 @@ class Asset extends Entity implements JsonSerializable
             throw new InvalidArgumentException("Entity class '{$entityType}' is not registered in asset entity definitions.");
         }
 
-        $this->attributes['entity_type'] = $entityKey;
+        $this->attributes['entity_type'] = $entityType;
 
         return $this;
     }
@@ -146,12 +146,12 @@ class Asset extends Entity implements JsonSerializable
         }
 
         // search collection key from config
-        $collectionKey = array_search($collection, $config->collectionKeyDefinitions, true);
+        $collectionKey = in_array($collection, $config->collectionKeyDefinitions, true);
         if ($collectionKey === false) {
             throw new InvalidArgumentException("Collection class '{$collection}' is not registered in asset collection definitions.");
         }
 
-        $this->attributes['collection'] = $collectionKey;
+        $this->attributes['collection'] = $collection;
 
         return $this;
     }

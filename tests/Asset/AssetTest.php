@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Asset;
 
+use CodeIgniter\Config\Factories;
 use CodeIgniter\Entity\Entity;
 use CodeIgniter\Files\File;
 use CodeIgniter\Test\CIUnitTestCase;
@@ -13,6 +14,8 @@ use Maniaba\AssetConnect\Asset\AssetMetadata;
 use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Override;
 use PHPUnit\Framework\MockObject\MockObject;
+use Tests\Support\Config\TestAssetConfig;
+use Tests\Support\TestEntity;
 
 /**
  * @internal
@@ -69,14 +72,17 @@ final class AssetTest extends CIUnitTestCase
     public function testSetEntityTypeWithEntityInstance(): void
     {
         // Arrange
-        $this->mockEntity = $this->createMock(Entity::class);
+        $this->mockEntity                                       = $this->createMock(Entity::class);
+        $config                                                 = config('Asset');
+        $config->entityKeyDefinitions[$this->mockEntity::class] = 'mock_entity';
 
         // Act
         $result = $this->asset->setEntityType($this->mockEntity);
 
         // Assert
         $this->assertSame($this->asset, $result);
-        $this->assertSame(md5($this->mockEntity::class), $this->asset->entity_type);
+        $this->assertSame('mock_entity', $this->asset->entity_type);
+        $this->assertSame($this->mockEntity::class, $this->asset->subject_entity_class, 'The subject_entity_class should be set to the correct class name.');
     }
 
     /**
@@ -87,12 +93,31 @@ final class AssetTest extends CIUnitTestCase
         // Arrange
         $entityClass = Entity::class;
 
+        Factories::injectMock('config', \Maniaba\AssetConnect\Config\Asset::class, new TestAssetConfig());
+
         // Act
         $result = $this->asset->setEntityType($entityClass);
 
         // Assert
         $this->assertSame($this->asset, $result);
-        $this->assertSame(md5($entityClass), $this->asset->entity_type);
+        $this->assertSame('basic_entity', $this->asset->entity_type);
+        $this->assertSame($entityClass, $this->asset->subject_entity_class, 'The subject_entity_class should be set to the correct class name.');
+    }
+
+    public function testSetEntityTypeWithStringAliasName(): void
+    {
+        // Arrange
+        $entityClass = TestEntity::class;
+
+        Factories::injectMock('config', \Maniaba\AssetConnect\Config\Asset::class, new TestAssetConfig());
+
+        // Act
+        $result = $this->asset->setEntityType('test_entity');
+
+        // Assert
+        $this->assertSame($this->asset, $result);
+        $this->assertSame('test_entity', $this->asset->entity_type, 'The entity_type should be set to the alias name.');
+        $this->assertSame($entityClass, $this->asset->subject_entity_class, 'The subject_entity_class should be set to the correct class name.');
     }
 
     /**
@@ -115,13 +140,14 @@ final class AssetTest extends CIUnitTestCase
     {
         // Arrange
         $this->mockCollectionDefinition = $this->createMock(AssetCollectionDefinitionInterface::class);
-
+        $config                                                 = config('Asset');
+        $config->collectionKeyDefinitions[$this->mockCollectionDefinition::class] = 'mock_definition';
         // Act
         $result = $this->asset->setCollection($this->mockCollectionDefinition);
 
         // Assert
         $this->assertSame($this->asset, $result);
-        $this->assertSame(md5($this->mockCollectionDefinition::class), $this->asset->collection);
+        $this->assertSame('mock_definition', $this->asset->collection);
     }
 
     /**

@@ -50,7 +50,7 @@ final class BasicInfoPropertyTest extends CIUnitTestCase
      */
     public function testGetNameReturnsCorrectName(): void
     {
-        $this->assertSame('basic_info', StorageProperty::getName());
+        $this->assertSame('storage_info', StorageProperty::getName());
     }
 
     /**
@@ -59,7 +59,7 @@ final class BasicInfoPropertyTest extends CIUnitTestCase
     public function testCreateReturnsInstanceOfBasicInfoProperty(): void
     {
         // Arrange
-        $properties = ['basic_info' => ['key' => 'value']];
+        $properties = ['storage_info' => ['key' => 'value']];
 
         // Act
         $result = StorageProperty::create($properties);
@@ -69,95 +69,6 @@ final class BasicInfoPropertyTest extends CIUnitTestCase
         $this->assertSame('value', $result->get('key'));
     }
 
-    /**
-     * Test setEntityTypeClass with Entity instance
-     */
-    public function testSetEntityTypeClassWithEntityInstance(): void
-    {
-        // Arrange
-        $entityClass = $this->mockEntity::class;
-
-        // Act
-        $this->basicInfoProperty->setEntityTypeClass($this->mockEntity);
-
-        // Assert
-        $this->assertSame($entityClass, $this->basicInfoProperty->entityTypeClassName());
-    }
-
-    /**
-     * Test setEntityTypeClass with class name
-     */
-    public function testSetEntityTypeClassWithClassName(): void
-    {
-        // Arrange
-        $entityClass = Entity::class;
-
-        // Act
-        $this->basicInfoProperty->setEntityTypeClass($entityClass);
-
-        // Assert
-        $this->assertSame($entityClass, $this->basicInfoProperty->entityTypeClassName());
-    }
-
-    /**
-     * Test setCollectionClass with AssetCollectionDefinitionInterface instance
-     */
-    public function testSetCollectionClassWithInterfaceInstance(): void
-    {
-        // Arrange
-        $collectionClass = $this->mockCollectionDefinition::class;
-
-        // Act
-        $this->basicInfoProperty->setCollectionClass($this->mockCollectionDefinition);
-
-        // Assert
-        $this->assertSame($collectionClass, $this->basicInfoProperty->collectionClassName());
-    }
-
-    /**
-     * Test setCollectionClass with class name
-     */
-    public function testSetCollectionClassWithClassName(): void
-    {
-        // Arrange
-        $collectionClass = AssetCollectionDefinitionInterface::class;
-
-        // Act
-        $this->basicInfoProperty->setCollectionClass($collectionClass);
-
-        // Assert
-        $this->assertSame($collectionClass, $this->basicInfoProperty->collectionClassName());
-    }
-
-    /**
-     * Test isProtectedCollection returns true for AuthorizableAssetCollectionDefinitionInterface
-     */
-    public function testIsProtectedCollectionReturnsTrueForAuthorizableCollection(): void
-    {
-        // Arrange
-        $this->basicInfoProperty->setCollectionClass($this->mockAuthorizableCollectionDefinition);
-
-        // Act
-        $result = $this->basicInfoProperty->isProtectedCollection();
-
-        // Assert
-        $this->assertTrue($result);
-    }
-
-    /**
-     * Test isProtectedCollection returns false for non-authorizable collection
-     */
-    public function testIsProtectedCollectionReturnsFalseForNonAuthorizableCollection(): void
-    {
-        // Arrange
-        $this->basicInfoProperty->setCollectionClass($this->mockCollectionDefinition);
-
-        // Act
-        $result = $this->basicInfoProperty->isProtectedCollection();
-
-        // Assert
-        $this->assertFalse($result);
-    }
 
     /**
      * Test setStorageBaseDirectoryPath and storageBaseDirectoryPath
