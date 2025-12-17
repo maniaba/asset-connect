@@ -308,7 +308,7 @@ class Asset extends Entity implements JsonSerializable
     /**
      * Get the subject entity which this asset belongs to class name.
      *
-     * @return class-string<Entity> The class name of the subject entity, or null if not set
+     * @return class-string<Entity> The class name of the subject entity
      */
     public function getSubjectEntityClass(): string
     {
