@@ -81,4 +81,11 @@ class AssetException extends LogicException
 
         return new self($message, $message, 404);
     }
+
+    public static function forMissingEntityKeyDefinition(string $entityClass): self
+    {
+        $message = lang('Asset.exception.missing_entity_key_definition', ['entityClass' => $entityClass]);
+
+        return new self($message, $message, 500);
+    }
 }

@@ -8,7 +8,7 @@ use CodeIgniter\Entity\Entity;
 use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\AssetConnect\Asset\Interfaces\AuthorizableAssetCollectionDefinitionInterface;
-use Maniaba\AssetConnect\Asset\Properties\BasicInfoProperty;
+use Maniaba\AssetConnect\Asset\Properties\StorageProperty;
 use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -17,7 +17,7 @@ use PHPUnit\Framework\MockObject\MockObject;
  */
 final class BasicInfoPropertyTest extends CIUnitTestCase
 {
-    private BasicInfoProperty $basicInfoProperty;
+    private StorageProperty $basicInfoProperty;
 
     /**
      * @var Entity&MockObject
@@ -39,7 +39,7 @@ final class BasicInfoPropertyTest extends CIUnitTestCase
     {
         parent::setUp();
 
-        $this->basicInfoProperty                    = new BasicInfoProperty([]);
+        $this->basicInfoProperty                    = new StorageProperty([]);
         $this->mockEntity                           = $this->createMock(Entity::class);
         $this->mockCollectionDefinition             = $this->createMock(AssetCollectionDefinitionInterface::class);
         $this->mockAuthorizableCollectionDefinition = $this->createMock(AuthorizableAssetCollectionDefinitionInterface::class);
@@ -50,7 +50,7 @@ final class BasicInfoPropertyTest extends CIUnitTestCase
      */
     public function testGetNameReturnsCorrectName(): void
     {
-        $this->assertSame('basic_info', BasicInfoProperty::getName());
+        $this->assertSame('basic_info', StorageProperty::getName());
     }
 
     /**
@@ -62,10 +62,10 @@ final class BasicInfoPropertyTest extends CIUnitTestCase
         $properties = ['basic_info' => ['key' => 'value']];
 
         // Act
-        $result = BasicInfoProperty::create($properties);
+        $result = StorageProperty::create($properties);
 
         // Assert
-        $this->assertInstanceOf(BasicInfoProperty::class, $result);
+        $this->assertInstanceOf(StorageProperty::class, $result);
         $this->assertSame('value', $result->get('key'));
     }
 

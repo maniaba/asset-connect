@@ -13,9 +13,11 @@ use CodeIgniter\I18n\Time;
 use InvalidArgumentException;
 use JsonSerializable;
 use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
+use Maniaba\AssetConnect\Asset\Interfaces\AuthorizableAssetCollectionDefinitionInterface;
 use Maniaba\AssetConnect\Asset\Traits\AssetFileInfoTrait;
 use Maniaba\AssetConnect\Asset\Traits\AssetMimeTypeTrait;
 use Maniaba\AssetConnect\AssetCollection\AssetCollectionDefinitionFactory;
+use Maniaba\AssetConnect\Config\Asset as AssetConfig;
 use Maniaba\AssetConnect\Events\AssetUpdated;
 use Maniaba\AssetConnect\Models\AssetModel;
 use Maniaba\AssetConnect\Services\AssetAccessService;
@@ -24,27 +26,30 @@ use Maniaba\AssetConnect\Utils\Format;
 use Override;
 
 /**
- * @property      string                 $collection                 name of the collection to which the asset belongs (md5 hash of the class name)
- * @property      Time                   $created_at                 timestamp when the asset was created
- * @property      Time|null              $deleted_at                 timestamp when the asset was deleted, null if not deleted
- * @property      int                    $entity_id                  identifier for the entity to which the asset belongs
- * @property      string                 $entity_type                type of the entity to which the asset belongs(md5 hash of the class name)
- * @property      File|UploadedFile|null $file                       file object associated with the asset, null if not set
- * @property      string                 $file_name                  name of the file associated with the asset
- * @property-read string                 $extension                  file extension of the asset
- * @property      int                    $id                         identifier for the asset
- * @property-read string                 $format_human_readable_size human-readable format of the file size
- * @property      string                 $mime_type                  MIME type of the file
- * @property      string                 $name                       name of the asset
- * @property      int                    $order                      order of the asset in the collection
- * @property      string                 $path                       path to the file on the server
- * @property-read AssetMetadata          $metadata
- * @property-read string                 $path_dirname               directory path of the file on the server
- * @property-read string                 $relative_path              relative path of the file in the storage
- * @property      int                    $size                       size of the file in bytes
- * @property-read string                 $relative_path_for_url      relative path of the file in the storage
- * @property-read string                 $url                        URL to access the asset
- * @property      Time                   $updated_at                 timestamp when the asset was last updated
+ * @property      string                                           $collection                  name of the collection to which the asset belongs (md5 hash of the class name)
+ * @property-read class-string<AssetCollectionDefinitionInterface> $collection_definition_class class name of the collection definition to which the asset belongs
+ * @property      Time                                             $created_at                  timestamp when the asset was created
+ * @property      Time|null                                        $deleted_at                  timestamp when the asset was deleted, null if not deleted
+ * @property      int                                              $entity_id                   identifier for the entity to which the asset belongs
+ * @property      string                                           $entity_type                 type of the entity to which the asset belongs(md5 hash of the class name)
+ * @property-read string                                           $extension                   file extension of the asset
+ * @property      File|UploadedFile|null                           $file                        file object associated with the asset, null if not set
+ * @property      string                                           $file_name                   name of the file associated with the asset
+ * @property-read string                                           $format_human_readable_size  human-readable format of the file size
+ * @property      int                                              $id                          identifier for the asset
+ * @property-read bool                                             $is_protected_collection     indicates if the asset belongs to a protected collection
+ * @property      string                                           $mime_type                   MIME type of the file
+ * @property      string                                           $name                        name of the asset
+ * @property      int                                              $order                       order of the asset in the collection
+ * @property      string                                           $path                        path to the file on the server
+ * @property-read AssetMetadata                                    $metadata
+ * @property-read string                                           $path_dirname                directory path of the file on the server
+ * @property-read string                                           $relative_path               relative path of the file in the storage
+ * @property      int                                              $size                        size of the file in bytes
+ * @property-read string                                           $relative_path_for_url       relative path of the file in the storage
+ * @property-read class-string<Entity>                             $subject_entity_class        class name of the entity to which the asset belongs
+ * @property      Time                                             $updated_at                  timestamp when the asset was last updated
+ * @property-read string                                           $url                         URL to access the asset
  */
 class Asset extends Entity implements JsonSerializable
 {
@@ -62,17 +67,45 @@ class Asset extends Entity implements JsonSerializable
     ];
     private AssetMetadata $metadata;
 
-    final public function setEntityType(Entity|string $entityType): static
+    protected function getEntityTypeClassName(): string
     {
-        if ($entityType instanceof Entity) {
-            $entityType = $entityType::class;
-        } elseif (! class_exists($entityType) || ($entityType !== Entity::class && ! is_subclass_of($entityType, Entity::class))) {
-            throw new InvalidArgumentException('Entity type must be a valid Entity class or instance.');
+        /** @var AssetConfig $config */
+        $config      = config('Asset');
+        $entityClass = array_search($this->entity_type, $config->entityKeyDefinitions, true);
+
+        if ($entityClass === false) {
+            throw new InvalidArgumentException("Entity class for entity type '{$this->entity_type}' is not registered in asset entity definitions.");
         }
 
-        $this->getMetadata()->basicInfo->setEntityTypeClass($entityType);
+        return $entityClass;
+    }
 
-        $this->attributes['entity_type'] = md5($entityType);
+    final public function setEntityType(Entity|string $entityType): static
+    {
+        /** @var AssetConfig $config */
+        $config = config('Asset');
+
+        if ($entityType instanceof Entity) {
+            $entityType = $entityType::class;
+
+            $entityKey = $config->entityKeyDefinitions[$entityType] ?? null;
+
+            if ($entityKey === null) {
+                throw new InvalidArgumentException("Entity key for entity class '{$entityType}' is not registered in asset entity definitions.");
+            }
+
+            $this->attributes['entity_type'] = $entityKey;
+
+            return $this;
+        }
+
+        // search entity type key from config
+        $entityKey = array_search($entityType, $config->entityKeyDefinitions, true);
+        if ($entityKey === false) {
+            throw new InvalidArgumentException("Entity class '{$entityType}' is not registered in asset entity definitions.");
+        }
+
+        $this->attributes['entity_type'] = $entityKey;
 
         return $this;
     }
@@ -94,15 +127,31 @@ class Asset extends Entity implements JsonSerializable
      */
     final public function setCollection(AssetCollectionDefinitionInterface|string $collection): static
     {
+        /** @var AssetConfig $config */
+        $config = config('Asset');
+
         if ($collection instanceof AssetCollectionDefinitionInterface) {
             $collection = $collection::class;
-        } else {
             AssetCollectionDefinitionFactory::validateStringClass($collection);
+
+            $collectionKey = $config->collectionKeyDefinitions[$collection] ?? null;
+
+            if ($collectionKey === null) {
+                throw new InvalidArgumentException("Collection key for collection class '{$collection}' is not registered in asset collection definitions.");
+            }
+
+            $this->attributes['collection'] = $collectionKey;
+
+            return $this;
         }
 
-        $this->getMetadata()->basicInfo->setCollectionClass($collection);
+        // search collection key from config
+        $collectionKey = array_search($collection, $config->collectionKeyDefinitions, true);
+        if ($collectionKey === false) {
+            throw new InvalidArgumentException("Collection class '{$collection}' is not registered in asset collection definitions.");
+        }
 
-        $this->attributes['collection'] = md5($collection);
+        $this->attributes['collection'] = $collectionKey;
 
         return $this;
     }
@@ -207,19 +256,29 @@ class Asset extends Entity implements JsonSerializable
      *
      * @throws InvalidArgumentException If the collection class does not exist or does not implement AssetCollectionDefinitionInterface
      */
-    public function getAssetCollectionDefinitionClass(): ?string
+    public function getCollectionDefinitionClass(): string
     {
-        $collectionClass = $this->getMetadata()->basicInfo->collectionClassName();
+        /** @var AssetConfig $config */
+        $config          = config('Asset');
+        $collectionClass = array_search($this->collection, $config->collectionKeyDefinitions, true);
 
-        if ($collectionClass === null) {
-            return null;
-        }
-
-        if (! class_exists($collectionClass) || ! is_subclass_of($collectionClass, AssetCollectionDefinitionInterface::class)) {
-            throw new InvalidArgumentException("Collection class '{$collectionClass}' does not exist or does not implement AssetCollectionDefinitionInterface.");
+        if ($collectionClass === false) {
+            throw new InvalidArgumentException("Collection class '{$this->collection}' is not registered in asset collection definitions.");
         }
 
         return $collectionClass;
+    }
+
+    /**
+     * Check if the collection is protected.
+     *
+     * A collection is considered protected if it implements the AuthorizableAssetCollectionDefinitionInterface.
+     *
+     * @return bool True if the collection is protected, false otherwise.
+     */
+    protected function getIsProtectedCollection(): bool
+    {
+        return is_subclass_of($this->collection_definition_class, AuthorizableAssetCollectionDefinitionInterface::class);
     }
 
     /**
@@ -231,13 +290,7 @@ class Asset extends Entity implements JsonSerializable
      */
     public function getAssetCollectionDefinition(...$definitionArguments): ?AssetCollectionDefinitionInterface
     {
-        $collectionClass = $this->getAssetCollectionDefinitionClass();
-
-        if ($collectionClass === null) {
-            return null;
-        }
-
-        return AssetCollectionDefinitionFactory::create($collectionClass, ...$definitionArguments);
+        return AssetCollectionDefinitionFactory::create($this->getCollectionDefinitionClass(), ...$definitionArguments);
     }
 
     /**
@@ -247,11 +300,7 @@ class Asset extends Entity implements JsonSerializable
      */
     public function getSubjectEntity(...$arguments): ?Entity
     {
-        $entityClass = $this->getSubjectEntityClassName();
-
-        if ($entityClass === null) {
-            return null;
-        }
+        $entityClass = $this->getSubjectEntityClass();
 
         return new $entityClass(...$arguments);
     }
@@ -259,21 +308,21 @@ class Asset extends Entity implements JsonSerializable
     /**
      * Get the subject entity which this asset belongs to class name.
      *
-     * @return string|null The class name of the subject entity, or null if not set
+     * @return class-string<Entity> The class name of the subject entity, or null if not set
      */
-    public function getSubjectEntityClassName(): ?string
+    public function getSubjectEntityClass(): string
     {
-        $className = $this->metadata->basicInfo->entityTypeClassName();
+        /** @var AssetConfig $config */
+        $config    = config('Asset');
+        $entityKey = $this->entity_type;
 
-        if ($className === null) {
-            return null;
+        $entityClass = array_search($entityKey, $config->entityKeyDefinitions, true);
+
+        if ($entityClass === false) {
+            throw new InvalidArgumentException("Entity class for entity type '{$entityKey}' is not registered in asset entity definitions.");
         }
 
-        if (! class_exists($className) || ! is_subclass_of($className, Entity::class)) {
-            throw new InvalidArgumentException("Entity class '{$className}' does not exist or does not extend Entity.");
-        }
-
-        return $className;
+        return $entityClass;
     }
 
     public function getCustomProperty(string $propertyName): mixed
@@ -332,7 +381,7 @@ class Asset extends Entity implements JsonSerializable
 
     protected function getRelativePath(): string
     {
-        $relativePath = $this->getMetadata()->basicInfo->fileRelativePath();
+        $relativePath = $this->getMetadata()->storage->fileRelativePath();
 
         if ($relativePath === null) {
             throw new \Maniaba\AssetConnect\Exceptions\InvalidArgumentException('File relative path not set.');
@@ -360,7 +409,7 @@ class Asset extends Entity implements JsonSerializable
     #[Override]
     public function jsonSerialize(): array
     {
-        // need to hide file path on storage
+        // need to hide a file path on storage
         $data = [
             'id'                  => $this->id,
             'entity_id'           => $this->entity_id,

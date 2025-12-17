@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Maniaba\AssetConnect\Config;
 
 use CodeIgniter\Config\BaseConfig;
+use CodeIgniter\Entity\Entity;
 use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\AssetConnect\AssetCollection\DefaultAssetCollection;
 use Maniaba\AssetConnect\AssetVariants\AssetVariantsProcess;
@@ -21,6 +22,35 @@ use Maniaba\AssetConnect\UrlGenerator\Interfaces\UrlGeneratorInterface;
 
 class Asset extends BaseConfig
 {
+    /**
+     * --------------------------------------------------------------------
+     * Entity type definitions for Asset Connect
+     * --------------------------------------------------------------------
+     * Define the entity types and their primary keys for Asset Connect.
+     * This helps Asset Connect to associate assets with different entity types.
+     *
+     * @var array<class-string<Entity>, string>
+     */
+    public array $entityKeyDefinitions = [
+        // example:
+        // Entity::class => 'basic_entity',
+    ];
+
+    /**
+     * --------------------------------------------------------------------
+     * Collection Definitions for Asset Connect
+     * --------------------------------------------------------------------
+     * Define the collection definitions for Asset Connect.
+     * This helps Asset Connect to manage different asset collections.
+     * Use a unique string to identify each collection definition.
+     *
+     * @var array<class-string<AssetCollectionDefinitionInterface>, string>
+     */
+    public array $collectionKeyDefinitions = [
+        // example:
+        // DefaultAssetCollection::class => 'default_collection',
+    ];
+
     /**
      * --------------------------------------------------------------------
      * Customize the DB group used for each model

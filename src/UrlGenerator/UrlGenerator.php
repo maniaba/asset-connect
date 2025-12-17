@@ -17,7 +17,7 @@ final readonly class UrlGenerator
 
     private function __construct(private Asset $asset)
     {
-        $this->isProtectedCollection = $this->asset->metadata->basicInfo->isProtectedCollection();
+        $this->isProtectedCollection = $this->asset->is_protected_collection;
     }
 
     /**
