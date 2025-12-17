@@ -70,14 +70,9 @@ class Asset extends Entity implements JsonSerializable
     protected function getEntityTypeClassName(): string
     {
         /** @var AssetConfig $config */
-        $config      = config('Asset');
-        $entityClass = array_search($this->entity_type, $config->entityKeyDefinitions, true);
+        $config = config('Asset');
 
-        if ($entityClass === false) {
-            throw new InvalidArgumentException("Entity class for entity type '{$this->entity_type}' is not registered in asset entity definitions.");
-        }
-
-        return $entityClass;
+        return $config->getEntityClassFromKey($this->entity_type);
     }
 
     final public function setEntityType(Entity|string $entityType): static
@@ -85,27 +80,7 @@ class Asset extends Entity implements JsonSerializable
         /** @var AssetConfig $config */
         $config = config('Asset');
 
-        if ($entityType instanceof Entity || class_exists($entityType)) {
-            $entityType = is_string($entityType) ? $entityType : $entityType::class;
-
-            $entityKey = $config->entityKeyDefinitions[$entityType] ?? null;
-
-            if ($entityKey === null) {
-                throw new InvalidArgumentException("Entity key for entity class '{$entityType}' is not registered in asset entity definitions.");
-            }
-
-            $this->attributes['entity_type'] = $entityKey;
-
-            return $this;
-        }
-
-        // search entity type key from config
-        $entityKey = array_search($entityType, $config->entityKeyDefinitions, true);
-        if ($entityKey === false) {
-            throw new InvalidArgumentException("Entity class '{$entityType}' is not registered in asset entity definitions.");
-        }
-
-        $this->attributes['entity_type'] = $entityType;
+        $this->attributes['entity_type'] = $config->getEntityTypeKey($entityType);
 
         return $this;
     }
@@ -130,28 +105,7 @@ class Asset extends Entity implements JsonSerializable
         /** @var AssetConfig $config */
         $config = config('Asset');
 
-        if ($collection instanceof AssetCollectionDefinitionInterface || (class_exists($collection) && is_subclass_of($collection, AssetCollectionDefinitionInterface::class))) {
-            $collection = is_string($collection) ? $collection : $collection::class;
-            AssetCollectionDefinitionFactory::validateStringClass($collection);
-
-            $collectionKey = $config->collectionKeyDefinitions[$collection] ?? null;
-
-            if ($collectionKey === null) {
-                throw new InvalidArgumentException("Collection key for collection class '{$collection}' is not registered in asset collection definitions.");
-            }
-
-            $this->attributes['collection'] = $collectionKey;
-
-            return $this;
-        }
-
-        // search collection key from config
-        $collectionKey = in_array($collection, $config->collectionKeyDefinitions, true);
-        if ($collectionKey === false) {
-            throw new InvalidArgumentException("Collection class '{$collection}' is not registered in asset collection definitions.");
-        }
-
-        $this->attributes['collection'] = $collection;
+        $this->attributes['collection'] = $config->getCollectionKey($collection);
 
         return $this;
     }
@@ -259,14 +213,9 @@ class Asset extends Entity implements JsonSerializable
     public function getCollectionDefinitionClass(): string
     {
         /** @var AssetConfig $config */
-        $config          = config('Asset');
-        $collectionClass = array_search($this->collection, $config->collectionKeyDefinitions, true);
+        $config = config('Asset');
 
-        if ($collectionClass === false) {
-            throw new InvalidArgumentException("Collection class '{$this->collection}' is not registered in asset collection definitions.");
-        }
-
-        return $collectionClass;
+        return $config->getCollectionClassFromKey($this->collection);
     }
 
     /**

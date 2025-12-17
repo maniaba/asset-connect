@@ -9,8 +9,8 @@ use CodeIgniter\Entity\Entity;
 use CodeIgniter\Events\Events;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
-use Maniaba\AssetConnect\AssetCollection\AssetCollectionDefinitionFactory;
 use Maniaba\AssetConnect\AssetCollection\SetupAssetCollection;
+use Maniaba\AssetConnect\Config\Asset as AssetConfig;
 use Maniaba\AssetConnect\Events\AssetDeleted;
 use Maniaba\AssetConnect\Exceptions\FileException;
 use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
@@ -90,7 +90,10 @@ final class AssetConnect
 
     private function setEntityType(Entity $entityType): void
     {
-        $this->relationsInfo['entityType'] = md5($entityType::class);
+        /** @var AssetConfig $config */
+        $config = config('Asset');
+
+        $this->relationsInfo['entityType'] = $config->getEntityTypeKey($entityType);
     }
 
     /**
@@ -108,13 +111,10 @@ final class AssetConnect
             return;
         }
 
-        AssetCollectionDefinitionFactory::validateStringClass($collection);
+        /** @var AssetConfig $config */
+        $config = config('Asset');
 
-        $collectionClass = $collection instanceof AssetCollectionDefinitionInterface
-            ? $collection::class
-            : $collection;
-
-        $this->relationsInfo['collection'] = md5($collectionClass);
+        $this->relationsInfo['collection'] = $config->getCollectionKey($collection);
     }
 
     public function fetchForCollection(): void

@@ -6,7 +6,9 @@ namespace Maniaba\AssetConnect\Config;
 
 use CodeIgniter\Config\BaseConfig;
 use CodeIgniter\Entity\Entity;
+use InvalidArgumentException;
 use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
+use Maniaba\AssetConnect\AssetCollection\AssetCollectionDefinitionFactory;
 use Maniaba\AssetConnect\AssetCollection\DefaultAssetCollection;
 use Maniaba\AssetConnect\AssetVariants\AssetVariantsProcess;
 use Maniaba\AssetConnect\Jobs\AssetConnectJob;
@@ -172,4 +174,73 @@ class Asset extends BaseConfig
             'class' => AssetConnectJob::class,
         ],
     ];
+
+    final public function getEntityTypeKey(Entity|string $entityType): string
+    {
+        if ($entityType instanceof Entity || class_exists($entityType)) {
+            $entityType = is_string($entityType) ? $entityType : $entityType::class;
+
+            $entityKey = $this->entityKeyDefinitions[$entityType] ?? null;
+
+            if ($entityKey === null) {
+                throw new InvalidArgumentException("Entity key for entity class '{$entityType}' is not registered in asset entity definitions.");
+            }
+
+            return $entityKey;
+        }
+
+        // search entity type key from config
+        $entityKey = in_array($entityType, $this->entityKeyDefinitions, true);
+        if ($entityKey === false) {
+            throw new InvalidArgumentException("Entity class '{$entityType}' is not registered in asset entity definitions.");
+        }
+
+        return $entityType;
+    }
+
+    final public function getEntityClassFromKey(string $entityKey): string
+    {
+        $entityClass = array_search($entityKey, $this->entityKeyDefinitions, true);
+
+        if ($entityClass === false) {
+            throw new InvalidArgumentException("Entity class for entity type '{$entityKey}' is not registered in asset entity definitions.");
+        }
+
+        return $entityClass;
+    }
+
+    final public function getCollectionKey(AssetCollectionDefinitionInterface|string $collection): string
+    {
+        if ($collection instanceof AssetCollectionDefinitionInterface || (class_exists($collection) && is_subclass_of($collection, AssetCollectionDefinitionInterface::class))) {
+            $collection = is_string($collection) ? $collection : $collection::class;
+            AssetCollectionDefinitionFactory::validateStringClass($collection);
+
+            $collectionKey = $this->collectionKeyDefinitions[$collection] ?? null;
+
+            if ($collectionKey === null) {
+                throw new InvalidArgumentException("Collection key for collection class '{$collection}' is not registered in asset collection definitions.");
+            }
+
+            return $collectionKey;
+        }
+
+        // search collection key from config
+        $collectionKey = in_array($collection, $this->collectionKeyDefinitions, true);
+        if ($collectionKey === false) {
+            throw new InvalidArgumentException("Collection class '{$collection}' is not registered in asset collection definitions.");
+        }
+
+        return $collection;
+    }
+
+    final public function getCollectionClassFromKey(string $collectionKey): string
+    {
+        $collectionClass = array_search($collectionKey, $this->collectionKeyDefinitions, true);
+
+        if ($collectionClass === false) {
+            throw new InvalidArgumentException("Collection class for collection key '{$collectionKey}' is not registered in asset collection definitions.");
+        }
+
+        return $collectionClass;
+    }
 }
