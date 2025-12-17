@@ -15,9 +15,9 @@ use PHPUnit\Framework\MockObject\MockObject;
 /**
  * @internal
  */
-final class BasicInfoPropertyTest extends CIUnitTestCase
+final class StoragePropertyTest extends CIUnitTestCase
 {
-    private StorageProperty $basicInfoProperty;
+    private StorageProperty $storageProperty;
 
     /**
      * @var Entity&MockObject
@@ -39,7 +39,7 @@ final class BasicInfoPropertyTest extends CIUnitTestCase
     {
         parent::setUp();
 
-        $this->basicInfoProperty                    = new StorageProperty([]);
+        $this->storageProperty                      = new StorageProperty([]);
         $this->mockEntity                           = $this->createMock(Entity::class);
         $this->mockCollectionDefinition             = $this->createMock(AssetCollectionDefinitionInterface::class);
         $this->mockAuthorizableCollectionDefinition = $this->createMock(AuthorizableAssetCollectionDefinitionInterface::class);
@@ -54,9 +54,9 @@ final class BasicInfoPropertyTest extends CIUnitTestCase
     }
 
     /**
-     * Test that create returns an instance of BasicInfoProperty
+     * Test that create returns an instance of StorageProperty
      */
-    public function testCreateReturnsInstanceOfBasicInfoProperty(): void
+    public function testCreateReturnsInstanceOfStorageProperty(): void
     {
         // Arrange
         $properties = ['storage_info' => ['key' => 'value']];
@@ -78,10 +78,10 @@ final class BasicInfoPropertyTest extends CIUnitTestCase
         $path = '/path/to/storage';
 
         // Act
-        $this->basicInfoProperty->setStorageBaseDirectoryPath($path);
+        $this->storageProperty->setStorageBaseDirectoryPath($path);
 
         // Assert
-        $this->assertSame($path, $this->basicInfoProperty->storageBaseDirectoryPath());
+        $this->assertSame($path, $this->storageProperty->storageBaseDirectoryPath());
     }
 
     /**
@@ -93,9 +93,10 @@ final class BasicInfoPropertyTest extends CIUnitTestCase
         $path = 'relative/path/to/file';
 
         // Act
-        $this->basicInfoProperty->setFileRelativePath($path);
+        $this->storageProperty->setFileRelativePath($path);
 
         // Assert
-        $this->assertSame($path, $this->basicInfoProperty->fileRelativePath());
+        $this->assertSame($path, $this->storageProperty->fileRelativePath());
     }
 }
+
