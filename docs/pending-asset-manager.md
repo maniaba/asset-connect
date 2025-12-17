@@ -485,6 +485,6 @@ class Asset extends BaseConfig
 ## See Also
 
 - [Pending Assets](pending.md) - Overview of pending assets functionality
-- [DefaultPendingStorage](pending-storage.md) - Default filesystem storage implementation
+- [DefaultPendingStorage](pending.md#defaultpendingstorage) - Default filesystem storage implementation
 - [Custom Pending Storage](custom-pending-storage.md) - Creating custom storage implementations
 

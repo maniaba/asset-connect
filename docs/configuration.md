@@ -17,6 +17,82 @@ class Asset extends BaseAssetConfig
 
 ## Available Configuration Options
 
+### Entity Type Definitions
+
+**Required Configuration**
+
+You **must** define entity types and their unique identifiers for all entities that will use Asset Connect. This is a required configuration for the library to function properly:
+
+```php
+public array $entityKeyDefinitions = [
+    Product::class => 'product',
+    User::class => 'user',
+    BlogPost::class => 'blog_post',
+];
+```
+
+Each entity class is mapped to a unique string identifier. This identifier is stored in the database and is **essential** for Asset Connect to:
+
+- Identify which type of entity the asset belongs to
+- Associate assets with the correct entities
+- Query assets by entity type
+- Maintain data integrity across your application
+
+**Example:**
+
+```php
+use App\Entities\Product;
+use App\Entities\User;
+
+public array $entityKeyDefinitions = [
+    Product::class => 'product',
+    User::class => 'user',
+];
+```
+
+The entity class must extend `CodeIgniter\Entity\Entity`.
+
+**Important:** Every entity that uses the `UseAssetConnectTrait` must be registered in this array. Failure to do so will prevent the library from functioning correctly.
+
+### Collection Key Definitions
+
+**Required Configuration**
+
+You **must** define collection key definitions for all asset collections used in your application. These unique identifiers are required for Asset Connect to work properly:
+
+```php
+public array $collectionKeyDefinitions = [
+    ImagesCollection::class => 'images',
+    DocumentsCollection::class => 'documents',
+    VideosCollection::class => 'videos',
+];
+```
+
+Each collection class is mapped to a unique string identifier that is stored in the database. This is **essential** for:
+
+- **Asset Collection Management**: Identifying which collection an asset belongs to
+- **Database Integrity**: Maintaining consistent data relationships
+- **Query Operations**: Enabling the library to filter and retrieve assets by collection type
+- **Refactoring Safety**: Allowing you to change class names without breaking existing data
+
+**Example:**
+
+```php
+use App\AssetCollections\ProfilePicturesCollection;
+use App\AssetCollections\ProductImagesCollection;
+use App\AssetCollections\DocumentsCollection;
+
+public array $collectionKeyDefinitions = [
+    ProfilePicturesCollection::class => 'profile_pictures',
+    ProductImagesCollection::class => 'product_images',
+    DocumentsCollection::class => 'documents',
+];
+```
+
+The collection class must implement the `AssetCollectionDefinitionInterface`.
+
+**Important:** Every asset collection class you create must be registered in this array. Without this registration, Asset Connect will not be able to process assets for that collection.
+
 ### Database Group
 
 You can specify which database group to use for the Asset Connect models:
