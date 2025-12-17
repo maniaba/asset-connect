@@ -4,13 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Asset\Properties;
 
-use CodeIgniter\Entity\Entity;
 use CodeIgniter\Test\CIUnitTestCase;
-use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
-use Maniaba\AssetConnect\Asset\Interfaces\AuthorizableAssetCollectionDefinitionInterface;
 use Maniaba\AssetConnect\Asset\Properties\StorageProperty;
 use Override;
-use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * @internal
@@ -19,30 +15,12 @@ final class StoragePropertyTest extends CIUnitTestCase
 {
     private StorageProperty $storageProperty;
 
-    /**
-     * @var Entity&MockObject
-     */
-    private MockObject $mockEntity;
-
-    /**
-     * @var AssetCollectionDefinitionInterface&MockObject
-     */
-    private MockObject $mockCollectionDefinition;
-
-    /**
-     * @var AuthorizableAssetCollectionDefinitionInterface&MockObject
-     */
-    private MockObject $mockAuthorizableCollectionDefinition;
-
     #[Override]
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->storageProperty                      = new StorageProperty([]);
-        $this->mockEntity                           = $this->createMock(Entity::class);
-        $this->mockCollectionDefinition             = $this->createMock(AssetCollectionDefinitionInterface::class);
-        $this->mockAuthorizableCollectionDefinition = $this->createMock(AuthorizableAssetCollectionDefinitionInterface::class);
+        $this->storageProperty = new StorageProperty([]);
     }
 
     /**

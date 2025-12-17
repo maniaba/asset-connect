@@ -252,7 +252,7 @@ class Asset extends Entity implements JsonSerializable
     /**
      * Get the class name of the asset collection definition for this asset
      *
-     * @return string|null The class name of the asset collection definition, or null if not set
+     * @return string The class name of the asset collection definition
      *
      * @throws InvalidArgumentException If the collection class does not exist or does not implement AssetCollectionDefinitionInterface
      */
