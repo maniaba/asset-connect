@@ -7,6 +7,7 @@ namespace Tests\Support\Config;
 use CodeIgniter\Entity\Entity;
 use Maniaba\AssetConnect\AssetCollection\DefaultAssetCollection;
 use Maniaba\AssetConnect\Config\Asset as BaseAsset;
+use Tests\Support\TestAssetCollection;
 use Tests\Support\TestEntity;
 
 /**
@@ -27,6 +28,7 @@ final class TestAssetConfig extends BaseAsset
      * {@inheritDoc}
      */
     public array $collectionKeyDefinitions = [
+        TestAssetCollection::class    => 'test_collection',
         DefaultAssetCollection::class => 'default_collection',
     ];
 }

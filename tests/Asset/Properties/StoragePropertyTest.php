@@ -99,4 +99,3 @@ final class StoragePropertyTest extends CIUnitTestCase
         $this->assertSame($path, $this->storageProperty->fileRelativePath());
     }
 }
-

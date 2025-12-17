@@ -12,6 +12,7 @@ use InvalidArgumentException;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Asset\AssetMetadata;
 use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
+use Maniaba\AssetConnect\AssetCollection\DefaultAssetCollection;
 use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 use Tests\Support\Config\TestAssetConfig;
@@ -142,12 +143,60 @@ final class AssetTest extends CIUnitTestCase
         $this->mockCollectionDefinition                                           = $this->createMock(AssetCollectionDefinitionInterface::class);
         $config                                                                   = config('Asset');
         $config->collectionKeyDefinitions[$this->mockCollectionDefinition::class] = 'mock_definition';
+
         // Act
         $result = $this->asset->setCollection($this->mockCollectionDefinition);
 
         // Assert
         $this->assertSame($this->asset, $result);
         $this->assertSame('mock_definition', $this->asset->collection);
+    }
+
+    /**
+     * Test setting collection with a class name
+     */
+    public function testSetCollectionWithClassName(): void
+    {
+        // Arrange
+        $collectionClass = DefaultAssetCollection::class;
+
+        Factories::injectMock('config', \Maniaba\AssetConnect\Config\Asset::class, new TestAssetConfig());
+
+        // Act
+        $result = $this->asset->setCollection($collectionClass);
+
+        // Assert
+        $this->assertSame($this->asset, $result);
+        $this->assertSame('default_collection', $this->asset->collection);
+    }
+
+    /**
+     * Test setting collection with a string alias name
+     */
+    public function testSetCollectionWithStringAliasName(): void
+    {
+        // Arrange
+        Factories::injectMock('config', \Maniaba\AssetConnect\Config\Asset::class, new TestAssetConfig());
+
+        // Act
+        $result = $this->asset->setCollection('test_collection');
+
+        // Assert
+        $this->assertSame($this->asset, $result);
+        $this->assertSame('test_collection', $this->asset->collection, 'The collection should be set to the alias name.');
+    }
+
+    /**
+     * Test setting collection with an invalid class name
+     */
+    public function testSetCollectionWithInvalidClassName(): void
+    {
+        // Arrange
+        $invalidClass = 'InvalidCollectionClass';
+
+        // Act & Assert
+        $this->expectException(InvalidArgumentException::class);
+        $this->asset->setCollection($invalidClass);
     }
 
     /**

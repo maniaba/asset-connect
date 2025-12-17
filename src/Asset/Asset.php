@@ -130,8 +130,8 @@ class Asset extends Entity implements JsonSerializable
         /** @var AssetConfig $config */
         $config = config('Asset');
 
-        if ($collection instanceof AssetCollectionDefinitionInterface) {
-            $collection = $collection::class;
+        if ($collection instanceof AssetCollectionDefinitionInterface || (class_exists($collection) && is_subclass_of($collection, AssetCollectionDefinitionInterface::class))) {
+            $collection = is_string($collection) ? $collection : $collection::class;
             AssetCollectionDefinitionFactory::validateStringClass($collection);
 
             $collectionKey = $config->collectionKeyDefinitions[$collection] ?? null;
