@@ -54,7 +54,7 @@ class AssetModel extends BaseModel
 
     /**
      * Constructor, we make it final to prevent overriding the constructor
-     * and ensure that the model is always initialized with the correct database connection and validation instance in AssetModel::init() method.
+     * and ensure that the model is always initialized with the correct database connection and validation instance in the AssetModel::init() method.
      *
      * @param ConnectionInterface|null $db         Database connection instance
      * @param ValidationInterface|null $validation Validation instance
