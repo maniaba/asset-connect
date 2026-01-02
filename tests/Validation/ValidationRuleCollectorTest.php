@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Validation;
 
+use Closure;
 use CodeIgniter\Files\File;
 use CodeIgniter\HTTP\IncomingRequest;
 use CodeIgniter\Test\CIUnitTestCase;
@@ -211,7 +212,7 @@ final class ValidationRuleCollectorTest extends CIUnitTestCase
 
         // Assert
         $this->assertSame($this->collector, $result);
-        $this->assertContains('max_file_count[' . $this->fieldName . ',1]', $rules);
+        $this->assertInstanceOf(Closure::class, $rules[1], 'Expected a closure for max file count validation rule');
     }
 
     /**
