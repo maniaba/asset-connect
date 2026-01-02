@@ -146,7 +146,10 @@ final class ValidationRuleCollector implements AssetCollectionSetterInterface
     #[Override]
     public function singleFileCollection(): static
     {
-        $this->rules['max_file_count'] = 'max_file_count[' . $this->currentField . ',1]';
+        // Use a custom rule name that will be registered in the validator
+        $name = $this->currentField;
+
+        $this->rules['max_file_count'] = static fn ($value, ?array $data, ?string &$error, string $field): bool => self::maxFileCountValidationRule($value, "{$name},1", $data, $error, $field);
 
         return $this;
     }
