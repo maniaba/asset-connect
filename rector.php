@@ -25,6 +25,7 @@ use Rector\CodingStyle\Rector\ClassMethod\MakeInheritedMethodVisibilitySameAsPar
 use Rector\CodingStyle\Rector\FuncCall\CountArrayToEmptyArrayComparisonRector;
 use Rector\CodingStyle\Rector\FuncCall\VersionCompareFuncCallToConstantRector;
 use Rector\Config\RectorConfig;
+use Rector\DeadCode\Rector\ClassMethod\RemoveParentDelegatingConstructorRector;
 use Rector\DeadCode\Rector\ClassMethod\RemoveUnusedPromotedPropertyRector;
 use Rector\EarlyReturn\Rector\Foreach_\ChangeNestedForeachIfsToEarlyContinueRector;
 use Rector\EarlyReturn\Rector\If_\ChangeIfElseValueAssignToEarlyReturnRector;
@@ -111,6 +112,10 @@ return static function (RectorConfig $rectorConfig): void {
 
             // Tests
             __DIR__ . '/tests/AssetCollection/SetupAssetCollectionTest.php',
+        ],
+
+        RemoveParentDelegatingConstructorRector::class => [
+            __DIR__ . '/src/Models/AssetModel.php',
         ],
     ]);
 
