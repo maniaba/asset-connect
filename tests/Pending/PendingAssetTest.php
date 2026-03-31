@@ -13,7 +13,6 @@ use Config\Services;
 use Maniaba\AssetConnect\Exceptions\FileException;
 use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Maniaba\AssetConnect\Pending\PendingAsset;
-use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 use stdClass;
 
@@ -34,24 +33,19 @@ final class PendingAssetTest extends CIUnitTestCase
 
     private string $tempFilePath;
 
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
-
         $this->mockFile         = $this->createMock(File::class);
         $this->mockUploadedFile = $this->createMock(UploadedFile::class);
-
         // Create a temporary file for testing
         $this->tempFilePath = tempnam(sys_get_temp_dir(), 'test_pending_asset_');
         file_put_contents($this->tempFilePath, 'test content');
     }
 
-    #[Override]
     protected function tearDown(): void
     {
         parent::tearDown();
-
         // Clean up temporary file
         if (file_exists($this->tempFilePath)) {
             unlink($this->tempFilePath);
@@ -701,7 +695,7 @@ final class PendingAssetTest extends CIUnitTestCase
         $mockRequest->method('getFiles')->willReturn([
             'avatar' => $mockFile1,
             'cover'  => $mockFile2,
-            'other'  => $this->createMock(UploadedFile::class), // This should be ignored
+            'other'  => $this->createStub(UploadedFile::class), // This should be ignored
         ]);
 
         Services::injectMock('request', $mockRequest);
@@ -767,7 +761,7 @@ final class PendingAssetTest extends CIUnitTestCase
         // Arrange
         $mockRequest = $this->createMock(IncomingRequest::class);
         $mockRequest->method('getFiles')->willReturn([
-            'avatar' => $this->createMock(UploadedFile::class),
+            'avatar' => $this->createStub(UploadedFile::class),
         ]);
 
         Services::injectMock('request', $mockRequest);

@@ -12,7 +12,6 @@ use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\AssetConnect\AssetCollection\AssetCollectionDefinitionFactory;
 use Maniaba\AssetConnect\Validation\AssetConnectValidator;
 use Maniaba\AssetConnect\Validation\ValidationRuleCollector;
-use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
@@ -24,21 +23,16 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
     private MockObject $mockValidation;
     private MockObject $mockCollectionDefinition;
 
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
-
         // Mock the validation service
         $this->mockValidation = $this->createMock(Validation::class);
         Services::injectMock('validation', $this->mockValidation);
-
         // Create a mock collection definition
         $this->mockCollectionDefinition = $this->createMock(AssetCollectionDefinitionInterface::class);
-
         // Create the validator
         $this->validator = new AssetConnectValidator();
-
         // Setup global function mocks
         $this->setupGlobalFunctionMocks();
     }
@@ -124,7 +118,7 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
             $mockDefinition = $this->createMock(AssetCollectionDefinitionInterface::class);
             $mockDefinition->expects($this->once())
                 ->method('definition')
-                ->willReturnCallback(static fn (ValidationRuleCollector $collector) => $collector);
+                ->willReturnCallback(static fn (ValidationRuleCollector $collector): void => $collector);
 
             $this->validator->setFieldCollectionDefinition($fieldName, $mockDefinition);
         }
@@ -382,7 +376,7 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
         }
 
         // Create a mock request
-        $mockRequest = $this->createMock(IncomingRequest::class);
+        $mockRequest = $this->createStub(IncomingRequest::class);
         Services::injectMock('request', $mockRequest);
 
         // Setup the validation mock
@@ -430,7 +424,7 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
         }
 
         // Create a mock request
-        $mockRequest = $this->createMock(IncomingRequest::class);
+        $mockRequest = $this->createStub(IncomingRequest::class);
 
         // Setup the validation mock
         $this->mockValidation->expects($this->once())
@@ -477,7 +471,7 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
         }
 
         // Create a mock request
-        $mockRequest = $this->createMock(IncomingRequest::class);
+        $mockRequest = $this->createStub(IncomingRequest::class);
         Services::injectMock('request', $mockRequest);
 
         // Setup the validation mock

@@ -16,14 +16,9 @@ use ReflectionType;
  */
 final class AssetEventInterfaceTest extends CIUnitTestCase
 {
-    private Asset $mockAsset;
-
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->mockAsset = $this->createMock(Asset::class);
     }
 
     /**
@@ -100,7 +95,7 @@ final class AssetEventInterfaceTest extends CIUnitTestCase
     public function testInterfaceCanBeImplemented(): void
     {
         // Arrange
-        $testEvent = new readonly class ($this->mockAsset) implements AssetEventInterface {
+        $testEvent = new readonly class ($this->createStub(Asset::class)) implements AssetEventInterface {
             public function __construct(private Asset $asset)
             {
             }
@@ -120,7 +115,7 @@ final class AssetEventInterfaceTest extends CIUnitTestCase
 
         // Act & Assert
         $this->assertInstanceOf(AssetEventInterface::class, $testEvent);
-        $this->assertSame($this->mockAsset, $testEvent->getAsset());
+        $this->assertSame($this->createStub(Asset::class), $testEvent->getAsset());
         $this->assertSame('test.event', $testEvent::name());
     }
 

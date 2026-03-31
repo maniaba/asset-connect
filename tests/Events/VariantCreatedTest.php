@@ -9,7 +9,6 @@ use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\AssetVariants\AssetVariant;
 use Maniaba\AssetConnect\Events\AssetEventInterface;
 use Maniaba\AssetConnect\Events\VariantCreated;
-use Override;
 use ReflectionClass;
 use ReflectionMethod;
 
@@ -18,16 +17,9 @@ use ReflectionMethod;
  */
 final class VariantCreatedTest extends CIUnitTestCase
 {
-    private Asset $mockAsset;
-    private AssetVariant $mockVariant;
-
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->mockAsset   = $this->createMock(Asset::class);
-        $this->mockVariant = $this->createMock(AssetVariant::class);
     }
 
     /**
@@ -36,7 +28,7 @@ final class VariantCreatedTest extends CIUnitTestCase
     public function testImplementsAssetEventInterface(): void
     {
         // Arrange & Act
-        $event = new VariantCreated($this->mockVariant, $this->mockAsset);
+        $event = new VariantCreated($this->createStub(AssetVariant::class), $this->createStub(Asset::class));
 
         // Assert
         $this->assertInstanceOf(AssetEventInterface::class, $event);
@@ -48,12 +40,12 @@ final class VariantCreatedTest extends CIUnitTestCase
     public function testCreateVariantCreated(): void
     {
         // Arrange & Act
-        $event = new VariantCreated($this->mockVariant, $this->mockAsset);
+        $event = new VariantCreated($this->createStub(AssetVariant::class), $this->createStub(Asset::class));
 
         // Assert
         $this->assertInstanceOf(VariantCreated::class, $event);
-        $this->assertSame($this->mockAsset, $event->getAsset());
-        $this->assertSame($this->mockVariant, $event->getVariant());
+        $this->assertSame($this->createStub(Asset::class), $event->getAsset());
+        $this->assertSame($this->createStub(AssetVariant::class), $event->getVariant());
     }
 
     /**
@@ -62,13 +54,13 @@ final class VariantCreatedTest extends CIUnitTestCase
     public function testGetAsset(): void
     {
         // Arrange
-        $event = new VariantCreated($this->mockVariant, $this->mockAsset);
+        $event = new VariantCreated($this->createStub(AssetVariant::class), $this->createStub(Asset::class));
 
         // Act
         $result = $event->getAsset();
 
         // Assert
-        $this->assertSame($this->mockAsset, $result);
+        $this->assertSame($this->createStub(Asset::class), $result);
     }
 
     /**
@@ -77,13 +69,13 @@ final class VariantCreatedTest extends CIUnitTestCase
     public function testGetVariant(): void
     {
         // Arrange
-        $event = new VariantCreated($this->mockVariant, $this->mockAsset);
+        $event = new VariantCreated($this->createStub(AssetVariant::class), $this->createStub(Asset::class));
 
         // Act
         $result = $event->getVariant();
 
         // Assert
-        $this->assertSame($this->mockVariant, $result);
+        $this->assertSame($this->createStub(AssetVariant::class), $result);
     }
 
     /**
@@ -104,7 +96,7 @@ final class VariantCreatedTest extends CIUnitTestCase
     public function testEventIsReadonly(): void
     {
         // Arrange
-        $event = new VariantCreated($this->mockVariant, $this->mockAsset);
+        $event = new VariantCreated($this->createStub(AssetVariant::class), $this->createStub(Asset::class));
 
         // Act & Assert - readonly classes don't allow property modification
         $reflection = new ReflectionClass($event);
@@ -131,10 +123,10 @@ final class VariantCreatedTest extends CIUnitTestCase
     public function testWithDifferentInstances(): void
     {
         // Arrange
-        $variant1 = $this->createMock(AssetVariant::class);
-        $asset1   = $this->createMock(Asset::class);
-        $variant2 = $this->createMock(AssetVariant::class);
-        $asset2   = $this->createMock(Asset::class);
+        $variant1 = $this->createStub(AssetVariant::class);
+        $asset1   = $this->createStub(Asset::class);
+        $variant2 = $this->createStub(AssetVariant::class);
+        $asset2   = $this->createStub(Asset::class);
 
         // Act
         $event1 = new VariantCreated($variant1, $asset1);
@@ -155,10 +147,10 @@ final class VariantCreatedTest extends CIUnitTestCase
     public function testMultipleInstancesAreIndependent(): void
     {
         // Arrange
-        $variant1 = $this->createMock(AssetVariant::class);
-        $asset1   = $this->createMock(Asset::class);
-        $variant2 = $this->createMock(AssetVariant::class);
-        $asset2   = $this->createMock(Asset::class);
+        $variant1 = $this->createStub(AssetVariant::class);
+        $asset1   = $this->createStub(Asset::class);
+        $variant2 = $this->createStub(AssetVariant::class);
+        $asset2   = $this->createStub(Asset::class);
 
         // Act
         $event1 = new VariantCreated($variant1, $asset1);
@@ -176,16 +168,16 @@ final class VariantCreatedTest extends CIUnitTestCase
     public function testSameVariantWithDifferentAssets(): void
     {
         // Arrange
-        $asset1 = $this->createMock(Asset::class);
-        $asset2 = $this->createMock(Asset::class);
+        $asset1 = $this->createStub(Asset::class);
+        $asset2 = $this->createStub(Asset::class);
 
         // Act
-        $event1 = new VariantCreated($this->mockVariant, $asset1);
-        $event2 = new VariantCreated($this->mockVariant, $asset2);
+        $event1 = new VariantCreated($this->createStub(AssetVariant::class), $asset1);
+        $event2 = new VariantCreated($this->createStub(AssetVariant::class), $asset2);
 
         // Assert
-        $this->assertSame($this->mockVariant, $event1->getVariant());
-        $this->assertSame($this->mockVariant, $event2->getVariant());
+        $this->assertSame($this->createStub(AssetVariant::class), $event1->getVariant());
+        $this->assertSame($this->createStub(AssetVariant::class), $event2->getVariant());
         $this->assertSame($asset1, $event1->getAsset());
         $this->assertSame($asset2, $event2->getAsset());
         $this->assertNotSame($event1->getAsset(), $event2->getAsset());
@@ -197,18 +189,18 @@ final class VariantCreatedTest extends CIUnitTestCase
     public function testSameAssetWithDifferentVariants(): void
     {
         // Arrange
-        $variant1 = $this->createMock(AssetVariant::class);
-        $variant2 = $this->createMock(AssetVariant::class);
+        $variant1 = $this->createStub(AssetVariant::class);
+        $variant2 = $this->createStub(AssetVariant::class);
 
         // Act
-        $event1 = new VariantCreated($variant1, $this->mockAsset);
-        $event2 = new VariantCreated($variant2, $this->mockAsset);
+        $event1 = new VariantCreated($variant1, $this->createStub(Asset::class));
+        $event2 = new VariantCreated($variant2, $this->createStub(Asset::class));
 
         // Assert
         $this->assertSame($variant1, $event1->getVariant());
         $this->assertSame($variant2, $event2->getVariant());
-        $this->assertSame($this->mockAsset, $event1->getAsset());
-        $this->assertSame($this->mockAsset, $event2->getAsset());
+        $this->assertSame($this->createStub(Asset::class), $event1->getAsset());
+        $this->assertSame($this->createStub(Asset::class), $event2->getAsset());
         $this->assertNotSame($event1->getVariant(), $event2->getVariant());
     }
 }

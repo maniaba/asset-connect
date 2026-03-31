@@ -10,7 +10,6 @@ use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\AssetVariants\AssetVariant;
 use Maniaba\AssetConnect\Controllers\AssetConnectController;
 use Maniaba\AssetConnect\UrlGenerator\DefaultUrlGenerator;
-use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
@@ -20,11 +19,9 @@ final class DefaultUrlGeneratorTest extends CIUnitTestCase
 {
     private MockObject|RouteCollection $mockRoutes;
 
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
-
         // Mock the RouteCollection
         $this->mockRoutes = $this->createMock(RouteCollection::class);
     }
@@ -88,7 +85,7 @@ final class DefaultUrlGeneratorTest extends CIUnitTestCase
 
         $mockGroupRoutes->expects($this->exactly(4))
             ->method('get')
-            ->willReturnCallback(function ($pattern, $handler, $options) use (&$callIndex, $expectedCalls, $mockGroupRoutes) {
+            ->willReturnCallback(function (string $pattern, $handler, ?array $options) use (&$callIndex, $expectedCalls, $mockGroupRoutes) {
                 $expected = $expectedCalls[$callIndex];
                 $this->assertSame($expected['pattern'], $pattern);
                 $this->assertSame($expected['handler'], $handler);

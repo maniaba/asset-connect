@@ -16,6 +16,7 @@ use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Maniaba\AssetConnect\PathGenerator\Interfaces\PathGeneratorInterface;
 use Override;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use stdClass;
 
 /**
@@ -26,34 +27,18 @@ final class SetupAssetCollectionTest extends CIUnitTestCase
     private SetupAssetCollection $setupAssetCollection;
 
     /**
-     * @var AssetCollectionDefinitionInterface&MockObject
-     */
-    private MockObject $mockCollectionDefinition;
-
-    /**
-     * @var MockObject&PathGeneratorInterface
-     */
-    private MockObject $mockPathGenerator;
-
-    /**
      * @var Asset&MockObject
      */
-    private MockObject $mockAssetConfig;
+    private Stub $mockAssetConfig;
 
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->setupAssetCollection     = new SetupAssetCollection();
-        $this->mockCollectionDefinition = $this->createMock(AssetCollectionDefinitionInterface::class);
-        $this->mockPathGenerator        = $this->createMock(PathGeneratorInterface::class);
-        $this->mockAssetConfig          = $this->createMock(Asset::class);
-        $mockModel                      = $this->createMock(Model::class);
-
+        $this->setupAssetCollection = new SetupAssetCollection();
+        $this->mockAssetConfig      = $this->createStub(Asset::class);
         // Setup global function mocks
         Factories::injectMock('config', 'Asset', $this->mockAssetConfig);
-        Factories::injectMock('models', 'TestModel', $mockModel);
+        Factories::injectMock('models', 'TestModel', $this->createStub(Model::class));
     }
 
     /**
@@ -82,7 +67,7 @@ final class SetupAssetCollectionTest extends CIUnitTestCase
     public function testSetDefaultCollectionDefinitionWithInstance(): void
     {
         // Act
-        $result = $this->setupAssetCollection->setDefaultCollectionDefinition($this->mockCollectionDefinition);
+        $result = $this->setupAssetCollection->setDefaultCollectionDefinition($this->createStub(AssetCollectionDefinitionInterface::class));
 
         // Assert
         $this->assertSame($this->setupAssetCollection, $result);
@@ -90,7 +75,7 @@ final class SetupAssetCollectionTest extends CIUnitTestCase
         // Get the collection definition using getPrivateProperty
         $collectionDefinition = $this->getPrivateProperty($this->setupAssetCollection, 'collectionDefinition');
 
-        $this->assertSame($this->mockCollectionDefinition, $collectionDefinition);
+        $this->assertSame($this->createStub(AssetCollectionDefinitionInterface::class), $collectionDefinition);
     }
 
     /**
@@ -119,7 +104,7 @@ final class SetupAssetCollectionTest extends CIUnitTestCase
     public function testSetPathGeneratorWithInstance(): void
     {
         // Act
-        $result = $this->setupAssetCollection->setPathGenerator($this->mockPathGenerator);
+        $result = $this->setupAssetCollection->setPathGenerator($this->createStub(PathGeneratorInterface::class));
 
         // Assert
         $this->assertSame($this->setupAssetCollection, $result);
@@ -127,7 +112,7 @@ final class SetupAssetCollectionTest extends CIUnitTestCase
         // Get the path generator using getPrivateProperty
         $pathGenerator = $this->getPrivateProperty($this->setupAssetCollection, 'pathGenerator');
 
-        $this->assertSame($this->mockPathGenerator, $pathGenerator);
+        $this->assertSame($this->createStub(PathGeneratorInterface::class), $pathGenerator);
     }
 
     /**
@@ -162,13 +147,13 @@ final class SetupAssetCollectionTest extends CIUnitTestCase
     public function testGetPathGeneratorWhenSet(): void
     {
         // Arrange
-        $this->setupAssetCollection->setPathGenerator($this->mockPathGenerator);
+        $this->setupAssetCollection->setPathGenerator($this->createStub(PathGeneratorInterface::class));
 
         // Act
         $result = $this->setupAssetCollection->getPathGenerator();
 
         // Assert
-        $this->assertSame($this->mockPathGenerator, $result);
+        $this->assertSame($this->createStub(PathGeneratorInterface::class), $result);
     }
 
     /**
@@ -177,13 +162,13 @@ final class SetupAssetCollectionTest extends CIUnitTestCase
     public function testGetCollectionDefinitionWhenSet(): void
     {
         // Arrange
-        $this->setupAssetCollection->setDefaultCollectionDefinition($this->mockCollectionDefinition);
+        $this->setupAssetCollection->setDefaultCollectionDefinition($this->createStub(AssetCollectionDefinitionInterface::class));
 
         // Act
         $result = $this->setupAssetCollection->getCollectionDefinition();
 
         // Assert
-        $this->assertSame($this->mockCollectionDefinition, $result);
+        $this->assertSame($this->createStub(AssetCollectionDefinitionInterface::class), $result);
     }
 
     /**

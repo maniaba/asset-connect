@@ -8,7 +8,6 @@ use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Events\AssetDeleted;
 use Maniaba\AssetConnect\Events\AssetEventInterface;
-use Override;
 use ReflectionClass;
 use ReflectionMethod;
 
@@ -17,14 +16,9 @@ use ReflectionMethod;
  */
 final class AssetDeletedTest extends CIUnitTestCase
 {
-    private Asset $mockAsset;
-
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->mockAsset = $this->createMock(Asset::class);
     }
 
     /**
@@ -33,7 +27,7 @@ final class AssetDeletedTest extends CIUnitTestCase
     public function testImplementsAssetEventInterface(): void
     {
         // Arrange & Act
-        $event = AssetDeleted::createFromAsset($this->mockAsset);
+        $event = AssetDeleted::createFromAsset($this->createStub(Asset::class));
 
         // Assert
         $this->assertInstanceOf(AssetEventInterface::class, $event);
@@ -45,11 +39,11 @@ final class AssetDeletedTest extends CIUnitTestCase
     public function testCreateFromAsset(): void
     {
         // Arrange & Act
-        $event = AssetDeleted::createFromAsset($this->mockAsset);
+        $event = AssetDeleted::createFromAsset($this->createStub(Asset::class));
 
         // Assert
         $this->assertInstanceOf(AssetDeleted::class, $event);
-        $this->assertSame($this->mockAsset, $event->getAsset());
+        $this->assertSame($this->createStub(Asset::class), $event->getAsset());
     }
 
     /**
@@ -58,13 +52,13 @@ final class AssetDeletedTest extends CIUnitTestCase
     public function testGetAsset(): void
     {
         // Arrange
-        $event = AssetDeleted::createFromAsset($this->mockAsset);
+        $event = AssetDeleted::createFromAsset($this->createStub(Asset::class));
 
         // Act
         $result = $event->getAsset();
 
         // Assert
-        $this->assertSame($this->mockAsset, $result);
+        $this->assertSame($this->createStub(Asset::class), $result);
     }
 
     /**
@@ -85,7 +79,7 @@ final class AssetDeletedTest extends CIUnitTestCase
     public function testEventIsReadonly(): void
     {
         // Arrange
-        $event = AssetDeleted::createFromAsset($this->mockAsset);
+        $event = AssetDeleted::createFromAsset($this->createStub(Asset::class));
 
         // Act & Assert - readonly classes don't allow property modification
         $reflection = new ReflectionClass($event);
@@ -112,8 +106,8 @@ final class AssetDeletedTest extends CIUnitTestCase
     public function testWithDifferentAssetInstances(): void
     {
         // Arrange
-        $asset1 = $this->createMock(Asset::class);
-        $asset2 = $this->createMock(Asset::class);
+        $asset1 = $this->createStub(Asset::class);
+        $asset2 = $this->createStub(Asset::class);
 
         // Act
         $event1 = AssetDeleted::createFromAsset($asset1);
@@ -131,8 +125,8 @@ final class AssetDeletedTest extends CIUnitTestCase
     public function testMultipleInstancesAreIndependent(): void
     {
         // Arrange
-        $asset1 = $this->createMock(Asset::class);
-        $asset2 = $this->createMock(Asset::class);
+        $asset1 = $this->createStub(Asset::class);
+        $asset2 = $this->createStub(Asset::class);
 
         // Act
         $event1 = AssetDeleted::createFromAsset($asset1);

@@ -9,7 +9,6 @@ use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\AssetConnect\AssetCollection\AssetCollectionDefinitionFactory;
 use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Override;
-use PHPUnit\Framework\MockObject\MockObject;
 use stdClass;
 
 /**
@@ -17,17 +16,9 @@ use stdClass;
  */
 final class AssetCollectionDefinitionFactoryTest extends CIUnitTestCase
 {
-    /**
-     * @var AssetCollectionDefinitionInterface&MockObject
-     */
-    private MockObject $mockCollectionDefinition;
-
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->mockCollectionDefinition = $this->createMock(AssetCollectionDefinitionInterface::class);
     }
 
     /**
@@ -75,7 +66,7 @@ final class AssetCollectionDefinitionFactoryTest extends CIUnitTestCase
     public function testValidateStringClassWithInterfaceInstance(): void
     {
         // Act & Assert - no exception should be thrown
-        AssetCollectionDefinitionFactory::validateStringClass($this->mockCollectionDefinition);
+        AssetCollectionDefinitionFactory::validateStringClass($this->createStub(AssetCollectionDefinitionInterface::class));
         $this->assertTrue(true); // Dummy assertion to avoid PHPUnit warning
     }
 
@@ -121,10 +112,10 @@ final class AssetCollectionDefinitionFactoryTest extends CIUnitTestCase
     public function testCreateWithInstance(): void
     {
         // Act
-        $result = AssetCollectionDefinitionFactory::create($this->mockCollectionDefinition);
+        $result = AssetCollectionDefinitionFactory::create($this->createStub(AssetCollectionDefinitionInterface::class));
 
         // Assert
-        $this->assertSame($this->mockCollectionDefinition, $result);
+        $this->assertSame($this->createStub(AssetCollectionDefinitionInterface::class), $result);
     }
 }
 

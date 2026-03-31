@@ -10,7 +10,6 @@ use CodeIgniter\Test\CIUnitTestCase;
 use InvalidArgumentException;
 use Maniaba\AssetConnect\Pending\PendingAsset;
 use Maniaba\AssetConnect\Pending\PendingSecurityToken\SessionPendingSecurityToken;
-use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
@@ -23,18 +22,14 @@ final class SessionPendingSecurityTokenTest extends CIUnitTestCase
      */
     private MockObject $mockSession;
 
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
-
         $this->mockSession = $this->createMock(Session::class);
-
         // Mock the service function to return our mock session
         $this->injectSession($this->mockSession);
     }
 
-    #[Override]
     protected function tearDown(): void
     {
         parent::tearDown();
@@ -197,7 +192,7 @@ final class SessionPendingSecurityTokenTest extends CIUnitTestCase
         $capturedToken = null;
         $this->mockSession->expects($this->once())
             ->method('setTempdata')
-            ->willReturnCallback(function ($key, $token, $ttlValue) use (&$capturedToken, $ttl) {
+            ->willReturnCallback(function ($key, $token, int $ttlValue) use (&$capturedToken, $ttl) {
                 $capturedToken = $token;
                 $this->assertSame($ttl, $ttlValue);
 

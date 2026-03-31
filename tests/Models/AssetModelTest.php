@@ -10,6 +10,7 @@ use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\AssetConnect\Config\Asset as AssetConfig;
 use Maniaba\AssetConnect\Models\AssetModel;
 use Override;
+use PHPUnit\Framework\MockObject\Stub;
 use RuntimeException;
 use stdClass;
 
@@ -18,17 +19,12 @@ use stdClass;
  */
 final class AssetModelTest extends CIUnitTestCase
 {
-    private ConnectionInterface $mockConnection;
-    private AssetConfig $mockAssetConfig;
+    private Stub $mockAssetConfig;
 
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->mockConnection  = $this->createMock(ConnectionInterface::class);
-        $this->mockAssetConfig = $this->createMock(AssetConfig::class);
-
+        $this->mockAssetConfig = $this->createStub(AssetConfig::class);
         // Setup global function mocks
         $this->setupGlobalFunctionMocks();
     }
@@ -42,7 +38,7 @@ final class AssetModelTest extends CIUnitTestCase
         Factories::injectMock('config', 'Asset', $this->mockAssetConfig);
 
         // Inject mock for AssetModel - used by testInitSuccessful
-        $assetModel = new AssetModel($this->mockConnection);
+        $assetModel = new AssetModel($this->createStub(ConnectionInterface::class));
         Factories::injectMock('models', AssetModel::class, $assetModel);
     }
 
@@ -55,7 +51,7 @@ final class AssetModelTest extends CIUnitTestCase
         $this->mockAssetConfig->assetModel = AssetModel::class;
 
         // Act
-        $result = AssetModel::init(true, $this->mockConnection);
+        $result = AssetModel::init(true, $this->createStub(ConnectionInterface::class));
 
         // @phpstan-ignore-next-line No throws expected
         $this->assertInstanceOf(AssetModel::class, $result);
@@ -72,7 +68,7 @@ final class AssetModelTest extends CIUnitTestCase
         // Act & Assert
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Asset model class must extend ' . AssetModel::class);
-        AssetModel::init(true, $this->mockConnection);
+        AssetModel::init(true, $this->createStub(ConnectionInterface::class));
     }
 
     /**
@@ -87,7 +83,7 @@ final class AssetModelTest extends CIUnitTestCase
         // Act & Assert
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Asset model must be an instance of ' . AssetModel::class . ' or a subclass of it');
-        AssetModel::init(true, $this->mockConnection);
+        AssetModel::init(true, $this->createStub(ConnectionInterface::class));
     }
 
     /**
@@ -104,6 +100,6 @@ final class AssetModelTest extends CIUnitTestCase
         // Act & Assert
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Asset model return type must be Asset or a subclass of Asset');
-        AssetModel::init(true, $this->mockConnection);
+        AssetModel::init(true, $this->createStub(ConnectionInterface::class));
     }
 }
