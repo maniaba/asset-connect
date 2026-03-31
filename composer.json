@@ -25,7 +25,7 @@
     "require": {
         "php": "^8.3",
         "codeigniter4/framework": "^4.6",
-        "codeigniter4/queue": "dev-develop"
+        "codeigniter4/queue": "^v1.0.0"
     },
     "require-dev": {
         "icanhazstring/composer-unused": "dev-main",
