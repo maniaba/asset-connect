@@ -134,7 +134,7 @@ final class ValidationRuleCollectorTest extends CIUnitTestCase
         $error    = null;
 
         // Mock request with files
-        $request = $this->createMock(IncomingRequest::class);
+        $request = $this->createStub(IncomingRequest::class);
         $request->method('getFileMultiple')
             ->willReturn([
                 $this->createStub(File::class),
@@ -163,7 +163,7 @@ final class ValidationRuleCollectorTest extends CIUnitTestCase
         $error    = null;
 
         // Mock request with files
-        $request = $this->createMock(IncomingRequest::class);
+        $request = $this->createStub(IncomingRequest::class);
         $request->method('getFileMultiple')
             ->willReturn([
                 $this->createStub(File::class),

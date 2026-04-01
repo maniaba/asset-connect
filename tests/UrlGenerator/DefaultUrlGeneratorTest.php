@@ -10,20 +10,15 @@ use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\AssetVariants\AssetVariant;
 use Maniaba\AssetConnect\Controllers\AssetConnectController;
 use Maniaba\AssetConnect\UrlGenerator\DefaultUrlGenerator;
-use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * @internal
  */
 final class DefaultUrlGeneratorTest extends CIUnitTestCase
 {
-    private MockObject|RouteCollection $mockRoutes;
-
     protected function setUp(): void
     {
         parent::setUp();
-        // Mock the RouteCollection
-        $this->mockRoutes = $this->createMock(RouteCollection::class);
     }
 
     /**
@@ -32,10 +27,11 @@ final class DefaultUrlGeneratorTest extends CIUnitTestCase
     public function testRoutes(): void
     {
         // Arrange
+        $mockRoutes    = $this->createMock(RouteCollection::class);
         $groupCallback = null;
 
         // Setup expectations for the group method
-        $this->mockRoutes->expects($this->once())
+        $mockRoutes->expects($this->once())
             ->method('group')
             ->with(
                 'assets',
@@ -47,7 +43,7 @@ final class DefaultUrlGeneratorTest extends CIUnitTestCase
             );
 
         // Act
-        DefaultUrlGenerator::routes($this->mockRoutes);
+        DefaultUrlGenerator::routes($mockRoutes);
 
         // Assert
         $this->assertIsCallable($groupCallback);

@@ -94,7 +94,7 @@ final class AssetEventInterfaceTest extends CIUnitTestCase
      */
     public function testInterfaceCanBeImplemented(): void
     {
-        $assetStub = $this->createMock(Asset::class);
+        $assetStub = $this->createStub(Asset::class);
         // Arrange
         $testEvent = new readonly class ($assetStub) implements AssetEventInterface {
             public function __construct(private Asset $asset)

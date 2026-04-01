@@ -13,6 +13,7 @@ use Maniaba\AssetConnect\Pending\DefaultPendingStorage;
 use Maniaba\AssetConnect\Pending\Interfaces\PendingStorageInterface;
 use Maniaba\AssetConnect\Pending\PendingAsset;
 use Maniaba\AssetConnect\Pending\PendingAssetManager;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use RuntimeException;
 
@@ -544,6 +545,7 @@ final class PendingAssetManagerTest extends CIUnitTestCase
     /**
      * Test multiple sequential operations
      */
+    #[AllowMockObjectsWithoutExpectations]
     public function testMultipleSequentialOperations(): void
     {
         // Arrange

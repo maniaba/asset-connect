@@ -12,6 +12,7 @@ use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\AssetConnect\AssetCollection\AssetCollectionDefinitionFactory;
 use Maniaba\AssetConnect\Validation\AssetConnectValidator;
 use Maniaba\AssetConnect\Validation\ValidationRuleCollector;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
@@ -50,6 +51,7 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
     /**
      * Test setFieldCollectionDefinition with an interface instance
      */
+    #[AllowMockObjectsWithoutExpectations]
     public function testSetFieldCollectionDefinitionWithInterfaceInstance(): void
     {
         // Arrange
@@ -76,6 +78,7 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
     /**
      * Test getRules method
      */
+    #[AllowMockObjectsWithoutExpectations]
     public function testGetRules(): void
     {
         // Arrange
@@ -108,6 +111,7 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
     /**
      * Test getDefinedFieldNames method
      */
+    #[AllowMockObjectsWithoutExpectations]
     public function testGetDefinedFieldNames(): void
     {
         // Arrange
@@ -138,6 +142,7 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
     /**
      * Test getRulesForDefinedFields method
      */
+    #[AllowMockObjectsWithoutExpectations]
     public function testGetRulesForDefinedFields(): void
     {
         // Arrange
@@ -175,6 +180,7 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
     /**
      * Test getRulesForFields method
      */
+    #[AllowMockObjectsWithoutExpectations]
     public function testGetRulesForFields(): void
     {
         // Arrange
@@ -252,6 +258,7 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
     /**
      * Test validateFields method
      */
+    #[AllowMockObjectsWithoutExpectations]
     public function testValidateFields(): void
     {
         // Arrange
@@ -294,6 +301,7 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
     /**
      * Test getErrors method
      */
+    #[AllowMockObjectsWithoutExpectations]
     public function testGetErrors(): void
     {
         // Arrange
@@ -314,6 +322,7 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
     /**
      * Test validateDefinedFields method
      */
+    #[AllowMockObjectsWithoutExpectations]
     public function testValidateDefinedFields(): void
     {
         // Arrange
@@ -355,6 +364,7 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
     /**
      * Test validateFieldsFromRequest method
      */
+    #[AllowMockObjectsWithoutExpectations]
     public function testValidateFieldsFromRequest(): void
     {
         // Arrange
@@ -404,6 +414,7 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
     /**
      * Test validateRequest method
      */
+    #[AllowMockObjectsWithoutExpectations]
     public function testValidateRequest(): void
     {
         // Arrange
@@ -451,6 +462,7 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
     /**
      * Test validateRequest method with default request
      */
+    #[AllowMockObjectsWithoutExpectations]
     public function testValidateRequestWithDefaultRequest(): void
     {
         // Arrange
