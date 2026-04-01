@@ -16,6 +16,7 @@ use ReflectionType;
  */
 final class AssetEventInterfaceTest extends CIUnitTestCase
 {
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();

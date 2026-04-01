@@ -8,6 +8,7 @@ use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Events\AssetDeleted;
 use Maniaba\AssetConnect\Events\AssetEventInterface;
+use Override;
 use ReflectionClass;
 use ReflectionMethod;
 
@@ -16,6 +17,7 @@ use ReflectionMethod;
  */
 final class AssetDeletedTest extends CIUnitTestCase
 {
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();

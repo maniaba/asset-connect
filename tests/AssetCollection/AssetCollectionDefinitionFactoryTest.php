@@ -16,6 +16,7 @@ use stdClass;
  */
 final class AssetCollectionDefinitionFactoryTest extends CIUnitTestCase
 {
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();

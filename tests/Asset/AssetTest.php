@@ -13,6 +13,7 @@ use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Asset\AssetMetadata;
 use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\AssetConnect\AssetCollection\DefaultAssetCollection;
+use Override;
 use PHPUnit\Framework\MockObject\Stub;
 use Tests\Support\Config\TestAssetConfig;
 use Tests\Support\TestEntity;
@@ -39,6 +40,7 @@ final class AssetTest extends CIUnitTestCase
      */
     private Stub $mockCollectionDefinition;
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();

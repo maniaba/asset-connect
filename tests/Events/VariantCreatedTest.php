@@ -9,6 +9,7 @@ use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\AssetVariants\AssetVariant;
 use Maniaba\AssetConnect\Events\AssetEventInterface;
 use Maniaba\AssetConnect\Events\VariantCreated;
+use Override;
 use ReflectionClass;
 use ReflectionMethod;
 
@@ -17,6 +18,7 @@ use ReflectionMethod;
  */
 final class VariantCreatedTest extends CIUnitTestCase
 {
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();

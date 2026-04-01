@@ -10,6 +10,7 @@ use CodeIgniter\Test\CIUnitTestCase;
 use InvalidArgumentException;
 use Maniaba\AssetConnect\Pending\PendingAsset;
 use Maniaba\AssetConnect\Pending\PendingSecurityToken\SessionPendingSecurityToken;
+use Override;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -23,6 +24,7 @@ final class SessionPendingSecurityTokenTest extends CIUnitTestCase
      */
     private MockObject $mockSession;
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -31,6 +33,7 @@ final class SessionPendingSecurityTokenTest extends CIUnitTestCase
         $this->injectSession($this->mockSession);
     }
 
+    #[Override]
     protected function tearDown(): void
     {
         parent::tearDown();

@@ -10,12 +10,14 @@ use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\AssetVariants\AssetVariant;
 use Maniaba\AssetConnect\Controllers\AssetConnectController;
 use Maniaba\AssetConnect\UrlGenerator\DefaultUrlGenerator;
+use Override;
 
 /**
  * @internal
  */
 final class DefaultUrlGeneratorTest extends CIUnitTestCase
 {
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
