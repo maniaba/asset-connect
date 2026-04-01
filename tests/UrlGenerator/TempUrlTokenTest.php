@@ -49,7 +49,7 @@ final class TempUrlTokenTest extends CIUnitTestCase
             ->with(
                 'temporary_url_ac_' . $expectedToken,
                 $expectedTokenData,
-                $expiration->getTimestamp() - time(),
+                $expiration->getTimestamp() - Time::now()->getTimestamp(),
             )
             ->willReturn(true);
 
