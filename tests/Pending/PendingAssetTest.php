@@ -13,7 +13,8 @@ use Config\Services;
 use Maniaba\AssetConnect\Exceptions\FileException;
 use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Maniaba\AssetConnect\Pending\PendingAsset;
-use PHPUnit\Framework\MockObject\Stub;
+use Override;
+use PHPUnit\Framework\MockObject\MockObject;
 use stdClass;
 
 /**
@@ -22,30 +23,35 @@ use stdClass;
 final class PendingAssetTest extends CIUnitTestCase
 {
     /**
-     * @var File&Stub
+     * @var File&MockObject
      */
-    private Stub $mockFile;
+    private MockObject $mockFile;
 
     /**
-     * @var Stub&UploadedFile
+     * @var MockObject&UploadedFile
      */
-    private Stub $mockUploadedFile;
+    private MockObject $mockUploadedFile;
 
     private string $tempFilePath;
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
-        $this->mockFile         = $this->createStub(File::class);
-        $this->mockUploadedFile = $this->createStub(UploadedFile::class);
+
+        $this->mockFile         = $this->createMock(File::class);
+        $this->mockUploadedFile = $this->createMock(UploadedFile::class);
+
         // Create a temporary file for testing
         $this->tempFilePath = tempnam(sys_get_temp_dir(), 'test_pending_asset_');
         file_put_contents($this->tempFilePath, 'test content');
     }
 
+    #[Override]
     protected function tearDown(): void
     {
         parent::tearDown();
+
         // Clean up temporary file
         if (file_exists($this->tempFilePath)) {
             unlink($this->tempFilePath);
@@ -591,7 +597,7 @@ final class PendingAssetTest extends CIUnitTestCase
     public function testCreateFromRequestWithSingleFileField(): void
     {
         // Arrange
-        $mockFile = $this->createStub(UploadedFile::class);
+        $mockFile = $this->createMock(UploadedFile::class);
         $mockFile->method('isValid')->willReturn(true);
         $mockFile->method('isFile')->willReturn(true);
         $mockFile->method('getClientName')->willReturn('uploaded.jpg');
@@ -601,7 +607,7 @@ final class PendingAssetTest extends CIUnitTestCase
         $mockFile->method('getMTime')->willReturn(time());
         $mockFile->method('getRealPath')->willReturn($this->tempFilePath);
 
-        $mockRequest = $this->createStub(IncomingRequest::class);
+        $mockRequest = $this->createMock(IncomingRequest::class);
         $mockRequest->method('getFiles')->willReturn([
             'avatar' => $mockFile,
         ]);
@@ -625,7 +631,7 @@ final class PendingAssetTest extends CIUnitTestCase
     public function testCreateFromRequestWithMultipleFilesInSingleField(): void
     {
         // Arrange
-        $mockFile1 = $this->createStub(UploadedFile::class);
+        $mockFile1 = $this->createMock(UploadedFile::class);
         $mockFile1->method('isValid')->willReturn(true);
         $mockFile1->method('isFile')->willReturn(true);
         $mockFile1->method('getClientName')->willReturn('file1.jpg');
@@ -635,7 +641,7 @@ final class PendingAssetTest extends CIUnitTestCase
         $mockFile1->method('getMTime')->willReturn(time());
         $mockFile1->method('getRealPath')->willReturn($this->tempFilePath);
 
-        $mockFile2 = $this->createStub(UploadedFile::class);
+        $mockFile2 = $this->createMock(UploadedFile::class);
         $mockFile2->method('isValid')->willReturn(true);
         $mockFile2->method('isFile')->willReturn(true);
         $mockFile2->method('getClientName')->willReturn('file2.jpg');
@@ -645,7 +651,7 @@ final class PendingAssetTest extends CIUnitTestCase
         $mockFile2->method('getMTime')->willReturn(time());
         $mockFile2->method('getRealPath')->willReturn($this->tempFilePath);
 
-        $mockRequest = $this->createStub(IncomingRequest::class);
+        $mockRequest = $this->createMock(IncomingRequest::class);
         $mockRequest->method('getFiles')->willReturn([
             'documents' => [$mockFile1, $mockFile2],
         ]);
@@ -671,7 +677,7 @@ final class PendingAssetTest extends CIUnitTestCase
     public function testCreateFromRequestWithMultipleFieldNames(): void
     {
         // Arrange
-        $mockFile1 = $this->createStub(UploadedFile::class);
+        $mockFile1 = $this->createMock(UploadedFile::class);
         $mockFile1->method('isValid')->willReturn(true);
         $mockFile1->method('isFile')->willReturn(true);
         $mockFile1->method('getClientName')->willReturn('avatar.jpg');
@@ -681,7 +687,7 @@ final class PendingAssetTest extends CIUnitTestCase
         $mockFile1->method('getMTime')->willReturn(time());
         $mockFile1->method('getRealPath')->willReturn($this->tempFilePath);
 
-        $mockFile2 = $this->createStub(UploadedFile::class);
+        $mockFile2 = $this->createMock(UploadedFile::class);
         $mockFile2->method('isValid')->willReturn(true);
         $mockFile2->method('isFile')->willReturn(true);
         $mockFile2->method('getClientName')->willReturn('cover.jpg');
@@ -691,11 +697,11 @@ final class PendingAssetTest extends CIUnitTestCase
         $mockFile2->method('getMTime')->willReturn(time());
         $mockFile2->method('getRealPath')->willReturn($this->tempFilePath);
 
-        $mockRequest = $this->createStub(IncomingRequest::class);
+        $mockRequest = $this->createMock(IncomingRequest::class);
         $mockRequest->method('getFiles')->willReturn([
             'avatar' => $mockFile1,
             'cover'  => $mockFile2,
-            'other'  => $this->createStub(UploadedFile::class), // This should be ignored
+            'other'  => $this->createMock(UploadedFile::class), // This should be ignored
         ]);
 
         Services::injectMock('request', $mockRequest);
@@ -720,10 +726,10 @@ final class PendingAssetTest extends CIUnitTestCase
     public function testCreateFromRequestWithInvalidFileThrowsException(): void
     {
         // Arrange
-        $mockFile = $this->createStub(UploadedFile::class);
+        $mockFile = $this->createMock(UploadedFile::class);
         $mockFile->method('isValid')->willReturn(false);
 
-        $mockRequest = $this->createStub(IncomingRequest::class);
+        $mockRequest = $this->createMock(IncomingRequest::class);
         $mockRequest->method('getFiles')->willReturn([
             'avatar' => $mockFile,
         ]);
@@ -741,7 +747,7 @@ final class PendingAssetTest extends CIUnitTestCase
     public function testCreateFromRequestWithNonUploadedFileThrowsException(): void
     {
         // Arrange
-        $mockRequest = $this->createStub(IncomingRequest::class);
+        $mockRequest = $this->createMock(IncomingRequest::class);
         $mockRequest->method('getFiles')->willReturn([
             'avatar' => new stdClass(), // Not an UploadedFile
         ]);
@@ -759,9 +765,9 @@ final class PendingAssetTest extends CIUnitTestCase
     public function testCreateFromRequestWithNonExistentFieldReturnsEmptyArray(): void
     {
         // Arrange
-        $mockRequest = $this->createStub(IncomingRequest::class);
+        $mockRequest = $this->createMock(IncomingRequest::class);
         $mockRequest->method('getFiles')->willReturn([
-            'avatar' => $this->createStub(UploadedFile::class),
+            'avatar' => $this->createMock(UploadedFile::class),
         ]);
 
         Services::injectMock('request', $mockRequest);
@@ -780,7 +786,7 @@ final class PendingAssetTest extends CIUnitTestCase
     public function testCreateFromRequestWhenRequestHasNoFiles(): void
     {
         // Arrange
-        $mockRequest = $this->createStub(IncomingRequest::class);
+        $mockRequest = $this->createMock(IncomingRequest::class);
         $mockRequest->method('getFiles')->willReturn([]);
 
         Services::injectMock('request', $mockRequest);
@@ -799,7 +805,7 @@ final class PendingAssetTest extends CIUnitTestCase
     public function testCreateFromRequestWithMixedSingleAndMultipleFiles(): void
     {
         // Arrange
-        $mockFileSingle = $this->createStub(UploadedFile::class);
+        $mockFileSingle = $this->createMock(UploadedFile::class);
         $mockFileSingle->method('isValid')->willReturn(true);
         $mockFileSingle->method('isFile')->willReturn(true);
         $mockFileSingle->method('getClientName')->willReturn('single.jpg');
@@ -809,7 +815,7 @@ final class PendingAssetTest extends CIUnitTestCase
         $mockFileSingle->method('getMTime')->willReturn(time());
         $mockFileSingle->method('getRealPath')->willReturn($this->tempFilePath);
 
-        $mockFileMultiple1 = $this->createStub(UploadedFile::class);
+        $mockFileMultiple1 = $this->createMock(UploadedFile::class);
         $mockFileMultiple1->method('isValid')->willReturn(true);
         $mockFileMultiple1->method('isFile')->willReturn(true);
         $mockFileMultiple1->method('getClientName')->willReturn('multi1.jpg');
@@ -819,7 +825,7 @@ final class PendingAssetTest extends CIUnitTestCase
         $mockFileMultiple1->method('getMTime')->willReturn(time());
         $mockFileMultiple1->method('getRealPath')->willReturn($this->tempFilePath);
 
-        $mockFileMultiple2 = $this->createStub(UploadedFile::class);
+        $mockFileMultiple2 = $this->createMock(UploadedFile::class);
         $mockFileMultiple2->method('isValid')->willReturn(true);
         $mockFileMultiple2->method('isFile')->willReturn(true);
         $mockFileMultiple2->method('getClientName')->willReturn('multi2.jpg');
@@ -829,7 +835,7 @@ final class PendingAssetTest extends CIUnitTestCase
         $mockFileMultiple2->method('getMTime')->willReturn(time());
         $mockFileMultiple2->method('getRealPath')->willReturn($this->tempFilePath);
 
-        $mockRequest = $this->createStub(IncomingRequest::class);
+        $mockRequest = $this->createMock(IncomingRequest::class);
         $mockRequest->method('getFiles')->willReturn([
             'avatar'    => $mockFileSingle,
             'documents' => [$mockFileMultiple1, $mockFileMultiple2],

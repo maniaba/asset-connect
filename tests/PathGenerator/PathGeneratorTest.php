@@ -9,6 +9,7 @@ use CodeIgniter\Test\FeatureTestTrait;
 use Maniaba\AssetConnect\AssetCollection\AssetCollection;
 use Maniaba\AssetConnect\PathGenerator\Interfaces\PathGeneratorInterface;
 use Maniaba\AssetConnect\PathGenerator\PathGenerator;
+use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionClass;
 
@@ -22,18 +23,24 @@ final class PathGeneratorTest extends CIUnitTestCase
     private PathGenerator $pathGenerator;
     private MockObject|PathGeneratorInterface $mockPathGeneratorInterface;
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
+
         // Create a real AssetCollection instance using reflection
         $reflectionClass = new ReflectionClass(AssetCollection::class);
         $assetCollection = $reflectionClass->newInstanceWithoutConstructor();
+
         // Create a mock PathGeneratorInterface
         $this->mockPathGeneratorInterface = $this->createMock(PathGeneratorInterface::class);
+
         // Use setPrivateProperty to set the private property in AssetCollection
         $this->setPrivateProperty($assetCollection, 'pathGenerator', $this->mockPathGeneratorInterface);
+
         // Create the PathGenerator
         $this->pathGenerator = new PathGenerator($assetCollection);
+
         // Setup global function mocks
         $this->setupGlobalFunctionMocks();
     }

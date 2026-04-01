@@ -11,6 +11,7 @@ use Maniaba\AssetConnect\Asset\AssetMetadata;
 use Maniaba\AssetConnect\AssetVariants\AssetVariant;
 use Maniaba\AssetConnect\AssetVariants\AssetVariantsProcessor;
 use Maniaba\AssetConnect\Exceptions\FileVariantException;
+use Override;
 use RuntimeException;
 
 /**
@@ -20,16 +21,20 @@ final class AssetVariantsProcessorTest extends CIUnitTestCase
 {
     private AssetVariantsProcessor $processor;
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
+
         // Create Asset instance
         $asset     = new Asset();
         $asset->id = 123;
+
         // Create AssetMetadata instance and set it to the asset
         $metadata    = new AssetMetadata();
         $setMetadata = $this->getPrivateMethodInvoker($asset, 'setMetadata');
         $setMetadata($metadata);
+
         // Create a variant and add it to the asset's metadata
         $variant = new AssetVariant([
             'name'      => 'thumbnail',
@@ -37,9 +42,12 @@ final class AssetVariantsProcessorTest extends CIUnitTestCase
             'size'      => 0,
             'processed' => false,
         ]);
+
         $asset->metadata->assetVariant->addAssetVariant($variant);
+
         // Create AssetVariantsProcessor instance
         $this->processor = new AssetVariantsProcessor($asset);
+
         // Setup global function mocks
         $this->setupGlobalFunctionMocks();
     }

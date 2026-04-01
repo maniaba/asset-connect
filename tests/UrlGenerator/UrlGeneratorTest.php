@@ -11,6 +11,7 @@ use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Maniaba\AssetConnect\UrlGenerator\UrlGenerator;
+use Override;
 use Tests\Support\Config\TestAssetConfig;
 
 /**
@@ -20,11 +21,14 @@ final class UrlGeneratorTest extends CIUnitTestCase
 {
     private Asset $asset;
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
+
         // Inject test config after parent::setUp() using the full class name
         Factories::injectMock('config', \Maniaba\AssetConnect\Config\Asset::class, new TestAssetConfig());
+
         // Create a real Asset object with metadata via constructor
         $this->asset = new Asset([
             'id'         => '123',
@@ -48,10 +52,13 @@ final class UrlGeneratorTest extends CIUnitTestCase
                 ],
             ]),
         ]);
+
         // Mock global functions
         $this->setupGlobalFunctionMocks();
+
         // Mock the Factories class to return a mock config
         Services::reset();
+
         // routes load to ensure routes are available
         Services::routes()->loadRoutes();
     }

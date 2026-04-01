@@ -12,7 +12,7 @@ use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\AssetConnect\AssetCollection\AssetCollectionDefinitionFactory;
 use Maniaba\AssetConnect\Validation\AssetConnectValidator;
 use Maniaba\AssetConnect\Validation\ValidationRuleCollector;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
@@ -24,16 +24,21 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
     private MockObject $mockValidation;
     private MockObject $mockCollectionDefinition;
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
+
         // Mock the validation service
         $this->mockValidation = $this->createMock(Validation::class);
         Services::injectMock('validation', $this->mockValidation);
+
         // Create a mock collection definition
         $this->mockCollectionDefinition = $this->createMock(AssetCollectionDefinitionInterface::class);
+
         // Create the validator
         $this->validator = new AssetConnectValidator();
+
         // Setup global function mocks
         $this->setupGlobalFunctionMocks();
     }
@@ -51,7 +56,6 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
     /**
      * Test setFieldCollectionDefinition with an interface instance
      */
-    #[AllowMockObjectsWithoutExpectations]
     public function testSetFieldCollectionDefinitionWithInterfaceInstance(): void
     {
         // Arrange
@@ -78,7 +82,6 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
     /**
      * Test getRules method
      */
-    #[AllowMockObjectsWithoutExpectations]
     public function testGetRules(): void
     {
         // Arrange
@@ -111,7 +114,6 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
     /**
      * Test getDefinedFieldNames method
      */
-    #[AllowMockObjectsWithoutExpectations]
     public function testGetDefinedFieldNames(): void
     {
         // Arrange
@@ -122,7 +124,7 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
             $mockDefinition = $this->createMock(AssetCollectionDefinitionInterface::class);
             $mockDefinition->expects($this->once())
                 ->method('definition')
-                ->willReturnCallback(static fn (ValidationRuleCollector $collector): ValidationRuleCollector => $collector);
+                ->willReturnCallback(static fn (ValidationRuleCollector $collector) => $collector);
 
             $this->validator->setFieldCollectionDefinition($fieldName, $mockDefinition);
         }
@@ -142,7 +144,6 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
     /**
      * Test getRulesForDefinedFields method
      */
-    #[AllowMockObjectsWithoutExpectations]
     public function testGetRulesForDefinedFields(): void
     {
         // Arrange
@@ -180,7 +181,6 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
     /**
      * Test getRulesForFields method
      */
-    #[AllowMockObjectsWithoutExpectations]
     public function testGetRulesForFields(): void
     {
         // Arrange
@@ -258,7 +258,6 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
     /**
      * Test validateFields method
      */
-    #[AllowMockObjectsWithoutExpectations]
     public function testValidateFields(): void
     {
         // Arrange
@@ -301,7 +300,6 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
     /**
      * Test getErrors method
      */
-    #[AllowMockObjectsWithoutExpectations]
     public function testGetErrors(): void
     {
         // Arrange
@@ -322,7 +320,6 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
     /**
      * Test validateDefinedFields method
      */
-    #[AllowMockObjectsWithoutExpectations]
     public function testValidateDefinedFields(): void
     {
         // Arrange
@@ -364,7 +361,6 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
     /**
      * Test validateFieldsFromRequest method
      */
-    #[AllowMockObjectsWithoutExpectations]
     public function testValidateFieldsFromRequest(): void
     {
         // Arrange
@@ -386,7 +382,7 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
         }
 
         // Create a mock request
-        $mockRequest = $this->createStub(IncomingRequest::class);
+        $mockRequest = $this->createMock(IncomingRequest::class);
         Services::injectMock('request', $mockRequest);
 
         // Setup the validation mock
@@ -414,7 +410,6 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
     /**
      * Test validateRequest method
      */
-    #[AllowMockObjectsWithoutExpectations]
     public function testValidateRequest(): void
     {
         // Arrange
@@ -435,7 +430,7 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
         }
 
         // Create a mock request
-        $mockRequest = $this->createStub(IncomingRequest::class);
+        $mockRequest = $this->createMock(IncomingRequest::class);
 
         // Setup the validation mock
         $this->mockValidation->expects($this->once())
@@ -462,7 +457,6 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
     /**
      * Test validateRequest method with default request
      */
-    #[AllowMockObjectsWithoutExpectations]
     public function testValidateRequestWithDefaultRequest(): void
     {
         // Arrange
@@ -483,7 +477,7 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
         }
 
         // Create a mock request
-        $mockRequest = $this->createStub(IncomingRequest::class);
+        $mockRequest = $this->createMock(IncomingRequest::class);
         Services::injectMock('request', $mockRequest);
 
         // Setup the validation mock
