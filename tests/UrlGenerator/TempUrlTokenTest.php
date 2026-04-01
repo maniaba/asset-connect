@@ -10,7 +10,6 @@ use CodeIgniter\Test\CIUnitTestCase;
 use Config\Services;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\UrlGenerator\TempUrlToken;
-use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
@@ -20,14 +19,11 @@ final class TempUrlTokenTest extends CIUnitTestCase
 {
     private CacheInterface|MockObject $mockCache;
 
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
-
         // Mock the cache service
         $this->mockCache = $this->createMock(CacheInterface::class);
-
         // Replace the cache service
         Services::injectMock('cache', $this->mockCache);
     }

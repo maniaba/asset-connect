@@ -6,14 +6,12 @@ namespace Tests\Asset\Properties;
 
 use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\AssetConnect\Asset\Properties\UserCustomProperty;
-use Override;
 
 /**
  * @internal
  */
 final class UserCustomPropertiesTest extends CIUnitTestCase
 {
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();

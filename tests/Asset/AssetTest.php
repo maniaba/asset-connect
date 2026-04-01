@@ -13,8 +13,7 @@ use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Asset\AssetMetadata;
 use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\AssetConnect\AssetCollection\DefaultAssetCollection;
-use Override;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use Tests\Support\Config\TestAssetConfig;
 use Tests\Support\TestEntity;
 
@@ -26,30 +25,27 @@ final class AssetTest extends CIUnitTestCase
     private Asset $asset;
 
     /**
-     * @var File&MockObject
+     * @var File&Stub
      */
-    private MockObject $mockFile;
+    private Stub $mockFile;
 
     /**
-     * @var Entity&MockObject
+     * @var Entity&Stub
      */
-    private MockObject $mockEntity;
+    private Stub $mockEntity;
 
     /**
-     * @var AssetCollectionDefinitionInterface&MockObject
+     * @var AssetCollectionDefinitionInterface&Stub
      */
-    private MockObject $mockCollectionDefinition;
+    private Stub $mockCollectionDefinition;
 
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
-
         $this->asset                    = new Asset();
-        $this->mockFile                 = $this->createMock(File::class);
-        $this->mockEntity               = $this->createMock(Entity::class);
-        $this->mockCollectionDefinition = $this->createMock(AssetCollectionDefinitionInterface::class);
-
+        $this->mockFile                 = $this->createStub(File::class);
+        $this->mockEntity               = $this->createStub(Entity::class);
+        $this->mockCollectionDefinition = $this->createStub(AssetCollectionDefinitionInterface::class);
         // Setup global function mocks
         $this->setupGlobalFunctionMocks();
     }
@@ -73,7 +69,7 @@ final class AssetTest extends CIUnitTestCase
     public function testSetEntityTypeWithEntityInstance(): void
     {
         // Arrange
-        $this->mockEntity                                       = $this->createMock(Entity::class);
+        $this->mockEntity                                       = $this->createStub(Entity::class);
         $config                                                 = config('Asset');
         $config->entityKeyDefinitions[$this->mockEntity::class] = 'mock_entity';
 
@@ -140,7 +136,7 @@ final class AssetTest extends CIUnitTestCase
     public function testSetCollectionWithInterfaceInstance(): void
     {
         // Arrange
-        $this->mockCollectionDefinition                                           = $this->createMock(AssetCollectionDefinitionInterface::class);
+        $this->mockCollectionDefinition                                           = $this->createStub(AssetCollectionDefinitionInterface::class);
         $config                                                                   = config('Asset');
         $config->collectionKeyDefinitions[$this->mockCollectionDefinition::class] = 'mock_definition';
 

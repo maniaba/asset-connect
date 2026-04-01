@@ -138,7 +138,7 @@ parameters:
 		-
 			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\AssetConnect\\\\Events\\\\AssetDeleted'' and Maniaba\\AssetConnect\\Events\\AssetDeleted will always evaluate to true\.$#'
 			identifier: method.alreadyNarrowedType
-			count: 3
+			count: 2
 			path: tests/Events/AssetDeletedTest.php
 
 		-
@@ -154,7 +154,7 @@ parameters:
 			path: tests/Events/AssetEventInterfaceTest.php
 
 		-
-			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\AssetConnect\\\\Events\\\\AssetEventInterface'' and Maniaba\\AssetConnect\\Events\\AssetEventInterface@anonymous/tests/Events/AssetEventInterfaceTest\.php\:103 will always evaluate to true\.$#'
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\AssetConnect\\\\Events\\\\AssetEventInterface'' and Maniaba\\AssetConnect\\Events\\AssetEventInterface@anonymous/tests/Events/AssetEventInterfaceTest\.php\:99 will always evaluate to true\.$#'
 			identifier: method.alreadyNarrowedType
 			count: 1
 			path: tests/Events/AssetEventInterfaceTest.php
@@ -172,13 +172,13 @@ parameters:
 			path: tests/Events/AssetUpdatedTest.php
 
 		-
-			message: '#^Method Maniaba\\AssetConnect\\Models\\AssetModel@anonymous/tests/Events/AssetUpdatedTest\.php\:136\:\:find\(\) never returns array\<int\|string, array\<int\|string, bool\|float\|int\|object\|string\|null\>\|bool\|float\|int\|object\|string\|null\> so it can be removed from the return type\.$#'
+			message: '#^Method Maniaba\\AssetConnect\\Models\\AssetModel@anonymous/tests/Events/AssetUpdatedTest\.php\:134\:\:find\(\) never returns array\<int\|string, array\<int\|string, bool\|float\|int\|object\|string\|null\>\|bool\|float\|int\|object\|string\|null\> so it can be removed from the return type\.$#'
 			identifier: return.unusedType
 			count: 1
 			path: tests/Events/AssetUpdatedTest.php
 
 		-
-			message: '#^Method Maniaba\\AssetConnect\\Models\\AssetModel@anonymous/tests/Events/AssetUpdatedTest\.php\:70\:\:find\(\) never returns array\<int\|string, array\<int\|string, bool\|float\|int\|object\|string\|null\>\|bool\|float\|int\|object\|string\|null\> so it can be removed from the return type\.$#'
+			message: '#^Method Maniaba\\AssetConnect\\Models\\AssetModel@anonymous/tests/Events/AssetUpdatedTest\.php\:68\:\:find\(\) never returns array\<int\|string, array\<int\|string, bool\|float\|int\|object\|string\|null\>\|bool\|float\|int\|object\|string\|null\> so it can be removed from the return type\.$#'
 			identifier: return.unusedType
 			count: 1
 			path: tests/Events/AssetUpdatedTest.php
@@ -192,19 +192,19 @@ parameters:
 		-
 			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\AssetConnect\\\\Events\\\\VariantCreated'' and Maniaba\\AssetConnect\\Events\\VariantCreated will always evaluate to true\.$#'
 			identifier: method.alreadyNarrowedType
-			count: 3
+			count: 2
 			path: tests/Events/VariantCreatedTest.php
 
 		-
-			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertSame\(\) with PHPUnit\\Framework\\MockObject\\MockObject and Maniaba\\AssetConnect\\AssetVariants\\AssetVariant will always evaluate to false\.$#'
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertSame\(\) with PHPUnit\\Framework\\MockObject\\Stub and Maniaba\\AssetConnect\\AssetVariants\\AssetVariant will always evaluate to false\.$#'
 			identifier: method.impossibleType
-			count: 4
+			count: 8
 			path: tests/Events/VariantCreatedTest.php
 
 		-
 			message: '#^Parameter \#1 \$expected of method PHPUnit\\Framework\\Assert\:\:assertSame\(\) contains unresolvable type\.$#'
 			identifier: argument.unresolvableType
-			count: 4
+			count: 8
 			path: tests/Events/VariantCreatedTest.php
 
 		-
