@@ -19,7 +19,7 @@ use stdClass;
  */
 final class AssetModelTest extends CIUnitTestCase
 {
-    private Stub $mockAssetConfig;
+    private AssetConfig&Stub $mockAssetConfig;
 
     protected function setUp(): void
     {

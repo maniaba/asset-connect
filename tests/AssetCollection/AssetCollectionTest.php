@@ -21,16 +21,15 @@ use Maniaba\AssetConnect\PathGenerator\Interfaces\PathGeneratorInterface;
 final class AssetCollectionTest extends CIUnitTestCase
 {
     private SetupAssetCollection $setupAssetCollection;
-    private AssetCollectionDefinitionInterface $mockCollectionDefinition;
     private AssetCollection $assetCollection;
 
     protected function setUp(): void
     {
         parent::setUp();
         // Create real instance of SetupAssetCollection
-        $this->setupAssetCollection     = new SetupAssetCollection();
-        $this->mockCollectionDefinition = $this->createStub(AssetCollectionDefinitionInterface::class);
-        $this->setPrivateProperty($this->setupAssetCollection, 'collectionDefinition', $this->mockCollectionDefinition);
+        $this->setupAssetCollection = new SetupAssetCollection();
+        $mockCollectionDefinition   = $this->createStub(AssetCollectionDefinitionInterface::class);
+        $this->setPrivateProperty($this->setupAssetCollection, 'collectionDefinition', $mockCollectionDefinition);
         // Setup global function mocks
         $this->setupGlobalFunctionMocks();
         // Create the AssetCollection instance

@@ -21,7 +21,7 @@ use ReflectionMethod;
  */
 final class AssetUpdatedTest extends CIUnitTestCase
 {
-    private Stub $mockAsset;
+    private Asset&Stub $mockAsset;
 
     protected function setUp(): void
     {

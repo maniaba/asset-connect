@@ -8,6 +8,7 @@ use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionGetterInterface;
 use Maniaba\AssetConnect\PathGenerator\DefaultPathGenerator;
 use Maniaba\AssetConnect\PathGenerator\PathGeneratorHelper;
+use PHPUnit\Framework\MockObject\Stub;
 
 /**
  * @internal
@@ -16,7 +17,7 @@ final class DefaultPathGeneratorTest extends CIUnitTestCase
 {
     private DefaultPathGenerator $pathGenerator;
     private PathGeneratorHelper $helper;
-    private AssetCollectionGetterInterface $mockCollection;
+    private AssetCollectionGetterInterface&Stub $mockCollection;
 
     protected function setUp(): void
     {
