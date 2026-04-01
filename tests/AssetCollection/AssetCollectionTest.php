@@ -14,7 +14,6 @@ use Maniaba\AssetConnect\Enums\AssetMimeType;
 use Maniaba\AssetConnect\Enums\AssetVisibility;
 use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Maniaba\AssetConnect\PathGenerator\Interfaces\PathGeneratorInterface;
-use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * @internal
@@ -22,12 +21,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 final class AssetCollectionTest extends CIUnitTestCase
 {
     private SetupAssetCollection $setupAssetCollection;
-
-    /**
-     * @var AssetCollectionDefinitionInterface&MockObject
-     */
-    private MockObject $mockCollectionDefinition;
-
+    private AssetCollectionDefinitionInterface $mockCollectionDefinition;
     private AssetCollection $assetCollection;
 
     protected function setUp(): void
@@ -35,7 +29,7 @@ final class AssetCollectionTest extends CIUnitTestCase
         parent::setUp();
         // Create real instance of SetupAssetCollection
         $this->setupAssetCollection     = new SetupAssetCollection();
-        $this->mockCollectionDefinition = $this->createMock(AssetCollectionDefinitionInterface::class);
+        $this->mockCollectionDefinition = $this->createStub(AssetCollectionDefinitionInterface::class);
         $this->setPrivateProperty($this->setupAssetCollection, 'collectionDefinition', $this->mockCollectionDefinition);
         // Setup global function mocks
         $this->setupGlobalFunctionMocks();
@@ -71,10 +65,13 @@ final class AssetCollectionTest extends CIUnitTestCase
      */
     public function testConstructorCallsDefinitionMethod(): void
     {
-        // Arrange
-        $this->mockCollectionDefinition->expects($this->once())
+        // Arrange - use a local mock (not the class-level stub) so expects() can be configured
+        $mockDef = $this->createMock(AssetCollectionDefinitionInterface::class);
+        $mockDef->expects($this->once())
             ->method('definition')
             ->with($this->isInstanceOf(AssetCollection::class));
+
+        $this->setPrivateProperty($this->setupAssetCollection, 'collectionDefinition', $mockDef);
 
         // Act
         AssetCollection::create($this->setupAssetCollection);

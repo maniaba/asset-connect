@@ -36,7 +36,7 @@ final class AssetVariantsTest extends CIUnitTestCase
     private function mockPathGenerator(): PathGenerator
     {
         // Create a mock PathGenerator instance
-        $pathGenerator = $this->createMock(PathGenerator::class);
+        $pathGenerator = $this->createStub(PathGenerator::class);
 
         // Set expectations for the methods used in the tests
         $pathGenerator->method('getPathForVariants')
