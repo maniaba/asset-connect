@@ -6,7 +6,6 @@ namespace Tests\Asset\Properties;
 
 use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\AssetConnect\Asset\Properties\StorageProperty;
-use Override;
 
 /**
  * @internal
@@ -15,11 +14,9 @@ final class StoragePropertyTest extends CIUnitTestCase
 {
     private StorageProperty $storageProperty;
 
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
-
         $this->storageProperty = new StorageProperty([]);
     }
 

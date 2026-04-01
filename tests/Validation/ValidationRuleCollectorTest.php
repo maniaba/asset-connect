@@ -13,7 +13,6 @@ use Maniaba\AssetConnect\Enums\AssetExtension;
 use Maniaba\AssetConnect\Enums\AssetMimeType;
 use Maniaba\AssetConnect\PathGenerator\Interfaces\PathGeneratorInterface;
 use Maniaba\AssetConnect\Validation\ValidationRuleCollector;
-use Override;
 
 /**
  * @internal
@@ -23,7 +22,6 @@ final class ValidationRuleCollectorTest extends CIUnitTestCase
     private ValidationRuleCollector $collector;
     private string $fieldName = 'testField';
 
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -136,11 +134,11 @@ final class ValidationRuleCollectorTest extends CIUnitTestCase
         $error    = null;
 
         // Mock request with files
-        $request = $this->createMock(IncomingRequest::class);
+        $request = $this->createStub(IncomingRequest::class);
         $request->method('getFileMultiple')
             ->willReturn([
-                $this->createMock(File::class),
-                $this->createMock(File::class),
+                $this->createStub(File::class),
+                $this->createStub(File::class),
             ]);
 
         // Replace Services::request() with our mock
@@ -165,11 +163,11 @@ final class ValidationRuleCollectorTest extends CIUnitTestCase
         $error    = null;
 
         // Mock request with files
-        $request = $this->createMock(IncomingRequest::class);
+        $request = $this->createStub(IncomingRequest::class);
         $request->method('getFileMultiple')
             ->willReturn([
-                $this->createMock(File::class),
-                $this->createMock(File::class),
+                $this->createStub(File::class),
+                $this->createStub(File::class),
             ]);
 
         // Replace Services::request() with our mock
@@ -221,7 +219,7 @@ final class ValidationRuleCollectorTest extends CIUnitTestCase
     public function testSetPathGenerator(): void
     {
         // Arrange
-        $pathGenerator = $this->createMock(PathGeneratorInterface::class);
+        $pathGenerator = $this->createStub(PathGeneratorInterface::class);
 
         // Act
         $result = $this->collector->setPathGenerator($pathGenerator);

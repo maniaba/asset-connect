@@ -10,7 +10,6 @@ use Maniaba\AssetConnect\AssetVariants\AssetVariant;
 use Maniaba\AssetConnect\AssetVariants\AssetVariants;
 use Maniaba\AssetConnect\AssetVariants\Interfaces\CreateAssetVariantsInterface;
 use Maniaba\AssetConnect\PathGenerator\PathGenerator;
-use Override;
 
 /**
  * @internal
@@ -20,17 +19,13 @@ final class AssetVariantsTest extends CIUnitTestCase
     private Asset $asset;
     private CreateAssetVariantsInterface $assetVariants;
 
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
-
         // Create Asset instance
         $this->asset = new Asset();
-
         // Set up the asset with required properties
         $this->asset->file_name = 'test_image.jpg';
-
         // Create TestAssetVariants instance
         $this->assetVariants = new AssetVariants(
             $this->mockPathGenerator(),
@@ -41,7 +36,7 @@ final class AssetVariantsTest extends CIUnitTestCase
     private function mockPathGenerator(): PathGenerator
     {
         // Create a mock PathGenerator instance
-        $pathGenerator = $this->createMock(PathGenerator::class);
+        $pathGenerator = $this->createStub(PathGenerator::class);
 
         // Set expectations for the methods used in the tests
         $pathGenerator->method('getPathForVariants')

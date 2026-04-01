@@ -20,6 +20,8 @@ use RuntimeException;
 
 final class AssetConnect
 {
+    public const string VERSION = '1.0.0';
+
     public readonly AssetModel $assetModel;
     private readonly SetupAssetCollection $setupAssetCollection;
     private array $relationsInfo = [
