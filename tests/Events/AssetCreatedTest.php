@@ -9,7 +9,6 @@ use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Events\AssetCreated;
 use Maniaba\AssetConnect\Events\AssetEventInterface;
-use Override;
 use ReflectionClass;
 use ReflectionMethod;
 
@@ -18,7 +17,6 @@ use ReflectionMethod;
  */
 final class AssetCreatedTest extends CIUnitTestCase
 {
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();

@@ -13,7 +13,6 @@ use Maniaba\AssetConnect\Pending\DefaultPendingStorage;
 use Maniaba\AssetConnect\Pending\Interfaces\PendingStorageInterface;
 use Maniaba\AssetConnect\Pending\PendingAsset;
 use Maniaba\AssetConnect\Pending\PendingAssetManager;
-use Override;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use RuntimeException;
@@ -31,7 +30,6 @@ final class PendingAssetManagerTest extends CIUnitTestCase
     private AssetConfig $mockAssetConfig;
     private string $tempFilePath;
 
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -44,7 +42,6 @@ final class PendingAssetManagerTest extends CIUnitTestCase
         $this->setupGlobalFunctionMocks();
     }
 
-    #[Override]
     protected function tearDown(): void
     {
         parent::tearDown();

@@ -9,7 +9,6 @@ use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\AssetConnect\Exceptions\PendingAssetException;
 use Maniaba\AssetConnect\Pending\DefaultPendingStorage;
 use Maniaba\AssetConnect\Pending\PendingAsset;
-use Override;
 
 /**
  * @internal
@@ -20,7 +19,6 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
     private string $tempFilePath;
     private string $basePendingPath;
 
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -36,7 +34,6 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
         }
     }
 
-    #[Override]
     protected function tearDown(): void
     {
         parent::tearDown();

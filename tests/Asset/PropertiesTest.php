@@ -6,7 +6,6 @@ namespace Tests\Asset;
 
 use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\AssetConnect\Asset\AssetMetadata;
-use Override;
 
 /**
  * @internal
@@ -15,7 +14,6 @@ final class PropertiesTest extends CIUnitTestCase
 {
     private AssetMetadata $properties;
 
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();

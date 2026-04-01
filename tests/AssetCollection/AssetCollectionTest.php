@@ -14,7 +14,6 @@ use Maniaba\AssetConnect\Enums\AssetMimeType;
 use Maniaba\AssetConnect\Enums\AssetVisibility;
 use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Maniaba\AssetConnect\PathGenerator\Interfaces\PathGeneratorInterface;
-use Override;
 
 /**
  * @internal
@@ -24,7 +23,6 @@ final class AssetCollectionTest extends CIUnitTestCase
     private SetupAssetCollection $setupAssetCollection;
     private AssetCollection $assetCollection;
 
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();

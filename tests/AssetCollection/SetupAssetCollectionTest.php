@@ -30,7 +30,6 @@ final class SetupAssetCollectionTest extends CIUnitTestCase
      */
     private Stub $mockAssetConfig;
 
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();

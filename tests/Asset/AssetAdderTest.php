@@ -17,7 +17,6 @@ use Maniaba\AssetConnect\AssetCollection\SetupAssetCollection;
 use Maniaba\AssetConnect\Contracts\AssetConnectEntityInterface;
 use Maniaba\AssetConnect\Exceptions\AssetException;
 use Maniaba\AssetConnect\Traits\UseAssetConnectTrait;
-use Override;
 use PHPUnit\Framework\MockObject\Stub;
 use ReflectionClass;
 use Tests\Support\Config\TestAssetConfig;
@@ -42,7 +41,6 @@ final class AssetAdderTest extends CIUnitTestCase
      */
     private Stub $mockUploadedFile;
 
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();

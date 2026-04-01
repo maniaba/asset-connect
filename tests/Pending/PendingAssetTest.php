@@ -13,7 +13,6 @@ use Config\Services;
 use Maniaba\AssetConnect\Exceptions\FileException;
 use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Maniaba\AssetConnect\Pending\PendingAsset;
-use Override;
 use PHPUnit\Framework\MockObject\Stub;
 use stdClass;
 
@@ -34,7 +33,6 @@ final class PendingAssetTest extends CIUnitTestCase
 
     private string $tempFilePath;
 
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -45,7 +43,6 @@ final class PendingAssetTest extends CIUnitTestCase
         file_put_contents($this->tempFilePath, 'test content');
     }
 
-    #[Override]
     protected function tearDown(): void
     {
         parent::tearDown();

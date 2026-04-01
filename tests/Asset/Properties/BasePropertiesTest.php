@@ -28,7 +28,6 @@ final class BasePropertiesTest extends CIUnitTestCase
 {
     private TestProperty $baseProperties;
 
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();

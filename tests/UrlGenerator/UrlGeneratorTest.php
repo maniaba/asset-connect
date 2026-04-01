@@ -11,7 +11,6 @@ use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Maniaba\AssetConnect\UrlGenerator\UrlGenerator;
-use Override;
 use Tests\Support\Config\TestAssetConfig;
 
 /**
@@ -21,7 +20,6 @@ final class UrlGeneratorTest extends CIUnitTestCase
 {
     private Asset $asset;
 
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();

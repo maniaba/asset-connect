@@ -11,7 +11,6 @@ use Maniaba\AssetConnect\Asset\AssetMetadata;
 use Maniaba\AssetConnect\AssetVariants\AssetVariant;
 use Maniaba\AssetConnect\AssetVariants\AssetVariantsProcessor;
 use Maniaba\AssetConnect\Exceptions\FileVariantException;
-use Override;
 use RuntimeException;
 
 /**
@@ -21,7 +20,6 @@ final class AssetVariantsProcessorTest extends CIUnitTestCase
 {
     private AssetVariantsProcessor $processor;
 
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
