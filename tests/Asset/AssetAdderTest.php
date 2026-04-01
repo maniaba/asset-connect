@@ -17,8 +17,7 @@ use Maniaba\AssetConnect\AssetCollection\SetupAssetCollection;
 use Maniaba\AssetConnect\Contracts\AssetConnectEntityInterface;
 use Maniaba\AssetConnect\Exceptions\AssetException;
 use Maniaba\AssetConnect\Traits\UseAssetConnectTrait;
-use Override;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use ReflectionClass;
 use Tests\Support\Config\TestAssetConfig;
 use Tests\Support\TestEntity;
@@ -33,34 +32,29 @@ final class AssetAdderTest extends CIUnitTestCase
     private AssetConnectEntityInterface&Entity $mockEntity;
 
     /**
-     * @var File&MockObject
+     * @var File&Stub
      */
-    private MockObject $mockFile;
+    private Stub $mockFile;
 
     /**
-     * @var MockObject&UploadedFile
+     * @var Stub&UploadedFile
      */
-    private MockObject $mockUploadedFile;
+    private Stub $mockUploadedFile;
 
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
-
         Factories::injectMock('config', \Maniaba\AssetConnect\Config\Asset::class, new TestAssetConfig());
-
         // Create mock entity with UseAssetConnectTrait
         $this->mockEntity = $this->createMockEntityWithTrait();
-
         // Create mock file
-        $this->mockFile = $this->createMock(File::class);
+        $this->mockFile = $this->createStub(File::class);
         $this->mockFile->method('getRealPath')->willReturn('/tmp/test-file.txt');
         $this->mockFile->method('getBasename')->willReturn('test-file.txt');
         $this->mockFile->method('getMimeType')->willReturn('text/plain');
         $this->mockFile->method('getSize')->willReturn(1024);
-
         // Create mock uploaded file
-        $this->mockUploadedFile = $this->createMock(UploadedFile::class);
+        $this->mockUploadedFile = $this->createStub(UploadedFile::class);
         $this->mockUploadedFile->method('getRealPath')->willReturn('/tmp/uploaded-file.txt');
         $this->mockUploadedFile->method('getClientName')->willReturn('uploaded-file.txt');
         $this->mockUploadedFile->method('getMimeType')->willReturn('text/plain');
@@ -97,7 +91,7 @@ final class AssetAdderTest extends CIUnitTestCase
 
     public function testConstructorThrowsExceptionForInvalidEntity(): void
     {
-        $invalidEntity = $this->createMock(Entity::class);
+        $invalidEntity = $this->createStub(Entity::class);
 
         $this->expectException(AssetException::class);
 

@@ -133,7 +133,7 @@ final class PendingAsset implements AssetDefinitionInterface, JsonSerializable
 
     public function getSize(): int
     {
-        return $this->file->getSize() ?? 0;
+        return $this->file->getSize();
     }
 
     private function __construct(public File|UploadedFile $file, array $attributes = [])

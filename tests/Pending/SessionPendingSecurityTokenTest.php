@@ -10,7 +10,7 @@ use CodeIgniter\Test\CIUnitTestCase;
 use InvalidArgumentException;
 use Maniaba\AssetConnect\Pending\PendingAsset;
 use Maniaba\AssetConnect\Pending\PendingSecurityToken\SessionPendingSecurityToken;
-use Override;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
@@ -23,18 +23,14 @@ final class SessionPendingSecurityTokenTest extends CIUnitTestCase
      */
     private MockObject $mockSession;
 
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
-
         $this->mockSession = $this->createMock(Session::class);
-
         // Mock the service function to return our mock session
         $this->injectSession($this->mockSession);
     }
 
-    #[Override]
     protected function tearDown(): void
     {
         parent::tearDown();
@@ -70,6 +66,7 @@ final class SessionPendingSecurityTokenTest extends CIUnitTestCase
     /**
      * Test constructor with valid parameters
      */
+    #[AllowMockObjectsWithoutExpectations]
     public function testConstructorWithValidParameters(): void
     {
         // Act
@@ -82,6 +79,7 @@ final class SessionPendingSecurityTokenTest extends CIUnitTestCase
     /**
      * Test constructor with default parameters
      */
+    #[AllowMockObjectsWithoutExpectations]
     public function testConstructorWithDefaultParameters(): void
     {
         // Act
@@ -94,6 +92,7 @@ final class SessionPendingSecurityTokenTest extends CIUnitTestCase
     /**
      * Test constructor throws exception when TTL is zero
      */
+    #[AllowMockObjectsWithoutExpectations]
     public function testConstructorThrowsExceptionWhenTTLIsZero(): void
     {
         // Assert
@@ -107,6 +106,7 @@ final class SessionPendingSecurityTokenTest extends CIUnitTestCase
     /**
      * Test constructor throws exception when TTL is negative
      */
+    #[AllowMockObjectsWithoutExpectations]
     public function testConstructorThrowsExceptionWhenTTLIsNegative(): void
     {
         // Assert
@@ -120,6 +120,7 @@ final class SessionPendingSecurityTokenTest extends CIUnitTestCase
     /**
      * Test constructor throws exception when token length is zero
      */
+    #[AllowMockObjectsWithoutExpectations]
     public function testConstructorThrowsExceptionWhenTokenLengthIsZero(): void
     {
         // Assert
@@ -133,6 +134,7 @@ final class SessionPendingSecurityTokenTest extends CIUnitTestCase
     /**
      * Test constructor throws exception when token length is negative
      */
+    #[AllowMockObjectsWithoutExpectations]
     public function testConstructorThrowsExceptionWhenTokenLengthIsNegative(): void
     {
         // Assert
@@ -146,6 +148,7 @@ final class SessionPendingSecurityTokenTest extends CIUnitTestCase
     /**
      * Test constructor throws exception when token length exceeds maximum
      */
+    #[AllowMockObjectsWithoutExpectations]
     public function testConstructorThrowsExceptionWhenTokenLengthExceedsMaximum(): void
     {
         // Assert
@@ -197,7 +200,7 @@ final class SessionPendingSecurityTokenTest extends CIUnitTestCase
         $capturedToken = null;
         $this->mockSession->expects($this->once())
             ->method('setTempdata')
-            ->willReturnCallback(function ($key, $token, $ttlValue) use (&$capturedToken, $ttl) {
+            ->willReturnCallback(function ($key, $token, int $ttlValue) use (&$capturedToken, $ttl) {
                 $capturedToken = $token;
                 $this->assertSame($ttl, $ttlValue);
 
@@ -261,6 +264,7 @@ final class SessionPendingSecurityTokenTest extends CIUnitTestCase
     /**
      * Test validateToken returns true for matching tokens
      */
+    #[AllowMockObjectsWithoutExpectations]
     public function testValidateTokenReturnsTrueForMatchingTokens(): void
     {
         // Arrange
@@ -282,6 +286,7 @@ final class SessionPendingSecurityTokenTest extends CIUnitTestCase
     /**
      * Test validateToken returns false for non-matching tokens
      */
+    #[AllowMockObjectsWithoutExpectations]
     public function testValidateTokenReturnsFalseForNonMatchingTokens(): void
     {
         // Arrange
@@ -303,6 +308,7 @@ final class SessionPendingSecurityTokenTest extends CIUnitTestCase
     /**
      * Test validateToken returns false when no token is stored
      */
+    #[AllowMockObjectsWithoutExpectations]
     public function testValidateTokenReturnsFalseWhenNoTokenStored(): void
     {
         // Arrange
@@ -349,6 +355,7 @@ final class SessionPendingSecurityTokenTest extends CIUnitTestCase
     /**
      * Test validateToken uses constant-time comparison
      */
+    #[AllowMockObjectsWithoutExpectations]
     public function testValidateTokenUsesConstantTimeComparison(): void
     {
         // Arrange

@@ -12,6 +12,7 @@ use Maniaba\AssetConnect\Events\AssetUpdated;
 use Maniaba\AssetConnect\Exceptions\AssetException;
 use Maniaba\AssetConnect\Models\AssetModel;
 use Override;
+use PHPUnit\Framework\MockObject\Stub;
 use ReflectionClass;
 use ReflectionMethod;
 
@@ -20,15 +21,12 @@ use ReflectionMethod;
  */
 final class AssetUpdatedTest extends CIUnitTestCase
 {
-    private Asset $mockAsset;
+    private Asset&Stub $mockAsset;
 
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->mockAsset = $this->createMock(Asset::class);
-
+        $this->mockAsset = $this->createStub(Asset::class);
         // Reset factories before each test
         Factories::reset('models');
     }

@@ -24,7 +24,7 @@ final class TempUrlToken
         $token = hash('sha256', json_encode($tokenData));
 
         // Store the token in cache with an expiration time
-        service('cache')->save(self::CACHE_KEY_PREFIX . $token, $tokenData, $expiration->getTimestamp() - time());
+        service('cache')->save(self::CACHE_KEY_PREFIX . $token, $tokenData, $expiration->getTimestamp() - Time::now()->getTimestamp());
 
         return $token;
     }
@@ -39,7 +39,7 @@ final class TempUrlToken
         }
 
         // Check if the token is still valid
-        if (time() > $tokenData['expiration']) {
+        if (Time::now()->getTimestamp() > $tokenData['expiration']) {
             service('cache')->delete(self::CACHE_KEY_PREFIX . $token); // Clean up expired token
 
             return null;

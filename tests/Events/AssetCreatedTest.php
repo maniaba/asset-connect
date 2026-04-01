@@ -9,7 +9,6 @@ use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Events\AssetCreated;
 use Maniaba\AssetConnect\Events\AssetEventInterface;
-use Override;
 use ReflectionClass;
 use ReflectionMethod;
 
@@ -18,16 +17,9 @@ use ReflectionMethod;
  */
 final class AssetCreatedTest extends CIUnitTestCase
 {
-    private Asset $mockAsset;
-    private Entity $mockEntity;
-
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->mockAsset  = $this->createMock(Asset::class);
-        $this->mockEntity = $this->createMock(Entity::class);
     }
 
     /**
@@ -36,7 +28,7 @@ final class AssetCreatedTest extends CIUnitTestCase
     public function testImplementsAssetEventInterface(): void
     {
         // Arrange & Act
-        $event = AssetCreated::createFromAsset($this->mockAsset, $this->mockEntity);
+        $event = AssetCreated::createFromAsset($this->createStub(Asset::class), $this->createStub(Entity::class));
 
         /** @phpstan-ignore-next-line  */
         $this->assertInstanceOf(AssetEventInterface::class, $event);
@@ -47,12 +39,14 @@ final class AssetCreatedTest extends CIUnitTestCase
      */
     public function testCreateFromAsset(): void
     {
+        $asset   = $this->createStub(Asset::class);
+        $subject = $this->createStub(Entity::class);
         // Arrange & Act
-        $event = AssetCreated::createFromAsset($this->mockAsset, $this->mockEntity);
+        $event = AssetCreated::createFromAsset($asset, $subject);
 
         // Assert
-        $this->assertSame($this->mockAsset, $event->getAsset());
-        $this->assertSame($this->mockEntity, $event->getSubjectEntity());
+        $this->assertSame($asset, $event->getAsset());
+        $this->assertSame($subject, $event->getSubjectEntity());
     }
 
     /**
@@ -60,14 +54,16 @@ final class AssetCreatedTest extends CIUnitTestCase
      */
     public function testGetAsset(): void
     {
+        $asset = $this->createStub(Asset::class);
+
         // Arrange
-        $event = AssetCreated::createFromAsset($this->mockAsset, $this->mockEntity);
+        $event = AssetCreated::createFromAsset($asset, $this->createStub(Entity::class));
 
         // Act
         $result = $event->getAsset();
 
         // Assert
-        $this->assertSame($this->mockAsset, $result);
+        $this->assertSame($asset, $result);
     }
 
     /**
@@ -75,14 +71,16 @@ final class AssetCreatedTest extends CIUnitTestCase
      */
     public function testGetSubjectEntity(): void
     {
+        $subject = $this->createStub(Entity::class);
+
         // Arrange
-        $event = AssetCreated::createFromAsset($this->mockAsset, $this->mockEntity);
+        $event = AssetCreated::createFromAsset($this->createStub(Asset::class), $subject);
 
         // Act
         $result = $event->getSubjectEntity();
 
         // Assert
-        $this->assertSame($this->mockEntity, $result);
+        $this->assertSame($subject, $result);
     }
 
     /**
@@ -103,7 +101,7 @@ final class AssetCreatedTest extends CIUnitTestCase
     public function testEventIsReadonly(): void
     {
         // Arrange
-        $event = AssetCreated::createFromAsset($this->mockAsset, $this->mockEntity);
+        $event = AssetCreated::createFromAsset($this->createStub(Asset::class), $this->createStub(Entity::class));
 
         // Act & Assert - readonly classes don't allow property modification
         // This test ensures the class maintains its readonly state
@@ -131,10 +129,10 @@ final class AssetCreatedTest extends CIUnitTestCase
     public function testWithDifferentInstances(): void
     {
         // Arrange
-        $asset1  = $this->createMock(Asset::class);
-        $entity1 = $this->createMock(Entity::class);
-        $asset2  = $this->createMock(Asset::class);
-        $entity2 = $this->createMock(Entity::class);
+        $asset1  = $this->createStub(Asset::class);
+        $entity1 = $this->createStub(Entity::class);
+        $asset2  = $this->createStub(Asset::class);
+        $entity2 = $this->createStub(Entity::class);
 
         // Act
         $event1 = AssetCreated::createFromAsset($asset1, $entity1);

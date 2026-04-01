@@ -9,7 +9,6 @@ use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\AssetConnect\Exceptions\PendingAssetException;
 use Maniaba\AssetConnect\Pending\DefaultPendingStorage;
 use Maniaba\AssetConnect\Pending\PendingAsset;
-use Override;
 
 /**
  * @internal
@@ -20,36 +19,28 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
     private string $tempFilePath;
     private string $basePendingPath;
 
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
-
         $this->storage = new DefaultPendingStorage();
-
         // Create a temporary file for testing
         $this->tempFilePath = tempnam(sys_get_temp_dir(), 'test_storage_');
         file_put_contents($this->tempFilePath, 'test storage content');
-
         // Set up base pending path
         $this->basePendingPath = WRITEPATH . 'assets_pending' . DIRECTORY_SEPARATOR;
-
         // Ensure the base directory exists
         if (! is_dir($this->basePendingPath)) {
             mkdir($this->basePendingPath, 0755, true);
         }
     }
 
-    #[Override]
     protected function tearDown(): void
     {
         parent::tearDown();
-
         // Clean up temporary file
         if (file_exists($this->tempFilePath)) {
             unlink($this->tempFilePath);
         }
-
         // Clean up pending storage directory
         if (is_dir($this->basePendingPath)) {
             helper('filesystem');
