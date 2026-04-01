@@ -15,7 +15,6 @@ use Maniaba\AssetConnect\Exceptions\AssetException;
 use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Maniaba\AssetConnect\PathGenerator\Interfaces\PathGeneratorInterface;
 use Override;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 use stdClass;
 
@@ -27,7 +26,7 @@ final class SetupAssetCollectionTest extends CIUnitTestCase
     private SetupAssetCollection $setupAssetCollection;
 
     /**
-     * @var Asset&MockObject
+     * @var Asset&Stub
      */
     private Stub $mockAssetConfig;
 
@@ -66,8 +65,9 @@ final class SetupAssetCollectionTest extends CIUnitTestCase
      */
     public function testSetDefaultCollectionDefinitionWithInstance(): void
     {
+        $assetCollectionStub = $this->createStub(AssetCollectionDefinitionInterface::class);
         // Act
-        $result = $this->setupAssetCollection->setDefaultCollectionDefinition($this->createStub(AssetCollectionDefinitionInterface::class));
+        $result = $this->setupAssetCollection->setDefaultCollectionDefinition($assetCollectionStub);
 
         // Assert
         $this->assertSame($this->setupAssetCollection, $result);
@@ -75,7 +75,7 @@ final class SetupAssetCollectionTest extends CIUnitTestCase
         // Get the collection definition using getPrivateProperty
         $collectionDefinition = $this->getPrivateProperty($this->setupAssetCollection, 'collectionDefinition');
 
-        $this->assertSame($this->createStub(AssetCollectionDefinitionInterface::class), $collectionDefinition);
+        $this->assertSame($assetCollectionStub, $collectionDefinition);
     }
 
     /**
@@ -103,8 +103,9 @@ final class SetupAssetCollectionTest extends CIUnitTestCase
      */
     public function testSetPathGeneratorWithInstance(): void
     {
+        $pdfGeneratorStub = $this->createStub(PathGeneratorInterface::class);
         // Act
-        $result = $this->setupAssetCollection->setPathGenerator($this->createStub(PathGeneratorInterface::class));
+        $result = $this->setupAssetCollection->setPathGenerator($pdfGeneratorStub);
 
         // Assert
         $this->assertSame($this->setupAssetCollection, $result);
@@ -112,7 +113,7 @@ final class SetupAssetCollectionTest extends CIUnitTestCase
         // Get the path generator using getPrivateProperty
         $pathGenerator = $this->getPrivateProperty($this->setupAssetCollection, 'pathGenerator');
 
-        $this->assertSame($this->createStub(PathGeneratorInterface::class), $pathGenerator);
+        $this->assertSame($pdfGeneratorStub, $pathGenerator);
     }
 
     /**
@@ -146,14 +147,15 @@ final class SetupAssetCollectionTest extends CIUnitTestCase
      */
     public function testGetPathGeneratorWhenSet(): void
     {
+        $pdbStub = $this->createStub(PathGeneratorInterface::class);
         // Arrange
-        $this->setupAssetCollection->setPathGenerator($this->createStub(PathGeneratorInterface::class));
+        $this->setupAssetCollection->setPathGenerator($pdbStub);
 
         // Act
         $result = $this->setupAssetCollection->getPathGenerator();
 
         // Assert
-        $this->assertSame($this->createStub(PathGeneratorInterface::class), $result);
+        $this->assertSame($pdbStub, $result);
     }
 
     /**
@@ -161,14 +163,15 @@ final class SetupAssetCollectionTest extends CIUnitTestCase
      */
     public function testGetCollectionDefinitionWhenSet(): void
     {
+        $assetCollectionStub = $this->createStub(AssetCollectionDefinitionInterface::class);
         // Arrange
-        $this->setupAssetCollection->setDefaultCollectionDefinition($this->createStub(AssetCollectionDefinitionInterface::class));
+        $this->setupAssetCollection->setDefaultCollectionDefinition($assetCollectionStub);
 
         // Act
         $result = $this->setupAssetCollection->getCollectionDefinition();
 
         // Assert
-        $this->assertSame($this->createStub(AssetCollectionDefinitionInterface::class), $result);
+        $this->assertSame($assetCollectionStub, $result);
     }
 
     /**

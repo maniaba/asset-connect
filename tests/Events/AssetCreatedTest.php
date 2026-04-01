@@ -39,12 +39,14 @@ final class AssetCreatedTest extends CIUnitTestCase
      */
     public function testCreateFromAsset(): void
     {
+        $asset   = $this->createStub(Asset::class);
+        $subject = $this->createStub(Entity::class);
         // Arrange & Act
-        $event = AssetCreated::createFromAsset($this->createStub(Asset::class), $this->createStub(Entity::class));
+        $event = AssetCreated::createFromAsset($asset, $subject);
 
         // Assert
-        $this->assertSame($this->createStub(Asset::class), $event->getAsset());
-        $this->assertSame($this->createStub(Entity::class), $event->getSubjectEntity());
+        $this->assertSame($asset, $event->getAsset());
+        $this->assertSame($subject, $event->getSubjectEntity());
     }
 
     /**
@@ -52,14 +54,16 @@ final class AssetCreatedTest extends CIUnitTestCase
      */
     public function testGetAsset(): void
     {
+        $asset = $this->createStub(Asset::class);
+
         // Arrange
-        $event = AssetCreated::createFromAsset($this->createStub(Asset::class), $this->createStub(Entity::class));
+        $event = AssetCreated::createFromAsset($asset, $this->createStub(Entity::class));
 
         // Act
         $result = $event->getAsset();
 
         // Assert
-        $this->assertSame($this->createStub(Asset::class), $result);
+        $this->assertSame($asset, $result);
     }
 
     /**
@@ -67,14 +71,16 @@ final class AssetCreatedTest extends CIUnitTestCase
      */
     public function testGetSubjectEntity(): void
     {
+        $subject = $this->createStub(Entity::class);
+
         // Arrange
-        $event = AssetCreated::createFromAsset($this->createStub(Asset::class), $this->createStub(Entity::class));
+        $event = AssetCreated::createFromAsset($this->createStub(Asset::class), $subject);
 
         // Act
         $result = $event->getSubjectEntity();
 
         // Assert
-        $this->assertSame($this->createStub(Entity::class), $result);
+        $this->assertSame($subject, $result);
     }
 
     /**

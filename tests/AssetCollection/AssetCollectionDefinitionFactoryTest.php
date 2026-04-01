@@ -111,11 +111,12 @@ final class AssetCollectionDefinitionFactoryTest extends CIUnitTestCase
      */
     public function testCreateWithInstance(): void
     {
+        $assetCollectionStub = $this->createStub(AssetCollectionDefinitionInterface::class);
         // Act
-        $result = AssetCollectionDefinitionFactory::create($this->createStub(AssetCollectionDefinitionInterface::class));
+        $result = AssetCollectionDefinitionFactory::create($assetCollectionStub);
 
         // Assert
-        $this->assertSame($this->createStub(AssetCollectionDefinitionInterface::class), $result);
+        $this->assertSame($assetCollectionStub, $result);
     }
 }
 

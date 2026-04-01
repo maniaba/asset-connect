@@ -38,7 +38,7 @@ final class AssetModelTest extends CIUnitTestCase
         Factories::injectMock('config', 'Asset', $this->mockAssetConfig);
 
         // Inject mock for AssetModel - used by testInitSuccessful
-        $assetModel = new AssetModel($this->createStub(ConnectionInterface::class));
+        $assetModel = new AssetModel($this->stubConnection());
         Factories::injectMock('models', AssetModel::class, $assetModel);
     }
 
@@ -51,7 +51,7 @@ final class AssetModelTest extends CIUnitTestCase
         $this->mockAssetConfig->assetModel = AssetModel::class;
 
         // Act
-        $result = AssetModel::init(true, $this->createStub(ConnectionInterface::class));
+        $result = AssetModel::init(true, $this->stubConnection());
 
         // @phpstan-ignore-next-line No throws expected
         $this->assertInstanceOf(AssetModel::class, $result);
@@ -68,7 +68,7 @@ final class AssetModelTest extends CIUnitTestCase
         // Act & Assert
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Asset model class must extend ' . AssetModel::class);
-        AssetModel::init(true, $this->createStub(ConnectionInterface::class));
+        AssetModel::init(true, $this->stubConnection());
     }
 
     /**
@@ -83,7 +83,7 @@ final class AssetModelTest extends CIUnitTestCase
         // Act & Assert
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Asset model must be an instance of ' . AssetModel::class . ' or a subclass of it');
-        AssetModel::init(true, $this->createStub(ConnectionInterface::class));
+        AssetModel::init(true, $this->stubConnection());
     }
 
     /**
@@ -100,6 +100,13 @@ final class AssetModelTest extends CIUnitTestCase
         // Act & Assert
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Asset model return type must be Asset or a subclass of Asset');
-        AssetModel::init(true, $this->createStub(ConnectionInterface::class));
+        AssetModel::init(true, $this->stubConnection());
+    }
+
+    private function &stubConnection(): ConnectionInterface
+    {
+        $db = $this->createStub(ConnectionInterface::class);
+
+        return $db;
     }
 }

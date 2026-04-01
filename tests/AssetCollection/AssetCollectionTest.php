@@ -325,12 +325,13 @@ final class AssetCollectionTest extends CIUnitTestCase
      */
     public function testSetAndGetPathGenerator(): void
     {
+        $pathGenerator = $this->createStub(PathGeneratorInterface::class);
         // Act
-        $result = $this->assetCollection->setPathGenerator($this->createStub(PathGeneratorInterface::class));
+        $result = $this->assetCollection->setPathGenerator($pathGenerator);
 
         // Assert
         $this->assertSame($this->assetCollection, $result);
-        $this->assertSame($this->createStub(PathGeneratorInterface::class), $this->assetCollection->getPathGenerator());
+        $this->assertSame($pathGenerator, $this->assetCollection->getPathGenerator());
     }
 
     /**
@@ -338,14 +339,16 @@ final class AssetCollectionTest extends CIUnitTestCase
      */
     public function testGetPathGeneratorWhenNotSet(): void
     {
+        $pathGenerator = $this->createStub(PathGeneratorInterface::class);
+
         // Arrange
         // Setup SetupAssetCollection to use our mock path generator
-        $this->setPrivateProperty($this->setupAssetCollection, 'pathGenerator', $this->createStub(PathGeneratorInterface::class));
+        $this->setPrivateProperty($this->setupAssetCollection, 'pathGenerator', $pathGenerator);
 
         // Act
         $result = $this->assetCollection->getPathGenerator();
 
         // Assert
-        $this->assertSame($this->createStub(PathGeneratorInterface::class), $result);
+        $this->assertSame($pathGenerator, $result);
     }
 }

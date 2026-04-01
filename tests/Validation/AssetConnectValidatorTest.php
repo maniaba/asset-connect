@@ -118,7 +118,7 @@ final class AssetConnectValidatorTest extends CIUnitTestCase
             $mockDefinition = $this->createMock(AssetCollectionDefinitionInterface::class);
             $mockDefinition->expects($this->once())
                 ->method('definition')
-                ->willReturnCallback(static fn (ValidationRuleCollector $collector): void => $collector);
+                ->willReturnCallback(static fn (ValidationRuleCollector $collector): ValidationRuleCollector => $collector);
 
             $this->validator->setFieldCollectionDefinition($fieldName, $mockDefinition);
         }

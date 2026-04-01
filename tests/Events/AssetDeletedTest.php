@@ -38,12 +38,12 @@ final class AssetDeletedTest extends CIUnitTestCase
      */
     public function testCreateFromAsset(): void
     {
+        $assetStub = $this->createStub(Asset::class);
         // Arrange & Act
-        $event = AssetDeleted::createFromAsset($this->createStub(Asset::class));
+        $event = AssetDeleted::createFromAsset($assetStub);
 
         // Assert
-        $this->assertInstanceOf(AssetDeleted::class, $event);
-        $this->assertSame($this->createStub(Asset::class), $event->getAsset());
+        $this->assertSame($assetStub, $event->getAsset());
     }
 
     /**
@@ -51,14 +51,15 @@ final class AssetDeletedTest extends CIUnitTestCase
      */
     public function testGetAsset(): void
     {
+        $assetStub = $this->createStub(Asset::class);
         // Arrange
-        $event = AssetDeleted::createFromAsset($this->createStub(Asset::class));
+        $event = AssetDeleted::createFromAsset($assetStub);
 
         // Act
         $result = $event->getAsset();
 
         // Assert
-        $this->assertSame($this->createStub(Asset::class), $result);
+        $this->assertSame($assetStub, $result);
     }
 
     /**

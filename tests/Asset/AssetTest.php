@@ -31,12 +31,12 @@ final class AssetTest extends CIUnitTestCase
     private MockObject $mockFile;
 
     /**
-     * @var Entity&MockObject
+     * @var Entity&Stub
      */
     private Stub $mockEntity;
 
     /**
-     * @var AssetCollectionDefinitionInterface&MockObject
+     * @var AssetCollectionDefinitionInterface&Stub
      */
     private Stub $mockCollectionDefinition;
 

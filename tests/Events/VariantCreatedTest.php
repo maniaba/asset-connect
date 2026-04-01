@@ -39,13 +39,15 @@ final class VariantCreatedTest extends CIUnitTestCase
      */
     public function testCreateVariantCreated(): void
     {
+        $asset   = $this->createStub(Asset::class);
+        $variant = $this->createStub(AssetVariant::class);
+
         // Arrange & Act
-        $event = new VariantCreated($this->createStub(AssetVariant::class), $this->createStub(Asset::class));
+        $event = new VariantCreated($variant, $asset);
 
         // Assert
-        $this->assertInstanceOf(VariantCreated::class, $event);
-        $this->assertSame($this->createStub(Asset::class), $event->getAsset());
-        $this->assertSame($this->createStub(AssetVariant::class), $event->getVariant());
+        $this->assertSame($asset, $event->getAsset());
+        $this->assertSame($variant, $event->getVariant());
     }
 
     /**
@@ -53,14 +55,16 @@ final class VariantCreatedTest extends CIUnitTestCase
      */
     public function testGetAsset(): void
     {
+        $asset = $this->createStub(Asset::class);
+
         // Arrange
-        $event = new VariantCreated($this->createStub(AssetVariant::class), $this->createStub(Asset::class));
+        $event = new VariantCreated($this->createStub(AssetVariant::class), $asset);
 
         // Act
         $result = $event->getAsset();
 
         // Assert
-        $this->assertSame($this->createStub(Asset::class), $result);
+        $this->assertSame($asset, $result);
     }
 
     /**
@@ -68,14 +72,15 @@ final class VariantCreatedTest extends CIUnitTestCase
      */
     public function testGetVariant(): void
     {
+        $stubVariant = $this->createStub(AssetVariant::class);
         // Arrange
-        $event = new VariantCreated($this->createStub(AssetVariant::class), $this->createStub(Asset::class));
+        $event = new VariantCreated($stubVariant, $this->createStub(Asset::class));
 
         // Act
         $result = $event->getVariant();
 
         // Assert
-        $this->assertSame($this->createStub(AssetVariant::class), $result);
+        $this->assertSame($stubVariant, $result);
     }
 
     /**
@@ -171,13 +176,16 @@ final class VariantCreatedTest extends CIUnitTestCase
         $asset1 = $this->createStub(Asset::class);
         $asset2 = $this->createStub(Asset::class);
 
+        $variant1 = $this->createStub(AssetVariant::class);
+        $variant2 = $this->createStub(AssetVariant::class);
+
         // Act
-        $event1 = new VariantCreated($this->createStub(AssetVariant::class), $asset1);
-        $event2 = new VariantCreated($this->createStub(AssetVariant::class), $asset2);
+        $event1 = new VariantCreated($variant1, $asset1);
+        $event2 = new VariantCreated($variant2, $asset2);
 
         // Assert
-        $this->assertSame($this->createStub(AssetVariant::class), $event1->getVariant());
-        $this->assertSame($this->createStub(AssetVariant::class), $event2->getVariant());
+        $this->assertSame($variant1, $event1->getVariant());
+        $this->assertSame($variant2, $event2->getVariant());
         $this->assertSame($asset1, $event1->getAsset());
         $this->assertSame($asset2, $event2->getAsset());
         $this->assertNotSame($event1->getAsset(), $event2->getAsset());
@@ -192,15 +200,18 @@ final class VariantCreatedTest extends CIUnitTestCase
         $variant1 = $this->createStub(AssetVariant::class);
         $variant2 = $this->createStub(AssetVariant::class);
 
+        $asset1 = $this->createStub(Asset::class);
+        $asset2 = $this->createStub(Asset::class);
+
         // Act
-        $event1 = new VariantCreated($variant1, $this->createStub(Asset::class));
-        $event2 = new VariantCreated($variant2, $this->createStub(Asset::class));
+        $event1 = new VariantCreated($variant1, $asset1);
+        $event2 = new VariantCreated($variant2, $asset2);
 
         // Assert
         $this->assertSame($variant1, $event1->getVariant());
         $this->assertSame($variant2, $event2->getVariant());
-        $this->assertSame($this->createStub(Asset::class), $event1->getAsset());
-        $this->assertSame($this->createStub(Asset::class), $event2->getAsset());
+        $this->assertSame($asset1, $event1->getAsset());
+        $this->assertSame($asset2, $event2->getAsset());
         $this->assertNotSame($event1->getVariant(), $event2->getVariant());
     }
 }
