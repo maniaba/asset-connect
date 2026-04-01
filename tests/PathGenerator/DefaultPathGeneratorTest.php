@@ -8,7 +8,8 @@ use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionGetterInterface;
 use Maniaba\AssetConnect\PathGenerator\DefaultPathGenerator;
 use Maniaba\AssetConnect\PathGenerator\PathGeneratorHelper;
-use PHPUnit\Framework\MockObject\Stub;
+use Override;
+use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * @internal
@@ -17,16 +18,20 @@ final class DefaultPathGeneratorTest extends CIUnitTestCase
 {
     private DefaultPathGenerator $pathGenerator;
     private PathGeneratorHelper $helper;
-    private AssetCollectionGetterInterface&Stub $mockCollection;
+    private AssetCollectionGetterInterface|MockObject $mockCollection;
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
+
         // Create the path generator
         $this->pathGenerator = new DefaultPathGenerator();
-        // Create a real helper and stub collection
+
+        // Create a real helper and mock collection
         $this->helper         = new PathGeneratorHelper();
-        $this->mockCollection = $this->createStub(AssetCollectionGetterInterface::class);
+        $this->mockCollection = $this->createMock(AssetCollectionGetterInterface::class);
+
         // Mock global functions
         global $mockFunctions;
         $mockFunctions['date'] = static function ($format) {
@@ -129,7 +134,7 @@ final class DefaultPathGeneratorTest extends CIUnitTestCase
         $pathGenerator = new DefaultPathGenerator();
 
         // Mock the collection to return consistent values
-        $mockCollection = $this->createStub(AssetCollectionGetterInterface::class);
+        $mockCollection = $this->createMock(AssetCollectionGetterInterface::class);
         $mockCollection->method('isProtected')->willReturn(false);
 
         // Mock realpath to return a fixed path

@@ -13,7 +13,7 @@ use Maniaba\AssetConnect\Pending\DefaultPendingStorage;
 use Maniaba\AssetConnect\Pending\Interfaces\PendingStorageInterface;
 use Maniaba\AssetConnect\Pending\PendingAsset;
 use Maniaba\AssetConnect\Pending\PendingAssetManager;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use Override;
 use PHPUnit\Framework\MockObject\MockObject;
 use RuntimeException;
 
@@ -30,25 +30,32 @@ final class PendingAssetManagerTest extends CIUnitTestCase
     private AssetConfig $mockAssetConfig;
     private string $tempFilePath;
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
+
         $this->mockStorage     = $this->createMock(PendingStorageInterface::class);
         $this->mockAssetConfig = new AssetConfig();
+
         // Create a temporary file for testing
         $this->tempFilePath = tempnam(sys_get_temp_dir(), 'test_manager_');
         file_put_contents($this->tempFilePath, 'test content');
+
         // Setup global function mocks
         $this->setupGlobalFunctionMocks();
     }
 
+    #[Override]
     protected function tearDown(): void
     {
         parent::tearDown();
+
         // Clean up temporary file
         if (file_exists($this->tempFilePath)) {
             unlink($this->tempFilePath);
         }
+
         Factories::reset('config');
     }
 
@@ -66,7 +73,6 @@ final class PendingAssetManagerTest extends CIUnitTestCase
     /**
      * Test making PendingAssetManager with custom storage
      */
-    #[AllowMockObjectsWithoutExpectations]
     public function testMakeWithCustomStorage(): void
     {
         // Act
@@ -79,7 +85,6 @@ final class PendingAssetManagerTest extends CIUnitTestCase
     /**
      * Test making PendingAssetManager with default storage from config
      */
-    #[AllowMockObjectsWithoutExpectations]
     public function testMakeWithDefaultStorageFromConfig(): void
     {
         // Arrange
@@ -317,7 +322,6 @@ final class PendingAssetManagerTest extends CIUnitTestCase
     /**
      * Test store method updates pending asset properties
      */
-    #[AllowMockObjectsWithoutExpectations]
     public function testStoreUpdatesPendingAssetProperties(): void
     {
         // Arrange
@@ -364,7 +368,6 @@ final class PendingAssetManagerTest extends CIUnitTestCase
     /**
      * Test store propagates exception from storage
      */
-    #[AllowMockObjectsWithoutExpectations]
     public function testStorePropagatesExceptionFromStorage(): void
     {
         // Arrange
@@ -454,7 +457,6 @@ final class PendingAssetManagerTest extends CIUnitTestCase
     /**
      * Test store with zero TTL
      */
-    #[AllowMockObjectsWithoutExpectations]
     public function testStoreWithZeroTTL(): void
     {
         // Arrange
@@ -550,7 +552,6 @@ final class PendingAssetManagerTest extends CIUnitTestCase
     /**
      * Test multiple sequential operations
      */
-    #[AllowMockObjectsWithoutExpectations]
     public function testMultipleSequentialOperations(): void
     {
         // Arrange

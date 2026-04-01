@@ -8,6 +8,7 @@ use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\AssetConnect\Asset\Properties\AssetVariantProperty;
 use Maniaba\AssetConnect\AssetVariants\AssetVariant;
 use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
+use Override;
 
 /**
  * @internal
@@ -17,9 +18,11 @@ final class AssetVariantPropertyTest extends CIUnitTestCase
     private AssetVariantProperty $assetVariantProperty;
     private AssetVariant $variant;
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
+
         $this->assetVariantProperty = new AssetVariantProperty([]);
         $this->variant              = new AssetVariant(['name' => 'test_variant', 'path' => '/path/to/variant']);
     }

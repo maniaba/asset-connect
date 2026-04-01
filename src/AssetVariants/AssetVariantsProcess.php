@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Maniaba\AssetConnect\AssetVariants;
 
 use CodeIgniter\Queue\Config\Services;
-use CodeIgniter\Queue\QueuePushResult;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\AssetConnect\AssetVariants\Interfaces\AssetVariantsInterface;
@@ -27,14 +26,14 @@ final class AssetVariantsProcess
         $queue      = $config->queue['name'] ?? self::QUEUE_NAME;
         $jobHandler = $config->queue['jobHandler']['name'] ?? self::JOB_HANDLER;
 
-        /** @var QueuePushResult $result */
+        /** @var bool $result */
         $result = Services::queue()->push($queue, $jobHandler, [
             'definition'          => $definition::class,
             'definitionArguments' => $definitionArguments,
             'assetId'             => $asset->id,
         ]);
 
-        if (! $result->getStatus()) {
+        if (! $result) {
             log_message('error', 'Failed to queue asset variants processing for asset ID: {id}', ['id' => $asset->id]);
 
             throw new FileVariantException('Failed to queue asset variants processing.');
