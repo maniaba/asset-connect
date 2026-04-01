@@ -66,6 +66,7 @@ final class PendingAssetManagerTest extends CIUnitTestCase
     /**
      * Test making PendingAssetManager with custom storage
      */
+    #[AllowMockObjectsWithoutExpectations]
     public function testMakeWithCustomStorage(): void
     {
         // Act
@@ -78,6 +79,7 @@ final class PendingAssetManagerTest extends CIUnitTestCase
     /**
      * Test making PendingAssetManager with default storage from config
      */
+    #[AllowMockObjectsWithoutExpectations]
     public function testMakeWithDefaultStorageFromConfig(): void
     {
         // Arrange
@@ -315,6 +317,7 @@ final class PendingAssetManagerTest extends CIUnitTestCase
     /**
      * Test store method updates pending asset properties
      */
+    #[AllowMockObjectsWithoutExpectations]
     public function testStoreUpdatesPendingAssetProperties(): void
     {
         // Arrange
@@ -361,6 +364,7 @@ final class PendingAssetManagerTest extends CIUnitTestCase
     /**
      * Test store propagates exception from storage
      */
+    #[AllowMockObjectsWithoutExpectations]
     public function testStorePropagatesExceptionFromStorage(): void
     {
         // Arrange
@@ -450,6 +454,7 @@ final class PendingAssetManagerTest extends CIUnitTestCase
     /**
      * Test store with zero TTL
      */
+    #[AllowMockObjectsWithoutExpectations]
     public function testStoreWithZeroTTL(): void
     {
         // Arrange
