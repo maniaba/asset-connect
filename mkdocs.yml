@@ -94,3 +94,4 @@ nav:
   - Events: events.md
   - Validation: validation.md
   - Troubleshooting: troubleshooting.md
+  - Module Structure: module-structure.md
