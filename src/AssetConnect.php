@@ -16,14 +16,20 @@ use Maniaba\AssetConnect\Exceptions\FileException;
 use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Maniaba\AssetConnect\Models\AssetModel;
 use Maniaba\AssetConnect\Traits\UseAssetConnectTrait;
+use Override;
 use RuntimeException;
+use Serializable;
 
-final class AssetConnect
+final class AssetConnect implements Serializable
 {
     public const string VERSION = '1.0.0';
 
     public readonly AssetModel $assetModel;
     private readonly SetupAssetCollection $setupAssetCollection;
+
+    /**
+     * @var array{primaryKeys: list<int|string>, entityType: string|null, collection: string|null}
+     */
     private array $relationsInfo = [
         'primaryKeys' => [],
         'entityType'  => null,
@@ -31,10 +37,13 @@ final class AssetConnect
     ];
 
     /**
-     * @var array<int, list<Asset>> Cached assets for each collection per entity type.
+     * @var array<int|string, array<int, Asset>> Cached assets for each collection per entity type.
      */
     private array $assets = [];
 
+    /**
+     * @var list<string|null>
+     */
     private array $fetchedCollections = [];
 
     /**
@@ -44,6 +53,60 @@ final class AssetConnect
     {
         $this->assetModel           = AssetModel::init(false);
         $this->setupAssetCollection = new SetupAssetCollection();
+    }
+
+    /**
+     * @return array{
+     *     relationsInfo: array{primaryKeys: list<int|string>, entityType: string|null, collection: string|null},
+     *     assets: array<int|string, array<int, Asset>>,
+     *     fetchedCollections: list<string|null>
+     * }
+     */
+    public function __serialize(): array
+    {
+        return [
+            'relationsInfo'      => $this->relationsInfo,
+            'assets'             => $this->assets,
+            'fetchedCollections' => $this->fetchedCollections,
+        ];
+    }
+
+    /**
+     * @param array{
+     *     relationsInfo?: array{primaryKeys?: list<int|string>, entityType?: string|null, collection?: string|null},
+     *     assets?: array<int|string, array<int, Asset>>,
+     *     fetchedCollections?: list<string|null>
+     * } $data
+     */
+    public function __unserialize(array $data): void
+    {
+        $this->assetModel           = AssetModel::init(false);
+        $this->setupAssetCollection = new SetupAssetCollection();
+        $this->relationsInfo        = [
+            'primaryKeys' => $data['relationsInfo']['primaryKeys'] ?? [],
+            'entityType'  => $data['relationsInfo']['entityType'] ?? null,
+            'collection'  => $data['relationsInfo']['collection'] ?? null,
+        ];
+        $this->assets               = $data['assets'] ?? [];
+        $this->fetchedCollections   = $data['fetchedCollections'] ?? [];
+    }
+
+    #[Override]
+    public function serialize(): string
+    {
+        return serialize($this->__serialize());
+    }
+
+    #[Override]
+    public function unserialize(string $data): void
+    {
+        $unserialized = unserialize($data, ['allowed_classes' => true]);
+
+        if (! is_array($unserialized)) {
+            throw new InvalidArgumentException('Invalid serialized AssetConnect data.');
+        }
+
+        $this->__unserialize($unserialized);
     }
 
     public function triggerModelAfterFind(array $data): array
