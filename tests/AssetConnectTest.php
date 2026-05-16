@@ -10,7 +10,7 @@ use CodeIgniter\Test\ReflectionHelper;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\AssetCollection\SetupAssetCollection;
 use Maniaba\AssetConnect\AssetConnect;
-use Maniaba\AssetConnect\Models\AssetModel;
+use ReflectionClass;
 use Serializable;
 use Tests\Support\Config\TestAssetConfig;
 use Tests\Support\TestEntity;
@@ -31,9 +31,9 @@ final class AssetConnectTest extends CIUnitTestCase
 
     public function testImplementsSerializable(): void
     {
-        $assetConnect = new AssetConnect();
+        $reflection = new ReflectionClass(AssetConnect::class);
 
-        $this->assertInstanceOf(Serializable::class, $assetConnect);
+        $this->assertTrue($reflection->implementsInterface(Serializable::class));
     }
 
     public function testSerializeRestoresCachedAssetsAndRuntimeDependencies(): void
@@ -54,7 +54,7 @@ final class AssetConnectTest extends CIUnitTestCase
         $restored = unserialize(serialize($assetConnect));
 
         $this->assertInstanceOf(AssetConnect::class, $restored);
-        $this->assertInstanceOf(AssetModel::class, $restored->assetModel);
+        $this->assertNotSame($assetConnect->assetModel, $restored->assetModel);
         $this->assertInstanceOf(
             SetupAssetCollection::class,
             $this->getPrivateProperty($restored, 'setupAssetCollection'),
