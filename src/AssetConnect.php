@@ -87,8 +87,8 @@ final class AssetConnect implements Serializable
             'entityType'  => $data['relationsInfo']['entityType'] ?? null,
             'collection'  => $data['relationsInfo']['collection'] ?? null,
         ];
-        $this->assets               = $data['assets'] ?? [];
-        $this->fetchedCollections   = $data['fetchedCollections'] ?? [];
+        $this->assets             = $data['assets'] ?? [];
+        $this->fetchedCollections = $data['fetchedCollections'] ?? [];
     }
 
     #[Override]

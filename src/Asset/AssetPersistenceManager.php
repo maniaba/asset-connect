@@ -9,7 +9,6 @@ use CodeIgniter\Events\Events;
 use CodeIgniter\Files\File;
 use CodeIgniter\HTTP\Files\UploadedFile;
 use CodeIgniter\I18n\Time;
-use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\AssetConnect\AssetCollection\AssetCollection;
 use Maniaba\AssetConnect\AssetCollection\SetupAssetCollection;
 use Maniaba\AssetConnect\AssetVariants\AssetVariants;
@@ -199,7 +198,6 @@ final class AssetPersistenceManager
     private function processFileVariants(): void
     {
         if ($this->setupAssetCollection->getCollectionDefinition() instanceof AssetVariantsInterface) {
-            /** @var AssetCollectionDefinitionInterface&AssetVariantsInterface $definition */
             $definition          = $this->setupAssetCollection->getCollectionDefinition();
             $this->assetVariants = new AssetVariants(
                 $this->pathGenerator,
