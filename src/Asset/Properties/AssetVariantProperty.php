@@ -52,7 +52,7 @@ final class AssetVariantProperty extends BaseProperty
      */
     public function &getVariants(): array
     {
-        $variants = $this->properties ?? [];
+        $variants = $this->properties;
 
         $variants         = array_map(static fn ($variant) => $variant instanceof AssetVariant ? $variant : new AssetVariant($variant), $variants);
         $this->properties = $variants;
