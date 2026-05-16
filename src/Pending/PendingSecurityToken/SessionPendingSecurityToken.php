@@ -47,9 +47,7 @@ final class SessionPendingSecurityToken extends AbstractPendingSecurityToken
     #[Override]
     protected function initialize(): void
     {
-        /**
-         * @var Session|null $session
-         */
+        /** @var Session|null $session */
         $session = service('session');
 
         if ($session === null) {
