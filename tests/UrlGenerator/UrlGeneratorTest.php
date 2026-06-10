@@ -29,21 +29,16 @@ final class UrlGeneratorTest extends CIUnitTestCase
         $this->asset = new Asset([
             'id'         => '123',
             'file_name'  => 'test.jpg',
-            'path'       => '/path/to/test.jpg',
+            'storage'    => 'public',
+            'path'       => 'uploads/test.jpg',
             'collection' => 'default_collection',
             'metadata'   => json_encode([
-                'storage_info' => [
-                    'file_relative_path' => 'uploads',
-                ],
                 'asset_variants' => [
                     'thumbnail' => [
                         'name'                  => 'thumbnail',
+                        'storage'               => 'public',
                         'path'                  => 'uploads/variants/test_thumbnail.jpg',
                         'relative_path_for_url' => 'uploads/variants/test_thumbnail.jpg',
-                        'paths'                 => [
-                            'storage_base_directory_path' => '/path/to',
-                            'file_relative_path'          => 'uploads/variants',
-                        ],
                     ],
                 ],
             ]),
@@ -98,7 +93,7 @@ final class UrlGeneratorTest extends CIUnitTestCase
         $url = $urlGenerator->getUrl();
 
         // Assert
-        $this->assertSame('https://example.com/index.php/uploads/test.jpg', $url);
+        $this->assertSame('https://example.com/index.php/assets/storage/uploads/test.jpg', $url);
     }
 
     /**
@@ -125,15 +120,15 @@ final class UrlGeneratorTest extends CIUnitTestCase
         $asset = new Asset([
             'id'         => '123',
             'file_name'  => 'test.jpg',
-            'path'       => '/path/to/test.jpg',
+            'storage'    => 'public',
+            'path'       => 'uploads/test.jpg',
             'collection' => 'default_collection',
             'metadata'   => json_encode([
-                'storage_info' => [
-                    'file_relative_path' => 'uploads',
-                ],
                 'asset_variants' => [
                     'thumbnail' => [
                         'name'                  => 'thumbnail',
+                        'storage'               => 'public',
+                        'path'                  => 'uploads/variants/test_thumbnail.jpg',
                         'relative_path_for_url' => 'uploads/variants/test_thumbnail.jpg',
                     ],
                 ],
@@ -147,7 +142,7 @@ final class UrlGeneratorTest extends CIUnitTestCase
         $url = $urlGenerator->getUrl();
 
         // Assert
-        $this->assertSame('https://example.com/index.php/uploads/test.jpg', $url);
+        $this->assertSame('https://example.com/index.php/assets/storage/uploads/test.jpg', $url);
     }
 
     /**
@@ -169,7 +164,7 @@ final class UrlGeneratorTest extends CIUnitTestCase
         $url = $urlGenerator->getTemporaryUrl($expiration, $variantName);
 
         // Assert
-        $this->assertSame('/assets/temporary/b0a4ae59595b37c409e6196189b3f22854f578e66a1fe526cee293792c8b166c/variant/thumbnail/test_thumbnail.jpg', $url);
+        $this->assertSame('https://example.com/index.php/assets/temporary/b0a4ae59595b37c409e6196189b3f22854f578e66a1fe526cee293792c8b166c/variant/thumbnail/test_thumbnail.jpg', $url);
     }
 
     /**

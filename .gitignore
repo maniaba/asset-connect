@@ -128,3 +128,4 @@ nb-configuration.xml
 
 /.php-cs-fixer.php
 /site/
+/cache/

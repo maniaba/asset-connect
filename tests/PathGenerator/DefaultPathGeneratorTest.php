@@ -22,133 +22,44 @@ final class DefaultPathGeneratorTest extends CIUnitTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // Create the path generator
-        $this->pathGenerator = new DefaultPathGenerator();
-        // Create a real helper and stub collection
+        $this->pathGenerator  = new DefaultPathGenerator();
         $this->helper         = new PathGeneratorHelper();
         $this->mockCollection = $this->createStub(AssetCollectionGetterInterface::class);
-        // Mock global functions
-        global $mockFunctions;
-        $mockFunctions['date'] = static function ($format) {
-            if ($format === 'Y-m-d') {
-                return '2023-01-01';
-            }
-            if ($format === 'His.U') {
-                return '120000.000000';
-            }
-
-            return '';
-        };
     }
 
-    /**
-     * Test getStoreDirectory method with protected collection
-     */
-    public function testGetStoreDirectoryWithProtectedCollection(): void
+    public function testGetFileRelativePath(): void
     {
-        // Arrange
-        $this->mockCollection->method('isProtected')->willReturn(true);
+        $this->setPrivateProperty($this->pathGenerator, 'fileRelativePath', 'assets/2023-01-01/120000.000000/');
 
-        // Define WRITEPATH constant if not defined
-        if (! defined('WRITEPATH')) {
-            define('WRITEPATH', 'writable/');
-        }
+        $path = $this->pathGenerator->getFileRelativePath($this->helper, $this->mockCollection);
 
-        // Act
-        $storeDirectory = $this->pathGenerator->getStoreDirectory($this->helper, $this->mockCollection);
-
-        // Assert
-        $this->assertSame(WRITEPATH, $storeDirectory);
+        $this->assertSame('assets/2023-01-01/120000.000000/', $path);
     }
 
-    /**
-     * Test getPath method
-     */
     public function testGetPath(): void
     {
-        // Arrange
-        $storeDirectory   = '/root/public/';
-        $fileRelativePath = 'assets/2023-01-01/120000.000000/';
+        $this->setPrivateProperty($this->pathGenerator, 'fileRelativePath', 'assets/2023-01-01/120000.000000/');
 
-        // Use setPrivateProperty to set the private properties
-        $this->setPrivateProperty($this->pathGenerator, 'storeDirectory', $storeDirectory);
-        $this->setPrivateProperty($this->pathGenerator, 'fileRelativePath', $fileRelativePath);
-
-        // Act
         $path = $this->pathGenerator->getPath($this->helper, $this->mockCollection);
 
-        // Assert
-        $this->assertSame($storeDirectory . $fileRelativePath, $path);
+        $this->assertSame('assets/2023-01-01/120000.000000/', $path);
     }
 
-    /**
-     * Test getStoreDirectoryForVariants method
-     */
-    public function testGetStoreDirectoryForVariants(): void
-    {
-        // Arrange
-        $storeDirectory = '/root/public/';
-
-        // Use setPrivateProperty to set the private property
-        $this->setPrivateProperty($this->pathGenerator, 'storeDirectory', $storeDirectory);
-
-        // Act
-        $storeDirectoryForVariants = $this->pathGenerator->getStoreDirectoryForVariants($this->helper, $this->mockCollection);
-
-        // Assert
-        $this->assertSame($storeDirectory, $storeDirectoryForVariants);
-    }
-
-    /**
-     * Test getFileRelativePathForVariants method
-     */
     public function testGetFileRelativePathForVariants(): void
     {
-        // Arrange
-        $fileRelativePath = 'assets/2023-01-01/120000.000000/';
+        $this->setPrivateProperty($this->pathGenerator, 'fileRelativePath', 'assets/2023-01-01/120000.000000/');
 
-        // Use setPrivateProperty to set the private property
-        $this->setPrivateProperty($this->pathGenerator, 'fileRelativePath', $fileRelativePath);
+        $path = $this->pathGenerator->getFileRelativePathForVariants($this->helper, $this->mockCollection);
 
-        // Act
-        $fileRelativePathForVariants = $this->pathGenerator->getFileRelativePathForVariants($this->helper, $this->mockCollection);
-
-        // Assert
-        $expectedPath = $fileRelativePath . 'variants' . DIRECTORY_SEPARATOR;
-        $this->assertSame($expectedPath, $fileRelativePathForVariants);
+        $this->assertSame('assets/2023-01-01/120000.000000/variants/', $path);
     }
 
-    /**
-     * Test getPathForVariants method
-     */
     public function testGetPathForVariants(): void
     {
-        // This test verifies that getPathForVariants combines the store directory and file relative path correctly
+        $this->setPrivateProperty($this->pathGenerator, 'fileRelativePath', 'assets/2023-01-01/120000.000000/');
 
-        // Create a new DefaultPathGenerator for this test to avoid interference
-        $pathGenerator = new DefaultPathGenerator();
+        $path = $this->pathGenerator->getPathForVariants($this->helper, $this->mockCollection);
 
-        // Mock the collection to return consistent values
-        $mockCollection = $this->createStub(AssetCollectionGetterInterface::class);
-        $mockCollection->method('isProtected')->willReturn(false);
-
-        // Mock realpath to return a fixed path
-        global $mockFunctions;
-        $mockFunctions['realpath'] = static fn ($path) => '/root/public';
-
-        // First, get the store directory
-        $storeDirectory = $pathGenerator->getStoreDirectory($this->helper, $mockCollection);
-
-        // Then, get the file relative path for variants
-        // We need to set the fileRelativePath property first
-        $this->setPrivateProperty($pathGenerator, 'fileRelativePath', 'assets/2023-01-01/120000.000000/');
-
-        $fileRelativePathForVariants = $pathGenerator->getFileRelativePathForVariants($this->helper, $mockCollection);
-
-        // Now test getPathForVariants
-        $path = $pathGenerator->getPathForVariants($this->helper, $mockCollection);
-
-        // Assert that the path is the combination of store directory and file relative path for variants
-        $this->assertSame($storeDirectory . $fileRelativePathForVariants, $path);
+        $this->assertSame('assets/2023-01-01/120000.000000/variants/', $path);
     }
 }

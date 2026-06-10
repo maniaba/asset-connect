@@ -13,11 +13,14 @@
 AssetConnect is a file management library for CodeIgniter 4 that allows you to associate files with any entity in your application.
 It provides a robust, flexible solution for handling file uploads, storage, and retrieval with powerful features like collections, custom properties, and secure access control.
 
+Storage is backed by named Flysystem disks. Asset records store the disk name and relative storage path, not absolute filesystem paths, so moving the application directory does not invalidate stored assets.
+
 ## Requirements
 
 - PHP 8.3 or higher
 - CodeIgniter 4.6 or higher
 - CodeIgniter Queue
+- Flysystem 3
 
 ## Example Usage
 

@@ -65,7 +65,6 @@ final class AssetAdder implements AssetAdderInterface
 
         $this->asset = Asset::create([
             'file'        => $file,
-            'path'        => $file->getRealPath(),
             'file_name'   => $fileName,
             'name'        => pathinfo($fileName, PATHINFO_FILENAME),
             'mime_type'   => $file->getMimeType(),

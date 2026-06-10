@@ -2,13 +2,13 @@
 
 ## Project Overview
 
-**AssetConnect** (`maniaba/asset-connect`) is a file-management library for **CodeIgniter 4**.  
+**AssetConnect** (`maniaba/asset-connect`) is a file-management library for **CodeIgniter 4**.
 It lets you associate any file with any CI4 entity through a trait-based API, organise those files into typed collections, generate signed/temporary URLs, validate uploads, and process file variants asynchronously via a queue.
 
-- **Version:** 1.0.0  
-- **License:** MIT  
-- **Namespace root:** `Maniaba\AssetConnect`  
-- **Docs:** <https://maniaba.github.io/asset-connect/>  
+- **Version:** 1.0.0
+- **License:** MIT
+- **Namespace root:** `Maniaba\AssetConnect`
+- **Docs:** <https://maniaba.github.io/asset-connect/>
 - **Repository:** <https://github.com/maniaba/asset-connect>
 
 ---
@@ -44,6 +44,7 @@ src/
 ├── Pending/                PendingAsset, PendingAssetManager, DefaultPendingStorage
 ├── Repositories/           AssetRepository + interface
 ├── Services/               AssetAccessService (authorisation)
+├── Storage/                Flysystem-backed named storage disks
 ├── Traits/                 UseAssetConnectTrait, UseAssetConnectModelTrait
 ├── UrlGenerator/           DefaultUrlGenerator, TempUrlToken, trait, interface
 ├── Utils/                  Format (human-readable size), PhpIni helpers
@@ -55,7 +56,7 @@ src/
 ## Key Concepts
 
 ### Asset entity (`src/Asset/Asset.php`)
-Represents a stored file. Contains `id`, `entity_type`, `entity_id`, `collection`, `name`, `file_name`, `path`, `mime_type`, `size`, `order`, `metadata`, timestamps, and soft-delete.  
+Represents a stored file. Contains `id`, `entity_type`, `entity_id`, `collection`, `storage`, `name`, `file_name`, relative `path`, `mime_type`, `size`, `order`, `metadata`, timestamps, and soft-delete.
 Key methods: `getUrl()`, `getTemporaryUrl()`, `download()`, `isImage()`, `isVideo()`, `isDocument()`, `getCustomProperty()`, `setCustomProperty()`, `save()`.
 
 ### Traits
@@ -63,11 +64,11 @@ Key methods: `getUrl()`, `getTemporaryUrl()`, `download()`, `isImage()`, `isVide
 - **`UseAssetConnectModelTrait`** – add to any CI4 `Model`; auto-loads AssetConnect after `find*` calls.
 
 ### Asset Collections
-Implement `AssetCollectionDefinitionInterface` to define allowed extensions, MIME types, max file size, single-file mode, path generator, etc. via a fluent `AssetCollectionSetterInterface`.  
+Implement `AssetCollectionDefinitionInterface` to define allowed extensions, MIME types, max file size, single-file mode, storage disk, path generator, etc. via a fluent `AssetCollectionSetterInterface`.
 Optionally implement `AssetVariantsInterface` for thumbnail/resize variants and `AuthorizableAssetCollectionDefinitionInterface` for access-controlled (private) storage.
 
 ### Pending Assets
-Two-step upload: upload → `PendingAssetManager::store()` → get ID → later `entity->addAssetFromPending($pending)`.  
+Two-step upload: upload → `PendingAssetManager::store()` → get ID → later `entity->addAssetFromPending($pending)`.
 Pending files expire (configurable TTL) and are auto-cleaned by the queue job.
 
 ### Configuration (`Config\Asset`)
@@ -76,7 +77,7 @@ Two **required** arrays:
 $entityKeyDefinitions    = [MyEntity::class => 'my_entity'];
 $collectionKeyDefinitions = [MyCollection::class => 'my_collection'];
 ```
-Optional: `$DBGroup`, `$defaultCollection`, `$defaultPathGenerator`, `$defaultUrlGenerator`, `$tables`, `$queue`, `$pendingStorage`.
+Optional: `$DBGroup`, `$defaultCollection`, `$defaultPathGenerator`, `$defaultUrlGenerator`, `$defaultPublicStorage`, `$defaultProtectedStorage`, `$storages`, `$tables`, `$queue`, `$pendingStorage`.
 
 ### Events
 `asset.created`, `asset.updated`, `asset.deleted`, `variant.created` – listen via CI4 `Events::on()`.
@@ -107,14 +108,16 @@ Single migration creates the `assets` table:
 php spark migrate --namespace=Maniaba\\AssetConnect
 ```
 
+The `assets` table stores `storage` plus a storage-relative `path`; it does not store absolute filesystem paths.
+
 ---
 
 ## Testing
 
-- Framework: PHPUnit 10/11/12  
-- Static analysis: PHPStan (level max) + Psalm  
-- Mutation testing: Infection  
-- VFS: mikey179/vfsstream (virtual filesystem)  
+- Framework: PHPUnit 10/11/12
+- Static analysis: PHPStan (level max) + Psalm
+- Mutation testing: Infection
+- VFS: mikey179/vfsstream (virtual filesystem)
 - Factories/fakes: FakerPHP
 
 Tests live in `tests/` with support files in `tests/_support/`.

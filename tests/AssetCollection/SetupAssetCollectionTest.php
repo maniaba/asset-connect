@@ -303,12 +303,6 @@ final class SetupAssetCollectionTest extends CIUnitTestCase
 class TestPathGenerator implements PathGeneratorInterface
 {
     #[Override]
-    public function getStoreDirectory($generatorHelper, $collection): string
-    {
-        return '/path/to/store/';
-    }
-
-    #[Override]
     public function getFileRelativePath($generatorHelper, $collection): string
     {
         return 'relative/path/';
@@ -317,13 +311,7 @@ class TestPathGenerator implements PathGeneratorInterface
     #[Override]
     public function getPath($generatorHelper, $collection): string
     {
-        return '/path/to/store/relative/path/';
-    }
-
-    #[Override]
-    public function getStoreDirectoryForVariants($generatorHelper, $collection): string
-    {
-        return '/path/to/store/variants/';
+        return 'relative/path/';
     }
 
     #[Override]
@@ -335,12 +323,6 @@ class TestPathGenerator implements PathGeneratorInterface
     #[Override]
     public function getPathForVariants($generatorHelper, $collection): string
     {
-        return '/path/to/store/variants/relative/path/variants/';
-    }
-
-    #[Override]
-    public function onCreatedDirectory(string $path): void
-    {
-        // Do nothing
+        return 'relative/path/variants/';
     }
 }

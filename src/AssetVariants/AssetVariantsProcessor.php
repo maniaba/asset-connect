@@ -54,7 +54,7 @@ final class AssetVariantsProcessor implements CreateAssetVariantsInterface
             );
         }
 
-        if (! file_exists($variant->path)) {
+        if (! $variant->getStorageDisk()->fileExists($variant->path)) {
             log_message('error', 'Asset variant file "{path}" does not exist after processing.', [
                 'path' => $variant->path,
             ]);
@@ -63,7 +63,7 @@ final class AssetVariantsProcessor implements CreateAssetVariantsInterface
         }
 
         // Update the size of the variant after processing
-        $variant->size      = filesize($variant->path);
+        $variant->size      = $variant->getStorageDisk()->fileSize($variant->path);
         $variant->processed = true;
 
         // Update the asset

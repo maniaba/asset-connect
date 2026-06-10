@@ -9,6 +9,7 @@ use CodeIgniter\Router\RouteCollection;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\AssetVariants\AssetVariant;
 use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
+use Maniaba\AssetConnect\Storage\StorageManager;
 use Maniaba\AssetConnect\UrlGenerator\Interfaces\UrlGeneratorInterface;
 
 final readonly class UrlGenerator
@@ -29,10 +30,11 @@ final readonly class UrlGenerator
      */
     public function getUrl(?string $variantName = null): string
     {
-        $relativePath = $this->asset->relative_path_for_url;
-
         // If the asset is not part of a protected collection, return the URL directly
         if (! $this->isProtectedCollection) {
+            $storage = $this->asset->storage;
+            $path    = $this->asset->path;
+
             if ($variantName !== null && $variantName !== '' && $variantName !== '0') {
                 $variant = $this->asset->metadata->assetVariant->getAssetVariant($variantName);
 
@@ -40,16 +42,19 @@ final readonly class UrlGenerator
                     throw new InvalidArgumentException("Variant '{$variantName}' does not exist for asset '{$this->asset->id}'.");
                 }
 
-                $relativePath = $variant->relative_path_for_url;
+                $storage = $variant->storage;
+                $path    = $variant->path;
             }
 
-            return site_url($relativePath);
+            $publicUrl = StorageManager::make()->disk($storage)->publicUrl($path);
+
+            return self::toAbsoluteUrl($publicUrl);
         }
 
         // If the asset is part of a protected collection, return the URL with go to controller route
         $method = $variantName === null || $variantName === '' ? 'asset-connect.show' : 'asset-connect.show_variant';
 
-        return self::routeTo($method, $this->asset, $variantName);
+        return self::toAbsoluteUrl(self::routeTo($method, $this->asset, $variantName));
     }
 
     /**
@@ -66,7 +71,7 @@ final readonly class UrlGenerator
         $token  = TempUrlToken::createToken($this->asset, $variantName, $expiration);
         $method = $variantName === null || $variantName === '' ? 'asset-connect.temporary' : 'asset-connect.temporary_variant';
 
-        return self::routeTo($method, $this->asset, $variantName, $token);
+        return self::toAbsoluteUrl(self::routeTo($method, $this->asset, $variantName, $token));
     }
 
     public static function routes(RouteCollection &$routes): void
@@ -125,5 +130,14 @@ final readonly class UrlGenerator
     public static function create(Asset $asset): self
     {
         return new self($asset);
+    }
+
+    private static function toAbsoluteUrl(string $url): string
+    {
+        if (preg_match('#^[a-z][a-z0-9+.-]*://#i', $url) === 1 || str_starts_with($url, '//')) {
+            return $url;
+        }
+
+        return site_url(ltrim($url, '/'));
     }
 }

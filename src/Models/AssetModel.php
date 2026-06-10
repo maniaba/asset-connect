@@ -31,7 +31,7 @@ use Throwable;
 class AssetModel extends BaseModel
 {
     protected $allowedFields = [
-        'entity_type', 'entity_id', 'collection', 'name', 'file_name', 'mime_type', 'size', 'path', 'order', 'metadata', 'created_at', 'updated_at', 'deleted_at',
+        'entity_type', 'entity_id', 'collection', 'storage', 'name', 'file_name', 'mime_type', 'size', 'path', 'order', 'metadata', 'created_at', 'updated_at', 'deleted_at',
     ];
     protected $useSoftDeletes  = true;
     protected $useTimestamps   = true;
@@ -44,6 +44,7 @@ class AssetModel extends BaseModel
         'entity_type' => 'required|alpha_dash|max_length[32]',
         'entity_id'   => 'required|integer',
         'collection'  => 'required|alpha_dash|max_length[32]',
+        'storage'     => 'required|alpha_dash|max_length[64]',
         'name'        => 'permit_empty|max_length[255]',
         'file_name'   => 'permit_empty|max_length[255]',
         'mime_type'   => 'permit_empty|max_length[255]',
@@ -130,6 +131,18 @@ class AssetModel extends BaseModel
     public function filterByPath(string $path): self
     {
         return $this->where('path', $path);
+    }
+
+    /**
+     * Filter assets by storage disk name
+     *
+     * @param string $storage The configured storage disk name
+     *
+     * @return $this
+     */
+    public function filterByStorage(string $storage): self
+    {
+        return $this->where('storage', $storage);
     }
 
     /**

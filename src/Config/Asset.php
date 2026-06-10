@@ -62,6 +62,50 @@ class Asset extends BaseConfig
 
     /**
      * --------------------------------------------------------------------
+     * Default Public Storage
+     * --------------------------------------------------------------------
+     * Name of the configured storage disk used for public collections unless
+     * the collection explicitly selects a different storage disk.
+     */
+    public string $defaultPublicStorage = 'public';
+
+    /**
+     * --------------------------------------------------------------------
+     * Default Protected Storage
+     * --------------------------------------------------------------------
+     * Name of the configured storage disk used for protected collections
+     * unless the collection explicitly selects a different storage disk.
+     */
+    public string $defaultProtectedStorage = 'protected';
+
+    /**
+     * --------------------------------------------------------------------
+     * Storage Disks
+     * --------------------------------------------------------------------
+     * Each asset stores the disk name and relative path in the database.
+     * The physical root path and public URL mapping live here.
+     *
+     * For local public storage, expose the configured root through your public
+     * folder using a symlink or server alias that points to the configured URL.
+     *
+     * @var array<string, array<string, mixed>>
+     */
+    public array $storages = [
+        'public' => [
+            'driver'     => 'local',
+            'root'       => WRITEPATH . 'asset-connect' . DIRECTORY_SEPARATOR . 'public',
+            'public_url' => 'assets/storage',
+            'visibility' => 'public',
+        ],
+        'protected' => [
+            'driver'     => 'local',
+            'root'       => WRITEPATH . 'asset-connect' . DIRECTORY_SEPARATOR . 'protected',
+            'visibility' => 'protected',
+        ],
+    ];
+
+    /**
+     * --------------------------------------------------------------------
      * Default Asset Collection
      * --------------------------------------------------------------------
      * This is the default collection that will be used when no specific

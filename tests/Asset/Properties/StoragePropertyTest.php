@@ -45,18 +45,15 @@ final class StoragePropertyTest extends CIUnitTestCase
     }
 
     /**
-     * Test setStorageBaseDirectoryPath and storageBaseDirectoryPath
+     * Test setStorageName and storageName
      */
-    public function testSetAndGetStorageBaseDirectoryPath(): void
+    public function testSetAndGetStorageName(): void
     {
-        // Arrange
-        $path = '/path/to/storage';
+        $storage = 'public';
 
-        // Act
-        $this->storageProperty->setStorageBaseDirectoryPath($path);
+        $this->storageProperty->setStorageName($storage);
 
-        // Assert
-        $this->assertSame($path, $this->storageProperty->storageBaseDirectoryPath());
+        $this->assertSame($storage, $this->storageProperty->storageName());
     }
 
     /**

@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\AssetVariants;
 
+use CodeIgniter\Config\Factories;
 use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\AssetConnect\AssetVariants\AssetVariant;
+use Maniaba\AssetConnect\Config\Asset;
 use Maniaba\AssetConnect\Exceptions\FileVariantException;
+use Tests\Support\Config\TestAssetConfig;
 
 /**
  * @internal
@@ -18,145 +21,71 @@ final class AssetVariantTest extends CIUnitTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->assetVariant = new AssetVariant();
-        // Setup global function mocks
-        $this->setupGlobalFunctionMocks();
+        Factories::injectMock('config', Asset::class, new TestAssetConfig());
+
+        $this->assetVariant = new AssetVariant([
+            'storage' => 'public',
+        ]);
     }
 
-    /**
-     * Setup global function mocks
-     */
-    private function setupGlobalFunctionMocks(): void
-    {
-        global $mockFunctions;
-
-        // Mock helper function
-        $mockFunctions['helper'] = static fn () => null;
-
-        // Mock write_file function
-        $mockFunctions['write_file'] = static fn () => true;
-
-        // Mock file_exists function
-        $mockFunctions['file_exists'] = static fn () => true;
-
-        // Mock filesize function
-        $mockFunctions['filesize'] = static fn () => 1024;
-    }
-
-    /**
-     * Test writeFile method successfully writes a file
-     */
     public function testWriteFileSuccessfully(): void
     {
-        // Arrange
-        $path = HOMEPATH . 'build/path/to/write_method/file.txt';
-
-        // Ensure the directory exists
-        $dir = dirname($path);
-        if (! is_dir($dir)) {
-            mkdir($dir, 0777, true);
-        }
-
-        $this->assetVariant->path = $path;
+        $this->assetVariant->path = 'variants/write_method/file.txt';
         $data                     = 'file content';
 
-        // Act
         $result = $this->assetVariant->writeFile($data);
 
-        // Assert
         $this->assertTrue($result);
         $this->assertSame(12, $this->assetVariant->size);
         $this->assertTrue($this->assetVariant->processed);
+        $this->assertFileExists(HOMEPATH . 'build/asset-connect/public/variants/write_method/file.txt');
     }
 
-    /**
-     * Test getRelativePath method returns correct path
-     */
     public function testGetRelativePathReturnsCorrectPath(): void
     {
-        // Arrange
-        $this->assetVariant->path  = '/storage/path/to/file.jpg';
-        $this->assetVariant->paths = [
-            'storage_base_directory_path' => '/storage',
-            'file_relative_path'          => 'path/to',
-        ];
+        $this->assetVariant->path = 'path/to/file.jpg';
 
         $method = $this->getPrivateMethodInvoker($this->assetVariant, 'getRelativePath');
 
-        // Act
         $result = $method($this->assetVariant);
 
-        // Assert
         $this->assertSame('/path/to/file.jpg', $result);
     }
 
-    /**
-     * Test getRelativePath method throws exception when storage base path is not set
-     */
-    public function testGetRelativePathThrowsExceptionWhenStorageBasePathIsNotSet(): void
+    public function testGetRelativePathThrowsExceptionWhenPathIsNotSet(): void
     {
-        // Arrange
-        $this->assetVariant->path  = '/path/to/file.jpg';
-        $this->assetVariant->paths = (object) [
-            'file_relative_path' => 'path/to',
-        ];
+        $this->assetVariant->path = '';
 
-        // Use getPrivateMethodInvoker to access protected method
         $invoker = $this->getPrivateMethodInvoker($this->assetVariant, 'getRelativePath');
 
-        // Act & Assert
         $this->expectException(FileVariantException::class);
         $invoker();
     }
 
-    /**
-     * Test getRelativePathForUrl method returns correct URL path
-     */
     public function testGetRelativePathForUrlReturnsCorrectUrlPath(): void
     {
-        // Arrange
-        $this->assetVariant->path  = '/storage/path/to/file.jpg';
-        $this->assetVariant->paths = [
-            'storage_base_directory_path' => '/storage',
-            'file_relative_path'          => 'path/to',
-        ];
+        $this->assetVariant->path = 'path/to/file.jpg';
 
-        // Use getPrivateMethodInvoker to access protected method
         $invoker = $this->getPrivateMethodInvoker($this->assetVariant, 'getRelativePathForUrl');
 
-        // Act
         $result = $invoker();
 
-        // Assert
         $this->assertSame('/path/to/file.jpg', $result);
     }
 
-    /**
-     * Test getRelativePathForUrl method replaces backslashes with forward slashes
-     */
     public function testGetRelativePathForUrlReplacesBackslashesWithForwardSlashes(): void
     {
-        // Arrange
-        $this->assetVariant->path  = '/storage/path\\to\\file.jpg';
-        $this->assetVariant->paths = [
-            'storage_base_directory_path' => '/storage',
-            'file_relative_path'          => 'path\\to',
-        ];
+        $this->assetVariant->path = 'path\\to\\file.jpg';
 
-        // First get the relative path
         $getRelativePathMethod = $this->getPrivateMethodInvoker($this->assetVariant, 'getRelativePath');
         $relativePath          = (string) $getRelativePathMethod();
 
-        // Verify the relative path contains backslashes
-        $this->assertStringContainsString('\\', $relativePath);
+        $this->assertStringNotContainsString('\\', $relativePath);
 
-        // Now test the getRelativePathForUrl method
         $getRelativePathForUrlMethod = $this->getPrivateMethodInvoker($this->assetVariant, 'getRelativePathForUrl');
 
-        // Act
         $result = (string) $getRelativePathForUrlMethod();
 
-        // Assert
         $this->assertStringNotContainsString('\\', $result);
         $this->assertStringContainsString('/', $result);
     }

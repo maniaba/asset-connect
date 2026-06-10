@@ -14,14 +14,14 @@ final class StorageProperty extends BaseProperty
         return 'storage_info';
     }
 
-    public function setStorageBaseDirectoryPath(string $path): void
+    public function setStorageName(string $storage): void
     {
-        $this->set('storage_base_directory_path', $path);
+        $this->set('storage', $storage);
     }
 
-    public function storageBaseDirectoryPath(): ?string
+    public function storageName(): ?string
     {
-        return $this->get('storage_base_directory_path');
+        return $this->get('storage');
     }
 
     public function setFileRelativePath(string $path): void

@@ -21,6 +21,8 @@ use Maniaba\AssetConnect\Config\Asset as AssetConfig;
 use Maniaba\AssetConnect\Events\AssetUpdated;
 use Maniaba\AssetConnect\Models\AssetModel;
 use Maniaba\AssetConnect\Services\AssetAccessService;
+use Maniaba\AssetConnect\Storage\Interfaces\StorageDiskInterface;
+use Maniaba\AssetConnect\Storage\StorageManager;
 use Maniaba\AssetConnect\UrlGenerator\Traits\UrlGeneratorTrait;
 use Maniaba\AssetConnect\Utils\Format;
 use Override;
@@ -41,12 +43,14 @@ use Override;
  * @property      string                                           $mime_type                   MIME type of the file
  * @property      string                                           $name                        name of the asset
  * @property      int                                              $order                       order of the asset in the collection
- * @property      string                                           $path                        path to the file on the server
+ * @property      string                                           $path                        relative path to the file in the configured storage disk
+ * @property-read string|null                                      $local_path                  local filesystem path if the configured storage disk is local
  * @property-read AssetMetadata                                    $metadata
- * @property-read string                                           $path_dirname                directory path of the file on the server
- * @property-read string                                           $relative_path               relative path of the file in the storage
+ * @property-read string                                           $path_dirname                relative directory path of the file in the configured storage disk
+ * @property-read string                                           $relative_path               relative path of the file in the storage disk
  * @property      int                                              $size                        size of the file in bytes
  * @property-read string                                           $relative_path_for_url       relative path of the file in the storage
+ * @property      string                                           $storage                     configured storage disk name
  * @property-read class-string<Entity>                             $subject_entity_class        class name of the entity to which the asset belongs
  * @property      Time                                             $updated_at                  timestamp when the asset was last updated
  * @property-read string                                           $url                         URL to access the asset
@@ -63,6 +67,7 @@ class Asset extends Entity implements JsonSerializable
         'entity_id'   => 'int',
         'order'       => 'int',
         'collection'  => 'string',
+        'storage'     => 'string',
         'size'        => 'int',
     ];
     private AssetMetadata $metadata;
@@ -149,8 +154,8 @@ class Asset extends Entity implements JsonSerializable
         $rawArray             = parent::toRawArray($onlyChanged, $recursive);
         $rawArray['metadata'] = json_encode($this->getMetadata());
 
-        // if not exists key size, path or mime_type, we need to add them by calling their getters
-        $requiredKeys    = ['size', 'path', 'mime_type'];
+        // if not exists key size, storage, path or mime_type, we need to add them by calling their getters
+        $requiredKeys    = ['size', 'storage', 'path', 'mime_type'];
         $isUpdateRequest = $this->id !== null && $this->id > 0;
 
         if (! $isUpdateRequest) {
@@ -203,7 +208,17 @@ class Asset extends Entity implements JsonSerializable
             throw new \Maniaba\AssetConnect\Exceptions\InvalidArgumentException('Path directory not set.');
         }
 
-        return dirname($this->path) . DIRECTORY_SEPARATOR;
+        return rtrim(str_replace('\\', '/', dirname($this->path)), '/') . '/';
+    }
+
+    protected function getLocalPath(): ?string
+    {
+        return $this->getStorageDisk()->localPath($this->path);
+    }
+
+    public function getStorageDisk(): StorageDiskInterface
+    {
+        return StorageManager::make()->disk($this->storage);
     }
 
     /**
@@ -333,13 +348,13 @@ class Asset extends Entity implements JsonSerializable
 
     protected function getRelativePath(): string
     {
-        $relativePath = $this->getMetadata()->storage->fileRelativePath();
+        $relativePath = $this->path;
 
-        if ($relativePath === null) {
+        if (! is_string($relativePath) || $relativePath === '') {
             throw new \Maniaba\AssetConnect\Exceptions\InvalidArgumentException('File relative path not set.');
         }
 
-        $relativePath = rtrim($relativePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $this->file_name;
+        $relativePath = str_replace('\\', '/', $relativePath);
 
         // Ensure the relative path starts with a slash
         if ($relativePath[0] !== '/') {

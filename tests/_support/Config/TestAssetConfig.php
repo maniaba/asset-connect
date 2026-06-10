@@ -31,4 +31,21 @@ final class TestAssetConfig extends BaseAsset
         TestAssetCollection::class    => 'test_collection',
         DefaultAssetCollection::class => 'default_collection',
     ];
+
+    /**
+     * {@inheritDoc}
+     */
+    public array $storages = [
+        'public' => [
+            'driver'     => 'local',
+            'root'       => HOMEPATH . 'build/asset-connect/public',
+            'public_url' => 'assets/storage',
+            'visibility' => 'public',
+        ],
+        'protected' => [
+            'driver'     => 'local',
+            'root'       => HOMEPATH . 'build/asset-connect/protected',
+            'visibility' => 'protected',
+        ],
+    ];
 }

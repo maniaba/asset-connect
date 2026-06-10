@@ -86,6 +86,7 @@ nav:
   - Installation: installation.md
   - Configuration:
       - Overview: configuration.md
+      - Storage: storage.md
       - Custom Asset Collections: custom-asset-collections.md
       - Custom Path Generators: custom-path-generators.md
       - Custom URL Generator: custom-url-generator.md
