@@ -1,12 +1,46 @@
-# AssetConnect Documentation
+# CodeIgniter Asset Connect 2.0.0 Documentation
 
-Select the documentation version that matches the package version used by your application.
+This documentation covers AssetConnect 2.0.0, including Flysystem-backed named storage disks and storage-relative database paths.
 
-## Versions
+CodeIgniter Asset Connect is a file management library for CodeIgniter 4 that allows you to associate files with any entity in your application.
 
-| Version | Status | Notes |
-|---|---|---|
-| [2.0.0](2.0.0/index.md) | Latest | Flysystem storage, named storage disks, and storage-relative database paths. |
-| [1.0.1](1.0.1/index.md) | Previous | Filesystem path based storage model. |
+## Features
 
-Use `2.0.0` for new applications. Use `1.0.1` when maintaining applications that have not migrated from absolute stored paths yet.
+- Associate files with any entity in your application
+- Organize files into collections
+- Store custom properties with your files
+- Easily retrieve and manipulate files
+- Secure asset storage with access control
+- Type-safe API with full IDE support
+
+## Requirements
+
+- PHP 8.3 or higher
+- CodeIgniter 4.6 or higher
+- CodeIgniter Queue
+- Flysystem 3
+
+## Quick Example
+
+```php
+// Add an asset to a user
+$asset = $user->addAsset('/path/to/file.jpg')
+    ->withCustomProperties([
+        'title' => 'Profile Picture',
+        'description' => 'User profile picture'
+    ])
+    ->toAssetCollection(ImagesCollection::class);
+
+// Get all assets for a user
+$assets = $user->getAssets();
+
+// Get assets from a specific collection
+$images = $user->getAssets(ImagesCollection::class);
+
+// Get the URL to an asset
+$url = $user->getFirstAsset(ImagesCollection::class)->getUrl();
+```
+
+## License
+
+This library is licensed under the MIT License - see the [LICENSE](https://github.com/maniaba/asset-connect/blob/develop/LICENSE.md) file for details.
