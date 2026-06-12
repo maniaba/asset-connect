@@ -10,7 +10,6 @@ use League\Flysystem\FilesystemOperator;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 use Maniaba\AssetConnect\Enums\AssetVisibility;
 use Maniaba\AssetConnect\Storage\FlysystemStorageDisk;
-use Override;
 
 /**
  * @internal
@@ -19,7 +18,6 @@ final class FlysystemStorageDiskTest extends CIUnitTestCase
 {
     private string $localRoot;
 
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -29,7 +27,6 @@ final class FlysystemStorageDiskTest extends CIUnitTestCase
             . 'asset-connect-flysystem-disk-test-' . bin2hex(random_bytes(4));
     }
 
-    #[Override]
     protected function tearDown(): void
     {
         $this->removeDirectory($this->localRoot);

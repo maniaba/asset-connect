@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Maniaba\AssetConnect\Database\Migrations;
 
-use Maniaba\AssetConnect\Config\Asset;
 use Maniaba\AssetConnect\Database\BaseMigration;
 use Override;
 

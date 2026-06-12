@@ -15,16 +15,16 @@ abstract class BaseMigration extends Migration
 
     public function __construct(?Forge $forge = null)
     {
-        /** @var Asset $authConfig */
-        $authConfig = config('Auth');
+        /** @var Asset $assetConfig */
+        $assetConfig = config('Asset');
 
-        if ($authConfig->DBGroup !== null) {
-            $this->DBGroup = $authConfig->DBGroup;
+        if ($assetConfig->DBGroup !== null) {
+            $this->DBGroup = $assetConfig->DBGroup;
         }
 
         parent::__construct($forge);
 
-        $this->tables     = $authConfig->tables;
+        $this->tables     = $assetConfig->tables;
         $this->attributes = ($this->db->getPlatform() === 'MySQLi') ? ['ENGINE' => 'InnoDB'] : [];
     }
 
