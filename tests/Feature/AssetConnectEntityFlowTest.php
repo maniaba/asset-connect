@@ -4,11 +4,22 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use CodeIgniter\HTTP\Files\UploadedFile;
+use CodeIgniter\HTTP\IncomingRequest;
+use CodeIgniter\HTTP\SiteURI;
+use Config\App;
+use Config\Services;
 use Maniaba\AssetConnect\Asset\Asset;
+use Maniaba\AssetConnect\Asset\AssetAdder;
+use Maniaba\AssetConnect\Asset\AssetPersistenceManager;
+use Maniaba\AssetConnect\AssetConnect;
 use Maniaba\AssetConnect\Models\AssetModel;
+use Maniaba\AssetConnect\Pending\PendingAsset;
+use PHPUnit\Framework\MockObject\Stub;
 use Tests\Support\AssetCollections\FakeAvatarCollection;
 use Tests\Support\AssetCollections\FakeDocumentCollection;
 use Tests\Support\AssetConnectFeatureTestCase;
+use Tests\Support\Entities\FakeAssetEntity;
 use Tests\Support\Models\FakeAssetEntityModel;
 
 /**
@@ -137,5 +148,275 @@ final class AssetConnectEntityFlowTest extends AssetConnectFeatureTestCase
 
         $this->assertSame($avatar->id, $assets[0]->id);
         $this->assertSame('avatar.txt', $assets[0]->file_name);
+    }
+
+    public function testPersistedAssetExposesAccessorsCanBeUpdatedAndSerialized(): void
+    {
+        $entity = $this->createFakeEntity();
+
+        $asset = $entity->addAsset($this->createSourceFile('accessor.txt', 'accessor text'))
+            ->usingName('Accessor Document')
+            ->usingFileName('accessor.txt')
+            ->setOrder(4)
+            ->withCustomProperties([
+                'category' => 'manual',
+                'tags'     => ['docs', 'public'],
+            ])
+            ->preservingOriginal()
+            ->toAssetCollection(FakeDocumentCollection::class);
+
+        $this->assertSame('public', $asset->getStorageDisk()->name());
+        $this->assertSame(FakeDocumentCollection::class, $asset->getCollectionDefinitionClass());
+        $this->assertInstanceOf(FakeDocumentCollection::class, $asset->getAssetCollectionDefinition());
+        $this->assertSame(FakeAssetEntity::class, $asset->subject_entity_class);
+        $this->assertInstanceOf(FakeAssetEntity::class, $asset->getSubjectEntity());
+        $this->assertSame('fake-assets/documents/', $asset->path_dirname);
+        $this->assertSame($this->storagePath($asset), $asset->local_path);
+        $this->assertSame('/' . $asset->path, $asset->relative_path);
+        $this->assertSame('/' . $asset->path, $asset->relative_path_for_url);
+        $this->assertFalse($asset->is_protected_collection);
+        $this->assertTrue($asset->isText());
+        $this->assertSame([
+            'category' => 'manual',
+            'tags'     => ['docs', 'public'],
+        ], $asset->getCustomProperties());
+
+        $asset->name  = 'Updated Accessor Document';
+        $asset->order = 9;
+        $asset->setCustomProperty('reviewed', true);
+
+        $this->assertTrue($asset->save());
+
+        $refetched = AssetModel::init(false)->find($asset->id);
+
+        $this->assertInstanceOf(Asset::class, $refetched);
+        $this->assertSame('Updated Accessor Document', $refetched->name);
+        $this->assertSame(9, $refetched->order);
+        $this->assertTrue($refetched->getCustomProperty('reviewed'));
+
+        $this->injectUrlRequest();
+
+        $serialized = $refetched->jsonSerialize();
+
+        $this->assertArrayNotHasKey('path', $serialized);
+        $this->assertArrayNotHasKey('storage', $serialized);
+        $this->assertSame($refetched->id, $serialized['id']);
+        $this->assertSame($refetched->file_name, $serialized['file_name']);
+        $this->assertSame($refetched->getCustomProperties(), $serialized['custom_properties']);
+        $this->assertStringContainsString('/assets/storage/fake-assets/documents/accessor.txt', (string) $serialized['url']);
+        $this->assertStringContainsString('/assets/storage/fake-assets/documents/accessor.txt', (string) $serialized['url_relative']);
+    }
+
+    public function testEntityCanAddAssetsFromBase64AndPendingAsset(): void
+    {
+        $entity = $this->createFakeEntity();
+
+        $base64Asset = $entity->addAssetFromBase64(base64_encode('base64 text'))
+            ->usingName('Base64 Document')
+            ->usingFileName('base64.txt')
+            ->toAssetCollection(FakeDocumentCollection::class);
+
+        $this->assertAssetWasStoredForEntity($base64Asset, $entity, 'fake_documents');
+        $this->assertAssetFileContains($base64Asset, 'base64 text');
+        $this->assertSame('Base64 Document', $base64Asset->name);
+
+        $pendingSource = $this->createSourceFile('pending-source.txt', 'pending text');
+        $pendingAsset  = PendingAsset::createFromFile($pendingSource);
+        $pendingAsset
+            ->usingName('Pending Document')
+            ->usingFileName('pending.txt')
+            ->setOrder(7)
+            ->withCustomProperties([
+                'source' => 'pending',
+            ])
+            ->preservingOriginal();
+
+        $asset = $entity->addAssetFromPending($pendingAsset)
+            ->toAssetCollection(FakeDocumentCollection::class);
+
+        $this->assertAssetWasStoredForEntity($asset, $entity, 'fake_documents');
+        $this->assertAssetFileContains($asset, 'pending text');
+        $this->assertFileExists($pendingSource);
+        $this->assertSame('Pending Document', $asset->name);
+        $this->assertSame('pending.txt', $asset->file_name);
+        $this->assertSame(7, $asset->order);
+        $this->assertSame('pending', $asset->getCustomProperty('source'));
+    }
+
+    public function testEntityCanAddAssetsFromRequest(): void
+    {
+        $entity = $this->createFakeEntity();
+
+        $uploadedFileOne = $this->createUploadedFileStub(
+            'request one.txt',
+            $this->createSourceFile('request-one-source.txt', 'request one'),
+        );
+        $uploadedFileTwo = $this->createUploadedFileStub(
+            'request two.txt',
+            $this->createSourceFile('request-two-source.txt', 'request two'),
+        );
+
+        $request = $this->createStub(IncomingRequest::class);
+        $request->method('getFiles')->willReturn([
+            'documents' => [$uploadedFileOne, $uploadedFileTwo],
+        ]);
+
+        Services::injectMock('request', $request);
+
+        try {
+            $multipleAdder = $entity->addAssetFromRequest('documents');
+            $fieldNames    = [];
+
+            $assetAdders = $multipleAdder->forEach(
+                static function (UploadedFile $uploadedFile, AssetAdder $assetAdder, int|string $fieldName) use (&$fieldNames): void {
+                    $fieldNames[] = $fieldName;
+                    $assetAdder->usingName('Queued ' . $uploadedFile->getClientName());
+                },
+            );
+
+            $this->assertContainsOnlyInstancesOf(AssetAdder::class, $assetAdders);
+            $this->assertSame(['documents', 'documents'], $fieldNames);
+
+            $assets = $multipleAdder->toAssetCollection(FakeDocumentCollection::class);
+        } finally {
+            $this->injectUrlRequest();
+        }
+
+        $this->assertCount(2, $assets);
+        $this->assertAssetWasStoredForEntity($assets[0], $entity, 'fake_documents');
+        $this->assertAssetWasStoredForEntity($assets[1], $entity, 'fake_documents');
+        $this->assertSame('request-one.txt', $assets[0]->file_name);
+        $this->assertSame('request-two.txt', $assets[1]->file_name);
+    }
+
+    public function testAssetStoragePathCanBeRemovedWithoutDeletingDatabaseRow(): void
+    {
+        $entity = $this->createFakeEntity();
+        $asset  = $entity->addAsset($this->createSourceFile('remove-storage.txt', 'remove storage'))
+            ->usingFileName('remove-storage.txt')
+            ->preservingOriginal()
+            ->toAssetCollection(FakeDocumentCollection::class);
+
+        $storedPath = $this->storagePath($asset);
+
+        $this->assertFileExists($storedPath);
+
+        AssetPersistenceManager::removeStoragePath($asset->storage, $asset->path);
+
+        $this->assertFileDoesNotExist($storedPath);
+        $this->assertAssetRowExists($asset);
+    }
+
+    public function testAssetConnectCanSerializeFindAndRemoveCachedAssets(): void
+    {
+        $entity       = $this->createFakeEntity();
+        $assetConnect = $entity->assetConnectInstance();
+
+        $this->assertInstanceOf(AssetConnect::class, $assetConnect);
+
+        $asset = $entity->addAsset($this->createSourceFile('cached.txt', 'cached'))
+            ->usingFileName('cached.txt')
+            ->preservingOriginal()
+            ->toAssetCollection(FakeDocumentCollection::class);
+
+        $this->assertSame($asset->id, $assetConnect->getAssetById($asset->id)->id);
+        $this->assertCount(1, $entity->getAssets(FakeDocumentCollection::class));
+
+        $restored = unserialize(serialize($assetConnect));
+
+        $this->assertInstanceOf(AssetConnect::class, $restored);
+        $this->assertSame($asset->id, $restored->getAssetById($asset->id)->id);
+
+        $assetConnect->removeAssetById($asset->id);
+
+        $this->assertSame([], $entity->getAssets(FakeDocumentCollection::class));
+    }
+
+    public function testAssetModelFiltersCanQueryStoredAssets(): void
+    {
+        $entity = $this->createFakeEntity();
+
+        $alpha = $entity->addAsset($this->createSourceFile('alpha-filter.txt', 'alpha filter'))
+            ->usingName('Alpha Manual')
+            ->usingFileName('alpha-filter.txt')
+            ->setOrder(3)
+            ->withCustomProperties([
+                'category' => 'manual',
+                'approved' => true,
+                'tags'     => ['docs', 'public'],
+            ])
+            ->preservingOriginal()
+            ->toAssetCollection(FakeDocumentCollection::class);
+
+        $entity->addAsset($this->createSourceFile('beta-filter.txt', 'beta filter value'))
+            ->usingName('Beta Draft')
+            ->usingFileName('beta-filter.txt')
+            ->setOrder(8)
+            ->withCustomProperties([
+                'category' => 'draft',
+                'tags'     => ['private'],
+            ])
+            ->preservingOriginal()
+            ->toAssetCollection(FakeDocumentCollection::class);
+
+        $this->assertAssetModelFilterFinds($alpha, static fn (AssetModel $model): AssetModel => $model->filterByName('Alpha Manual'));
+        $this->assertAssetModelFilterFinds($alpha, static fn (AssetModel $model): AssetModel => $model->filterByFileName('alpha-filter.txt'));
+        $this->assertAssetModelFilterFinds($alpha, static fn (AssetModel $model): AssetModel => $model->filterByMimeType($alpha->mime_type)->filterByName('Alpha Manual'));
+        $this->assertAssetModelFilterFinds($alpha, static fn (AssetModel $model): AssetModel => $model->filterBySize($alpha->size)->filterByName('Alpha Manual'));
+        $this->assertAssetModelFilterFinds($alpha, static fn (AssetModel $model): AssetModel => $model->filterByPath($alpha->path));
+        $this->assertAssetModelFilterFinds($alpha, static fn (AssetModel $model): AssetModel => $model->filterByStorage('public')->filterByPath($alpha->path));
+        $this->assertAssetModelFilterFinds($alpha, static fn (AssetModel $model): AssetModel => $model->filterByOrder(3));
+        $this->assertAssetModelFilterFinds($alpha, static fn (AssetModel $model): AssetModel => $model->filterByProperty('category', 'manual'));
+        $this->assertAssetModelFilterFinds($alpha, static fn (AssetModel $model): AssetModel => $model->filterByPropertyExists('approved'));
+        $this->assertAssetModelFilterFinds($alpha, static fn (AssetModel $model): AssetModel => $model->filterByPropertyContains('tags', 'public'));
+        $this->assertAssetModelFilterFinds($alpha, static fn (AssetModel $model): AssetModel => $model->filterByCreatedAt('2000-01-01 00:00:00', '>=')->filterByName('Alpha Manual'));
+        $this->assertAssetModelFilterFinds($alpha, static fn (AssetModel $model): AssetModel => $model->filterByUpdatedAt('2000-01-01 00:00:00', '>=')->filterByName('Alpha Manual'));
+        $this->assertAssetModelFilterFinds($alpha, static fn (AssetModel $model): AssetModel => $model->filterByNameLike('Alpha'));
+        $this->assertAssetModelFilterFinds($alpha, static fn (AssetModel $model): AssetModel => $model->filterByFileNameLike('alpha-filter'));
+        $this->assertAssetModelFilterFinds($alpha, static fn (AssetModel $model): AssetModel => $model->filterBySizeRange($alpha->size, $alpha->size));
+        $this->assertAssetModelFilterFinds($alpha, static fn (AssetModel $model): AssetModel => $model->filterByDateRange('2000-01-01 00:00:00', '2999-01-01 00:00:00')->filterByName('Alpha Manual'));
+        $this->assertAssetModelFilterFinds($alpha, static fn (AssetModel $model): AssetModel => $model->whereEntityType(FakeAssetEntity::class)->filterByName('Alpha Manual'));
+    }
+
+    /**
+     * @param callable(AssetModel): AssetModel $filter
+     */
+    private function assertAssetModelFilterFinds(Asset $expectedAsset, callable $filter): void
+    {
+        $model = AssetModel::init(false);
+        $asset = $filter($model)->first();
+
+        $this->assertInstanceOf(Asset::class, $asset);
+        $this->assertSame($expectedAsset->id, $asset->id);
+    }
+
+    /**
+     * @return Stub&UploadedFile
+     */
+    private function createUploadedFileStub(string $clientName, string $path): UploadedFile
+    {
+        $uploadedFile = $this->createStub(UploadedFile::class);
+        $uploadedFile->method('isValid')->willReturn(true);
+        $uploadedFile->method('isFile')->willReturn(true);
+        $uploadedFile->method('getClientName')->willReturn($clientName);
+        $uploadedFile->method('getMimeType')->willReturn('text/plain');
+        $uploadedFile->method('getSize')->willReturn((int) filesize($path));
+        $uploadedFile->method('getCTime')->willReturn((int) filectime($path));
+        $uploadedFile->method('getMTime')->willReturn((int) filemtime($path));
+        $uploadedFile->method('getRealPath')->willReturn($path);
+
+        return $uploadedFile;
+    }
+
+    private function injectUrlRequest(): void
+    {
+        $app            = new App();
+        $app->baseURL   = 'https://example.com/';
+        $app->indexPage = 'index.php';
+
+        $request = $this->createStub(IncomingRequest::class);
+        $request->method('getUri')->willReturn(new SiteURI($app));
+
+        Services::injectMock('request', $request);
     }
 }

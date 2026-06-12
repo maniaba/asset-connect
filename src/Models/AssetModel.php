@@ -30,6 +30,9 @@ use Throwable;
  */
 class AssetModel extends BaseModel
 {
+    private const string METADATA_COLUMN             = 'metadata';
+    private const string USER_CUSTOM_METADATA_OBJECT = 'user_custom';
+
     protected $allowedFields = [
         'entity_type', 'entity_id', 'collection', 'storage', 'name', 'file_name', 'mime_type', 'size', 'path', 'order', 'metadata', 'created_at', 'updated_at', 'deleted_at',
     ];
@@ -174,6 +177,16 @@ class AssetModel extends BaseModel
         return $this->db->getPlatform();
     }
 
+    private function customPropertyJsonPath(string $key): string
+    {
+        return '$.' . self::USER_CUSTOM_METADATA_OBJECT . '.' . $key;
+    }
+
+    private function customPropertyPostgresPath(string $key): string
+    {
+        return '{' . self::USER_CUSTOM_METADATA_OBJECT . ',' . str_replace('.', ',', $key) . '}';
+    }
+
     /**
      * Filter assets by properties (JSON column)
      *
@@ -195,33 +208,29 @@ class AssetModel extends BaseModel
         $platform = $this->getDatabasePlatform();
 
         // For nested properties, we need to construct the proper JSON path
-        // Convert dot notation (e.g., 'user.name') to JSON path ($.user.name)
-        $jsonPath = '$.' . $key;
+        // Convert dot notation (e.g., 'user.name') to JSON path ($.user_custom.user.name)
+        $jsonPath = $this->customPropertyJsonPath($key);
 
         switch ($platform) {
             case 'MySQLi':
                 // MySQL syntax
-                return $this->where("JSON_EXTRACT(properties, '{$jsonPath}') {$operator}", $value);
+                return $this->where('JSON_UNQUOTE(JSON_EXTRACT(' . self::METADATA_COLUMN . ', ' . $this->db->escape($jsonPath) . ")) {$operator}", $value);
 
             case 'Postgre':
                 // PostgreSQL syntax
-                $path = str_replace('.', '->', $key);
-
-                return $this->where("properties->'{$path}' {$operator}", $value);
+                return $this->where(self::METADATA_COLUMN . '#>>' . $this->db->escape($this->customPropertyPostgresPath($key)) . " {$operator}", $value);
 
             case 'SQLite3':
                 // SQLite syntax
-                return $this->where("json_extract(properties, '{$jsonPath}') {$operator}", $value);
+                return $this->where('json_extract(' . self::METADATA_COLUMN . ', ' . $this->db->escape($jsonPath) . ") {$operator}", $value);
 
             case 'SQLSRV':
                 // SQL Server syntax
-                $path = '$.' . $key;
-
-                return $this->where("JSON_VALUE(properties, '{$path}') {$operator}", $value);
+                return $this->where('JSON_VALUE(' . self::METADATA_COLUMN . ', ' . $this->db->escape($jsonPath) . ") {$operator}", $value);
 
             default:
                 // Fallback to string-based comparison (less efficient but more compatible)
-                return $this->where('properties LIKE ?', '%"' . $key . '":' . json_encode($value) . '%');
+                return $this->where(self::METADATA_COLUMN . ' LIKE', '%"' . self::USER_CUSTOM_METADATA_OBJECT . '"%"' . $key . '":' . json_encode($value) . '%');
         }
     }
 
@@ -244,33 +253,29 @@ class AssetModel extends BaseModel
         $platform = $this->getDatabasePlatform();
 
         // For nested properties, we need to construct the proper JSON path
-        // Convert dot notation (e.g., 'user.name') to JSON path ($.user.name)
-        $jsonPath = '$.' . $key;
+        // Convert dot notation (e.g., 'user.name') to JSON path ($.user_custom.user.name)
+        $jsonPath = $this->customPropertyJsonPath($key);
 
         switch ($platform) {
             case 'MySQLi':
                 // MySQL syntax
-                return $this->where("JSON_CONTAINS_PATH(properties, 'one', '{$jsonPath}') = 1");
+                return $this->where('JSON_CONTAINS_PATH(' . self::METADATA_COLUMN . ", 'one', " . $this->db->escape($jsonPath) . ') = 1');
 
             case 'Postgre':
                 // PostgreSQL syntax
-                $path = str_replace('.', '->', $key);
-
-                return $this->where("properties ? '{$path}'");
+                return $this->where(self::METADATA_COLUMN . '#>' . $this->db->escape($this->customPropertyPostgresPath($key)) . ' IS NOT NULL');
 
             case 'SQLite3':
                 // SQLite syntax
-                return $this->where("json_extract(properties, '{$jsonPath}') IS NOT NULL");
+                return $this->where('json_type(' . self::METADATA_COLUMN . ', ' . $this->db->escape($jsonPath) . ') IS NOT NULL');
 
             case 'SQLSRV':
                 // SQL Server syntax
-                $path = '$.' . $key;
-
-                return $this->where("JSON_VALUE(properties, '{$path}') IS NOT NULL");
+                return $this->where('JSON_VALUE(' . self::METADATA_COLUMN . ', ' . $this->db->escape($jsonPath) . ') IS NOT NULL');
 
             default:
                 // Fallback to string-based comparison (less efficient but more compatible)
-                return $this->where('properties LIKE ?', '%"' . $key . '"%');
+                return $this->where(self::METADATA_COLUMN . ' LIKE', '%"' . self::USER_CUSTOM_METADATA_OBJECT . '"%"' . $key . '"%');
         }
     }
 
@@ -295,33 +300,29 @@ class AssetModel extends BaseModel
         $encodedValue = json_encode($value);
 
         // For nested properties, we need to construct the proper JSON path
-        // Convert dot notation (e.g., 'user.tags') to JSON path ($.user.tags)
-        $jsonPath = '$.' . $arrayKey;
+        // Convert dot notation (e.g., 'user.tags') to JSON path ($.user_custom.user.tags)
+        $jsonPath = $this->customPropertyJsonPath($arrayKey);
 
         switch ($platform) {
             case 'MySQLi':
                 // MySQL syntax
-                return $this->where("JSON_CONTAINS(JSON_EXTRACT(properties, '{$jsonPath}'), ?)", $encodedValue);
+                return $this->where('JSON_CONTAINS(JSON_EXTRACT(' . self::METADATA_COLUMN . ', ' . $this->db->escape($jsonPath) . '), ' . $this->db->escape($encodedValue) . ')');
 
             case 'Postgre':
                 // PostgreSQL syntax
-                $path = str_replace('.', '->', $arrayKey);
-
-                return $this->where("properties->'{$path}' @> ?::jsonb", $encodedValue);
+                return $this->where(self::METADATA_COLUMN . '#>' . $this->db->escape($this->customPropertyPostgresPath($arrayKey)) . ' @> ' . $this->db->escape($encodedValue) . '::jsonb');
 
             case 'SQLite3':
                 // SQLite syntax - limited support, fallback to string comparison
-                return $this->where("json_extract(properties, '{$jsonPath}') LIKE ?", '%' . $value . '%');
+                return $this->where('json_extract(' . self::METADATA_COLUMN . ', ' . $this->db->escape($jsonPath) . ') LIKE', '%' . $value . '%');
 
             case 'SQLSRV':
                 // SQL Server syntax
-                $path = '$.' . $arrayKey;
-
-                return $this->where("JSON_QUERY(properties, '{$path}') LIKE ?", '%' . $value . '%');
+                return $this->where('JSON_QUERY(' . self::METADATA_COLUMN . ', ' . $this->db->escape($jsonPath) . ') LIKE', '%' . $value . '%');
 
             default:
                 // Fallback to string-based comparison (less efficient but more compatible)
-                return $this->where('properties LIKE ?', '%"' . $arrayKey . '"%' . $value . '%');
+                return $this->where(self::METADATA_COLUMN . ' LIKE', '%"' . self::USER_CUSTOM_METADATA_OBJECT . '"%"' . $arrayKey . '"%' . $value . '%');
         }
     }
 
