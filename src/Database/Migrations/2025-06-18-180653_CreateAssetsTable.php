@@ -35,12 +35,6 @@ class CreateAssetsTable extends BaseMigration
                 'comment'    => 'Collection name for the asset md5 hash of the collection name',
                 'null'       => false,
             ],
-            'storage' => [
-                'type'       => 'VARCHAR',
-                'constraint' => 64,
-                'comment'    => 'Storage disk name for the asset file',
-                'null'       => false,
-            ],
             'name' => [
                 'type'       => 'VARCHAR',
                 'comment'    => 'Name of the asset',
@@ -63,7 +57,7 @@ class CreateAssetsTable extends BaseMigration
             ],
             'path' => [
                 'type'       => 'VARCHAR',
-                'comment'    => 'Relative path to the asset file within the configured storage disk',
+                'comment'    => 'Path to the asset file',
                 'constraint' => 1020,
             ],
             'order' => [
@@ -97,7 +91,6 @@ class CreateAssetsTable extends BaseMigration
         $this->forge->addKey('id', true);
         $this->forge->addKey(['entity_type', 'entity_id']);
         $this->forge->addKey('collection');
-        $this->forge->addKey('storage');
         $this->forge->addKey('deleted_at');
 
         $this->forge->addKey(['entity_type', 'entity_id', 'collection']);

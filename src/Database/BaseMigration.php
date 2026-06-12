@@ -30,15 +30,20 @@ abstract class BaseMigration extends Migration
 
     protected function createTable(string $tableName, bool $ifNotExists = false, array $attributes = []): void
     {
-        $tableName = $this->tables[$tableName] ?? $tableName;
+        $tableName = $this->assetsTables($tableName);
 
         $this->forge->createTable($tableName, $ifNotExists, [...$attributes, ...$this->attributes]);
     }
 
     protected function dropTable(string $tableName, bool $ifExists = false): void
     {
-        $tableName = $this->tables[$tableName] ?? $tableName;
+        $tableName = $this->assetsTables($tableName);
 
         $this->forge->dropTable($tableName, $ifExists);
+    }
+
+    protected function assetsTables(string $tableName): string
+    {
+        return $this->tables['assets'] ?? $tableName;
     }
 }
