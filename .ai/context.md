@@ -5,7 +5,7 @@
 **AssetConnect** (`maniaba/asset-connect`) is a file-management library for **CodeIgniter 4**.
 It lets you associate any file with any CI4 entity through a trait-based API, organise those files into typed collections, generate signed/temporary URLs, validate uploads, and process file variants asynchronously via a queue.
 
-- **Version:** 1.0.0
+- **Version:** 2.0.0
 - **License:** MIT
 - **Namespace root:** `Maniaba\AssetConnect`
 - **Docs:** <https://maniaba.github.io/asset-connect/>
