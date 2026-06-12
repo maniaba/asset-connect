@@ -116,4 +116,10 @@ For non-local disks, use storage streams or write the result through `$variant->
 
 ## Migration Note
 
-This version intentionally does not include a command that converts old absolute paths. Existing projects should add a separate migration command that maps old files to a configured storage disk and rewrites `path` to the relative storage path.
+Use the `asset-connect:migrate-paths` command when upgrading from 1.0.1 absolute filesystem paths to 2.0.0 storage-relative paths:
+
+```bash
+php spark asset-connect:migrate-paths --storage public --from-root=/old/app/public --dry-run
+```
+
+See [Upgrade to 2.0.0](upgrade-2.0.md) for the full migration workflow.

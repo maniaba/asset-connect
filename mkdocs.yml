@@ -84,6 +84,8 @@ extra_javascript:
 nav:
   - Home: index.md
   - Installation: installation.md
+  - Upgrade:
+      - Upgrade to 2.0.0: upgrade-2.0.md
   - Configuration:
       - Overview: configuration.md
       - Storage: storage.md

@@ -109,6 +109,7 @@ return static function (RectorConfig $rectorConfig): void {
             __DIR__ . '/src/Models/BaseModel.php',
             __DIR__ . '/src/AssetVariants/AssetVariant.php',
             __DIR__ . '/src/Exceptions/AssetException.php',
+            __DIR__ . '/src/Commands/MigrateLegacyAssetPaths.php',
 
             // Tests
             __DIR__ . '/tests/AssetCollection/SetupAssetCollectionTest.php',
