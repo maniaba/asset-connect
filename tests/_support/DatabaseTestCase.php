@@ -6,13 +6,19 @@ namespace Tests\Support;
 
 use CodeIgniter\Test\CIUnitTestCase;
 use CodeIgniter\Test\DatabaseTestTrait;
+use CodeIgniter\Test\Fabricator;
 use Maniaba\AssetConnect\Config\Asset;
 
 abstract class DatabaseTestCase extends CIUnitTestCase
 {
-    use DatabaseTestTrait {
-        setUpDatabase as private setUpDatabaseFromTrait;
-    }
+    use DatabaseTestTrait;
+
+    /**
+     * @var list<string>
+     */
+    protected array $migrationNamespaces = [
+        'Maniaba\\AssetConnect',
+    ];
 
     /**
      * @var array<string, string>
@@ -34,8 +40,27 @@ abstract class DatabaseTestCase extends CIUnitTestCase
 
     protected function setUpDatabase(): void
     {
-        $this->namespace = 'Maniaba\\AssetConnect';
+        $this->configureDatabaseTest();
 
-        $this->setUpDatabaseFromTrait();
+        $this->loadDependencies();
+
+        if ($this->refresh === true) {
+            $this->namespace = null;
+            $this->regressDatabase();
+
+            Fabricator::resetCounts();
+        }
+
+        foreach ($this->migrationNamespaces as $namespace) {
+            $this->namespace = $namespace;
+
+            $this->migrateDatabase();
+        }
+
+        $this->setUpSeed();
+    }
+
+    protected function configureDatabaseTest(): void
+    {
     }
 }

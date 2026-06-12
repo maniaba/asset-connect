@@ -182,21 +182,19 @@ class Asset extends Entity implements JsonSerializable
 
     public function getExtension(): string
     {
-        // If file is set, we try to get extension from it
-        if (isset($this->file) && $this->file instanceof File) {
-            return $this->file->getExtension();
+        // The stored file name is the final name after AssetAdder configuration.
+        $fileName = $this->attributes['file_name'] ?? null;
+        if (is_string($fileName) && $fileName !== '') {
+            return pathinfo($fileName, PATHINFO_EXTENSION);
         }
 
-        // Otherwise, we check the path attribute
         $path = $this->attributes['path'] ?? null;
         if (is_string($path) && $path !== '') {
             return pathinfo($path, PATHINFO_EXTENSION);
         }
 
-        // If file_name is set, we try to get extension from it
-        $fileName = $this->attributes['file_name'] ?? null;
-        if (is_string($fileName) && $fileName !== '') {
-            return pathinfo($fileName, PATHINFO_EXTENSION);
+        if (isset($this->file) && $this->file instanceof File) {
+            return $this->file->getExtension();
         }
 
         throw new \Maniaba\AssetConnect\Exceptions\InvalidArgumentException('Invalid argument provided');

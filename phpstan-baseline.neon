@@ -34,12 +34,6 @@ parameters:
 			path: src/Services/AssetAccessService.php
 
 		-
-			message: '#^Trait Maniaba\\AssetConnect\\Traits\\UseAssetConnectModelTrait is used zero times and is not analysed\.$#'
-			identifier: trait.unused
-			count: 1
-			path: src/Traits/UseAssetConnectModelTrait.php
-
-		-
 			message: '#^Property Maniaba\\AssetConnect\\Validation\\ValidationRuleCollector\:\:\$rules \(non\-empty\-array\<string, list\<string\>\|non\-falsy\-string\>\) does not accept non\-empty\-array\<string, \(Closure\(mixed, array\|null, string\|null, string\)\: bool\)\|list\<string\>\|non\-falsy\-string\>\.$#'
 			identifier: assign.propertyType
 			count: 2
