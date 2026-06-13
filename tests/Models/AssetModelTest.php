@@ -103,6 +103,17 @@ final class AssetModelTest extends CIUnitTestCase
         AssetModel::init(true, $this->stubConnection());
     }
 
+    public function testStorageValidationRuleMatchesDatabaseConstraint(): void
+    {
+        $model = new AssetModel($this->stubConnection());
+
+        /** @var array<string, string> $validationRules */
+        $validationRules = $this->getPrivateProperty($model, 'validationRules');
+
+        $this->assertArrayHasKey('storage', $validationRules);
+        $this->assertSame('required|alpha_dash|max_length[20]', $validationRules['storage']);
+    }
+
     private function &stubConnection(): ConnectionInterface
     {
         $db = $this->createStub(ConnectionInterface::class);

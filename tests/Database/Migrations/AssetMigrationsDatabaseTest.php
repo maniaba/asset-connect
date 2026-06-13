@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Database\Migrations;
 
+use Config\Database;
+use Maniaba\AssetConnect\Database\Migrations\AddStorageToAssetsTable;
 use Tests\Support\DatabaseTestCase;
 
 /**
@@ -21,9 +23,11 @@ final class AssetMigrationsDatabaseTest extends DatabaseTestCase
         $indexes = $this->db->getIndexData($table);
 
         $this->assertArrayHasKey('assets_storage_index', $indexes);
-        $this->assertArrayHasKey('assets_storage_path_index', $indexes);
+        $this->assertArrayHasKey('assets_entity_type_entity_id_deleted_at_index', $indexes);
+        $this->assertArrayHasKey('assets_entity_type_entity_id_collection_deleted_at_index', $indexes);
         $this->assertSame(['storage'], $indexes['assets_storage_index']->fields);
-        $this->assertSame(['storage', 'path'], $indexes['assets_storage_path_index']->fields);
+        $this->assertSame(['entity_type', 'entity_id', 'deleted_at'], $indexes['assets_entity_type_entity_id_deleted_at_index']->fields);
+        $this->assertSame(['entity_type', 'entity_id', 'collection', 'deleted_at'], $indexes['assets_entity_type_entity_id_collection_deleted_at_index']->fields);
     }
 
     public function testAssetsTableAllowsLegacyRowsWithoutStorage(): void
@@ -31,7 +35,7 @@ final class AssetMigrationsDatabaseTest extends DatabaseTestCase
         $table = $this->tables['assets'];
 
         $this->insertAssetRow($table, [
-            'storage' => null,
+            'storage' => '',
             'path'    => '/legacy/full/path.jpg',
         ]);
 
@@ -41,7 +45,7 @@ final class AssetMigrationsDatabaseTest extends DatabaseTestCase
             ->getRowArray();
 
         $this->assertIsArray($row);
-        $this->assertNull($row['storage']);
+        $this->assertSame('', $row['storage']);
     }
 
     public function testAssetsTableStoresDiskNameAndRelativePath(): void
@@ -57,6 +61,22 @@ final class AssetMigrationsDatabaseTest extends DatabaseTestCase
             'storage' => 'public',
             'path'    => 'avatars/user-123/profile.jpg',
         ]);
+    }
+
+    public function testStorageMigrationCanResumeWhenStorageColumnAlreadyExists(): void
+    {
+        $table = $this->tables['assets'];
+        $forge = Database::forge('tests');
+
+        (new AddStorageToAssetsTable($forge))->down();
+        (new AddStorageToAssetsTable($forge))->up();
+
+        $indexes = $this->db->getIndexData($table);
+
+        $this->assertTrue($this->db->fieldExists('storage', $table));
+        $this->assertArrayHasKey('assets_storage_index', $indexes);
+        $this->assertArrayHasKey('assets_entity_type_entity_id_deleted_at_index', $indexes);
+        $this->assertArrayHasKey('assets_entity_type_entity_id_collection_deleted_at_index', $indexes);
     }
 
     public function testAssetMigrationsCanRegressCleanly(): void

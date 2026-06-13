@@ -47,7 +47,7 @@ class AssetModel extends BaseModel
         'entity_type' => 'required|alpha_dash|max_length[32]',
         'entity_id'   => 'required|integer',
         'collection'  => 'required|alpha_dash|max_length[32]',
-        'storage'     => 'required|alpha_dash|max_length[64]',
+        'storage'     => 'required|alpha_dash|max_length[20]',
         'name'        => 'permit_empty|max_length[255]',
         'file_name'   => 'permit_empty|max_length[255]',
         'mime_type'   => 'permit_empty|max_length[255]',
