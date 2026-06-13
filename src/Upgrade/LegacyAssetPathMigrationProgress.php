@@ -18,7 +18,6 @@ final readonly class LegacyAssetPathMigrationProgress
         public string $status,
         public string $message,
         public string $storage = '',
-        public string $sourcePath = '',
         public string $relativePath = '',
     ) {
     }

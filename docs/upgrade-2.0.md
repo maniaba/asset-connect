@@ -2,14 +2,14 @@
 
 AssetConnect 2.0.0 stores file locations as:
 
-- `storage`: configured storage disk name, for example `public` or `protected`
+- `storage`: configured Flysystem disk name, for example `public` or `protected`
 - `path`: relative path inside that storage disk
 
-AssetConnect 1.0.1 stored absolute filesystem paths in `assets.path`. The upgrade command migrates those rows file by file and copies each file into the configured 2.0.0 storage disk.
+Older AssetConnect versions used `storage_base_directory_path` as part of the filesystem path model. That value is no longer stored because physical roots now live in `Config\Asset::$storages`.
 
 ## Before Running
 
-Back up both the database and the legacy files before running the migration.
+Back up the database and files before running the migration.
 
 Run the AssetConnect migrations first so the `storage` column exists:
 
@@ -35,108 +35,78 @@ public array $storages = [
 ];
 ```
 
+Legacy `assets.path` values must already be storage-relative paths. The migration command does not split absolute filesystem paths into base directory and relative path.
+
 ## Dry Run
 
-Start with a dry run. This prints the file-by-file plan without copying files or updating rows:
+Start with a dry run. This prints the database update plan without changing rows:
 
 ```bash
 php spark asset-connect:migrate-paths \
     --storage public \
-    --from-root=/old/app/public \
-    --source-root=/current/app/public \
     --dry-run
 ```
 
 Use:
 
-- `--from-root`: the old path prefix currently stored in `assets.path`
-- `--source-root`: where those files are located now
-- `--storage`: the 2.0.0 storage disk to copy files into
+- `--storage`: the 2.0.0 storage disk to assign to matching rows
+- `--dry-run`: print the plan without updating rows
 
-If the old absolute paths still exist on disk, `--source-root` can be omitted:
-
-```bash
-php spark asset-connect:migrate-paths \
-    --storage public \
-    --from-root=/old/app/public \
-    --dry-run
-```
+If `--storage` is omitted, AssetConnect tries to resolve the disk from the asset collection configuration and falls back to the configured default public disk.
 
 ## Execute Migration
 
 After reviewing the dry run, remove `--dry-run`:
 
 ```bash
-php spark asset-connect:migrate-paths \
-    --storage public \
-    --from-root=/old/app/public \
-    --source-root=/current/app/public
+php spark asset-connect:migrate-paths --storage public
 ```
 
 The command prints one line per asset:
 
 ```text
-[1/250] asset #15 MIGRATED public:assets/2026/06/file.jpg - File copied and database row updated.
+[1/250] asset #15 MIGRATED public:assets/2026/06/file.jpg - Database row updated.
 ```
 
 For each migrated asset the command:
 
-1. Resolves a storage-relative path from `assets.path`.
-2. Copies the file into the target storage disk.
-3. Updates the row to `storage = <disk>` and `path = <relative path>`.
+1. Resolves the target storage disk.
+2. Validates that `assets.path` is storage-relative.
+3. Verifies that the file exists on the target storage disk.
+4. Updates the row to `storage = <disk>` and keeps `path = <relative path>`.
 
 ## Protected Files
 
-Run the command for protected legacy files using the protected disk and the old protected root:
+Run the command for protected files using the protected disk:
 
 ```bash
-php spark asset-connect:migrate-paths \
-    --storage protected \
-    --from-root=/old/app/writable \
-    --source-root=/current/app/writable
+php spark asset-connect:migrate-paths --storage protected
 ```
-
-If `--storage` is omitted, AssetConnect tries to resolve the disk from the asset collection configuration and falls back to the configured default public disk.
 
 ## Idempotency
 
 The command is safe to re-run:
 
-- Rows that already use `storage` plus a relative `path` are ignored.
-- If the target storage file already exists, the database row is updated without copying again.
-- Use `--overwrite` only when the target file should be replaced from the source file.
-
-## Optional Cleanup
-
-By default, legacy source files are kept. To delete each source file after a successful copy and database update:
-
-```bash
-php spark asset-connect:migrate-paths \
-    --storage public \
-    --from-root=/old/app/public \
-    --source-root=/current/app/public \
-    --delete-source
-```
-
-Use this only after a verified backup.
+- Rows that already have a non-empty `storage` value are ignored.
+- Rows with absolute filesystem paths are rejected instead of being split into root and relative path.
 
 ## Large Tables
 
 Limit one run:
 
 ```bash
-php spark asset-connect:migrate-paths --storage public --from-root=/old/app/public --limit=500
+php spark asset-connect:migrate-paths --storage public --limit=500
 ```
 
 Change query batch size:
 
 ```bash
-php spark asset-connect:migrate-paths --storage public --from-root=/old/app/public --batch-size=50
+php spark asset-connect:migrate-paths --storage public --batch-size=50
 ```
 
 ## Verify
 
-After migration, asset rows should have a non-empty `storage` value and `path` should no longer be an absolute filesystem path.
+After migration, asset rows should have a non-empty `storage` value and `path` should remain a storage-relative path.
 
 For local public storage, make sure the public URL points to the configured storage root. For example:
 

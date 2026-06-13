@@ -17,15 +17,11 @@ final class MigrateLegacyAssetPaths extends BaseCommand
 {
     protected $group       = 'AssetConnect';
     protected $name        = 'asset-connect:migrate-paths';
-    protected $description = 'Migrates AssetConnect 1.0.1 absolute asset paths to 2.0.0 storage-relative paths.';
+    protected $description = 'Assigns storage disk names to legacy AssetConnect rows that already store relative paths.';
     protected $usage       = 'asset-connect:migrate-paths [options]';
     protected $options     = [
         '--storage'       => 'Target storage disk name. If omitted, the collection/default storage configuration is used.',
-        '--from-root'     => 'Old root path that is currently stored as the prefix in assets.path.',
-        '--source-root'   => 'Actual filesystem root where legacy files are now located. Defaults to --from-root.',
-        '--dry-run'       => 'Print what would be migrated without copying files or updating the database.',
-        '--delete-source' => 'Delete the legacy source file after a successful copy and database update.',
-        '--overwrite'     => 'Overwrite files that already exist in the target storage disk.',
+        '--dry-run'       => 'Print what would be migrated without updating the database.',
         '--limit'         => 'Maximum number of candidate rows to process.',
         '--batch-size'    => 'Number of candidate rows to load per query. Defaults to 100.',
     ];
@@ -38,11 +34,7 @@ final class MigrateLegacyAssetPaths extends BaseCommand
     {
         $options = new LegacyAssetPathMigrationOptions(
             storage: $this->stringOption($params, 'storage'),
-            fromRoot: $this->stringOption($params, 'from-root'),
-            sourceRoot: $this->stringOption($params, 'source-root'),
             dryRun: $this->boolOption($params, 'dry-run'),
-            deleteSource: $this->boolOption($params, 'delete-source'),
-            overwrite: $this->boolOption($params, 'overwrite'),
             limit: $this->intOption($params, 'limit'),
             batchSize: $this->intOption($params, 'batch-size') ?? 100,
         );
@@ -53,7 +45,7 @@ final class MigrateLegacyAssetPaths extends BaseCommand
         CLI::write('AssetConnect legacy path migration', 'yellow');
 
         if ($options->dryRun) {
-            CLI::write('Dry run: no files will be copied and no database rows will be updated.', 'light_gray');
+            CLI::write('Dry run: no database rows will be updated.', 'light_gray');
         }
 
         try {
