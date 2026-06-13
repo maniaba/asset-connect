@@ -1,6 +1,13 @@
 name: Docs
 
 on:
+  pull_request:
+    branches:
+      - develop
+    paths:
+      - 'docs/**/*'
+      - 'mkdocs.yml'
+      - '.github/workflows/docs.yml'
   push:
     branches:
       - develop
@@ -8,17 +15,173 @@ on:
       - 'docs/**/*'
       - 'mkdocs.yml'
       - '.github/workflows/docs.yml'
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: 'Release version to tag and publish, e.g. 1.1.0'
+        required: true
+        type: string
+      docs_version:
+        description: 'Docs version directory. Defaults to major.minor from release_version.'
+        required: false
+        type: string
+      update_latest:
+        description: 'Move latest alias and default redirect to this version'
+        required: true
+        default: true
+        type: boolean
 
 permissions:
-  contents: write
+  contents: read
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  deploy:
+  build:
+    if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
         with:
-          python-version: 3.x
-      - run: pip install mkdocs-material
-      - run: mkdocs gh-deploy --force
+          python-version: '3.x'
+
+      - name: Install docs dependencies
+        run: pip install -r docs/requirements.txt
+
+      - name: Build docs
+        run: mkdocs build --strict
+
+  deploy:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+
+      - name: Install docs dependencies
+        run: pip install -r docs/requirements.txt
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Resolve release metadata
+        id: release
+        shell: bash
+        env:
+          INPUT_DOCS_VERSION: ${{ inputs.docs_version }}
+          INPUT_RELEASE_VERSION: ${{ inputs.release_version }}
+        run: |
+          set -euo pipefail
+
+          release_version="$INPUT_RELEASE_VERSION"
+          release_version="${release_version#v}"
+          docs_version="$INPUT_DOCS_VERSION"
+
+          if [[ ! "$release_version" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::release_version must be a SemVer-like value such as 1.1.0 or v1.1.0."
+            exit 1
+          fi
+
+          if [[ -z "$docs_version" ]]; then
+            base_version="${release_version%%[-+]*}"
+            IFS='.' read -r major minor _patch <<< "$base_version"
+            docs_version="${major}.${minor}"
+          fi
+
+          if [[ ! "$docs_version" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
+            echo "::error::docs_version may only contain letters, numbers, dots, underscores, and hyphens."
+            exit 1
+          fi
+
+          echo "release_version=$release_version" >> "$GITHUB_OUTPUT"
+          echo "docs_version=$docs_version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$release_version" >> "$GITHUB_OUTPUT"
+          echo "source_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Build docs
+        run: mkdocs build --strict
+
+      - name: Fetch Pages branch
+        run: git fetch origin gh-pages --depth=1 || true
+
+      - name: Deploy versioned docs
+        env:
+          DOCS_VERSION: ${{ steps.release.outputs.docs_version }}
+          RELEASE_VERSION: ${{ steps.release.outputs.release_version }}
+          UPDATE_LATEST: ${{ inputs.update_latest }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "$UPDATE_LATEST" == "true" ]]; then
+            mike deploy --push --update-aliases --title "$RELEASE_VERSION" "$DOCS_VERSION" latest
+            mike set-default --push latest
+          else
+            mike deploy --push --title "$RELEASE_VERSION" "$DOCS_VERSION"
+          fi
+
+      - name: Preserve Pages root files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ ! -f docs/CNAME ]]; then
+            exit 0
+          fi
+
+          pages_dir="$(mktemp -d)"
+          git fetch origin gh-pages --depth=1
+          git branch -f gh-pages origin/gh-pages
+          git worktree add "$pages_dir" gh-pages
+          cp docs/CNAME "$pages_dir/CNAME"
+
+          pushd "$pages_dir"
+          git add CNAME
+          if ! git diff --cached --quiet; then
+            git commit -m "Update Pages CNAME"
+            git push origin gh-pages
+          fi
+          popd
+
+          git worktree remove "$pages_dir"
+
+      - name: Create release tag
+        env:
+          TAG: ${{ steps.release.outputs.tag }}
+          SOURCE_SHA: ${{ steps.release.outputs.source_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" > /dev/null 2>&1; then
+            git fetch origin "refs/tags/$TAG:refs/tags/$TAG"
+            existing_sha="$(git rev-list -n 1 "$TAG")"
+
+            if [[ "$existing_sha" != "$SOURCE_SHA" ]]; then
+              echo "::warning::Tag $TAG already exists at $existing_sha; leaving it unchanged."
+            fi
+
+            exit 0
+          fi
+
+          git tag -a "$TAG" "$SOURCE_SHA" -m "Release $TAG"
+          git push origin "$TAG"

@@ -35,6 +35,10 @@ theme:
 extra:
   homepage: https://maniaba.github.io/asset-connect/
   generator: false
+  version:
+    provider: mike
+    default: latest
+    alias: true
 
   social:
     - icon: material/github
@@ -60,6 +64,12 @@ markdown_extensions:
   - pymdownx.superfences
   - pymdownx.highlight:
       use_pygments: false
+
+plugins:
+  - search
+  - mike:
+      alias_type: redirect
+      canonical_version: latest
 
 extra_css:
   - https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/styles/github.min.css

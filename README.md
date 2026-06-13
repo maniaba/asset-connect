@@ -44,6 +44,17 @@ $user->deleteAssets(ImagesCollection::class);
 
 Comprehensive documentation is available at [https://maniaba.github.io/asset-connect/](https://maniaba.github.io/asset-connect/).
 
+Versioned documentation is published with `mike`. The Docs workflow validates docs on pull requests and pushes to `develop`; stable documentation is published by running the workflow manually with a release version such as `1.1.0`. The workflow deploys the docs to the `major.minor` directory, updates the `latest` alias/default redirect, and creates the matching Git tag, for example `v1.1.0`.
+
+For local checks and manual publishing:
+
+```bash
+pip install -r docs/requirements.txt
+mkdocs build --strict
+mike deploy --push --update-aliases 1.1 latest
+mike set-default --push latest
+```
+
 Find yourself stuck using the package? Found a bug? Do you have general questions or suggestions for improving the media library? Feel free to create an issue on GitHub, we'll try to address it as soon as possible.
 
 ## Testing
