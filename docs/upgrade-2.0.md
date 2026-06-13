@@ -35,7 +35,9 @@ public array $storages = [
 ];
 ```
 
-Legacy `assets.path` values must already be storage-relative paths. The migration command does not split absolute filesystem paths into base directory and relative path.
+Legacy `assets.path` values should already be storage-relative paths. For rows created by older AssetConnect versions, the migration command can also derive the storage-relative path from `metadata.storage_info.storage_base_directory_path` when the absolute `assets.path` is under that legacy base directory.
+
+Arbitrary absolute filesystem paths are still rejected; the command only converts them when the legacy metadata proves which base directory should be removed.
 
 ## Dry Run
 
@@ -71,7 +73,7 @@ The command prints one line per asset:
 For each migrated asset the command:
 
 1. Resolves the target storage disk.
-2. Validates that `assets.path` is storage-relative.
+2. Validates that `assets.path` is storage-relative, or derives it from supported legacy storage metadata.
 3. Verifies that the file exists on the target storage disk.
 4. Updates the row to `storage = <disk>` and keeps `path = <relative path>`.
 
@@ -88,7 +90,8 @@ php spark asset-connect:migrate-paths --storage protected
 The command is safe to re-run:
 
 - Rows that already have a non-empty `storage` value are ignored.
-- Rows with absolute filesystem paths are rejected instead of being split into root and relative path.
+- Rows with arbitrary absolute filesystem paths are rejected instead of being split into root and relative path.
+- Rows with older `metadata.storage_info.storage_base_directory_path` metadata can be converted when the absolute path is inside that base directory.
 
 ## Large Tables
 

@@ -67,6 +67,44 @@ final class LegacyAssetPathMigratorTest extends AssetConnectFeatureTestCase
         $this->assertAssetRow($assetId, '', 'assets/missing.txt');
     }
 
+    public function testMigratesLegacyAbsolutePathUsingStorageMetadata(): void
+    {
+        $relativePath = 'assets/2026-06-06/154559.1780753559/signature.svg';
+        $storageRoot  = realpath($this->publicStorageRoot);
+
+        $this->assertIsString($storageRoot);
+
+        $absolutePath = $storageRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relativePath);
+        $metadata     = [
+            'user_custom'    => [],
+            'asset_variants' => [],
+            'storage_info'   => [
+                'storage_base_directory_path' => $storageRoot . DIRECTORY_SEPARATOR,
+                'file_relative_path'          => 'assets/2026-06-06/154559.1780753559/',
+            ],
+        ];
+
+        $this->createStoredFile($relativePath, 'legacy signature');
+        $assetId = $this->insertLegacyAsset($absolutePath, $metadata);
+
+        $progress = [];
+        $summary  = $this->migrator()->migrate(
+            new LegacyAssetPathMigrationOptions(storage: 'public'),
+            static function (LegacyAssetPathMigrationProgress $item) use (&$progress): void {
+                $progress[] = $item;
+            },
+        );
+
+        $this->assertSame(1, $summary->total);
+        $this->assertCount(1, $progress);
+        $this->assertSame($relativePath, $progress[0]->relativePath);
+        $this->assertSame('Database row updated.', $progress[0]->message);
+        $this->assertSame(LegacyAssetPathMigrationProgress::STATUS_MIGRATED, $progress[0]->status);
+        $this->assertSame(1, $summary->migrated);
+        $this->assertSame(0, $summary->failed);
+        $this->assertAssetRow($assetId, 'public', $relativePath);
+    }
+
     public function testRejectsAbsolutePathWithoutSplittingRoot(): void
     {
         $assetId = $this->insertLegacyAsset('/old/app/public/assets/legacy.txt');
@@ -109,7 +147,10 @@ final class LegacyAssetPathMigratorTest extends AssetConnectFeatureTestCase
         file_put_contents($path, $contents);
     }
 
-    private function insertLegacyAsset(string $path): int
+    /**
+     * @param array<string, mixed> $metadata
+     */
+    private function insertLegacyAsset(string $path, array $metadata = []): int
     {
         $this->db->table($this->tables['assets'])->insert([
             'entity_type' => $this->assetConfig->getEntityTypeKey(FakeAssetEntity::class),
@@ -122,7 +163,7 @@ final class LegacyAssetPathMigratorTest extends AssetConnectFeatureTestCase
             'size'        => 15,
             'path'        => $path,
             'order'       => 0,
-            'metadata'    => json_encode([]),
+            'metadata'    => json_encode($metadata),
             'created_at'  => '2026-06-12 10:00:00',
             'updated_at'  => '2026-06-12 10:00:00',
             'deleted_at'  => null,

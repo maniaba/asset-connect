@@ -17,13 +17,13 @@ final class MigrateLegacyAssetPaths extends BaseCommand
 {
     protected $group       = 'AssetConnect';
     protected $name        = 'asset-connect:migrate-paths';
-    protected $description = 'Assigns storage disk names to legacy AssetConnect rows that already store relative paths.';
+    protected $description = 'Assigns storage disk names to legacy AssetConnect rows and normalizes supported legacy paths.';
     protected $usage       = 'asset-connect:migrate-paths [options]';
     protected $options     = [
-        '--storage'       => 'Target storage disk name. If omitted, the collection/default storage configuration is used.',
-        '--dry-run'       => 'Print what would be migrated without updating the database.',
-        '--limit'         => 'Maximum number of candidate rows to process.',
-        '--batch-size'    => 'Number of candidate rows to load per query. Defaults to 100.',
+        '--storage'    => 'Target storage disk name. If omitted, the collection/default storage configuration is used.',
+        '--dry-run'    => 'Print what would be migrated without updating the database.',
+        '--limit'      => 'Maximum number of candidate rows to process.',
+        '--batch-size' => 'Number of candidate rows to load per query. Defaults to 100.',
     ];
 
     /**

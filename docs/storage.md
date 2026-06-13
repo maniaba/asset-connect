@@ -116,10 +116,10 @@ For non-local disks, use storage streams or write the result through `$variant->
 
 ## Migration Note
 
-Use the `asset-connect:migrate-paths` command when upgrading legacy rows that have storage-relative paths but no `storage` disk value:
+Use the `asset-connect:migrate-paths` command when upgrading legacy rows that have no `storage` disk value and either storage-relative paths or supported legacy storage metadata:
 
 ```bash
 php spark asset-connect:migrate-paths --storage public --dry-run
 ```
 
-The command does not split absolute filesystem paths into base directory and relative path. See [Upgrade to 2.0.0](upgrade-2.0.md) for the full migration workflow.
+For older rows that still contain absolute filesystem paths, the command can convert them only when `metadata.storage_info.storage_base_directory_path` identifies the legacy base directory. See [Upgrade to 2.0.0](upgrade-2.0.md) for the full migration workflow.

@@ -85,7 +85,7 @@ final readonly class LegacyAssetPathMigrator
     private function candidateBuilder(): BaseBuilder
     {
         return $this->db->table($this->assetTable())
-            ->select('id, collection, storage, path, file_name')
+            ->select('id, collection, storage, path, file_name, metadata')
             ->groupStart()
             ->where('storage IS NULL')
             ->orWhere('storage', '')
@@ -105,7 +105,10 @@ final readonly class LegacyAssetPathMigrator
         }
 
         $storage      = $this->resolveStorageName($row, $options);
-        $relativePath = $this->normalizeRelativePath($legacyPath);
+        $relativePath = $this->resolveRelativePath(
+            $legacyPath,
+            (string) ($row['metadata'] ?? ''),
+        );
 
         if ($relativePath === null) {
             return $this->progress(
@@ -113,7 +116,7 @@ final readonly class LegacyAssetPathMigrator
                 $total,
                 $assetId,
                 LegacyAssetPathMigrationProgress::STATUS_FAILED,
-                'Asset path must already be storage-relative.',
+                'Asset path must be storage-relative or include supported legacy storage metadata.',
                 $storage,
             );
         }
@@ -202,6 +205,70 @@ final readonly class LegacyAssetPathMigrator
         }
     }
 
+    private function resolveRelativePath(string $path, string $metadata): ?string
+    {
+        $relativePath = $this->normalizeRelativePath($path);
+
+        if ($relativePath !== null) {
+            return $relativePath;
+        }
+
+        return $this->resolveRelativePathFromLegacyMetadata($path, $metadata);
+    }
+
+    private function resolveRelativePathFromLegacyMetadata(string $path, string $metadata): ?string
+    {
+        if ($metadata === '') {
+            return null;
+        }
+
+        $decoded = json_decode($metadata, true);
+        if (! is_array($decoded)) {
+            return null;
+        }
+
+        $storageInfo = $decoded['storage_info'] ?? null;
+        if (! is_array($storageInfo)) {
+            return null;
+        }
+
+        $baseDirectory = $storageInfo['storage_base_directory_path'] ?? null;
+        if (! is_string($baseDirectory) || trim($baseDirectory) === '') {
+            return null;
+        }
+
+        $absolutePath = $this->normalizePathSeparators($path);
+        $basePath     = $this->normalizePathSeparators($baseDirectory);
+
+        if ($absolutePath === null || $basePath === null) {
+            return null;
+        }
+
+        $basePath = rtrim($basePath, '/') . '/';
+
+        if (! str_starts_with($absolutePath, $basePath)) {
+            return null;
+        }
+
+        $relativePath = $this->normalizeRelativePath(substr($absolutePath, strlen($basePath)));
+
+        if ($relativePath === null) {
+            return null;
+        }
+
+        $metadataDirectory = $storageInfo['file_relative_path'] ?? null;
+
+        if (is_string($metadataDirectory) && trim($metadataDirectory) !== '') {
+            $metadataDirectory = $this->normalizeRelativeDirectoryPath($metadataDirectory);
+
+            if ($metadataDirectory === null || ! str_starts_with($relativePath, $metadataDirectory)) {
+                return null;
+            }
+        }
+
+        return $relativePath;
+    }
+
     private function normalizeRelativePath(string $path): ?string
     {
         $path = trim($path);
@@ -228,6 +295,24 @@ final readonly class LegacyAssetPathMigrator
         }
 
         return $path;
+    }
+
+    private function normalizeRelativeDirectoryPath(string $path): ?string
+    {
+        $path = $this->normalizeRelativePath($path);
+
+        if ($path === null) {
+            return null;
+        }
+
+        return rtrim($path, '/') . '/';
+    }
+
+    private function normalizePathSeparators(string $path): ?string
+    {
+        $path = preg_replace('#/+#', '/', str_replace('\\', '/', trim($path)));
+
+        return is_string($path) && $path !== '' ? $path : null;
     }
 
     private function assetTable(): string
