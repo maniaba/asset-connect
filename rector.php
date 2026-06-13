@@ -110,6 +110,7 @@ return static function (RectorConfig $rectorConfig): void {
             __DIR__ . '/src/AssetVariants/AssetVariant.php',
             __DIR__ . '/src/Exceptions/AssetException.php',
             __DIR__ . '/src/Commands/MigrateLegacyAssetPaths.php',
+            __DIR__ . '/src/Commands/StorageLink.php',
 
             // Tests
             __DIR__ . '/tests/AssetCollection/SetupAssetCollectionTest.php',

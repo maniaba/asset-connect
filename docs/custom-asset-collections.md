@@ -93,7 +93,7 @@ This method is where you configure the collection's settings, such as allowed fi
 
 ## Understanding AuthorizableAssetCollectionDefinitionInterface
 
-The `AuthorizableAssetCollectionDefinitionInterface` extends `AssetCollectionDefinitionInterface` and adds authorization capabilities to asset collections. This interface is used when you need to control access to assets based on user permissions or other criteria.
+The `AuthorizableAssetCollectionDefinitionInterface` extends `AssetCollectionDefinitionInterface` and marks a collection as protected by default. AssetConnect stores these assets on the configured protected storage disk unless the collection explicitly selects another disk.
 
 ### checkAuthorization
 
@@ -101,7 +101,7 @@ The `AuthorizableAssetCollectionDefinitionInterface` extends `AssetCollectionDef
 public function checkAuthorization(Asset $asset): bool
 ```
 
-This method determines whether a user is authorized to access an asset. It's called when an asset is requested through the AssetConnectController. The method should return `true` if access is allowed and `false` if access should be denied.
+This method determines whether a user is authorized to access an asset when your application uses the authorization service directly. Default asset URLs are generated from the configured storage disk, so direct web-server links are not checked by this method.
 
 Files typically stored in collections implementing this interface are user-specific, such as profile pictures or documents that should only be accessible to certain users.
 
@@ -232,7 +232,7 @@ $definition->singleFileCollection();
 
 ### Implement Proper Authorization
 
-Always implement proper authorization checks in the `checkAuthorization` method to ensure that only authorized users can access assets.
+If your application serves assets through its own controller or service layer, implement proper authorization checks in the `checkAuthorization` method before returning a file response.
 
 ```php
 public function checkAuthorization(array|Entity $entity, Asset $asset): bool

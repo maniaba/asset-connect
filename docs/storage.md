@@ -36,6 +36,7 @@ public array $storages = [
     'protected' => [
         'driver'     => 'local',
         'root'       => WRITEPATH . 'asset-connect/protected',
+        'public_url' => 'assets/protected',
         'visibility' => 'protected',
     ],
 ];
@@ -43,19 +44,32 @@ public array $storages = [
 
 Public collections use `$defaultPublicStorage` unless the collection selects a storage disk explicitly. Protected collections use `$defaultProtectedStorage`.
 
-## Public Local Storage
+## Link Local Storage
 
-For local public storage, expose the configured root through your web server. A common setup is a symlink from the public folder to the storage root:
+For local storage disks that define `public_url`, expose the configured root through your web server. The recommended setup is to create links from the public folder to each storage root:
 
 ```bash
-ln -s ../writable/asset-connect/public public/assets/storage
+php spark asset-connect:storage-link
 ```
 
-The symlink target must match the `root` configured for the `public` disk, and the public URL path must match `public_url`.
+This creates links such as:
+
+```text
+public/assets/storage   -> writable/asset-connect/public
+public/assets/protected -> writable/asset-connect/protected
+```
+
+Limit the command to one disk when needed:
+
+```bash
+php spark asset-connect:storage-link --storage protected
+```
+
+The link path must match each disk's `public_url`. If you use a web server alias instead of a filesystem link, point it to the same storage root.
 
 ## Protected Storage
 
-Protected storage should not be web-accessible. Assets in collections implementing `AuthorizableAssetCollectionDefinitionInterface` are served through the AssetConnect controller after authorization.
+Protected storage is a separate disk selected by protected collections, but URLs are still generated directly from the disk's `public_url`. If you expose the default protected disk with `asset-connect:storage-link`, files are served by the web server without the AssetConnect controller.
 
 ```php
 final class PrivateDocumentsCollection implements AuthorizableAssetCollectionDefinitionInterface
@@ -69,6 +83,8 @@ final class PrivateDocumentsCollection implements AuthorizableAssetCollectionDef
 
     public function checkAuthorization(Asset $asset): bool
     {
+        // Used by applications that still call the authorization service directly.
+        // Direct web-server URLs are not checked by this method.
         return service('auth')->user()?->id === $asset->entity_id;
     }
 }

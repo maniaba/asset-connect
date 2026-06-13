@@ -18,6 +18,7 @@ use Maniaba\AssetConnect\Asset\Traits\AssetFileInfoTrait;
 use Maniaba\AssetConnect\Asset\Traits\AssetMimeTypeTrait;
 use Maniaba\AssetConnect\AssetCollection\AssetCollectionDefinitionFactory;
 use Maniaba\AssetConnect\Config\Asset as AssetConfig;
+use Maniaba\AssetConnect\Enums\AssetVisibility;
 use Maniaba\AssetConnect\Events\AssetUpdated;
 use Maniaba\AssetConnect\Models\AssetModel;
 use Maniaba\AssetConnect\Services\AssetAccessService;
@@ -235,14 +236,21 @@ class Asset extends Entity implements JsonSerializable
     }
 
     /**
-     * Check if the collection is protected.
+     * Check if the asset is stored on a protected disk.
      *
-     * A collection is considered protected if it implements the AuthorizableAssetCollectionDefinitionInterface.
+     * Before the asset has a storage disk, authorizable collections still
+     * default to protected visibility.
      *
      * @return bool True if the collection is protected, false otherwise.
      */
     protected function getIsProtectedCollection(): bool
     {
+        $storage = $this->attributes['storage'] ?? null;
+
+        if (is_string($storage) && trim($storage) !== '') {
+            return StorageManager::make()->disk($storage)->visibility() === AssetVisibility::PROTECTED;
+        }
+
         return is_subclass_of($this->collection_definition_class, AuthorizableAssetCollectionDefinitionInterface::class);
     }
 

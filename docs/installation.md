@@ -30,15 +30,15 @@ php spark migrate --namespace=Maniaba\\AssetConnect
 
 This will create the `assets` table in your database.
 
-### 3. Expose Public Local Storage
+### 3. Link Local Storage
 
-If you use the default local `public` storage disk, expose the configured storage root from your public folder:
+If you use the default local storage disks, expose the configured storage roots from your public folder:
 
 ```bash
-ln -s ../writable/asset-connect/public public/assets/storage
+php spark asset-connect:storage-link
 ```
 
-The symlink path must match the `public_url` configured for your public storage disk. If you use a web server alias instead of a symlink, point it to the same storage root.
+The command creates links for local disks that define `public_url`, including the default `public` and `protected` disks. If you use a web server alias instead of filesystem links, point each alias to the same configured storage root.
 
 ### 4. Configure Your Entities
 

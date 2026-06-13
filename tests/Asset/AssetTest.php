@@ -117,6 +117,20 @@ final class AssetTest extends CIUnitTestCase
         $this->assertSame($entityClass, $this->asset->subject_entity_class, 'The subject_entity_class should be set to the correct class name.');
     }
 
+    public function testIsProtectedCollectionUsesStorageDiskVisibility(): void
+    {
+        $config = new TestAssetConfig();
+
+        Factories::injectMock('config', \Maniaba\AssetConnect\Config\Asset::class, $config);
+        Factories::injectMock('config', 'Asset', $config);
+
+        $asset = new Asset([
+            'storage' => 'protected',
+        ]);
+
+        $this->assertTrue($asset->is_protected_collection);
+    }
+
     /**
      * Test setting entity type with an invalid class name
      */

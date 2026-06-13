@@ -140,4 +140,4 @@ assets/{date}/{time-or-id}/{file-name}
 
 ## Directory Security
 
-Directory permissions, web exposure, and public URLs belong to the storage configuration and server setup, not to path generation. For local public storage, expose only the intended public disk root through a symlink or web server alias. Protected storage should stay outside direct web access and be served through the AssetConnect controller.
+Directory permissions, web exposure, and public URLs belong to the storage configuration and server setup, not to path generation. For local storage disks that should have URLs, define `public_url` and expose the configured root with `php spark asset-connect:storage-link` or a web server alias.

@@ -110,39 +110,31 @@ final class UrlGeneratorTest extends CIUnitTestCase
         $urlGenerator->getUrl('non_existent');
     }
 
-    /**
-     * Test getUrl method for protected collection without variant
-     */
-    public function testGetUrlForProtectedCollectionWithoutVariant(): void
+    public function testGetUrlForProtectedStorageWithoutControllerRoute(): void
     {
-        // Arrange
-        // Create a new Asset object with a protected collection
         $asset = new Asset([
             'id'         => '123',
             'file_name'  => 'test.jpg',
-            'storage'    => 'public',
-            'path'       => 'uploads/test.jpg',
+            'storage'    => 'protected',
+            'path'       => 'secure/test.jpg',
             'collection' => 'default_collection',
             'metadata'   => json_encode([
                 'asset_variants' => [
                     'thumbnail' => [
                         'name'                  => 'thumbnail',
-                        'storage'               => 'public',
-                        'path'                  => 'uploads/variants/test_thumbnail.jpg',
-                        'relative_path_for_url' => 'uploads/variants/test_thumbnail.jpg',
+                        'storage'               => 'protected',
+                        'path'                  => 'secure/variants/test_thumbnail.jpg',
+                        'relative_path_for_url' => 'secure/variants/test_thumbnail.jpg',
                     ],
                 ],
             ]),
         ]);
 
-        // Create the URL generator
         $urlGenerator = UrlGenerator::create($asset);
 
-        // Act
         $url = $urlGenerator->getUrl();
 
-        // Assert
-        $this->assertSame('https://example.com/index.php/assets/storage/uploads/test.jpg', $url);
+        $this->assertSame('https://example.com/index.php/assets/protected/secure/test.jpg', $url);
     }
 
     /**

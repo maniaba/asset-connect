@@ -85,8 +85,9 @@ class Asset extends BaseConfig
      * Each asset stores the disk name and relative path in the database.
      * The physical root path and public URL mapping live here.
      *
-     * For local public storage, expose the configured root through your public
-     * folder using a symlink or server alias that points to the configured URL.
+     * For local storage, expose each configured root that has a public_url
+     * through your public folder using asset-connect:storage-link or a web
+     * server alias that points to the configured URL.
      *
      * @var array<string, array<string, mixed>>
      */
@@ -100,6 +101,7 @@ class Asset extends BaseConfig
         'protected' => [
             'driver'     => 'local',
             'root'       => WRITEPATH . 'asset-connect' . DIRECTORY_SEPARATOR . 'protected',
+            'public_url' => 'assets/protected',
             'visibility' => 'protected',
         ],
     ];

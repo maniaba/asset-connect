@@ -187,6 +187,8 @@ Two-step upload system – upload first, attach to entity later.
 |---|---|
 | `StorageManager.php` | Resolves configured storage disk names to disk instances and selects defaults by collection visibility. |
 | `FlysystemStorageDisk.php` | Flysystem-backed disk implementation for read/write/delete/metadata/public URL/local path operations. |
+| `StorageLinker.php` | Creates public filesystem links for local storage disks that define `public_url`. |
+| `StorageLinkResult.php` | Value object returned by storage link operations. |
 | `Interfaces/StorageDiskInterface.php` | Contract implemented by storage disks. |
 
 ---
@@ -194,7 +196,7 @@ Two-step upload system – upload first, attach to entity later.
 ## `Services/`
 `Maniaba\AssetConnect\Services`
 
-`AssetAccessService` / `AssetAccessServiceInterface` – resolves whether a request is authorised to access a private asset (delegates to the collection's `checkAuthorization()`).
+`AssetAccessService` / `AssetAccessServiceInterface` – optional service for applications that still serve files through a controller and need collection authorization checks.
 
 ---
 
@@ -214,9 +216,9 @@ Two-step upload system – upload first, attach to entity later.
 | File | Description |
 |---|---|
 | `UrlGeneratorInterface.php` | Contract: `getUrl()`, `getUrlRelative()`, `getTemporaryUrl()`, `getTemporaryUrlRelative()`. |
-| `DefaultUrlGenerator.php` | Generates public or signed URLs based on asset visibility. |
+| `DefaultUrlGenerator.php` | Registers legacy/controller routes for temporary or custom URL generation. |
 | `TempUrlToken.php` | Creates and validates HMAC-signed temporary URL tokens. |
-| `UrlGenerator.php` | Resolves and delegates to the configured generator. |
+| `UrlGenerator.php` | Generates direct storage-disk URLs and temporary route URLs. |
 | `Traits/UrlGeneratorTrait.php` | Shared URL-building helpers. |
 
 ---

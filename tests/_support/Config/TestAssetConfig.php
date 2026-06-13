@@ -51,6 +51,7 @@ final class TestAssetConfig extends BaseAsset
         'protected' => [
             'driver'     => 'local',
             'root'       => HOMEPATH . 'build/asset-connect/protected',
+            'public_url' => 'assets/protected',
             'visibility' => 'protected',
         ],
     ];

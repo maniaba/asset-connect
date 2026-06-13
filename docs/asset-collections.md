@@ -62,13 +62,13 @@ This method is called when an asset is added to the collection. You can use the 
 
 ### AuthorizableAssetCollectionDefinitionInterface
 
-The `AuthorizableAssetCollectionDefinitionInterface` extends `AssetCollectionDefinitionInterface` and adds authorization capabilities to asset collections. It defines an additional method:
+The `AuthorizableAssetCollectionDefinitionInterface` extends `AssetCollectionDefinitionInterface` and makes the collection use protected visibility by default. It defines an additional method:
 
 ```php
 public function checkAuthorization(array|Entity $entity, Asset $asset): bool;
 ```
 
-This method is called when an asset is accessed. You can use it to check if the user is authorized to access the asset. For example, you might check if the user owns the asset or has the necessary permissions.
+Use this method from your own controller or service layer when you need runtime authorization before returning a file response. Default AssetConnect URLs are generated directly from the configured storage disk.
 
 ### AssetCollectionSetterInterface
 

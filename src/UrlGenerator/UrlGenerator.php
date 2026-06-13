@@ -14,11 +14,8 @@ use Maniaba\AssetConnect\UrlGenerator\Interfaces\UrlGeneratorInterface;
 
 final readonly class UrlGenerator
 {
-    private bool $isProtectedCollection;
-
     private function __construct(private Asset $asset)
     {
-        $this->isProtectedCollection = $this->asset->is_protected_collection;
     }
 
     /**
@@ -30,31 +27,23 @@ final readonly class UrlGenerator
      */
     public function getUrl(?string $variantName = null): string
     {
-        // If the asset is not part of a protected collection, return the URL directly
-        if (! $this->isProtectedCollection) {
-            $storage = $this->asset->storage;
-            $path    = $this->asset->path;
+        $storage = $this->asset->storage;
+        $path    = $this->asset->path;
 
-            if ($variantName !== null && $variantName !== '' && $variantName !== '0') {
-                $variant = $this->asset->metadata->assetVariant->getAssetVariant($variantName);
+        if ($variantName !== null && $variantName !== '' && $variantName !== '0') {
+            $variant = $this->asset->metadata->assetVariant->getAssetVariant($variantName);
 
-                if ($variant === null) {
-                    throw new InvalidArgumentException("Variant '{$variantName}' does not exist for asset '{$this->asset->id}'.");
-                }
-
-                $storage = $variant->storage;
-                $path    = $variant->path;
+            if ($variant === null) {
+                throw new InvalidArgumentException("Variant '{$variantName}' does not exist for asset '{$this->asset->id}'.");
             }
 
-            $publicUrl = StorageManager::make()->disk($storage)->publicUrl($path);
-
-            return self::toAbsoluteUrl($publicUrl);
+            $storage = $variant->storage;
+            $path    = $variant->path;
         }
 
-        // If the asset is part of a protected collection, return the URL with go to controller route
-        $method = $variantName === null || $variantName === '' ? 'asset-connect.show' : 'asset-connect.show_variant';
+        $publicUrl = StorageManager::make()->disk($storage)->publicUrl($path);
 
-        return self::toAbsoluteUrl(self::routeTo($method, $this->asset, $variantName));
+        return self::toAbsoluteUrl($publicUrl);
     }
 
     /**
