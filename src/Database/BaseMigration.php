@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Maniaba\AssetConnect\Database;
 
+use CodeIgniter\Database\BaseConnection;
 use CodeIgniter\Database\Forge;
 use CodeIgniter\Database\Migration;
+use LogicException;
 use Maniaba\AssetConnect\Config\Asset;
 
 abstract class BaseMigration extends Migration
@@ -45,5 +47,14 @@ abstract class BaseMigration extends Migration
     protected function assetsTables(string $tableName): string
     {
         return $this->tables['assets'] ?? $tableName;
+    }
+
+    protected function database(): BaseConnection
+    {
+        if (! $this->db instanceof BaseConnection) {
+            throw new LogicException('AssetConnect migrations require a CodeIgniter base database connection.');
+        }
+
+        return $this->db;
     }
 }

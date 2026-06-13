@@ -37,7 +37,7 @@ public array $storages = [
 
 Legacy `assets.path` values should already be storage-relative paths. For rows created by older AssetConnect versions, the migration command can also derive the storage-relative path from `metadata.storage_info.storage_base_directory_path` when the absolute `assets.path` is under that legacy base directory.
 
-Arbitrary absolute filesystem paths are still rejected; the command only converts them when the legacy metadata proves which base directory should be removed.
+When the target Flysystem disk does not already contain the file, the command copies the readable legacy filesystem path into the selected storage disk before updating the database row. Arbitrary absolute filesystem paths are still rejected; the command only converts them when the legacy metadata proves which base directory should be removed.
 
 ## Dry Run
 
@@ -74,8 +74,8 @@ For each migrated asset the command:
 
 1. Resolves the target storage disk.
 2. Validates that `assets.path` is storage-relative, or derives it from supported legacy storage metadata.
-3. Verifies that the file exists on the target storage disk.
-4. Updates the row to `storage = <disk>` and keeps `path = <relative path>`.
+3. Verifies that the file exists on the target storage disk, or copies it from the readable legacy absolute path.
+4. Updates the row to `storage = <disk>` and `path = <relative path>`.
 
 ## Protected Files
 

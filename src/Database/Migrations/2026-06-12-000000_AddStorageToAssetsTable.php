@@ -43,7 +43,8 @@ class AddStorageToAssetsTable extends BaseMigration
     public function down(): void
     {
         $table   = $this->assetsTables('assets');
-        $indexes = $this->db->getIndexData($table);
+        $db      = $this->database();
+        $indexes = $db->getIndexData($table);
 
         if (isset($indexes[self::ENTITY_TYPE_ENTITY_ID_COLLECTION_DELETED_AT])) {
             $this->forge->dropKey($table, self::ENTITY_TYPE_ENTITY_ID_COLLECTION_DELETED_AT, false);
@@ -57,7 +58,7 @@ class AddStorageToAssetsTable extends BaseMigration
             $this->forge->dropKey($table, self::STORAGE_INDEX, false);
         }
 
-        if ($this->db->fieldExists('storage', $table)) {
+        if ($db->fieldExists('storage', $table)) {
             $this->forge->dropColumn($table, 'storage');
         }
     }

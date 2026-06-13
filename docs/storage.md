@@ -122,4 +122,4 @@ Use the `asset-connect:migrate-paths` command when upgrading legacy rows that ha
 php spark asset-connect:migrate-paths --storage public --dry-run
 ```
 
-For older rows that still contain absolute filesystem paths, the command can convert them only when `metadata.storage_info.storage_base_directory_path` identifies the legacy base directory. See [Upgrade to 2.0.0](upgrade-2.0.md) for the full migration workflow.
+For older rows that still contain absolute filesystem paths, the command can convert them only when `metadata.storage_info.storage_base_directory_path` identifies the legacy base directory. If the selected Flysystem disk does not already contain the file, the command copies the legacy source file into that disk before updating the row. See [Upgrade to 2.0.0](upgrade-2.0.md) for the full migration workflow.

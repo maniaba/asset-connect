@@ -67,24 +67,27 @@ final class LegacyAssetPathMigratorTest extends AssetConnectFeatureTestCase
         $this->assertAssetRow($assetId, '', 'assets/missing.txt');
     }
 
-    public function testMigratesLegacyAbsolutePathUsingStorageMetadata(): void
+    public function testCopiesLegacyAbsolutePathToConfiguredStorageUsingStorageMetadata(): void
     {
         $relativePath = 'assets/2026-06-06/154559.1780753559/signature.svg';
-        $storageRoot  = realpath($this->publicStorageRoot);
+        $legacyRoot   = $this->sourceFilesRoot . DIRECTORY_SEPARATOR . 'legacy-writable';
 
-        $this->assertIsString($storageRoot);
+        mkdir($legacyRoot, 0755, true);
 
-        $absolutePath = $storageRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relativePath);
+        $legacyRoot = realpath($legacyRoot);
+
+        $this->assertIsString($legacyRoot);
+
+        $absolutePath = $this->createFileInRoot($legacyRoot, $relativePath, 'legacy signature');
         $metadata     = [
             'user_custom'    => [],
             'asset_variants' => [],
             'storage_info'   => [
-                'storage_base_directory_path' => $storageRoot . DIRECTORY_SEPARATOR,
+                'storage_base_directory_path' => $legacyRoot . DIRECTORY_SEPARATOR,
                 'file_relative_path'          => 'assets/2026-06-06/154559.1780753559/',
             ],
         ];
 
-        $this->createStoredFile($relativePath, 'legacy signature');
         $assetId = $this->insertLegacyAsset($absolutePath, $metadata);
 
         $progress = [];
@@ -98,10 +101,12 @@ final class LegacyAssetPathMigratorTest extends AssetConnectFeatureTestCase
         $this->assertSame(1, $summary->total);
         $this->assertCount(1, $progress);
         $this->assertSame($relativePath, $progress[0]->relativePath);
-        $this->assertSame('Database row updated.', $progress[0]->message);
+        $this->assertSame('Legacy file copied and database row updated.', $progress[0]->message);
         $this->assertSame(LegacyAssetPathMigrationProgress::STATUS_MIGRATED, $progress[0]->status);
         $this->assertSame(1, $summary->migrated);
         $this->assertSame(0, $summary->failed);
+        $this->assertFileExists($absolutePath);
+        $this->assertSame('legacy signature', file_get_contents($this->publicStorageRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relativePath)));
         $this->assertAssetRow($assetId, 'public', $relativePath);
     }
 
@@ -145,6 +150,20 @@ final class LegacyAssetPathMigratorTest extends AssetConnectFeatureTestCase
         }
 
         file_put_contents($path, $contents);
+    }
+
+    private function createFileInRoot(string $root, string $relativePath, string $contents): string
+    {
+        $path = rtrim($root, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relativePath);
+        $dir  = dirname($path);
+
+        if (! is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
+        file_put_contents($path, $contents);
+
+        return $path;
     }
 
     /**

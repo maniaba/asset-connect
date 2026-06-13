@@ -9,6 +9,7 @@ use CodeIgniter\Database\BaseConnection;
 use Maniaba\AssetConnect\AssetCollection\AssetCollection;
 use Maniaba\AssetConnect\AssetCollection\SetupAssetCollection;
 use Maniaba\AssetConnect\Config\Asset as AssetConfig;
+use Maniaba\AssetConnect\Storage\Interfaces\StorageDiskInterface;
 use Maniaba\AssetConnect\Storage\StorageManager;
 use Throwable;
 
@@ -123,6 +124,7 @@ final readonly class LegacyAssetPathMigrator
 
         $disk         = $this->storageManager->disk($storage);
         $targetExists = $disk->fileExists($relativePath);
+        $copied       = false;
 
         if ($options->dryRun) {
             return $this->progress(
@@ -137,15 +139,33 @@ final readonly class LegacyAssetPathMigrator
         }
 
         if (! $targetExists) {
-            return $this->progress(
-                $current,
-                $total,
-                $assetId,
-                LegacyAssetPathMigrationProgress::STATUS_FAILED,
-                'File does not exist on the target storage disk.',
-                $storage,
-                $relativePath,
-            );
+            $sourcePath = $this->resolveLegacySourcePath($legacyPath);
+
+            if ($sourcePath === null) {
+                return $this->progress(
+                    $current,
+                    $total,
+                    $assetId,
+                    LegacyAssetPathMigrationProgress::STATUS_FAILED,
+                    'File does not exist on the target storage disk and the legacy source path is not readable.',
+                    $storage,
+                    $relativePath,
+                );
+            }
+
+            if (! $this->copyLegacySourceToStorage($sourcePath, $disk, $relativePath)) {
+                return $this->progress(
+                    $current,
+                    $total,
+                    $assetId,
+                    LegacyAssetPathMigrationProgress::STATUS_FAILED,
+                    'Legacy file could not be copied to the target storage disk.',
+                    $storage,
+                    $relativePath,
+                );
+            }
+
+            $copied = true;
         }
 
         $updated = $this->db->table($this->assetTable())
@@ -172,7 +192,7 @@ final readonly class LegacyAssetPathMigrator
             $total,
             $assetId,
             LegacyAssetPathMigrationProgress::STATUS_MIGRATED,
-            'Database row updated.',
+            $copied ? 'Legacy file copied and database row updated.' : 'Database row updated.',
             $storage,
             $relativePath,
         );
@@ -214,6 +234,38 @@ final readonly class LegacyAssetPathMigrator
         }
 
         return $this->resolveRelativePathFromLegacyMetadata($path, $metadata);
+    }
+
+    private function resolveLegacySourcePath(string $path): ?string
+    {
+        $path = trim($path);
+
+        if (! $this->isAbsoluteFilesystemPath($path) || ! is_file($path) || ! is_readable($path)) {
+            return null;
+        }
+
+        return $path;
+    }
+
+    private function copyLegacySourceToStorage(string $sourcePath, StorageDiskInterface $disk, string $relativePath): bool
+    {
+        $stream = fopen($sourcePath, 'rb');
+
+        if ($stream === false) {
+            return false;
+        }
+
+        try {
+            $disk->writeStream($relativePath, $stream, [
+                'visibility' => $disk->visibility()->value,
+            ]);
+
+            return true;
+        } catch (Throwable) {
+            return false;
+        } finally {
+            fclose($stream);
+        }
     }
 
     private function resolveRelativePathFromLegacyMetadata(string $path, string $metadata): ?string
@@ -306,6 +358,13 @@ final readonly class LegacyAssetPathMigrator
         }
 
         return rtrim($path, '/') . '/';
+    }
+
+    private function isAbsoluteFilesystemPath(string $path): bool
+    {
+        return str_starts_with($path, '/')
+            || str_starts_with($path, '\\')
+            || preg_match('#^[A-Za-z]:[\\\\/]#', $path) === 1;
     }
 
     private function normalizePathSeparators(string $path): ?string
