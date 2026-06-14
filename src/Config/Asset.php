@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Maniaba\AssetConnect\Config;
 
+use League\Flysystem\FilesystemOperator;
 use CodeIgniter\Config\BaseConfig;
 use CodeIgniter\Entity\Entity;
 use InvalidArgumentException;
@@ -11,6 +12,7 @@ use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\AssetConnect\AssetCollection\AssetCollectionDefinitionFactory;
 use Maniaba\AssetConnect\AssetCollection\DefaultAssetCollection;
 use Maniaba\AssetConnect\AssetVariants\AssetVariantsProcess;
+use Maniaba\AssetConnect\Enums\AssetVisibility;
 use Maniaba\AssetConnect\Jobs\AssetConnectJob;
 use Maniaba\AssetConnect\Models\AssetModel;
 use Maniaba\AssetConnect\PathGenerator\DefaultPathGenerator;
@@ -19,6 +21,7 @@ use Maniaba\AssetConnect\Pending\DefaultPendingStorage;
 use Maniaba\AssetConnect\Pending\Interfaces\PendingSecurityTokenInterface;
 use Maniaba\AssetConnect\Pending\Interfaces\PendingStorageInterface;
 use Maniaba\AssetConnect\Pending\PendingSecurityToken\SessionPendingSecurityToken;
+use Maniaba\AssetConnect\Storage\Interfaces\StorageDiskInterface;
 use Maniaba\AssetConnect\UrlGenerator\DefaultUrlGenerator;
 use Maniaba\AssetConnect\UrlGenerator\Interfaces\UrlGeneratorInterface;
 
@@ -89,20 +92,20 @@ class Asset extends BaseConfig
      * through your public folder using asset-connect:storage-link or a web
      * server alias that points to the configured URL.
      *
-     * @var array<string, array<string, mixed>>
+     * @var array<string, array{driver?: string, root?: string, public_url?: string|list<string>, url?: string|list<string>, visibility?: AssetVisibility|'public'|'protected'}>
      */
     public array $storages = [
         'public' => [
             'driver'     => 'local',
             'root'       => WRITEPATH . 'asset-connect' . DIRECTORY_SEPARATOR . 'public',
             'public_url' => 'assets/storage',
-            'visibility' => 'public',
+            'visibility' => AssetVisibility::PUBLIC,
         ],
         'protected' => [
             'driver'     => 'local',
             'root'       => WRITEPATH . 'asset-connect' . DIRECTORY_SEPARATOR . 'protected',
             'public_url' => 'assets/protected',
-            'visibility' => 'protected',
+            'visibility' => AssetVisibility::PROTECTED,
         ],
     ];
 
