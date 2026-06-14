@@ -6,6 +6,7 @@ on:
       - develop
     paths:
       - 'docs/**'
+      - 'overrides/**'
       - 'mkdocs.yml'
       - '.github/workflows/docs.yml'
   release:

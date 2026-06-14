@@ -3,6 +3,7 @@ site_description: AssetConnect is a file management library for CodeIgniter 4 th
 
 theme:
   name: material
+  custom_dir: docs/overrides
   logo: assets/flame.svg
   favicon: assets/favicon.ico
   icon:
