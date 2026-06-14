@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## What's Changed
 
 * Enhance documentation workflows with versioning and theme support by @maniaba in https://github.com/maniaba/asset-connect/pull/48
+* Reorder validation checks in AssetCollection to improve clarity and maintainability by @maniaba in https://github.com/maniaba/asset-connect/pull/50
+
 
 ## [v1.0.1](https://github.com/maniaba/asset-connect/tree/v1.0.1) - 2026-05-16
 
