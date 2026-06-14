@@ -145,8 +145,6 @@ final class AssetPersistenceManager
         $this->storedPath     = $relativePath;
         $this->asset->storage = $storageName;
         $this->asset->path    = $relativePath;
-        $this->asset->metadata->storage->setStorageName($storageName);
-        $this->asset->metadata->storage->setFileRelativePath($relativeDirectory);
 
         $stream = fopen($sourcePath, 'rb');
         if ($stream === false) {

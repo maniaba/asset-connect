@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Maniaba\AssetConnect\Config;
 
-use League\Flysystem\FilesystemOperator;
 use CodeIgniter\Config\BaseConfig;
 use CodeIgniter\Entity\Entity;
 use InvalidArgumentException;
@@ -21,7 +20,6 @@ use Maniaba\AssetConnect\Pending\DefaultPendingStorage;
 use Maniaba\AssetConnect\Pending\Interfaces\PendingSecurityTokenInterface;
 use Maniaba\AssetConnect\Pending\Interfaces\PendingStorageInterface;
 use Maniaba\AssetConnect\Pending\PendingSecurityToken\SessionPendingSecurityToken;
-use Maniaba\AssetConnect\Storage\Interfaces\StorageDiskInterface;
 use Maniaba\AssetConnect\UrlGenerator\DefaultUrlGenerator;
 use Maniaba\AssetConnect\UrlGenerator\Interfaces\UrlGeneratorInterface;
 
@@ -92,7 +90,7 @@ class Asset extends BaseConfig
      * through your public folder using asset-connect:storage-link or a web
      * server alias that points to the configured URL.
      *
-     * @var array<string, array{driver?: string, root?: string, public_url?: string|list<string>, url?: string|list<string>, visibility?: AssetVisibility|'public'|'protected'}>
+     * @var array<string, array{driver?: string, root?: string, public_url?: list<string>|string, url?: list<string>|string, visibility?: 'protected'|'public'|AssetVisibility}>
      */
     public array $storages = [
         'public' => [
