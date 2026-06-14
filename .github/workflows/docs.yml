@@ -1,32 +1,28 @@
 name: Docs
 
 on:
-  pull_request:
-    branches:
-      - develop
-    paths:
-      - 'docs/**/*'
-      - 'mkdocs.yml'
-      - '.github/workflows/docs.yml'
   push:
     branches:
       - develop
     paths:
-      - 'docs/**/*'
+      - 'docs/**'
       - 'mkdocs.yml'
       - '.github/workflows/docs.yml'
+  release:
+    types:
+      - published
   workflow_dispatch:
     inputs:
-      release_version:
-        description: 'Release version to tag and publish, e.g. 1.1.0'
+      docs_version:
+        description: 'Docs version to publish, e.g. 1.1.0'
         required: true
         type: string
-      docs_version:
-        description: 'Docs version directory. Defaults to major.minor from release_version.'
+      source_ref:
+        description: 'Git ref to build from. Defaults to docs_version prefixed with v when available.'
         required: false
         type: string
       update_latest:
-        description: 'Also move latest alias/default redirect to this release'
+        description: 'Also move latest alias/default redirect to this version'
         required: true
         default: false
         type: boolean
@@ -35,40 +31,88 @@ permissions:
   contents: read
 
 concurrency:
-  group: docs-${{ github.ref }}
+  group: docs-gh-pages
   cancel-in-progress: false
 
 jobs:
-  build:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.x'
-
-      - name: Install docs dependencies
-        run: pip install -r docs/requirements.txt
-
-      - name: Build docs
-        run: mkdocs build --strict
-
   deploy:
-    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
+      - name: Resolve docs metadata
+        id: docs
+        shell: bash
+        env:
+          INPUT_DOCS_VERSION: ${{ github.event.inputs.docs_version }}
+          INPUT_SOURCE_REF: ${{ github.event.inputs.source_ref }}
+          INPUT_UPDATE_LATEST: ${{ github.event.inputs.update_latest }}
+          RELEASE_PRERELEASE: ${{ github.event.release.prerelease }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+
+          validate_docs_version() {
+            local version="$1"
+
+            if [[ ! "$version" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
+              echo "::error::docs_version may only contain letters, numbers, dots, underscores, and hyphens."
+              exit 1
+            fi
+          }
+
+          if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
+            echo "checkout_ref=$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+            echo "docs_version=develop" >> "$GITHUB_OUTPUT"
+            echo "update_latest=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ "$GITHUB_EVENT_NAME" == "release" ]]; then
+            docs_version="${RELEASE_TAG#v}"
+
+            if [[ -z "$docs_version" ]]; then
+              echo "::error::Release tag must contain a version, e.g. v1.1.0."
+              exit 1
+            fi
+
+            validate_docs_version "$docs_version"
+
+            echo "checkout_ref=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
+            echo "docs_version=$docs_version" >> "$GITHUB_OUTPUT"
+
+            if [[ "$RELEASE_PRERELEASE" == "true" ]]; then
+              echo "update_latest=false" >> "$GITHUB_OUTPUT"
+            else
+              echo "update_latest=true" >> "$GITHUB_OUTPUT"
+            fi
+
+            exit 0
+          fi
+
+          docs_version="${INPUT_DOCS_VERSION#v}"
+          validate_docs_version "$docs_version"
+
+          source_ref="$INPUT_SOURCE_REF"
+          if [[ -z "$source_ref" ]]; then
+            source_ref="v$docs_version"
+          fi
+
+          echo "checkout_ref=$source_ref" >> "$GITHUB_OUTPUT"
+          echo "docs_version=$docs_version" >> "$GITHUB_OUTPUT"
+
+          if [[ "$INPUT_UPDATE_LATEST" == "true" ]]; then
+            echo "update_latest=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "update_latest=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Checkout
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          ref: ${{ steps.docs.outputs.checkout_ref }}
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -83,53 +127,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Resolve docs metadata
-        id: docs
-        shell: bash
-        env:
-          INPUT_DOCS_VERSION: ${{ inputs.docs_version }}
-          INPUT_RELEASE_VERSION: ${{ inputs.release_version }}
-          INPUT_UPDATE_LATEST: ${{ inputs.update_latest }}
-        run: |
-          set -euo pipefail
-
-          if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
-            echo "deploy_title=develop" >> "$GITHUB_OUTPUT"
-            echo "docs_version=develop" >> "$GITHUB_OUTPUT"
-            echo "release_version=develop" >> "$GITHUB_OUTPUT"
-            echo "source_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-            echo "tag=" >> "$GITHUB_OUTPUT"
-            echo "update_latest=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          release_version="$INPUT_RELEASE_VERSION"
-          release_version="${release_version#v}"
-          docs_version="$INPUT_DOCS_VERSION"
-
-          if [[ ! "$release_version" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]; then
-            echo "::error::release_version must be a SemVer-like value such as 1.1.0 or v1.1.0."
-            exit 1
-          fi
-
-          if [[ -z "$docs_version" ]]; then
-            base_version="${release_version%%[-+]*}"
-            IFS='.' read -r major minor _patch <<< "$base_version"
-            docs_version="${major}.${minor}"
-          fi
-
-          if [[ ! "$docs_version" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
-            echo "::error::docs_version may only contain letters, numbers, dots, underscores, and hyphens."
-            exit 1
-          fi
-
-          echo "release_version=$release_version" >> "$GITHUB_OUTPUT"
-          echo "deploy_title=$release_version" >> "$GITHUB_OUTPUT"
-          echo "docs_version=$docs_version" >> "$GITHUB_OUTPUT"
-          echo "tag=v$release_version" >> "$GITHUB_OUTPUT"
-          echo "source_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-          echo "update_latest=$INPUT_UPDATE_LATEST" >> "$GITHUB_OUTPUT"
-
       - name: Build docs
         run: mkdocs build --strict
 
@@ -138,7 +135,6 @@ jobs:
 
       - name: Deploy versioned docs
         env:
-          DEPLOY_TITLE: ${{ steps.docs.outputs.deploy_title }}
           DOCS_VERSION: ${{ steps.docs.outputs.docs_version }}
           UPDATE_LATEST: ${{ steps.docs.outputs.update_latest }}
         shell: bash
@@ -146,10 +142,10 @@ jobs:
           set -euo pipefail
 
           if [[ "$UPDATE_LATEST" == "true" ]]; then
-            mike deploy --push --update-aliases --title "$DEPLOY_TITLE" "$DOCS_VERSION" latest
+            mike deploy --push --update-aliases "$DOCS_VERSION" latest
             mike set-default --push latest
           else
-            mike deploy --push --title "$DEPLOY_TITLE" "$DOCS_VERSION"
+            mike deploy --push "$DOCS_VERSION"
           fi
 
       - name: Preserve Pages root files
@@ -176,26 +172,3 @@ jobs:
           popd
 
           git worktree remove "$pages_dir"
-
-      - name: Create release tag
-        if: github.event_name == 'workflow_dispatch'
-        env:
-          TAG: ${{ steps.docs.outputs.tag }}
-          SOURCE_SHA: ${{ steps.docs.outputs.source_sha }}
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" > /dev/null 2>&1; then
-            git fetch origin "refs/tags/$TAG:refs/tags/$TAG"
-            existing_sha="$(git rev-list -n 1 "$TAG")"
-
-            if [[ "$existing_sha" != "$SOURCE_SHA" ]]; then
-              echo "::warning::Tag $TAG already exists at $existing_sha; leaving it unchanged."
-            fi
-
-            exit 0
-          fi
-
-          git tag -a "$TAG" "$SOURCE_SHA" -m "Release $TAG"
-          git push origin "$TAG"
