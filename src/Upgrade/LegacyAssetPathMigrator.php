@@ -35,39 +35,39 @@ final readonly class LegacyAssetPathMigrator
         $summary        = new LegacyAssetPathMigrationSummary();
         $summary->total = $this->countCandidates($options);
 
-        if ($summary->total === 0) {
-            return $summary;
-        }
+        if ($summary->total > 0) {
+            $lastId    = 0;
+            $processed = 0;
+            $batchSize = max(1, $options->batchSize);
 
-        $lastId    = 0;
-        $processed = 0;
-        $batchSize = max(1, $options->batchSize);
+            while ($processed < $summary->total) {
+                $remaining = $summary->total - $processed;
+                $rows      = $this->candidateBuilder()
+                    ->where('id >', $lastId)
+                    ->orderBy('id', 'ASC')
+                    ->limit(min($batchSize, $remaining))
+                    ->get()
+                    ->getResultArray();
 
-        while ($processed < $summary->total) {
-            $remaining = $summary->total - $processed;
-            $rows      = $this->candidateBuilder()
-                ->where('id >', $lastId)
-                ->orderBy('id', 'ASC')
-                ->limit(min($batchSize, $remaining))
-                ->get()
-                ->getResultArray();
+                if ($rows === []) {
+                    break;
+                }
 
-            if ($rows === []) {
-                break;
-            }
+                foreach ($rows as $row) {
+                    $lastId = (int) $row['id'];
+                    $processed++;
 
-            foreach ($rows as $row) {
-                $lastId = (int) $row['id'];
-                $processed++;
+                    $progress = $this->migrateRow($row, $options, $processed, $summary->total);
+                    $summary->record($progress);
 
-                $progress = $this->migrateRow($row, $options, $processed, $summary->total);
-                $summary->record($progress);
-
-                if ($onProgress !== null) {
-                    $onProgress($progress);
+                    if ($onProgress !== null) {
+                        $onProgress($progress);
+                    }
                 }
             }
         }
+
+        $this->cleanupLegacyStorageInfo($options, $summary);
 
         return $summary;
     }
@@ -91,6 +91,103 @@ final readonly class LegacyAssetPathMigrator
             ->where('storage IS NULL')
             ->orWhere('storage', '')
             ->groupEnd();
+    }
+
+    private function cleanupLegacyStorageInfo(LegacyAssetPathMigrationOptions $options, LegacyAssetPathMigrationSummary $summary): void
+    {
+        $lastId    = 0;
+        $processed = 0;
+        $limit     = $options->limit;
+        $batchSize = max(1, $options->batchSize);
+
+        while ($limit === null || $processed < $limit) {
+            $remaining = $limit === null ? $batchSize : min($batchSize, $limit - $processed);
+            if ($remaining <= 0) {
+                break;
+            }
+
+            $rows = $this->db->table($this->assetTable())
+                ->select('id, storage, path, metadata')
+                ->where('id >', $lastId)
+                ->where('metadata IS NOT NULL')
+                ->orderBy('id', 'ASC')
+                ->limit($remaining)
+                ->get()
+                ->getResultArray();
+
+            if ($rows === []) {
+                break;
+            }
+
+            foreach ($rows as $row) {
+                $lastId = (int) $row['id'];
+
+                if (! $this->hasCleanableStorageInfo($row)) {
+                    continue;
+                }
+
+                $processed++;
+
+                if ($options->dryRun) {
+                    $summary->metadataDryRun++;
+
+                    continue;
+                }
+
+                $cleanedMetadata = $this->removeStorageInfoFromMetadata((string) ($row['metadata'] ?? ''));
+
+                $updated = $this->db->table($this->assetTable())
+                    ->where('id', $lastId)
+                    ->update(['metadata' => $cleanedMetadata]);
+
+                if ($updated) {
+                    $summary->metadataCleaned++;
+                } else {
+                    $summary->metadataFailed++;
+                }
+            }
+        }
+    }
+
+    /**
+     * @param array<string, int|string|null> $row
+     */
+    private function hasCleanableStorageInfo(array $row): bool
+    {
+        $storage = trim((string) ($row['storage'] ?? ''));
+        if ($storage === '') {
+            return false;
+        }
+
+        if ($this->normalizeRelativePath((string) ($row['path'] ?? '')) === null) {
+            return false;
+        }
+
+        $metadata = (string) ($row['metadata'] ?? '');
+        if ($metadata === '') {
+            return false;
+        }
+
+        $decoded = json_decode($metadata, true);
+
+        return is_array($decoded) && array_key_exists('storage_info', $decoded);
+    }
+
+    private function removeStorageInfoFromMetadata(string $metadata): ?string
+    {
+        $decoded = json_decode($metadata, true);
+
+        if (! is_array($decoded)) {
+            return $metadata;
+        }
+
+        unset($decoded['storage_info']);
+
+        if ($decoded === []) {
+            return null;
+        }
+
+        return json_encode($decoded, JSON_THROW_ON_ERROR);
     }
 
     /**

@@ -6,11 +6,14 @@ namespace Maniaba\AssetConnect\Upgrade;
 
 final class LegacyAssetPathMigrationSummary
 {
-    public int $total    = 0;
-    public int $migrated = 0;
-    public int $dryRun   = 0;
-    public int $skipped  = 0;
-    public int $failed   = 0;
+    public int $total           = 0;
+    public int $migrated        = 0;
+    public int $dryRun          = 0;
+    public int $skipped         = 0;
+    public int $failed          = 0;
+    public int $metadataCleaned = 0;
+    public int $metadataDryRun  = 0;
+    public int $metadataFailed  = 0;
 
     public function record(LegacyAssetPathMigrationProgress $progress): void
     {

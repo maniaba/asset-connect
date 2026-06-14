@@ -57,8 +57,13 @@ final class MigrateLegacyAssetPaths extends BaseCommand
             return EXIT_ERROR;
         }
 
-        if ($summary->total === 0) {
-            CLI::write('No legacy asset paths found.', 'green');
+        if (
+            $summary->total === 0
+            && $summary->metadataCleaned === 0
+            && $summary->metadataDryRun === 0
+            && $summary->metadataFailed === 0
+        ) {
+            CLI::write('No legacy asset paths or storage metadata found.', 'green');
 
             return EXIT_SUCCESS;
         }
@@ -70,9 +75,12 @@ final class MigrateLegacyAssetPaths extends BaseCommand
             ['Dry run', (string) $summary->dryRun],
             ['Skipped', (string) $summary->skipped],
             ['Failed', (string) $summary->failed],
+            ['Metadata cleaned', (string) $summary->metadataCleaned],
+            ['Metadata dry run', (string) $summary->metadataDryRun],
+            ['Metadata failed', (string) $summary->metadataFailed],
         ]);
 
-        return $summary->failed > 0 ? EXIT_ERROR : EXIT_SUCCESS;
+        return $summary->failed > 0 || $summary->metadataFailed > 0 ? EXIT_ERROR : EXIT_SUCCESS;
     }
 
     private function writeProgress(LegacyAssetPathMigrationProgress $progress): void

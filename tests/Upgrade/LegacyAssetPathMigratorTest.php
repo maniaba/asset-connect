@@ -108,6 +108,66 @@ final class LegacyAssetPathMigratorTest extends AssetConnectFeatureTestCase
         $this->assertFileExists($absolutePath);
         $this->assertSame('legacy signature', file_get_contents($this->publicStorageRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relativePath)));
         $this->assertAssetRow($assetId, 'public', $relativePath);
+
+        $metadata = $this->assetMetadata($assetId);
+
+        $this->assertIsArray($metadata);
+        $this->assertArrayNotHasKey('storage_info', $metadata);
+        $this->assertSame([], $metadata['user_custom']);
+        $this->assertSame([], $metadata['asset_variants']);
+    }
+
+    public function testCleansLegacyStorageInfoFromAlreadyMigratedRows(): void
+    {
+        $metadata = [
+            'user_custom' => [
+                'caption' => 'Migrated row',
+            ],
+            'storage_info' => [
+                'storage'            => 'public',
+                'file_relative_path' => 'assets/already-migrated/',
+            ],
+        ];
+        $assetId = $this->insertLegacyAsset('assets/already-migrated/file.txt', $metadata, 'public');
+
+        $summary = $this->migrator()->migrate(new LegacyAssetPathMigrationOptions(storage: 'public'));
+
+        $this->assertSame(0, $summary->total);
+        $this->assertSame(0, $summary->migrated);
+        $this->assertSame(1, $summary->metadataCleaned);
+        $this->assertSame(0, $summary->metadataFailed);
+        $this->assertAssetRow($assetId, 'public', 'assets/already-migrated/file.txt');
+
+        $cleanedMetadata = $this->assetMetadata($assetId);
+
+        $this->assertIsArray($cleanedMetadata);
+        $this->assertArrayNotHasKey('storage_info', $cleanedMetadata);
+        $this->assertSame(['caption' => 'Migrated row'], $cleanedMetadata['user_custom']);
+    }
+
+    public function testDryRunReportsLegacyStorageInfoCleanupWithoutUpdatingMetadata(): void
+    {
+        $metadata = [
+            'storage_info' => [
+                'storage'            => 'public',
+                'file_relative_path' => 'assets/dry-run-cleanup/',
+            ],
+        ];
+        $assetId = $this->insertLegacyAsset('assets/dry-run-cleanup/file.txt', $metadata, 'public');
+
+        $summary = $this->migrator()->migrate(new LegacyAssetPathMigrationOptions(
+            storage: 'public',
+            dryRun: true,
+        ));
+
+        $this->assertSame(0, $summary->total);
+        $this->assertSame(1, $summary->metadataDryRun);
+        $this->assertSame(0, $summary->metadataCleaned);
+
+        $metadataAfterDryRun = $this->assetMetadata($assetId);
+
+        $this->assertIsArray($metadataAfterDryRun);
+        $this->assertArrayHasKey('storage_info', $metadataAfterDryRun);
     }
 
     public function testRejectsAbsolutePathWithoutSplittingRoot(): void
@@ -169,13 +229,13 @@ final class LegacyAssetPathMigratorTest extends AssetConnectFeatureTestCase
     /**
      * @param array<string, mixed> $metadata
      */
-    private function insertLegacyAsset(string $path, array $metadata = []): int
+    private function insertLegacyAsset(string $path, array $metadata = [], string $storage = ''): int
     {
         $this->db->table($this->tables['assets'])->insert([
             'entity_type' => $this->assetConfig->getEntityTypeKey(FakeAssetEntity::class),
             'entity_id'   => 1,
             'collection'  => 'fake_documents',
-            'storage'     => '',
+            'storage'     => $storage,
             'name'        => 'Legacy file',
             'file_name'   => basename($path),
             'mime_type'   => 'text/plain',
@@ -189,6 +249,28 @@ final class LegacyAssetPathMigratorTest extends AssetConnectFeatureTestCase
         ]);
 
         return (int) $this->db->insertID();
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function assetMetadata(int $assetId): ?array
+    {
+        $row = $this->db->table($this->tables['assets'])
+            ->select('metadata')
+            ->where('id', $assetId)
+            ->get()
+            ->getRowArray();
+
+        $metadata = is_array($row) ? $row['metadata'] : null;
+
+        if (! is_string($metadata) || $metadata === '') {
+            return null;
+        }
+
+        $decoded = json_decode($metadata, true);
+
+        return is_array($decoded) ? $decoded : null;
     }
 
     private function assertAssetRow(int $assetId, string $storage, string $path): void

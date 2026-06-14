@@ -77,6 +77,7 @@ For each migrated asset the command:
 2. Validates that `assets.path` is storage-relative, or derives it from supported legacy storage metadata.
 3. Verifies that the file exists on the target storage disk, or copies it from the readable legacy absolute path.
 4. Updates the row to `storage = <disk>` and `path = <relative path>`.
+5. Removes the legacy `metadata.storage_info` property from rows whose storage disk and relative path are already normalized.
 
 ## Protected Files
 
@@ -90,7 +91,7 @@ php spark asset-connect:migrate-paths --storage protected
 
 The command is safe to re-run:
 
-- Rows that already have a non-empty `storage` value are ignored.
+- Rows that already have a non-empty `storage` value are ignored by path migration, but still have obsolete `metadata.storage_info` cleaned when their path is already storage-relative.
 - Rows with arbitrary absolute filesystem paths are rejected instead of being split into root and relative path.
 - Rows with older `metadata.storage_info.storage_base_directory_path` metadata can be converted when the absolute path is inside that base directory.
 
