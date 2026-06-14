@@ -9,6 +9,7 @@ use CodeIgniter\CLI\CLI;
 use Maniaba\AssetConnect\Config\Asset as AssetConfig;
 use Maniaba\AssetConnect\Storage\StorageLinker;
 use Maniaba\AssetConnect\Storage\StorageLinkResult;
+use Maniaba\AssetConnect\Storage\StorageLinkStatus;
 use Override;
 
 final class StorageLink extends BaseCommand
@@ -46,7 +47,7 @@ final class StorageLink extends BaseCommand
         $failed  = 0;
 
         foreach ($results as $result) {
-            if ($result->status === StorageLinkResult::STATUS_FAILED) {
+            if ($result->status === StorageLinkStatus::FAILED) {
                 $failed++;
             }
 
@@ -59,14 +60,13 @@ final class StorageLink extends BaseCommand
     private function writeResult(StorageLinkResult $result): void
     {
         $color = match ($result->status) {
-            StorageLinkResult::STATUS_LINKED   => 'green',
-            StorageLinkResult::STATUS_EXISTING => 'light_gray',
-            StorageLinkResult::STATUS_SKIPPED  => 'yellow',
-            StorageLinkResult::STATUS_FAILED   => 'red',
-            default                            => 'white',
+            StorageLinkStatus::LINKED   => 'green',
+            StorageLinkStatus::EXISTING => 'light_gray',
+            StorageLinkStatus::SKIPPED  => 'yellow',
+            StorageLinkStatus::FAILED   => 'red',
         };
 
-        $line = sprintf('[%s] %s - %s', strtoupper($result->status), $result->storage, $result->message);
+        $line = sprintf('[%s] %s - %s', strtoupper($result->status->value), $result->storage, $result->message);
 
         if ($result->source !== '' || $result->target !== '') {
             $line .= sprintf(' (%s -> %s)', $result->target, $result->source);

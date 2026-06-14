@@ -189,6 +189,7 @@ Two-step upload system – upload first, attach to entity later.
 | `FlysystemStorageDisk.php` | Flysystem-backed disk implementation for read/write/delete/metadata/public URL/local path operations. |
 | `StorageLinker.php` | Creates public filesystem links for local storage disks that define `public_url`. |
 | `StorageLinkResult.php` | Value object returned by storage link operations. |
+| `StorageLinkStatus.php` | Enum for storage link operation result statuses. |
 | `Interfaces/StorageDiskInterface.php` | Contract implemented by storage disks. |
 
 ---

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Storage;
 
 use Maniaba\AssetConnect\Storage\StorageLinker;
-use Maniaba\AssetConnect\Storage\StorageLinkResult;
+use Maniaba\AssetConnect\Storage\StorageLinkStatus;
 use PHPUnit\Framework\TestCase;
 use Tests\Support\Config\TestAssetConfig;
 
@@ -55,8 +55,8 @@ final class StorageLinkerTest extends TestCase
         $results = (new StorageLinker($config, $this->publicRoot))->link();
 
         $this->assertCount(2, $results);
-        $this->assertSame(StorageLinkResult::STATUS_LINKED, $results[0]->status);
-        $this->assertSame(StorageLinkResult::STATUS_LINKED, $results[1]->status);
+        $this->assertSame(StorageLinkStatus::LINKED, $results[0]->status);
+        $this->assertSame(StorageLinkStatus::LINKED, $results[1]->status);
         $this->assertLinkedTo($this->root . DIRECTORY_SEPARATOR . 'storage-public', $this->publicRoot . DIRECTORY_SEPARATOR . 'assets/storage');
         $this->assertLinkedTo($this->root . DIRECTORY_SEPARATOR . 'storage-protected', $this->publicRoot . DIRECTORY_SEPARATOR . 'assets/protected');
     }
@@ -76,7 +76,7 @@ final class StorageLinkerTest extends TestCase
         $results = (new StorageLinker($config, $this->publicRoot))->link(dryRun: true);
 
         $this->assertCount(1, $results);
-        $this->assertSame(StorageLinkResult::STATUS_LINKED, $results[0]->status);
+        $this->assertSame(StorageLinkStatus::LINKED, $results[0]->status);
         $this->assertFileDoesNotExist($this->publicRoot . DIRECTORY_SEPARATOR . 'assets/storage');
     }
 
@@ -94,7 +94,7 @@ final class StorageLinkerTest extends TestCase
         $results = (new StorageLinker($config, $this->publicRoot))->link();
 
         $this->assertCount(1, $results);
-        $this->assertSame(StorageLinkResult::STATUS_SKIPPED, $results[0]->status);
+        $this->assertSame(StorageLinkStatus::SKIPPED, $results[0]->status);
     }
 
     private function assertLinkedTo(string $source, string $target): void
