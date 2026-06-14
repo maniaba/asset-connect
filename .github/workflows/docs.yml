@@ -5,20 +5,171 @@ on:
     branches:
       - develop
     paths:
-      - 'docs/**/*'
+      - 'docs/**'
+      - 'overrides/**'
       - 'mkdocs.yml'
       - '.github/workflows/docs.yml'
+  release:
+    types:
+      - published
+  workflow_dispatch:
+    inputs:
+      docs_version:
+        description: 'Docs version to publish, e.g. 1.1.0'
+        required: true
+        type: string
+      source_ref:
+        description: 'Git ref to build from. Defaults to docs_version prefixed with v when available.'
+        required: false
+        type: string
+      update_latest:
+        description: 'Also move latest alias/default redirect to this version'
+        required: true
+        default: false
+        type: boolean
 
 permissions:
-  contents: write
+  contents: read
+
+concurrency:
+  group: docs-gh-pages
+  cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - name: Resolve docs metadata
+        id: docs
+        shell: bash
+        env:
+          INPUT_DOCS_VERSION: ${{ github.event.inputs.docs_version }}
+          INPUT_SOURCE_REF: ${{ github.event.inputs.source_ref }}
+          INPUT_UPDATE_LATEST: ${{ github.event.inputs.update_latest }}
+          RELEASE_PRERELEASE: ${{ github.event.release.prerelease }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+
+          validate_docs_version() {
+            local version="$1"
+
+            if [[ ! "$version" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
+              echo "::error::docs_version may only contain letters, numbers, dots, underscores, and hyphens."
+              exit 1
+            fi
+          }
+
+          if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
+            echo "checkout_ref=$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+            echo "docs_version=develop" >> "$GITHUB_OUTPUT"
+            echo "update_latest=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ "$GITHUB_EVENT_NAME" == "release" ]]; then
+            docs_version="${RELEASE_TAG#v}"
+
+            if [[ -z "$docs_version" ]]; then
+              echo "::error::Release tag must contain a version, e.g. v1.1.0."
+              exit 1
+            fi
+
+            validate_docs_version "$docs_version"
+
+            echo "checkout_ref=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
+            echo "docs_version=$docs_version" >> "$GITHUB_OUTPUT"
+
+            if [[ "$RELEASE_PRERELEASE" == "true" ]]; then
+              echo "update_latest=false" >> "$GITHUB_OUTPUT"
+            else
+              echo "update_latest=true" >> "$GITHUB_OUTPUT"
+            fi
+
+            exit 0
+          fi
+
+          docs_version="${INPUT_DOCS_VERSION#v}"
+          validate_docs_version "$docs_version"
+
+          source_ref="$INPUT_SOURCE_REF"
+          if [[ -z "$source_ref" ]]; then
+            source_ref="v$docs_version"
+          fi
+
+          echo "checkout_ref=$source_ref" >> "$GITHUB_OUTPUT"
+          echo "docs_version=$docs_version" >> "$GITHUB_OUTPUT"
+
+          if [[ "$INPUT_UPDATE_LATEST" == "true" ]]; then
+            echo "update_latest=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "update_latest=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v6
         with:
-          python-version: 3.x
-      - run: pip install mkdocs-material
-      - run: mkdocs gh-deploy --force
+          fetch-depth: 0
+          ref: ${{ steps.docs.outputs.checkout_ref }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+
+      - name: Install docs dependencies
+        run: pip install -r docs/requirements.txt
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Build docs
+        run: mkdocs build --strict
+
+      - name: Fetch Pages branch
+        run: git fetch origin gh-pages --depth=1 || true
+
+      - name: Deploy versioned docs
+        env:
+          DOCS_VERSION: ${{ steps.docs.outputs.docs_version }}
+          UPDATE_LATEST: ${{ steps.docs.outputs.update_latest }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "$UPDATE_LATEST" == "true" ]]; then
+            mike deploy --push --update-aliases "$DOCS_VERSION" latest
+            mike set-default --push latest
+          else
+            mike deploy --push "$DOCS_VERSION"
+          fi
+
+      - name: Preserve Pages root files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ ! -f docs/CNAME ]]; then
+            exit 0
+          fi
+
+          pages_dir="$(mktemp -d)"
+          git fetch origin gh-pages --depth=1
+          git branch -f gh-pages origin/gh-pages
+          git worktree add "$pages_dir" gh-pages
+          cp docs/CNAME "$pages_dir/CNAME"
+
+          pushd "$pages_dir"
+          git add CNAME
+          if ! git diff --cached --quiet; then
+            git commit -m "Update Pages CNAME"
+            git push origin gh-pages
+          fi
+          popd
+
+          git worktree remove "$pages_dir"
