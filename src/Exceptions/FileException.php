@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Maniaba\AssetConnect\Exceptions;
 
+use Throwable;
+
 final class FileException extends AssetException
 {
     public static function forInvalidFile(string $filePath): self
@@ -36,6 +38,22 @@ final class FileException extends AssetException
             $message,
             'Cannot copy file',
             500,
+        );
+    }
+
+    public static function forCannotWriteToStorage(string $storage, string $path, ?Throwable $previous = null): self
+    {
+        $message = lang('Asset.exception.cannot_write_to_storage', [
+            'storage' => $storage,
+            'path'    => $path,
+            'reason'  => $previous?->getMessage() ?: 'unknown storage error',
+        ]);
+
+        return new self(
+            $message,
+            $message,
+            500,
+            $previous,
         );
     }
 

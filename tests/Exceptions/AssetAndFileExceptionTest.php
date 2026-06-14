@@ -7,6 +7,7 @@ namespace Tests\Exceptions;
 use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\AssetConnect\Exceptions\AssetException;
 use Maniaba\AssetConnect\Exceptions\FileException;
+use RuntimeException;
 use Tests\Support\Entities\FakeAssetEntity;
 
 /**
@@ -51,11 +52,20 @@ final class AssetAndFileExceptionTest extends CIUnitTestCase
         $fileNotFound   = FileException::forFileNotFound('/tmp/missing.txt');
         $cannotCopyFile = FileException::forCannotCopyFile('/tmp/source.txt', 'public:target.txt');
         $cannotMoveFile = FileException::forCannotMoveFile('/tmp/source.txt', 'public:target.txt');
+        $storageError   = FileException::forCannotWriteToStorage(
+            's3',
+            'assets/source.txt',
+            new RuntimeException('Access denied'),
+        );
 
         $this->assertExceptionHasCodeAndErrors($invalidFile, 400);
         $this->assertExceptionHasCodeAndErrors($fileNotFound, 404);
         $this->assertExceptionHasCodeAndErrors($cannotCopyFile, 500);
         $this->assertExceptionHasCodeAndErrors($cannotMoveFile, 500);
+        $this->assertExceptionHasCodeAndErrors($storageError, 500);
+        $this->assertSame('Access denied', $storageError->getPrevious()?->getMessage());
+        $this->assertStringContainsString('storage disk "s3"', (string) $storageError->errors[0]);
+        $this->assertStringContainsString('assets/source.txt', (string) $storageError->errors[0]);
     }
 
     private function assertExceptionHasCodeAndErrors(AssetException $exception, int $code): void

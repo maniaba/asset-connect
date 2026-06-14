@@ -155,8 +155,8 @@ final class AssetPersistenceManager
             $this->storageDisk->writeStream($relativePath, $stream, [
                 'visibility' => $this->collection->getVisibility()->value,
             ]);
-        } catch (Throwable) {
-            throw FileException::forCannotCopyFile($sourcePath, $storageName . ':' . $relativePath);
+        } catch (Throwable $exception) {
+            throw FileException::forCannotWriteToStorage($storageName, $relativePath, $exception);
         } finally {
             fclose($stream);
         }

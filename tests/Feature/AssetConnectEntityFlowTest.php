@@ -13,9 +13,13 @@ use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Asset\AssetAdder;
 use Maniaba\AssetConnect\Asset\AssetPersistenceManager;
 use Maniaba\AssetConnect\AssetConnect;
+use Maniaba\AssetConnect\Enums\AssetVisibility;
+use Maniaba\AssetConnect\Exceptions\FileException;
 use Maniaba\AssetConnect\Models\AssetModel;
 use Maniaba\AssetConnect\Pending\PendingAsset;
+use Maniaba\AssetConnect\Storage\Interfaces\StorageDiskInterface;
 use PHPUnit\Framework\MockObject\Stub;
+use RuntimeException;
 use Tests\Support\AssetCollections\FakeAvatarCollection;
 use Tests\Support\AssetCollections\FakeDocumentCollection;
 use Tests\Support\AssetConnectFeatureTestCase;
@@ -58,6 +62,41 @@ final class AssetConnectEntityFlowTest extends AssetConnectFeatureTestCase
         $this->assertSame($asset->id, $assets[0]->id);
         $this->assertSame($asset->id, $entity->getFirstAsset()?->id);
         $this->assertSame($asset->id, $entity->getLastAsset()?->id);
+    }
+
+    public function testStorageWriteFailureExposesStorageSpecificException(): void
+    {
+        $disk = $this->createMock(StorageDiskInterface::class);
+        $disk->method('name')->willReturn('public');
+        $disk->method('visibility')->willReturn(AssetVisibility::PUBLIC);
+        $disk->expects($this->once())
+            ->method('writeStream')
+            ->willThrowException(new RuntimeException('Adapter refused stream'));
+        $disk->expects($this->once())
+            ->method('delete');
+
+        $this->assetConfig->storages['public'] = [
+            'disk' => $disk,
+        ];
+
+        $entity = $this->createFakeEntity();
+        $source = $this->createSourceFile('storage-failure.txt', 'document contents');
+
+        try {
+            $entity->addAsset($source)
+                ->usingFileName('storage-failure.txt')
+                ->preservingOriginal()
+                ->toAssetCollection(FakeDocumentCollection::class);
+        } catch (FileException $exception) {
+            $this->assertSame(500, $exception->getCode());
+            $this->assertSame('Adapter refused stream', $exception->getPrevious()?->getMessage());
+            $this->assertStringContainsString('storage disk "public"', (string) $exception->errors[0]);
+            $this->assertStringContainsString('fake-assets/documents/storage-failure.txt', (string) $exception->errors[0]);
+
+            return;
+        }
+
+        $this->fail('Expected storage write failure exception.');
     }
 
     public function testEntityCanMapAssetsToFileNamesAndCustomProperties(): void
