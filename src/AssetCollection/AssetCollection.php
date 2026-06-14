@@ -84,16 +84,16 @@ final class AssetCollection implements AssetCollectionSetterInterface, AssetColl
                 return $extension->value; // Convert enum to string
             }
 
-            if (! preg_match('/^[a-zA-Z0-9]+$/', $extension)) {
-                throw new InvalidArgumentException('Invalid file extension: ' . $extension);
-            }
-
             if ($extension === '') {
                 throw new InvalidArgumentException('File extension cannot be empty.');
             }
 
             if ($extension[0] === '.') {
                 throw new InvalidArgumentException('File extension should not start with a dot: ' . $extension);
+            }
+
+            if (! preg_match('/^[a-zA-Z0-9]+$/', $extension)) {
+                throw new InvalidArgumentException('Invalid file extension: ' . $extension);
             }
 
             return strtolower(trim($extension));
