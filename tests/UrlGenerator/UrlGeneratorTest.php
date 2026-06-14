@@ -110,7 +110,7 @@ final class UrlGeneratorTest extends CIUnitTestCase
         $urlGenerator->getUrl('non_existent');
     }
 
-    public function testGetUrlForProtectedStorageWithoutControllerRoute(): void
+    public function testGetUrlForProtectedStorageUsesControllerRoute(): void
     {
         $asset = new Asset([
             'id'         => '123',
@@ -134,7 +134,35 @@ final class UrlGeneratorTest extends CIUnitTestCase
 
         $url = $urlGenerator->getUrl();
 
-        $this->assertSame('https://example.com/index.php/assets/protected/secure/test.jpg', $url);
+        $this->assertSame('https://example.com/index.php/assets/123/test.jpg', $url);
+    }
+
+    public function testGetUrlForProtectedStorageVariantUsesControllerRoute(): void
+    {
+        $asset = new Asset([
+            'id'         => '123',
+            'file_name'  => 'test.jpg',
+            'storage'    => 'protected',
+            'path'       => 'secure/test.jpg',
+            'collection' => 'default_collection',
+            'metadata'   => json_encode([
+                'asset_variants' => [
+                    'thumbnail' => [
+                        'name'                  => 'thumbnail',
+                        'file_name'             => 'test_thumbnail.jpg',
+                        'storage'               => 'protected',
+                        'path'                  => 'secure/variants/test_thumbnail.jpg',
+                        'relative_path_for_url' => 'secure/variants/test_thumbnail.jpg',
+                    ],
+                ],
+            ]),
+        ]);
+
+        $urlGenerator = UrlGenerator::create($asset);
+
+        $url = $urlGenerator->getUrl('thumbnail');
+
+        $this->assertSame('https://example.com/index.php/assets/123/variant/thumbnail/test_thumbnail.jpg', $url);
     }
 
     /**

@@ -34,7 +34,7 @@ final class StorageLinkerTest extends TestCase
         parent::tearDown();
     }
 
-    public function testCreatesConfiguredStorageLinks(): void
+    public function testCreatesConfiguredPublicStorageLinksAndSkipsProtectedStorage(): void
     {
         $config           = new TestAssetConfig();
         $config->storages = [
@@ -56,9 +56,9 @@ final class StorageLinkerTest extends TestCase
 
         $this->assertCount(2, $results);
         $this->assertSame(StorageLinkStatus::LINKED, $results[0]->status);
-        $this->assertSame(StorageLinkStatus::LINKED, $results[1]->status);
+        $this->assertSame(StorageLinkStatus::SKIPPED, $results[1]->status);
         $this->assertLinkedTo($this->root . DIRECTORY_SEPARATOR . 'storage-public', $this->publicRoot . DIRECTORY_SEPARATOR . 'assets/storage');
-        $this->assertLinkedTo($this->root . DIRECTORY_SEPARATOR . 'storage-protected', $this->publicRoot . DIRECTORY_SEPARATOR . 'assets/protected');
+        $this->assertFileDoesNotExist($this->publicRoot . DIRECTORY_SEPARATOR . 'assets/protected');
     }
 
     public function testDryRunDoesNotCreateLinks(): void

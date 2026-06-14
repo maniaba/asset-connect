@@ -36,7 +36,6 @@ public array $storages = [
     'protected' => [
         'driver'     => 'local',
         'root'       => WRITEPATH . 'asset-connect/protected',
-        'public_url' => 'assets/protected',
         'visibility' => 'protected',
     ],
 ];
@@ -166,7 +165,7 @@ For non-local adapters, `local_path` is `null`. Use storage streams, `writeFile(
 
 ## Link Local Storage
 
-For local storage disks that define `public_url`, expose the configured root through your web server. The recommended setup is to create links from the public folder to each storage root:
+For local public storage disks that define `public_url`, expose the configured root through your web server. The recommended setup is to create links from the public folder to each public storage root:
 
 ```bash
 php spark asset-connect:storage-link
@@ -175,21 +174,20 @@ php spark asset-connect:storage-link
 This creates links such as:
 
 ```text
-public/assets/storage   -> writable/asset-connect/public
-public/assets/protected -> writable/asset-connect/protected
+public/assets/storage -> writable/asset-connect/public
 ```
 
 Limit the command to one disk when needed:
 
 ```bash
-php spark asset-connect:storage-link --storage protected
+php spark asset-connect:storage-link --storage public
 ```
 
-The link path must match each disk's `public_url`. If you use a web server alias instead of a filesystem link, point it to the same storage root.
+The link path must match the disk's `public_url`. If you use a web server alias instead of a filesystem link, point it to the same storage root.
 
 ## Protected Storage
 
-Protected storage is a separate disk selected by protected collections, but URLs are still generated directly from the disk's `public_url`. If you expose the default protected disk with `asset-connect:storage-link`, files are served by the web server without the AssetConnect controller.
+Protected storage is a separate disk selected by protected collections. Protected asset URLs are generated through AssetConnect routes, so requests go through the AssetConnect controller and `AuthorizableAssetCollectionDefinitionInterface::checkAuthorization()`. Do not expose protected storage roots with `public_url`, `asset-connect:storage-link`, or a web-server alias.
 
 ```php
 final class PrivateDocumentsCollection implements AuthorizableAssetCollectionDefinitionInterface

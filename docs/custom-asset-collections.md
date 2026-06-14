@@ -101,7 +101,7 @@ The `AuthorizableAssetCollectionDefinitionInterface` extends `AssetCollectionDef
 public function checkAuthorization(Asset $asset): bool
 ```
 
-This method determines whether a user is authorized to access an asset when your application uses the authorization service directly. Default asset URLs are generated from the configured storage disk, so direct web-server links are not checked by this method.
+This method determines whether a user is authorized to access an asset when protected assets are served through AssetConnect routes. Direct web-server links do not run this method, so protected storage roots should not be exposed with `public_url`, `asset-connect:storage-link`, or a web-server alias.
 
 Files typically stored in collections implementing this interface are user-specific, such as profile pictures or documents that should only be accessible to certain users.
 

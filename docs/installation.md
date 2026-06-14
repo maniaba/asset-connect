@@ -32,13 +32,13 @@ This will create the `assets` table in your database.
 
 ### 3. Link Local Storage
 
-If you use the default local storage disks, expose the configured storage roots from your public folder:
+If you use the default local public storage disk, expose the configured public storage root from your public folder:
 
 ```bash
 php spark asset-connect:storage-link
 ```
 
-The command creates links for local disks that define `public_url`, including the default `public` and `protected` disks. If you use a web server alias instead of filesystem links, point each alias to the same configured storage root.
+The command creates links for public local disks that define `public_url`. Protected disks are served through AssetConnect routes and should not be exposed through a public link or web-server alias.
 
 ### 4. Configure Your Entities
 

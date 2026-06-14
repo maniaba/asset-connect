@@ -30,7 +30,6 @@ public array $storages = [
     'protected' => [
         'driver'     => 'local',
         'root'       => WRITEPATH . 'asset-connect/protected',
-        'public_url' => 'assets/protected',
         'visibility' => 'protected',
     ],
 ];
@@ -113,7 +112,7 @@ php spark asset-connect:migrate-paths --storage public --batch-size=50
 
 After migration, asset rows should have a non-empty `storage` value and `path` should remain a storage-relative path.
 
-For local storage, make sure each public URL points to its configured storage root:
+For local storage, make sure each public storage URL points to its configured storage root:
 
 ```bash
 php spark asset-connect:storage-link

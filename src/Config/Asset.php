@@ -110,7 +110,6 @@ class Asset extends BaseConfig
         'protected' => [
             'driver'     => 'local',
             'root'       => WRITEPATH . 'asset-connect' . DIRECTORY_SEPARATOR . 'protected',
-            'public_url' => 'assets/protected',
             'visibility' => AssetVisibility::PROTECTED,
         ],
     ];

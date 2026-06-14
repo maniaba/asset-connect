@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Maniaba\AssetConnect\Storage;
 
 use Maniaba\AssetConnect\Config\Asset as AssetConfig;
+use Maniaba\AssetConnect\Enums\AssetVisibility;
 
 final readonly class StorageLinker
 {
@@ -51,6 +52,10 @@ final readonly class StorageLinker
 
         if (! is_string($root) || trim($root) === '') {
             return $this->result($name, StorageLinkStatus::SKIPPED, '', '', 'Only local storage disks with a root path can be linked.');
+        }
+
+        if ($this->visibility($storageConfig) === AssetVisibility::PROTECTED) {
+            return $this->result($name, StorageLinkStatus::SKIPPED, $root, '', 'Protected storage disks are served through AssetConnect routes and should not be publicly linked.');
         }
 
         $publicUrl = $this->publicUrlPath($storageConfig['public_url'] ?? $storageConfig['url'] ?? null);
@@ -114,6 +119,20 @@ final readonly class StorageLinker
         }
 
         return trim(str_replace('\\', '/', $publicUrl), '/');
+    }
+
+    /**
+     * @param array<string, mixed> $storageConfig
+     */
+    private function visibility(array $storageConfig): AssetVisibility
+    {
+        $visibility = $storageConfig['visibility'] ?? AssetVisibility::PUBLIC;
+
+        if ($visibility instanceof AssetVisibility) {
+            return $visibility;
+        }
+
+        return AssetVisibility::from((string) $visibility);
     }
 
     private function existingLinkStatus(string $source, string $target): ?string

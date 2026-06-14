@@ -8,6 +8,7 @@ use CodeIgniter\I18n\Time;
 use CodeIgniter\Router\RouteCollection;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\AssetVariants\AssetVariant;
+use Maniaba\AssetConnect\Enums\AssetVisibility;
 use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Maniaba\AssetConnect\Storage\StorageManager;
 use Maniaba\AssetConnect\UrlGenerator\Interfaces\UrlGeneratorInterface;
@@ -27,8 +28,9 @@ final readonly class UrlGenerator
      */
     public function getUrl(?string $variantName = null): string
     {
-        $storage = $this->asset->storage;
-        $path    = $this->asset->path;
+        $storage   = $this->asset->storage;
+        $path      = $this->asset->path;
+        $routeName = 'asset-connect.show';
 
         if ($variantName !== null && $variantName !== '' && $variantName !== '0') {
             $variant = $this->asset->metadata->assetVariant->getAssetVariant($variantName);
@@ -37,11 +39,20 @@ final readonly class UrlGenerator
                 throw new InvalidArgumentException("Variant '{$variantName}' does not exist for asset '{$this->asset->id}'.");
             }
 
-            $storage = $variant->storage;
-            $path    = $variant->path;
+            $storage   = $variant->storage;
+            $path      = $variant->path;
+            $routeName = 'asset-connect.show_variant';
         }
 
-        $publicUrl = StorageManager::make()->disk($storage)->publicUrl($path);
+        $disk = StorageManager::make()->disk($storage);
+
+        if ($disk->visibility() === AssetVisibility::PROTECTED) {
+            $url = self::routeTo($routeName, $this->asset, $variantName);
+
+            return $url === '' ? '' : self::toAbsoluteUrl($url);
+        }
+
+        $publicUrl = $disk->publicUrl($path);
 
         return self::toAbsoluteUrl($publicUrl);
     }
