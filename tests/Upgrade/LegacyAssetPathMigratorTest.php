@@ -119,10 +119,28 @@ final class LegacyAssetPathMigratorTest extends AssetConnectFeatureTestCase
 
     public function testCleansLegacyStorageInfoFromAlreadyMigratedRows(): void
     {
-        $metadata = [
+        $expectedMetadata = [
             'user_custom' => [
                 'caption' => 'Migrated row',
+                'flags'   => [
+                    'featured' => true,
+                    'private'  => false,
+                ],
             ],
+            'asset_variants' => [
+                'thumbnail' => [
+                    'name'      => 'thumbnail',
+                    'file_name' => 'thumb.jpg',
+                    'storage'   => 'public',
+                    'path'      => 'assets/already-migrated/thumb.jpg',
+                ],
+            ],
+            'checksum'    => 'sha256:123456',
+            'sort_order'  => 10,
+            'reviewed_at' => null,
+        ];
+        $metadata = [
+            ...$expectedMetadata,
             'storage_info' => [
                 'storage'            => 'public',
                 'file_relative_path' => 'assets/already-migrated/',
@@ -142,7 +160,7 @@ final class LegacyAssetPathMigratorTest extends AssetConnectFeatureTestCase
 
         $this->assertIsArray($cleanedMetadata);
         $this->assertArrayNotHasKey('storage_info', $cleanedMetadata);
-        $this->assertSame(['caption' => 'Migrated row'], $cleanedMetadata['user_custom']);
+        $this->assertSame($expectedMetadata, $cleanedMetadata);
     }
 
     public function testDryRunReportsLegacyStorageInfoCleanupWithoutUpdatingMetadata(): void
