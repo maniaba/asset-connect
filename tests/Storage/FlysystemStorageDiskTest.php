@@ -106,6 +106,29 @@ final class FlysystemStorageDiskTest extends CIUnitTestCase
         fclose($stream);
     }
 
+    public function testConvertsAssetVisibilityToFlysystemVisibility(): void
+    {
+        $filesystem = $this->createMock(FilesystemOperator::class);
+        $stream     = fopen('php://temp', 'rb+');
+
+        $this->assertIsResource($stream);
+
+        $filesystem->expects($this->once())
+            ->method('write')
+            ->with('protected/file.txt', 'contents', ['visibility' => 'private']);
+
+        $filesystem->expects($this->once())
+            ->method('writeStream')
+            ->with('protected-stream/file.txt', $stream, ['visibility' => 'private']);
+
+        $disk = new FlysystemStorageDisk('protected', $filesystem, AssetVisibility::PROTECTED);
+
+        $disk->write('protected/file.txt', 'contents', ['visibility' => 'protected']);
+        $disk->writeStream('protected-stream/file.txt', $stream, ['visibility' => AssetVisibility::PROTECTED]);
+
+        fclose($stream);
+    }
+
     public function testPublicUrlUsesConcreteFlysystemImplementation(): void
     {
         $filesystem = new Filesystem(

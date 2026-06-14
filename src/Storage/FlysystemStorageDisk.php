@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Maniaba\AssetConnect\Storage;
 
 use League\Flysystem\FilesystemOperator;
+use League\Flysystem\Visibility;
 use League\Flysystem\WhitespacePathNormalizer;
 use Maniaba\AssetConnect\Enums\AssetVisibility;
 use Maniaba\AssetConnect\Storage\Interfaces\StorageDiskInterface;
@@ -38,7 +39,7 @@ final readonly class FlysystemStorageDisk implements StorageDiskInterface
     #[Override]
     public function write(string $path, string $contents, array $config = []): void
     {
-        $this->filesystem->write($this->normalizePath($path), $contents, $config);
+        $this->filesystem->write($this->normalizePath($path), $contents, $this->normalizeConfig($config));
     }
 
     /**
@@ -47,7 +48,7 @@ final readonly class FlysystemStorageDisk implements StorageDiskInterface
     #[Override]
     public function writeStream(string $path, $stream, array $config = []): void
     {
-        $this->filesystem->writeStream($this->normalizePath($path), $stream, $config);
+        $this->filesystem->writeStream($this->normalizePath($path), $stream, $this->normalizeConfig($config));
     }
 
     #[Override]
@@ -129,5 +130,22 @@ final readonly class FlysystemStorageDisk implements StorageDiskInterface
     private function normalizePath(string $path): string
     {
         return ltrim($this->pathNormalizer->normalizePath(str_replace('\\', '/', $path)), '/');
+    }
+
+    private function normalizeConfig(array $config): array
+    {
+        $visibility = $config['visibility'] ?? null;
+
+        if ($visibility instanceof AssetVisibility) {
+            $visibility = $visibility->value;
+        }
+
+        if ($visibility === AssetVisibility::PROTECTED->value) {
+            $config['visibility'] = Visibility::PRIVATE;
+        } elseif ($visibility === AssetVisibility::PUBLIC->value) {
+            $config['visibility'] = Visibility::PUBLIC;
+        }
+
+        return $config;
     }
 }
