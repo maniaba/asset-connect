@@ -212,19 +212,22 @@ final class AssetPersistenceManager
      */
     private function processFileVariants(): void
     {
-        if ($this->setupAssetCollection->getCollectionDefinition() instanceof AssetVariantsInterface) {
-            $definition          = $this->setupAssetCollection->getCollectionDefinition();
-            $this->assetVariants = new AssetVariants(
-                $this->pathGenerator,
-                $this->asset,
-            );
+        $definition = $this->setupAssetCollection->getCollectionDefinition();
 
-            $definition->variants($this->assetVariants, $this->asset);
+        if (! $definition instanceof AssetVariantsInterface) {
+            return;
+        }
 
-            if (! $this->assetVariants->onQueue) {
-                // If the definition indicates that variants should be processed immediately,
-                AssetVariantsProcess::run($this->asset, $definition);
-            }
+        $this->assetVariants = new AssetVariants(
+            $this->pathGenerator,
+            $this->asset,
+        );
+
+        $definition->variants($this->assetVariants, $this->asset);
+
+        if (! $this->assetVariants->onQueue) {
+            // If the definition indicates that variants should be processed immediately,
+            AssetVariantsProcess::run($this->asset, $definition);
         }
     }
 
