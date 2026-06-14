@@ -51,7 +51,7 @@ final readonly class StorageLinker
         $root = $storageConfig['root'] ?? null;
 
         if (! is_string($root) || trim($root) === '') {
-            return $this->result($name, StorageLinkStatus::SKIPPED, '', '', 'Only local storage disks with a root path can be linked.');
+            return $this->result($name, StorageLinkStatus::SKIPPED, '', '', 'Storage links are only supported for local disks with a root path. Remote public disks should use public_url directly.');
         }
 
         if ($this->visibility($storageConfig) === AssetVisibility::PROTECTED) {

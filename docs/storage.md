@@ -185,6 +185,8 @@ php spark asset-connect:storage-link --storage public
 
 The link path must match the disk's `public_url`. If you use a web server alias instead of a filesystem link, point it to the same storage root.
 
+Remote public disks such as S3, Google Cloud Storage, or CDN-backed disks are not linked into `public/`. Configure their absolute `public_url` and AssetConnect will return that URL directly from `$asset->getUrl()`.
+
 ## Protected Storage
 
 Protected storage is a separate disk selected by protected collections. Protected asset URLs are generated through AssetConnect routes, so requests go through the AssetConnect controller and `AuthorizableAssetCollectionDefinitionInterface::checkAuthorization()`. Do not expose protected storage roots with `public_url`, `asset-connect:storage-link`, or a web-server alias.

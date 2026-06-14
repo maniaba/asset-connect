@@ -97,6 +97,24 @@ final class StorageLinkerTest extends TestCase
         $this->assertSame(StorageLinkStatus::SKIPPED, $results[0]->status);
     }
 
+    public function testSkipsRemotePublicStorageWithDirectPublicUrl(): void
+    {
+        $config           = new TestAssetConfig();
+        $config->storages = [
+            's3_public' => [
+                'driver'     => 's3',
+                'public_url' => 'https://cdn.example.test/assets',
+                'visibility' => 'public',
+            ],
+        ];
+
+        $results = (new StorageLinker($config, $this->publicRoot))->link();
+
+        $this->assertCount(1, $results);
+        $this->assertSame(StorageLinkStatus::SKIPPED, $results[0]->status);
+        $this->assertSame('Storage links are only supported for local disks with a root path. Remote public disks should use public_url directly.', $results[0]->message);
+    }
+
     private function assertLinkedTo(string $source, string $target): void
     {
         $this->assertDirectoryExists($source);
