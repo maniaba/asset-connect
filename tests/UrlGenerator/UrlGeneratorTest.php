@@ -8,6 +8,8 @@ use CodeIgniter\Config\Factories;
 use CodeIgniter\Config\Services;
 use CodeIgniter\I18n\Time;
 use CodeIgniter\Test\CIUnitTestCase;
+use League\Flysystem\Filesystem;
+use League\Flysystem\Local\LocalFilesystemAdapter;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Maniaba\AssetConnect\UrlGenerator\UrlGenerator;
@@ -108,6 +110,43 @@ final class UrlGeneratorTest extends CIUnitTestCase
         // Act & Assert
         $this->expectException(InvalidArgumentException::class);
         $urlGenerator->getUrl('non_existent');
+    }
+
+    public function testGetUrlForPublicStorageWithoutPublicUrlGeneratorThrowsConfigurationMessage(): void
+    {
+        $config           = new TestAssetConfig();
+        $config->storages = [
+            'ftp_public' => [
+                'filesystem' => new Filesystem(new LocalFilesystemAdapter(sys_get_temp_dir())),
+                'visibility' => 'public',
+            ],
+        ];
+
+        Factories::injectMock('config', \Maniaba\AssetConnect\Config\Asset::class, $config);
+
+        $asset = new Asset([
+            'id'         => '123',
+            'file_name'  => 'test.jpg',
+            'storage'    => 'ftp_public',
+            'path'       => 'uploads/test.jpg',
+            'collection' => 'default_collection',
+            'metadata'   => json_encode([
+                'asset_variants' => [],
+            ]),
+        ]);
+
+        try {
+            UrlGenerator::create($asset)->getUrl();
+        } catch (InvalidArgumentException $exception) {
+            $this->assertSame(
+                ["Public storage disk 'ftp_public' cannot generate asset URLs. Configure public_url for this disk, provide a Flysystem public URL generator, or mark the disk as protected to serve assets through AssetConnect routes."],
+                $exception->errors,
+            );
+
+            return;
+        }
+
+        $this->fail('Expected missing public URL generator exception.');
     }
 
     public function testGetUrlForProtectedStorageUsesControllerRoute(): void

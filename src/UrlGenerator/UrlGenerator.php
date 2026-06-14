@@ -6,6 +6,7 @@ namespace Maniaba\AssetConnect\UrlGenerator;
 
 use CodeIgniter\I18n\Time;
 use CodeIgniter\Router\RouteCollection;
+use League\Flysystem\UnableToGeneratePublicUrl;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\AssetVariants\AssetVariant;
 use Maniaba\AssetConnect\Enums\AssetVisibility;
@@ -52,7 +53,16 @@ final readonly class UrlGenerator
             return $url === '' ? '' : self::toAbsoluteUrl($url);
         }
 
-        $publicUrl = $disk->publicUrl($path);
+        try {
+            $publicUrl = $disk->publicUrl($path);
+        } catch (UnableToGeneratePublicUrl $exception) {
+            throw new InvalidArgumentException(
+                self::publicUrlFailureMessage($storage),
+                'Unable to generate public asset URL',
+                0,
+                $exception,
+            );
+        }
 
         return self::toAbsoluteUrl($publicUrl);
     }
@@ -130,6 +140,11 @@ final readonly class UrlGenerator
     public static function create(Asset $asset): self
     {
         return new self($asset);
+    }
+
+    private static function publicUrlFailureMessage(string $storage): string
+    {
+        return "Public storage disk '{$storage}' cannot generate asset URLs. Configure public_url for this disk, provide a Flysystem public URL generator, or mark the disk as protected to serve assets through AssetConnect routes.";
     }
 
     private static function toAbsoluteUrl(string $url): string
