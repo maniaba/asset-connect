@@ -9,7 +9,7 @@ Physical root paths are not stored in the database. This keeps assets portable w
 
 ## Flysystem
 
-AssetConnect uses Flysystem 3 for storage operations. Local disks are supported out of the box through the configured `local` driver. Other Flysystem adapters can be provided through configuration as a `FilesystemOperator` or a custom `StorageDiskInterface` implementation.
+AssetConnect uses Flysystem 3 for storage operations. Local disks are supported out of the box through the configured `local` driver. Any official Flysystem adapter can be provided through configuration as an `adapter`. You can also provide a prebuilt `FilesystemOperator` or a custom `StorageDiskInterface` implementation when you need full control.
 
 Core operations use storage-relative paths:
 
@@ -43,6 +43,126 @@ public array $storages = [
 ```
 
 Public collections use `$defaultPublicStorage` unless the collection selects a storage disk explicitly. Protected collections use `$defaultProtectedStorage`.
+
+## Official Flysystem Adapters
+
+AssetConnect keeps only the local Flysystem dependency in its own `composer.json`. Applications install the extra adapter package they need, define the disk in `$storages`, and add a `setupStorage{Driver}()` method that creates the adapter for that driver.
+
+See the [official Flysystem adapter documentation](https://flysystem.thephpleague.com/docs/) for connection-specific options.
+
+| Adapter | Package |
+|---|---|
+| Local | Included with `league/flysystem` |
+| FTP | `league/flysystem-ftp:^3.0` |
+| SFTP | `league/flysystem-sftp-v3:^3.0` |
+| Memory | `league/flysystem-memory:^3.0` |
+| AWS S3 | `league/flysystem-aws-s3-v3:^3.0` |
+| AsyncAws S3 | `league/flysystem-async-aws-s3:^3.0` |
+| Google Cloud Storage | `league/flysystem-google-cloud-storage:^3.0` |
+| Azure Blob Storage | `league/flysystem-azure-blob-storage:^3.0` |
+| MongoDB GridFS | `league/flysystem-gridfs:^3.0` |
+| WebDAV | `league/flysystem-webdav:^3.0` |
+
+Generic configuration shape:
+
+```php
+use League\Flysystem\FilesystemAdapter;
+use Maniaba\AssetConnect\Enums\AssetVisibility;
+
+public array $storages = [
+    'remote' => [
+        'driver'     => 'custom_remote',
+        'public_url' => 'https://cdn.example.com/assets',
+        'visibility' => AssetVisibility::PROTECTED,
+    ],
+];
+
+/**
+ * @param array<string, mixed> $storage
+ *
+ * @return array{adapter: FilesystemAdapter}
+ */
+protected function setupStorageCustomRemote(array $storage): array
+{
+    /** @var FilesystemAdapter $adapter */
+    $adapter = new SomeOfficialFlysystemAdapter(...);
+
+    return ['adapter' => $adapter];
+}
+```
+
+The setup method name is generated from the `driver` value. For example, `aws_s3` calls `setupStorageAwsS3()`, `async_aws_s3` calls `setupStorageAsyncAwsS3()`, and `webdav` calls `setupStorageWebdav()`. The returned array is merged over the original disk configuration.
+
+Example AWS S3 disk:
+
+```bash
+composer require league/flysystem-aws-s3-v3:^3.0 aws/aws-sdk-php
+```
+
+```php
+use Aws\S3\S3Client;
+use League\Flysystem\AwsS3V3\AwsS3V3Adapter;
+use Maniaba\AssetConnect\Enums\AssetVisibility;
+
+public array $storages = [
+    's3' => [
+        'driver'     => 'aws_s3',
+        'bucket'     => 'my-bucket',
+        'prefix'     => 'asset-connect',
+        'public_url' => 'https://cdn.example.com',
+        'visibility' => AssetVisibility::PUBLIC,
+    ],
+];
+
+/**
+ * @param array<string, mixed> $storage
+ *
+ * @return array{adapter: AwsS3V3Adapter}
+ */
+protected function setupStorageAwsS3(array $storage): array
+{
+    $client = new S3Client([
+        'version' => 'latest',
+        'region'  => env('AWS_DEFAULT_REGION', 'eu-central-1'),
+    ]);
+
+    return [
+        'adapter' => new AwsS3V3Adapter(
+            $client,
+            (string) $storage['bucket'],
+            (string) ($storage['prefix'] ?? ''),
+        ),
+    ];
+}
+```
+
+If the application already builds a Flysystem instance elsewhere, pass it with `filesystem` instead:
+
+```php
+use League\Flysystem\Filesystem;
+use Maniaba\AssetConnect\Enums\AssetVisibility;
+
+public array $storages = [
+    'remote' => [
+        'driver'     => 'remote_filesystem',
+        'visibility' => AssetVisibility::PROTECTED,
+    ],
+];
+
+/**
+ * @param array<string, mixed> $storage
+ *
+ * @return array{filesystem: Filesystem}
+ */
+protected function setupStorageRemoteFilesystem(array $storage): array
+{
+    $adapter = new SomeOfficialFlysystemAdapter(...);
+
+    return ['filesystem' => new Filesystem($adapter)];
+}
+```
+
+For non-local adapters, `local_path` is `null`. Use storage streams, `writeFile()`, or a processor that reads and writes through the disk instead of passing paths to APIs that require local files.
 
 ## Link Local Storage
 

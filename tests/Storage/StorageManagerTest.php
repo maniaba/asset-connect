@@ -6,6 +6,7 @@ namespace Tests\Storage;
 
 use CodeIgniter\Config\Factories;
 use CodeIgniter\Test\CIUnitTestCase;
+use League\Flysystem\FilesystemAdapter;
 use League\Flysystem\FilesystemOperator;
 use Maniaba\AssetConnect\Config\Asset;
 use Maniaba\AssetConnect\Enums\AssetVisibility;
@@ -74,6 +75,24 @@ final class StorageManagerTest extends CIUnitTestCase
         $this->assertNull($disk->localPath('file.txt'));
     }
 
+    public function testDiskWrapsConfiguredFilesystemAdapter(): void
+    {
+        $config = new TestAssetConfig();
+
+        $config->storages = [
+            'remote' => [
+                'adapter'    => $this->createStub(FilesystemAdapter::class),
+                'visibility' => AssetVisibility::PROTECTED,
+            ],
+        ];
+
+        $disk = (new StorageManager($config))->disk('remote');
+
+        $this->assertSame('remote', $disk->name());
+        $this->assertSame(AssetVisibility::PROTECTED, $disk->visibility());
+        $this->assertNull($disk->localPath('file.txt'));
+    }
+
     public function testDiskThrowsWhenStorageIsNotConfigured(): void
     {
         try {
@@ -100,7 +119,7 @@ final class StorageManagerTest extends CIUnitTestCase
         try {
             (new StorageManager($config))->disk('s3');
         } catch (InvalidArgumentException $exception) {
-            $this->assertSame(["Storage disk 's3' uses unsupported driver 's3'. Provide a FilesystemOperator or StorageDiskInterface instance."], $exception->errors);
+            $this->assertSame(["Storage disk 's3' uses unsupported driver 's3'. Provide a FilesystemAdapter, FilesystemOperator, or StorageDiskInterface instance."], $exception->errors);
 
             return;
         }

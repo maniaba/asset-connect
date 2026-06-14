@@ -7,6 +7,8 @@ namespace Maniaba\AssetConnect\Config;
 use CodeIgniter\Config\BaseConfig;
 use CodeIgniter\Entity\Entity;
 use InvalidArgumentException;
+use League\Flysystem\FilesystemAdapter;
+use League\Flysystem\FilesystemOperator;
 use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\AssetConnect\AssetCollection\AssetCollectionDefinitionFactory;
 use Maniaba\AssetConnect\AssetCollection\DefaultAssetCollection;
@@ -20,8 +22,10 @@ use Maniaba\AssetConnect\Pending\DefaultPendingStorage;
 use Maniaba\AssetConnect\Pending\Interfaces\PendingSecurityTokenInterface;
 use Maniaba\AssetConnect\Pending\Interfaces\PendingStorageInterface;
 use Maniaba\AssetConnect\Pending\PendingSecurityToken\SessionPendingSecurityToken;
+use Maniaba\AssetConnect\Storage\Interfaces\StorageDiskInterface;
 use Maniaba\AssetConnect\UrlGenerator\DefaultUrlGenerator;
 use Maniaba\AssetConnect\UrlGenerator\Interfaces\UrlGeneratorInterface;
+use ReflectionMethod;
 
 class Asset extends BaseConfig
 {
@@ -90,7 +94,11 @@ class Asset extends BaseConfig
      * through your public folder using asset-connect:storage-link or a web
      * server alias that points to the configured URL.
      *
-     * @var array<string, array{driver?: string, root?: string, public_url?: list<string>|string, url?: list<string>|string, visibility?: 'protected'|'public'|AssetVisibility}>
+     * Any official Flysystem adapter can be provided as `adapter`. Use
+     * `filesystem` for a prebuilt Flysystem instance or `disk` for a fully
+     * custom AssetConnect storage disk.
+     *
+     * @var array<string, array{driver?: string, root?: string, public_url?: list<string>|string, url?: list<string>|string, visibility?: 'protected'|'public'|AssetVisibility, adapter?: FilesystemAdapter, filesystem?: FilesystemOperator, disk?: StorageDiskInterface, ...}>
      */
     public array $storages = [
         'public' => [
@@ -221,6 +229,93 @@ class Asset extends BaseConfig
             'class' => AssetConnectJob::class,
         ],
     ];
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        if (! static::$override) {
+            return;
+        }
+
+        $this->registerStorageDriverSetups();
+    }
+
+    private function registerStorageDriverSetups(): void
+    {
+        foreach ($this->storages as $storageName => $storageConfig) {
+            if (! is_array($storageConfig)) {
+                continue;
+            }
+
+            $driver = $storageConfig['driver'] ?? null;
+            if (! is_string($driver) || $driver === '') {
+                continue;
+            }
+
+            $methodName = $this->storageSetupMethodName($driver);
+            if (! method_exists($this, $methodName)) {
+                continue;
+            }
+
+            $method = new ReflectionMethod($this, $methodName);
+            if ($method->isPrivate() || $method->isStatic()) {
+                throw new InvalidArgumentException("Storage setup method '{$methodName}' must be public or protected.");
+            }
+
+            $setupConfig = $this->invokeStorageSetupMethod($method, $storageConfig);
+
+            $storageNameString                  = (string) $storageName;
+            $this->storages[$storageNameString] = array_replace($storageConfig, $setupConfig);
+            $this->initStorageEnvValue($storageNameString);
+        }
+    }
+
+    private function storageSetupMethodName(string $driver): string
+    {
+        $driver = strtolower(trim($driver));
+        $driver = preg_replace('/[^a-z0-9]+/', ' ', $driver);
+
+        if (! is_string($driver) || $driver === '') {
+            return 'setupStorage';
+        }
+
+        return 'setupStorage' . str_replace(' ', '', ucwords($driver));
+    }
+
+    /**
+     * @param array<string, mixed> $storageConfig
+     *
+     * @return array<string, mixed>
+     */
+    private function invokeStorageSetupMethod(ReflectionMethod $method, array $storageConfig): array
+    {
+        if ($method->getNumberOfRequiredParameters() > 1) {
+            throw new InvalidArgumentException("Storage setup method '{$method->getName()}' must require at most one parameter.");
+        }
+
+        $setupConfig = $method->getNumberOfParameters() === 0 ? $method->invoke($this) : $method->invoke($this, $storageConfig);
+
+        if (! is_array($setupConfig)) {
+            throw new InvalidArgumentException("Storage setup method '{$method->getName()}' must return an array.");
+        }
+
+        return $setupConfig;
+    }
+
+    private function initStorageEnvValue(string $storageName): void
+    {
+        $prefix      = static::class;
+        $slashAt     = strrpos($prefix, '\\');
+        $shortPrefix = strtolower(substr($prefix, $slashAt === false ? 0 : $slashAt + 1));
+
+        $this->initEnvValue(
+            $this->storages[$storageName],
+            "storages.{$storageName}",
+            $prefix,
+            $shortPrefix,
+        );
+    }
 
     /**
      * --------------------------------------------------------------------

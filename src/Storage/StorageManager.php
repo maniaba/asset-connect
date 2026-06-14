@@ -73,21 +73,34 @@ final class StorageManager
         $root       = null;
 
         if (! $filesystem instanceof FilesystemOperator) {
-            $driver = (string) ($storageConfig['driver'] ?? 'local');
+            $adapter = $storageConfig['adapter'] ?? null;
+            if ($adapter instanceof FilesystemAdapter) {
+                $filesystem = new Filesystem(
+                    $adapter,
+                    $this->filesystemConfig($storageConfig),
+                );
 
-            if ($driver !== 'local') {
-                throw new InvalidArgumentException("Storage disk '{$name}' uses unsupported driver '{$driver}'. Provide a FilesystemOperator or StorageDiskInterface instance.");
+                if ($adapter instanceof LocalFilesystemAdapter) {
+                    $configuredRoot = $storageConfig['root'] ?? null;
+                    $root           = is_string($configuredRoot) && $configuredRoot !== '' ? $configuredRoot : null;
+                }
+            } else {
+                $driver = (string) ($storageConfig['driver'] ?? 'local');
+
+                if ($driver !== 'local') {
+                    throw new InvalidArgumentException("Storage disk '{$name}' uses unsupported driver '{$driver}'. Provide a FilesystemAdapter, FilesystemOperator, or StorageDiskInterface instance.");
+                }
+
+                $root = $storageConfig['root'] ?? null;
+                if (! is_string($root) || $root === '') {
+                    throw new InvalidArgumentException("Local storage disk '{$name}' must define a non-empty root path.");
+                }
+
+                $filesystem = new Filesystem(
+                    $this->localAdapter($root),
+                    $this->filesystemConfig($storageConfig),
+                );
             }
-
-            $root = $storageConfig['root'] ?? null;
-            if (! is_string($root) || $root === '') {
-                throw new InvalidArgumentException("Local storage disk '{$name}' must define a non-empty root path.");
-            }
-
-            $filesystem = new Filesystem(
-                $this->localAdapter($root),
-                $this->filesystemConfig($storageConfig),
-            );
         }
 
         return new FlysystemStorageDisk(
