@@ -228,6 +228,25 @@ final class ProductImagesCollection implements AssetCollectionDefinitionInterfac
 
 If `setStorage()` is not used, AssetConnect selects the disk from the collection visibility.
 
+## Transfer Assets Between Storage Disks
+
+Use `transferToStorage()` when an existing asset needs to move from one configured disk to another:
+
+```php
+// Move original file and existing variants from the current disk to protected
+$asset->transferToStorage('protected');
+
+// Copy to S3 and keep the source files on the original disk
+$asset->transferToStorage('s3_public', deleteSource: false);
+
+// Move only the original file, without variant files
+$asset->transferToStorage('archive', withVariants: false);
+```
+
+The storage-relative `path` stays unchanged. AssetConnect copies through `readStream()` and `writeStream()`, updates the asset row, updates variant metadata when variants are included, then deletes source files after the database update succeeds. This works for local disks, S3/MinIO, and other Flysystem adapters.
+
+If a variant is already registered but not processed yet, `transferToStorage()` updates its metadata to the target disk and skips copying the missing file. A later queued processor will write that variant to the new storage.
+
 ## Local Paths For Processing
 
 `Asset::path` and `AssetVariant::path` are storage-relative paths. Do not pass them directly to APIs that require local filesystem paths.

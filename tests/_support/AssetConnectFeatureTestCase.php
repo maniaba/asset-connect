@@ -169,7 +169,12 @@ abstract class AssetConnectFeatureTestCase extends DatabaseTestCase
 
     protected function storagePath(Asset $asset): string
     {
-        $storage = $this->assetConfig->storages[$asset->storage] ?? null;
+        return $this->storagePathFor($asset->storage, $asset->path);
+    }
+
+    protected function storagePathFor(string $storageName, string $path): string
+    {
+        $storage = $this->assetConfig->storages[$storageName] ?? null;
 
         $this->assertIsArray($storage);
 
@@ -177,7 +182,7 @@ abstract class AssetConnectFeatureTestCase extends DatabaseTestCase
 
         $this->assertIsString($root);
 
-        return rtrim($root, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $asset->path);
+        return rtrim($root, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $path);
     }
 
     protected function removeDirectory(string $directory): void

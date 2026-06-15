@@ -353,6 +353,27 @@ $properties = $asset->getInternalProperties();
 // ]
 ```
 
+### transferToStorage
+
+```php
+public function transferToStorage(string $storage, bool $withVariants = true, bool $deleteSource = true): static
+```
+
+Transfers the asset file to another configured storage disk. The storage-relative `path` stays the same, while `storage` is updated to the target disk.
+
+**Parameters:**
+- `$storage`: Target storage disk name.
+- `$withVariants`: Whether existing asset variants should be transferred and updated to the target storage.
+- `$deleteSource`: Whether source files should be deleted after the database update succeeds.
+
+**Returns:**
+- The Asset instance for method chaining.
+
+**Example:**
+```php
+$asset->transferToStorage('protected');
+```
+
 ### save
 
 ```php
@@ -609,6 +630,21 @@ $asset->save();
 ```
 
 Internal properties are stored in `metadata.internal`. They are useful for processing state, adapter metadata, external IDs, checksums, queue IDs, and similar backend data. They are not returned from `jsonSerialize()` and are not included in `custom_properties`.
+
+### Transferring Assets Between Storage Disks
+
+```php
+// Move the original file and existing variants to protected storage
+$asset->transferToStorage('protected');
+
+// Copy to another disk and keep the original source files
+$asset->transferToStorage('s3_public', deleteSource: false);
+
+// Move only the original file and leave variant files on their current disks
+$asset->transferToStorage('archive', withVariants: false);
+```
+
+The transfer uses storage streams, so it works for local disks, S3/MinIO, and other Flysystem adapters. If variants are not processed yet, their metadata is updated to the target storage so queued variant processors write them to the new disk.
 
 ### Downloading Assets
 

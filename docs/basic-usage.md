@@ -220,6 +220,9 @@ $title = $asset->getCustomProperty('title');
 // Get backend-only internal metadata
 $jobId = $asset->getInternalProperty('processing_job_id');
 
+// Transfer the asset and variants to another storage disk
+$asset->transferToStorage('protected');
+
 // Get the file name
 $fileName = $asset->getFileName();
 

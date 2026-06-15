@@ -17,9 +17,12 @@ use Maniaba\AssetConnect\Asset\Interfaces\AuthorizableAssetCollectionDefinitionI
 use Maniaba\AssetConnect\Asset\Traits\AssetFileInfoTrait;
 use Maniaba\AssetConnect\Asset\Traits\AssetMimeTypeTrait;
 use Maniaba\AssetConnect\AssetCollection\AssetCollectionDefinitionFactory;
+use Maniaba\AssetConnect\AssetVariants\AssetVariant;
 use Maniaba\AssetConnect\Config\Asset as AssetConfig;
 use Maniaba\AssetConnect\Enums\AssetVisibility;
 use Maniaba\AssetConnect\Events\AssetUpdated;
+use Maniaba\AssetConnect\Exceptions\AssetException;
+use Maniaba\AssetConnect\Exceptions\FileException;
 use Maniaba\AssetConnect\Models\AssetModel;
 use Maniaba\AssetConnect\Services\AssetAccessService;
 use Maniaba\AssetConnect\Storage\Interfaces\StorageDiskInterface;
@@ -27,6 +30,7 @@ use Maniaba\AssetConnect\Storage\StorageManager;
 use Maniaba\AssetConnect\UrlGenerator\Traits\UrlGeneratorTrait;
 use Maniaba\AssetConnect\Utils\Format;
 use Override;
+use Throwable;
 
 /**
  * @property      string                                           $collection                  name of the collection to which the asset belongs (md5 hash of the class name)
@@ -346,6 +350,81 @@ class Asset extends Entity implements JsonSerializable
     }
 
     /**
+     * Transfer the asset file to another configured storage disk.
+     *
+     * The storage-relative path stays the same. Existing variants are moved
+     * with the asset by default, and unprocessed variants have only their
+     * metadata storage updated so queued processors write them to the new disk.
+     */
+    public function transferToStorage(string $storage, bool $withVariants = true, bool $deleteSource = true): static
+    {
+        $targetStorage = trim($storage);
+        if ($targetStorage === '') {
+            throw new \Maniaba\AssetConnect\Exceptions\InvalidArgumentException('Target storage disk name must not be empty.');
+        }
+
+        $storageManager = StorageManager::make();
+        $targetDisk     = $storageManager->disk($targetStorage);
+        $sourceStorage  = $this->storage;
+        $sourcePath     = $this->path;
+
+        /** @var list<array{disk: StorageDiskInterface, path: string}> $copiedTargets */
+        $copiedTargets = [];
+        /** @var list<array{disk: StorageDiskInterface, path: string}> $deleteSources */
+        $deleteSources = [];
+        /** @var array<string, string> $variantSourceStorages */
+        $variantSourceStorages = [];
+
+        try {
+            if ($sourceStorage !== $targetStorage) {
+                $sourceDisk = $storageManager->disk($sourceStorage);
+                $this->copyStoragePath($sourceDisk, $targetDisk, $sourcePath);
+
+                $copiedTargets[] = ['disk' => $targetDisk, 'path' => $sourcePath];
+                $deleteSources[] = ['disk' => $sourceDisk, 'path' => $sourcePath];
+            }
+
+            if ($withVariants) {
+                foreach ($this->getMetadata()->assetVariant->getVariants() as $variantName => $variant) {
+                    $variantSourceStorages[$variantName] = $variant->storage;
+                    $variantSourceStorage                = $variant->storage !== '' ? $variant->storage : $sourceStorage;
+
+                    if ($variantSourceStorage !== $targetStorage) {
+                        $variantSourceDisk = $storageManager->disk($variantSourceStorage);
+
+                        if ($variantSourceDisk->fileExists($variant->path)) {
+                            $this->copyStoragePath($variantSourceDisk, $targetDisk, $variant->path);
+
+                            $copiedTargets[] = ['disk' => $targetDisk, 'path' => $variant->path];
+                            $deleteSources[] = ['disk' => $variantSourceDisk, 'path' => $variant->path];
+                        } elseif ($variant->processed) {
+                            throw FileException::forFileNotFound($variantSourceDisk->name() . ':' . $variant->path);
+                        }
+                    }
+
+                    $variant->storage = $targetStorage;
+                    $this->getMetadata()->assetVariant->updateAssetVariant($variant);
+                }
+            }
+
+            $this->storage = $targetStorage;
+            $this->persistStorageTransfer();
+        } catch (Throwable $exception) {
+            $this->storage = $sourceStorage;
+            $this->restoreVariantStorages($variantSourceStorages);
+            $this->deleteStoragePaths($copiedTargets);
+
+            throw $exception;
+        }
+
+        if ($deleteSource) {
+            $this->deleteStoragePaths($deleteSources);
+        }
+
+        return $this;
+    }
+
+    /**
      * Save the asset to the database.
      *
      * @return bool True if the asset was saved successfully, false otherwise
@@ -369,6 +448,84 @@ class Asset extends Entity implements JsonSerializable
         }
 
         return $result;
+    }
+
+    private function copyStoragePath(StorageDiskInterface $sourceDisk, StorageDiskInterface $targetDisk, string $path): void
+    {
+        if (! $sourceDisk->fileExists($path)) {
+            throw FileException::forFileNotFound($sourceDisk->name() . ':' . $path);
+        }
+
+        if ($targetDisk->fileExists($path)) {
+            throw FileException::forCannotCopyFile($sourceDisk->name() . ':' . $path, $targetDisk->name() . ':' . $path);
+        }
+
+        $stream = $sourceDisk->readStream($path);
+
+        try {
+            $targetDisk->writeStream($path, $stream, [
+                'visibility' => $targetDisk->visibility()->value,
+            ]);
+        } catch (Throwable $exception) {
+            throw FileException::forCannotWriteToStorage($targetDisk->name(), $path, $exception);
+        } finally {
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
+        }
+    }
+
+    private function persistStorageTransfer(): void
+    {
+        $this->updated_at = Time::now();
+
+        $model  = AssetModel::init(false);
+        $result = $model->save(Asset::create([
+            'id'         => $this->id,
+            'storage'    => $this->storage,
+            'path'       => $this->path,
+            'metadata'   => $this->getMetadata(),
+            'updated_at' => $this->updated_at,
+        ]));
+
+        if (! $result) {
+            throw AssetException::forDatabaseError($model->errors() ?: ['Unable to update asset storage.']);
+        }
+
+        Events::trigger(AssetUpdated::name(), AssetUpdated::createFromId($this->id));
+    }
+
+    /**
+     * @param array<string, string> $variantSourceStorages
+     */
+    private function restoreVariantStorages(array $variantSourceStorages): void
+    {
+        foreach ($variantSourceStorages as $variantName => $storage) {
+            $variant = $this->getMetadata()->assetVariant->getAssetVariant($variantName);
+
+            if (! $variant instanceof AssetVariant) {
+                continue;
+            }
+
+            $variant->storage = $storage;
+            $this->getMetadata()->assetVariant->updateAssetVariant($variant);
+        }
+    }
+
+    /**
+     * @param list<array{disk: StorageDiskInterface, path: string}> $paths
+     */
+    private function deleteStoragePaths(array $paths): void
+    {
+        foreach ($paths as $path) {
+            try {
+                $path['disk']->delete($path['path']);
+            } catch (Throwable $exception) {
+                log_message('error', 'Failed to delete storage path after asset transfer: {message}', [
+                    'message' => $exception->getMessage(),
+                ]);
+            }
+        }
     }
 
     #[Override]

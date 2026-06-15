@@ -13,6 +13,7 @@ use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Asset\AssetAdder;
 use Maniaba\AssetConnect\Asset\AssetPersistenceManager;
 use Maniaba\AssetConnect\AssetConnect;
+use Maniaba\AssetConnect\AssetVariants\AssetVariant;
 use Maniaba\AssetConnect\Enums\AssetVisibility;
 use Maniaba\AssetConnect\Exceptions\FileException;
 use Maniaba\AssetConnect\Models\AssetModel;
@@ -352,6 +353,77 @@ final class AssetConnectEntityFlowTest extends AssetConnectFeatureTestCase
 
         $this->assertFileDoesNotExist($storedPath);
         $this->assertAssetRowExists($asset);
+    }
+
+    public function testAssetCanBeTransferredToAnotherStorageWithVariants(): void
+    {
+        $entity = $this->createFakeEntity();
+        $asset  = $entity->addAsset($this->createSourceFile('transfer-storage.txt', 'transfer source'))
+            ->usingFileName('transfer-storage.txt')
+            ->preservingOriginal()
+            ->toAssetCollection(FakeDocumentCollection::class);
+
+        $variant = new AssetVariant([
+            'name'      => 'preview',
+            'storage'   => $asset->storage,
+            'path'      => 'fake-assets/documents/variants/transfer-storage-preview.txt',
+            'size'      => 16,
+            'processed' => true,
+        ]);
+
+        $asset->metadata->assetVariant->addAssetVariant($variant);
+        $asset->getStorageDisk()->write($variant->path, 'variant contents');
+
+        $this->assertTrue($asset->save());
+
+        $sourceAssetPath   = $this->storagePath($asset);
+        $sourceVariantPath = $this->storagePathFor('public', $variant->path);
+
+        $this->assertFileExists($sourceAssetPath);
+        $this->assertFileExists($sourceVariantPath);
+
+        $result = $asset->transferToStorage('protected');
+
+        $this->assertSame($asset, $result);
+        $this->assertSame('protected', $asset->storage);
+        $this->assertSame('transfer source', file_get_contents($this->storagePath($asset)));
+        $this->assertFileDoesNotExist($sourceAssetPath);
+        $this->assertFileDoesNotExist($sourceVariantPath);
+
+        $transferredVariant = $asset->metadata->assetVariant->getAssetVariant('preview');
+
+        $this->assertInstanceOf(AssetVariant::class, $transferredVariant);
+        $this->assertSame('protected', $transferredVariant->storage);
+        $this->assertSame('variant contents', file_get_contents($this->storagePathFor('protected', $transferredVariant->path)));
+
+        $refetched = AssetModel::init(false)->find($asset->id);
+
+        $this->assertInstanceOf(Asset::class, $refetched);
+        $this->assertSame('protected', $refetched->storage);
+        $this->assertSame($asset->path, $refetched->path);
+
+        $refetchedVariant = $refetched->metadata->assetVariant->getAssetVariant('preview');
+
+        $this->assertInstanceOf(AssetVariant::class, $refetchedVariant);
+        $this->assertSame('protected', $refetchedVariant->storage);
+    }
+
+    public function testAssetTransferCanKeepSourceFiles(): void
+    {
+        $entity = $this->createFakeEntity();
+        $asset  = $entity->addAsset($this->createSourceFile('copy-storage.txt', 'copy source'))
+            ->usingFileName('copy-storage.txt')
+            ->preservingOriginal()
+            ->toAssetCollection(FakeDocumentCollection::class);
+
+        $sourceAssetPath = $this->storagePath($asset);
+
+        $asset->transferToStorage('protected', deleteSource: false);
+
+        $this->assertSame('protected', $asset->storage);
+        $this->assertFileExists($sourceAssetPath);
+        $this->assertSame('copy source', file_get_contents($sourceAssetPath));
+        $this->assertSame('copy source', file_get_contents($this->storagePath($asset)));
     }
 
     public function testAssetConnectCanSerializeFindAndRemoveCachedAssets(): void
