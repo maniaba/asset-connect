@@ -39,7 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Generated file paths are shorter, cleaner, and still collision-resistant.
 
 ### Upgrade Notes
-- See the full upgrade guide: [Upgrade to 2.0.0](docs/upgrade-2.0.md).
+- See the full upgrade guide: [Upgrade from 1.0.2 to 2.0.0](docs/upgrade-2.0.md).
 - Run the package migrations so the `storage` column exists.
 - Configure `Config\Asset::$storages` before using the new storage model.
 - Run `php spark asset-connect:migrate-paths --storage public --dry-run` first, then rerun without `--dry-run` after reviewing the plan.

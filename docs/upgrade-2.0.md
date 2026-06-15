@@ -1,4 +1,4 @@
-# Upgrade to 2.0.0
+# Upgrade from 1.0.2 to 2.0.0
 
 AssetConnect 2.0.0 stores file locations as:
 
