@@ -13,6 +13,11 @@ use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Asset\AssetMetadata;
 use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\AssetConnect\AssetCollection\DefaultAssetCollection;
+use Maniaba\AssetConnect\AssetVariants\AssetVariant;
+use Maniaba\AssetConnect\Config\Asset as AssetConfig;
+use Maniaba\AssetConnect\Enums\AssetVisibility;
+use Maniaba\AssetConnect\Storage\Interfaces\StorageDiskInterface;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 use Tests\Support\Config\TestAssetConfig;
 use Tests\Support\TestEntity;
@@ -63,6 +68,37 @@ final class AssetTest extends CIUnitTestCase
         $mockFunctions['Maniaba\AssetConnect\Models\AssetModel::init'] = null;
     }
 
+    private function configureRemoteDisk(string $expectedPath, string $contents): MockObject&StorageDiskInterface
+    {
+        $stream = fopen('php://temp', 'rb+');
+        $this->assertIsResource($stream);
+        fwrite($stream, $contents);
+        rewind($stream);
+
+        $disk = $this->createMock(StorageDiskInterface::class);
+        $disk->method('name')->willReturn('remote');
+        $disk->method('visibility')->willReturn(AssetVisibility::PUBLIC);
+        $disk->method('localPath')->willReturn(null);
+        $disk->expects($this->once())
+            ->method('fileExists')
+            ->with($expectedPath)
+            ->willReturn(true);
+        $disk->expects($this->once())
+            ->method('readStream')
+            ->with($expectedPath)
+            ->willReturn($stream);
+
+        $config                     = new TestAssetConfig();
+        $config->storages['remote'] = [
+            'disk' => $disk,
+        ];
+
+        Factories::injectMock('config', AssetConfig::class, $config);
+        Factories::injectMock('config', 'Asset', $config);
+
+        return $disk;
+    }
+
     /**
      * Test setting entity type with an Entity instance
      */
@@ -90,7 +126,7 @@ final class AssetTest extends CIUnitTestCase
         // Arrange
         $entityClass = Entity::class;
 
-        Factories::injectMock('config', \Maniaba\AssetConnect\Config\Asset::class, new TestAssetConfig());
+        Factories::injectMock('config', AssetConfig::class, new TestAssetConfig());
 
         // Act
         $result = $this->asset->setEntityType($entityClass);
@@ -106,7 +142,7 @@ final class AssetTest extends CIUnitTestCase
         // Arrange
         $entityClass = TestEntity::class;
 
-        Factories::injectMock('config', \Maniaba\AssetConnect\Config\Asset::class, new TestAssetConfig());
+        Factories::injectMock('config', AssetConfig::class, new TestAssetConfig());
 
         // Act
         $result = $this->asset->setEntityType('test_entity');
@@ -115,6 +151,101 @@ final class AssetTest extends CIUnitTestCase
         $this->assertSame($this->asset, $result);
         $this->assertSame('test_entity', $this->asset->entity_type, 'The entity_type should be set to the alias name.');
         $this->assertSame($entityClass, $this->asset->subject_entity_class, 'The subject_entity_class should be set to the correct class name.');
+    }
+
+    public function testIsProtectedCollectionUsesStorageDiskVisibility(): void
+    {
+        $config = new TestAssetConfig();
+
+        Factories::injectMock('config', AssetConfig::class, $config);
+        Factories::injectMock('config', 'Asset', $config);
+
+        $asset = new Asset([
+            'storage' => 'protected',
+        ]);
+
+        $this->assertTrue($asset->is_protected_collection);
+    }
+
+    public function testCopyToTemporaryFileReadsRemoteStorage(): void
+    {
+        $this->configureRemoteDisk('remote/files/report.txt', 'report contents');
+
+        $asset = new Asset([
+            'storage'   => 'remote',
+            'path'      => 'remote/files/report.txt',
+            'file_name' => 'report.txt',
+        ]);
+
+        $temporaryFile = $asset->copyToTemporaryFile();
+
+        try {
+            $this->assertFileExists($temporaryFile);
+            $this->assertStringEndsWith('.txt', $temporaryFile);
+            $this->assertSame('report contents', file_get_contents($temporaryFile));
+            $this->assertNull($asset->local_path);
+        } finally {
+            @unlink($temporaryFile);
+        }
+    }
+
+    public function testWithTemporaryFileCleansUpAfterCallback(): void
+    {
+        $this->configureRemoteDisk('remote/files/queued.txt', 'queued contents');
+
+        $asset = new Asset([
+            'storage'   => 'remote',
+            'path'      => 'remote/files/queued.txt',
+            'file_name' => 'queued.txt',
+        ]);
+
+        $callbackPath = null;
+        $result       = $asset->withTemporaryFile(function (string $path) use (&$callbackPath): string {
+            $callbackPath = $path;
+
+            $this->assertFileExists($path);
+
+            $contents = file_get_contents($path);
+            $this->assertIsString($contents);
+
+            return strtoupper($contents);
+        });
+
+        $this->assertSame('QUEUED CONTENTS', $result);
+        $this->assertIsString($callbackPath);
+        $this->assertFileDoesNotExist($callbackPath);
+    }
+
+    public function testCopyToTemporaryFileReadsVariantFromRemoteStorage(): void
+    {
+        $this->configureRemoteDisk('remote/variants/thumb.png', 'thumb contents');
+
+        $asset = new Asset([
+            'id'        => 123,
+            'storage'   => 'public',
+            'path'      => 'original/report.txt',
+            'file_name' => 'report.txt',
+            'metadata'  => new AssetMetadata([
+                'asset_variants' => [
+                    'thumbnail' => new AssetVariant([
+                        'name'      => 'thumbnail',
+                        'storage'   => 'remote',
+                        'path'      => 'remote/variants/thumb.png',
+                        'processed' => true,
+                    ]),
+                ],
+            ]),
+        ]);
+
+        $temporaryFile = $asset->copyToTemporaryFile('thumbnail');
+
+        try {
+            $this->assertFileExists($temporaryFile);
+            $this->assertStringEndsWith('.png', $temporaryFile);
+            $this->assertSame('thumb contents', file_get_contents($temporaryFile));
+        } finally {
+            @unlink($temporaryFile);
+        }
     }
 
     /**
@@ -156,7 +287,7 @@ final class AssetTest extends CIUnitTestCase
         // Arrange
         $collectionClass = DefaultAssetCollection::class;
 
-        Factories::injectMock('config', \Maniaba\AssetConnect\Config\Asset::class, new TestAssetConfig());
+        Factories::injectMock('config', AssetConfig::class, new TestAssetConfig());
 
         // Act
         $result = $this->asset->setCollection($collectionClass);
@@ -172,7 +303,7 @@ final class AssetTest extends CIUnitTestCase
     public function testSetCollectionWithStringAliasName(): void
     {
         // Arrange
-        Factories::injectMock('config', \Maniaba\AssetConnect\Config\Asset::class, new TestAssetConfig());
+        Factories::injectMock('config', AssetConfig::class, new TestAssetConfig());
 
         // Act
         $result = $this->asset->setCollection('test_collection');

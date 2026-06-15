@@ -6,6 +6,7 @@ namespace Tests\PathGenerator;
 
 use CodeIgniter\I18n\Time;
 use CodeIgniter\Test\CIUnitTestCase;
+use InvalidArgumentException;
 use Maniaba\AssetConnect\PathGenerator\PathGeneratorHelper;
 
 /**
@@ -55,15 +56,44 @@ final class PathGeneratorHelperTest extends CIUnitTestCase
         $this->assertSame(64, strlen($uniqueId)); // SHA-256 hash is 64 characters long
     }
 
+    public function testGetRandomId(): void
+    {
+        $randomId = $this->helper->getRandomId();
+
+        $this->assertMatchesRegularExpression('/^[a-f0-9]{20}$/', $randomId);
+    }
+
+    public function testGetRandomIdWithCustomLength(): void
+    {
+        $randomId = $this->helper->getRandomId(9);
+
+        $this->assertMatchesRegularExpression('/^[a-f0-9]{9}$/', $randomId);
+    }
+
+    public function testGetRandomIdRejectsInvalidLength(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Random ID length must be greater than zero.');
+
+        $this->helper->getRandomId(0);
+    }
+
+    public function testGetDate(): void
+    {
+        Time::setTestNow('2025-01-01 12:00:00.123456');
+
+        $this->assertSame('2025-01-01', $this->helper->getDate());
+    }
+
     /**
      * Test getDateTime method
      */
     public function testGetDateTime(): void
     {
         // Mock the date function to return a fixed date
-        Time::setTestNow('2025-01-01 12:00:00');
+        Time::setTestNow('2025-01-01 12:00:00.123456');
 
-        $expectedDateTime = Time::now()->format('Y-m-d') . DIRECTORY_SEPARATOR . Time::now()->format('His.U');
+        $expectedDateTime = Time::now()->format('Y-m-d') . DIRECTORY_SEPARATOR . Time::now()->format('His.u');
 
         // Act
         $dateTime = $this->helper->getDateTime();
@@ -77,9 +107,9 @@ final class PathGeneratorHelperTest extends CIUnitTestCase
      */
     public function testGetTime(): void
     {
-        Time::setTestNow('2025-01-01 12:00:00');
+        Time::setTestNow('2025-01-01 12:00:00.123456');
 
-        $expected = Time::now()->format('His.U');
+        $expected = Time::now()->format('His.u');
 
         // Act
         $time = $this->helper->getTime();

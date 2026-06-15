@@ -25,231 +25,55 @@ final class PathGeneratorTest extends CIUnitTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // Create a real AssetCollection instance using reflection
-        $reflectionClass = new ReflectionClass(AssetCollection::class);
-        $assetCollection = $reflectionClass->newInstanceWithoutConstructor();
-        // Create a mock PathGeneratorInterface
+        $reflectionClass                  = new ReflectionClass(AssetCollection::class);
+        $assetCollection                  = $reflectionClass->newInstanceWithoutConstructor();
         $this->mockPathGeneratorInterface = $this->createMock(PathGeneratorInterface::class);
-        // Use setPrivateProperty to set the private property in AssetCollection
         $this->setPrivateProperty($assetCollection, 'pathGenerator', $this->mockPathGeneratorInterface);
-        // Create the PathGenerator
         $this->pathGenerator = new PathGenerator($assetCollection);
-        // Setup global function mocks
-        $this->setupGlobalFunctionMocks();
     }
 
-    /**
-     * Setup global function mocks
-     */
-    private function setupGlobalFunctionMocks(): void
-    {
-        // Mock file system functions
-        $this->setGlobalFunction('is_dir', static fn () => true);
-        $this->setGlobalFunction('mkdir', static fn () => true);
-        $this->setGlobalFunction('is_writable', static fn () => true);
-        $this->setGlobalFunction('is_readable', static fn () => true);
-    }
-
-    /**
-     * Set a global function mock
-     */
-    private function setGlobalFunction(string $name, callable $callback): void
-    {
-        global $mockFunctions;
-        $mockFunctions[$name] = $callback;
-    }
-
-    /**
-     * Test getStoreDirectory method
-     */
-    public function testGetStoreDirectory(): void
-    {
-        // Arrange
-        $storeDirectory = HOMEPATH . '/build/path/to/store';
-
-        // Setup expectations for the mock
-        $this->mockPathGeneratorInterface->expects($this->once())
-            ->method('getStoreDirectory')
-            ->willReturn($storeDirectory);
-
-        // Mock is_dir to return true for this specific path
-        $this->setGlobalFunction('is_dir', static fn ($path) => $path === $storeDirectory);
-
-        // Act
-        $result = $this->pathGenerator->getStoreDirectory();
-
-        // Assert
-        $this->assertSame($storeDirectory, $result);
-    }
-
-    /**
-     * Test getStoreDirectory method when directory doesn't exist
-     */
-    public function testGetStoreDirectoryWhenDirectoryDoesntExist(): void
-    {
-        // Arrange
-        $storeDirectory = HOMEPATH . '/build/path/to/store';
-
-        // Setup expectations for the mock
-        $this->mockPathGeneratorInterface->expects($this->once())
-            ->method('getStoreDirectory')
-            ->willReturn($storeDirectory);
-
-        // Mock is_dir to return false
-        $this->setGlobalFunction('is_dir', static fn ($path) => false);
-
-        // Mock mkdir to return true and verify parameters
-        $this->setGlobalFunction('mkdir', function ($path, $mode, $recursive) use ($storeDirectory) {
-            $this->assertSame($storeDirectory, $path);
-            $this->assertSame(0755, $mode);
-            $this->assertTrue($recursive);
-
-            return true;
-        });
-
-        // Mock is_writable and is_readable to return true
-        $this->setGlobalFunction('is_writable', static fn ($path) => true);
-        $this->setGlobalFunction('is_readable', static fn ($path) => true);
-
-        // Act
-        $result = $this->pathGenerator->getStoreDirectory();
-
-        // Assert
-        $this->assertSame($storeDirectory, $result);
-    }
-
-    /**
-     * Test getFileRelativePath method
-     */
     public function testGetFileRelativePath(): void
     {
-        // Arrange
-        $fileRelativePath = 'relative/path';
-
-        // Setup expectations for the mock
         $this->mockPathGeneratorInterface->expects($this->once())
             ->method('getFileRelativePath')
-            ->willReturn($fileRelativePath);
+            ->willReturn('relative/path');
 
-        // Act
-        $result = $this->pathGenerator->getFileRelativePath();
-
-        // Assert
-        $this->assertSame($fileRelativePath, $result);
+        $this->assertSame('relative/path/', $this->pathGenerator->getFileRelativePath());
     }
 
-    /**
-     * Test getPath method
-     */
     public function testGetPath(): void
     {
-        // Arrange
-        $path = implode(DIRECTORY_SEPARATOR, ['path', 'to', 'file']) . DIRECTORY_SEPARATOR;
-
-        // Setup expectations for the mock
         $this->mockPathGeneratorInterface->expects($this->once())
             ->method('getPath')
-            ->willReturn($path);
+            ->willReturn('path/to/file/');
 
-        // Mock is_dir to return true for this specific path
-        $this->setGlobalFunction('is_dir', static fn ($dirPath) => $dirPath === $path);
-
-        // Act
-        $result = $this->pathGenerator->getPath();
-
-        // Assert
-        $this->assertSame($path, $result);
+        $this->assertSame('path/to/file/', $this->pathGenerator->getPath());
     }
 
-    /**
-     * Test getPath method when path doesn't end with directory separator
-     */
-    public function testGetPathWhenPathDoesntEndWithDirectorySeparator(): void
+    public function testGetPathNormalizesBackslashesAndLeadingSlash(): void
     {
-        // Arrange
-        $path         = HOMEPATH . '/build/path/to/file';
-        $expectedPath = $path . DIRECTORY_SEPARATOR;
-
-        // Setup expectations for the mock
         $this->mockPathGeneratorInterface->expects($this->once())
             ->method('getPath')
-            ->willReturn($path);
+            ->willReturn('\\path\\to\\file');
 
-        // Mock is_dir to return true for the expected path (with directory separator)
-        $this->setGlobalFunction('is_dir', static fn ($dirPath) => $dirPath === $expectedPath);
-
-        // Act
-        $result = $this->pathGenerator->getPath();
-
-        // Assert
-        $this->assertSame($expectedPath, $result);
+        $this->assertSame('path/to/file/', $this->pathGenerator->getPath());
     }
 
-    /**
-     * Test getStoreDirectoryForVariants method
-     */
-    public function testGetStoreDirectoryForVariants(): void
-    {
-        // Arrange
-        $storeDirectory = HOMEPATH . '/build/path/to/store';
-
-        // Setup expectations for the mock
-        $this->mockPathGeneratorInterface->expects($this->once())
-            ->method('getStoreDirectoryForVariants')
-            ->willReturn($storeDirectory);
-
-        // Mock is_dir to return true
-        global $mockFunctions;
-        $mockFunctions['is_dir'] = static fn ($path) => $path === $storeDirectory;
-
-        // Act
-        $result = $this->pathGenerator->getStoreDirectoryForVariants();
-
-        // Assert
-        $this->assertSame($storeDirectory, $result);
-    }
-
-    /**
-     * Test getFileRelativePathForVariants method
-     */
     public function testGetFileRelativePathForVariants(): void
     {
-        // Arrange
-        $fileRelativePath = 'relative/path/variants';
-
-        // Setup expectations for the mock
         $this->mockPathGeneratorInterface->expects($this->once())
             ->method('getFileRelativePathForVariants')
-            ->willReturn($fileRelativePath);
+            ->willReturn('relative/path/variants');
 
-        // Act
-        $result = $this->pathGenerator->getFileRelativePathForVariants();
-
-        // Assert
-        $this->assertSame($fileRelativePath, $result);
+        $this->assertSame('relative/path/variants/', $this->pathGenerator->getFileRelativePathForVariants());
     }
 
-    /**
-     * Test getPathForVariants method
-     */
     public function testGetPathForVariants(): void
     {
-        // Arrange
-        $path = implode(DIRECTORY_SEPARATOR, ['path', 'to', 'file', 'variants']) . DIRECTORY_SEPARATOR;
-
-        // Setup expectations for the mock
         $this->mockPathGeneratorInterface->expects($this->once())
             ->method('getPathForVariants')
-            ->willReturn($path);
+            ->willReturn('/path/to/file/variants');
 
-        // Mock is_dir to return true
-        global $mockFunctions;
-        $mockFunctions['is_dir'] = static fn ($dirPath) => $dirPath === $path;
-
-        // Act
-        $result = $this->pathGenerator->getPathForVariants();
-
-        // Assert
-        $this->assertSame($path, $result);
+        $this->assertSame('path/to/file/variants/', $this->pathGenerator->getPathForVariants());
     }
 }

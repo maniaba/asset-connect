@@ -435,15 +435,15 @@ $user->addAssetFromPending($pendingId)
 ### 2. Check for Expiration
 
 ```php
-// Good ✓
+// Good
 $pending = $manager->fetchById($id);
 if (!$pending) {
     return response()->json(['error' => 'Expired'], 410);
 }
 
-// Bad ✗
+// Bad
 $pending = $manager->fetchById($id);
-$user->addAssetFromPending($pending)->save(); // May be null!
+$user->addAssetFromPending($pending)->toAssetCollection(Photos::class); // May be null!
 ```
 
 ### 3. Use Appropriate TTL
@@ -487,4 +487,3 @@ class Asset extends BaseConfig
 - [Pending Assets](pending.md) - Overview of pending assets functionality
 - [DefaultPendingStorage](pending.md#defaultpendingstorage) - Default filesystem storage implementation
 - [Custom Pending Storage](custom-pending-storage.md) - Creating custom storage implementations
-

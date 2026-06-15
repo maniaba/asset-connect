@@ -325,7 +325,7 @@ final class AssetAdderTest extends CIUnitTestCase
         $asset = self::getPrivateProperty($assetAdder, 'asset');
 
         // Test that all asset properties are set correctly
-        $this->assertSame('/tmp/test-file.txt', $asset->path);
+        $this->assertNull($asset->path);
         $this->assertSame('test-file.txt', $asset->file_name);
         $this->assertSame('test-file', $asset->name); // filename without extension
         $this->assertSame('text/plain', $asset->mime_type);

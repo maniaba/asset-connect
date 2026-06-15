@@ -14,11 +14,6 @@ class SingleImageCollection implements AssetCollectionDefinitionInterface, Asset
             ->allowedExtensions(...AssetExtension::images());
     }
 
-    public function checkAuthorization(array|Entity $entity, Asset $asset): bool
-    {
-        return true;
-    }
-
     public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void
     {
         // No variants needed
@@ -66,12 +61,6 @@ class ProfilePicturesCollection implements AssetCollectionDefinitionInterface, A
         ->setPathGenerator(new CustomPathGenerator());
     }
 
-    public function checkAuthorization(array|Entity $entity, Asset $asset): bool
-    {
-        // Check if the user is authorized to access this asset
-        return true;
-    }
-
     public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void
     {
         // Define file variants (e.g., thumbnails)
@@ -93,7 +82,7 @@ This method is where you configure the collection's settings, such as allowed fi
 
 ## Understanding AuthorizableAssetCollectionDefinitionInterface
 
-The `AuthorizableAssetCollectionDefinitionInterface` extends `AssetCollectionDefinitionInterface` and adds authorization capabilities to asset collections. This interface is used when you need to control access to assets based on user permissions or other criteria.
+The `AuthorizableAssetCollectionDefinitionInterface` extends `AssetCollectionDefinitionInterface` and marks a collection as protected by default. AssetConnect stores these assets on the configured protected storage disk unless the collection explicitly selects another disk.
 
 ### checkAuthorization
 
@@ -101,7 +90,7 @@ The `AuthorizableAssetCollectionDefinitionInterface` extends `AssetCollectionDef
 public function checkAuthorization(Asset $asset): bool
 ```
 
-This method determines whether a user is authorized to access an asset. It's called when an asset is requested through the AssetConnectController. The method should return `true` if access is allowed and `false` if access should be denied.
+This method determines whether a user is authorized to access an asset when protected assets are served through AssetConnect routes. Direct web-server links do not run this method, so protected storage roots should not be exposed with `public_url`, `asset-connect:storage-link`, or a web-server alias.
 
 Files typically stored in collections implementing this interface are user-specific, such as profile pictures or documents that should only be accessible to certain users.
 
@@ -130,7 +119,7 @@ class SecureDocumentsCollection implements AuthorizableAssetCollectionDefinition
         $entity = $asset->getSubjectEntity();
 
         // Check if the user is the owner of the entity or an admin
-        return ($user->id === $entity->user_id) || $user->isAdmin();
+        return $entity !== null && (($user->id === $entity->user_id) || $user->isAdmin());
     }
 }
 ```
@@ -232,14 +221,16 @@ $definition->singleFileCollection();
 
 ### Implement Proper Authorization
 
-Always implement proper authorization checks in the `checkAuthorization` method to ensure that only authorized users can access assets.
+If your application serves assets through its own controller or service layer, implement proper authorization checks in the `checkAuthorization` method before returning a file response.
 
 ```php
-public function checkAuthorization(array|Entity $entity, Asset $asset): bool
+public function checkAuthorization(Asset $asset): bool
 {
     // Check if the user is authorized to access this asset
     $user = service('auth')->user();
-    return $user->id === $entity->user_id || $user->isAdmin();
+    $entity = $asset->getSubjectEntity();
+
+    return $entity !== null && ($user->id === $entity->user_id || $user->isAdmin());
 }
 ```
 

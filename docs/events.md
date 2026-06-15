@@ -11,7 +11,7 @@ Asset Connect fires the following events:
 | `asset.created` | Fired when an asset is created | `AssetCreated` |
 | `asset.updated` | Fired when an asset is updated | `AssetUpdated` |
 | `asset.deleted` | Fired when an asset is deleted | `AssetDeleted` |
-| `variant.created` | Fired when a variant is created | `VariantCreated` |
+| `variant.created` | Fired when a variant metadata entry is created | `VariantCreated` |
 
 ## Listening for Events
 
@@ -181,29 +181,17 @@ Events::on('asset.created', function (AssetCreated $event) {
 });
 ```
 
-### Generating Additional Variants
+### Recording Variant Metadata
 
 ```php
-// Generate additional variants when a variant is created
+// Store backend metadata when a variant is registered
 Events::on('variant.created', function (VariantCreated $event) {
     $asset = $event->getAsset();
     $variant = $event->getVariant();
-    $variantName = $variant->name;
 
-    // Only process certain variants
-    if ($variantName === 'thumbnail' && $asset->isImage()) {
-        // Generate additional variants based on the thumbnail
-        $imageService = service('image');
-        $thumbnailPath = $asset->getVariantPath('thumbnail');
-
-        // Generate a smaller version for mobile
-        $imageService->withFile($thumbnailPath)
-            ->resize(100, 100, true)
-            ->save($asset->getPathDirname() . 'mobile_' . $asset->file_name);
-
-        // Add the new variant to the asset
-        $asset->addVariant('mobile', 'mobile_' . $asset->file_name);
-        $asset->save();
+    // The variant file may still be processed later, especially when variants run on a queue.
+    if ($variant->name === 'thumbnail' && $asset->isImage()) {
+        $asset->setInternalProperty('thumbnail_variant_path', $variant->path);
     }
 });
 ```

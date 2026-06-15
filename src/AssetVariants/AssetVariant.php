@@ -5,26 +5,30 @@ declare(strict_types=1);
 namespace Maniaba\AssetConnect\AssetVariants;
 
 use CodeIgniter\Entity\Entity;
-use CodeIgniter\Files\File;
 use Maniaba\AssetConnect\Exceptions\FileVariantException;
-use stdClass;
+use Maniaba\AssetConnect\Storage\Interfaces\StorageDiskInterface;
+use Maniaba\AssetConnect\Storage\StorageManager;
+use Maniaba\AssetConnect\Storage\TemporaryStorageFile;
+use Throwable;
 
 /**
- * @property      string                                                                          $name
- * @property      string                                                                          $path
- * @property      array{storage_base_directory_path: string, file_relative_path: string}|stdClass $paths
- * @property      bool                                                                            $processed
- * @property      int                                                                             $size
- * @property-read string                                                                          $extension
- * @property-read string                                                                          $file_name
- * @property-read string                                                                          $mime_type
- * @property-read string                                                                          $relative_path
- * @property-read string                                                                          $relative_path_for_url
+ * @property      string      $name
+ * @property      string      $path
+ * @property      bool        $processed
+ * @property      int         $size
+ * @property      string      $storage
+ * @property-read string      $extension
+ * @property-read string      $file_name
+ * @property-read string|null $local_path
+ * @property-read string      $mime_type
+ * @property-read string      $relative_path
+ * @property-read string      $relative_path_for_url
  */
 final class AssetVariant extends Entity
 {
     protected $attributes = [
         'name'      => '',
+        'storage'   => '',
         'path'      => '',
         'size'      => 0,
         'processed' => false,
@@ -32,7 +36,6 @@ final class AssetVariant extends Entity
     protected $casts = [
         'size'      => 'int',
         'processed' => 'bool',
-        'paths'     => 'json',
     ];
 
     /**
@@ -40,16 +43,18 @@ final class AssetVariant extends Entity
      */
     public function writeFile(string $data, string $mode = 'wb'): bool
     {
-        helper('filesystem');
+        unset($mode);
 
-        if (! write_file($this->path, $data, $mode)) {
-            $error = "Failed to write file to path: {$this->path}";
+        try {
+            $this->getStorageDisk()->write($this->path, $data);
+        } catch (Throwable $exception) {
+            $error = "Failed to write file to storage path: {$this->storage}:{$this->path}";
 
-            throw new FileVariantException($error, $error);
+            throw new FileVariantException($error, $error, 0, $exception);
         }
 
         // Update the size of the variant after writing
-        $this->size      = file_exists($this->path) ? filesize($this->path) : 0;
+        $this->size      = $this->getStorageDisk()->fileSize($this->path);
         $this->processed = true;
 
         return true;
@@ -57,13 +62,11 @@ final class AssetVariant extends Entity
 
     protected function getRelativePath(): string
     {
-        // / replace storage_base_directory_path from path
-        $storageBasePath = $this->paths->storage_base_directory_path ?? null;
-        if ($storageBasePath === null) {
-            throw new FileVariantException('Storage base directory path is not set.');
-        }
+        $relativePath = str_replace('\\', '/', $this->path);
 
-        $relativePath = str_replace($storageBasePath, '', $this->path);
+        if ($relativePath === '') {
+            throw new FileVariantException('Variant relative path is not set.');
+        }
 
         // Ensure the relative path starts with a slash
         if ($relativePath[0] !== '/') {
@@ -75,15 +78,11 @@ final class AssetVariant extends Entity
 
     protected function getRelativePathForUrl(): string
     {
-        $relativePath = $this->getRelativePath();
-
-        // Replace backslashes with forward slashes for URL compatibility
-        return str_replace('\\', '/', $relativePath);
+        return str_replace('\\', '/', $this->getRelativePath());
     }
 
     protected function getFileName(): string
     {
-        // extract filename from path
         return basename($this->path);
     }
 
@@ -94,12 +93,51 @@ final class AssetVariant extends Entity
 
     protected function getMimeType(): string
     {
-        if (! file_exists($this->path)) {
+        if (! $this->getStorageDisk()->fileExists($this->path)) {
             return '';
         }
 
-        $file = new File($this->path);
+        return $this->getStorageDisk()->mimeType($this->path);
+    }
 
-        return $file->getMimeType();
+    protected function getLocalPath(): ?string
+    {
+        return $this->getStorageDisk()->localPath($this->path);
+    }
+
+    public function copyToTemporaryFile(?string $directory = null, string $prefix = 'asset_connect_'): string
+    {
+        return TemporaryStorageFile::copyFromStorage(
+            $this->getStorageDisk(),
+            $this->path,
+            $this->extension,
+            $directory,
+            $prefix,
+        );
+    }
+
+    /**
+     * @template TReturn
+     *
+     * @param callable(string): TReturn $callback
+     *
+     * @return TReturn
+     */
+    public function withTemporaryFile(callable $callback, ?string $directory = null, string $prefix = 'asset_connect_'): mixed
+    {
+        $temporaryFile = $this->copyToTemporaryFile($directory, $prefix);
+
+        try {
+            return $callback($temporaryFile);
+        } finally {
+            if (is_file($temporaryFile)) {
+                @unlink($temporaryFile);
+            }
+        }
+    }
+
+    public function getStorageDisk(): StorageDiskInterface
+    {
+        return StorageManager::make()->disk($this->storage);
     }
 }

@@ -34,12 +34,6 @@ parameters:
 			path: src/Services/AssetAccessService.php
 
 		-
-			message: '#^Trait Maniaba\\AssetConnect\\Traits\\UseAssetConnectModelTrait is used zero times and is not analysed\.$#'
-			identifier: trait.unused
-			count: 1
-			path: src/Traits/UseAssetConnectModelTrait.php
-
-		-
 			message: '#^Property Maniaba\\AssetConnect\\Validation\\ValidationRuleCollector\:\:\$rules \(non\-empty\-array\<string, list\<string\>\|non\-falsy\-string\>\) does not accept non\-empty\-array\<string, \(Closure\(mixed, array\|null, string\|null, string\)\: bool\)\|list\<string\>\|non\-falsy\-string\>\.$#'
 			identifier: assign.propertyType
 			count: 2
@@ -76,28 +70,10 @@ parameters:
 			path: tests/Asset/Properties/AssetVariantPropertyTest.php
 
 		-
-			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\AssetConnect\\\\Asset\\\\Properties\\\\StorageProperty'' and Maniaba\\AssetConnect\\Asset\\Properties\\StorageProperty will always evaluate to true\.$#'
-			identifier: method.alreadyNarrowedType
-			count: 1
-			path: tests/Asset/Properties/StoragePropertyTest.php
-
-		-
 			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\AssetConnect\\\\Asset\\\\Properties\\\\UserCustomProperty'' and Maniaba\\AssetConnect\\Asset\\Properties\\UserCustomProperty will always evaluate to true\.$#'
 			identifier: method.alreadyNarrowedType
 			count: 1
 			path: tests/Asset/Properties/UserCustomPropertiesTest.php
-
-		-
-			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertNotNull\(\) with Maniaba\\AssetConnect\\Asset\\Properties\\AssetVariantProperty will always evaluate to true\.$#'
-			identifier: method.alreadyNarrowedType
-			count: 1
-			path: tests/Asset/PropertiesTest.php
-
-		-
-			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertNotNull\(\) with Maniaba\\AssetConnect\\Asset\\Properties\\UserCustomProperty will always evaluate to true\.$#'
-			identifier: method.alreadyNarrowedType
-			count: 1
-			path: tests/Asset/PropertiesTest.php
 
 		-
 			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\AssetConnect\\\\Asset\\\\Interfaces\\\\AssetCollectionDefinitionInterface'' and Maniaba\\AssetConnect\\Asset\\Interfaces\\AssetCollectionDefinitionInterface will always evaluate to true\.$#'

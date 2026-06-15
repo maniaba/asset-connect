@@ -7,10 +7,13 @@ namespace Maniaba\AssetConnect\Services;
 use CodeIgniter\HTTP\DownloadResponse;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Asset\Interfaces\AuthorizableAssetCollectionDefinitionInterface;
+use Maniaba\AssetConnect\AssetVariants\AssetVariant;
 use Maniaba\AssetConnect\Exceptions\PageException;
 use Maniaba\AssetConnect\Repositories\AssetRepository;
 use Maniaba\AssetConnect\Repositories\Interfaces\AssetRepositoryInterface;
 use Maniaba\AssetConnect\Services\Interfaces\AssetAccessServiceInterface;
+use Maniaba\AssetConnect\Storage\Interfaces\StorageDiskInterface;
+use Maniaba\AssetConnect\Storage\StorageManager;
 use Maniaba\AssetConnect\UrlGenerator\TempUrlToken;
 use Override;
 
@@ -39,43 +42,26 @@ final readonly class AssetAccessService implements AssetAccessServiceInterface
             throw PageException::forForbiddenAccess();
         }
 
-        // Get the file path
-        $filePath     = $asset->path;
-        $relativePath = $asset->relative_path;
-        $fileName     = $asset->name . '.' . $asset->extension;
-        $mimeType     = $asset->mime_type;
+        $target = $this->resolveTarget($asset, $variantName);
 
-        // If a variant is requested, get the variant path
-        if ($variantName !== null && $variantName !== '') {
-            $variant = $asset->metadata->assetVariant->getAssetVariant($variantName);
-
-            if ($variant === null) {
-                // If the variant is not found, throw an exception
-                throw PageException::forVariantNotFound($variantName);
-            }
-
-            $filePath     = $variant->path;
-            $relativePath = $variant->relative_path;
-            $fileName     = "{$asset->name}-{$variantName}.{$variant->extension}";
-            $mimeType     = $variant->mime_type;
+        if (! $target['disk']->fileExists($target['path'])) {
+            throw PageException::forFileNotFound('/' . $target['path']);
         }
-
-        // Check if the file exists
-        if (! file_exists($filePath)) {
-            throw PageException::forFileNotFound($relativePath);
-        }
-
-        // download the file
 
         // Create a download response
-        $response = new DownloadResponse($fileName, false);
-        $response->setContentType($mimeType);
+        $response = new DownloadResponse($target['fileName'], false);
+        $response->setContentType($target['mimeType']);
 
-        $response->setFilePath($filePath);
+        $localPath = $target['disk']->localPath($target['path']);
+        if ($localPath !== null) {
+            $response->setFilePath($localPath);
+        } else {
+            $response->setBinary($target['disk']->read($target['path']));
+        }
 
         // set size and last modified time
-        $response->setHeader('Content-Length', (string) filesize($filePath));
-        $response->setHeader('Last-Modified', gmdate('D, d M Y H:i:s', filemtime($filePath)) . ' GMT');
+        $response->setHeader('Content-Length', (string) $target['disk']->fileSize($target['path']));
+        $response->setHeader('Last-Modified', gmdate('D, d M Y H:i:s', $target['disk']->lastModified($target['path'])) . ' GMT');
 
         return $response;
     }
@@ -109,5 +95,36 @@ final readonly class AssetAccessService implements AssetAccessServiceInterface
         $variantName = $tokenData['variant'] ?? null;
 
         return $this->handleAssetRequest($assetId, $variantName);
+    }
+
+    /**
+     * @return array{disk: StorageDiskInterface, path: string, fileName: string, mimeType: string}
+     */
+    private function resolveTarget(Asset $asset, ?string $variantName): array
+    {
+        $storage  = $asset->storage;
+        $path     = $asset->path;
+        $fileName = $asset->name . '.' . $asset->extension;
+        $mimeType = $asset->mime_type;
+
+        if ($variantName !== null && $variantName !== '') {
+            $variant = $asset->metadata->assetVariant->getAssetVariant($variantName);
+
+            if (! $variant instanceof AssetVariant) {
+                throw PageException::forVariantNotFound($variantName);
+            }
+
+            $storage  = $variant->storage;
+            $path     = $variant->path;
+            $fileName = "{$asset->name}-{$variantName}.{$variant->extension}";
+            $mimeType = $variant->mime_type;
+        }
+
+        return [
+            'disk'     => StorageManager::make()->disk($storage),
+            'path'     => $path,
+            'fileName' => $fileName,
+            'mimeType' => $mimeType,
+        ];
     }
 }

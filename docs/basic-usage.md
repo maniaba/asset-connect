@@ -48,12 +48,6 @@ class ImagesCollection implements AssetCollectionDefinitionInterface, AssetVaria
             ->setMaxFileSize(5 * 1024 * 1024); // 5MB
     }
 
-    public function checkAuthorization(array|Entity $entity, Asset $asset): bool
-    {
-        // Check if the user is authorized to access this asset
-        return true;
-    }
-
     public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void
     {
         // Define file variants (e.g., thumbnails)
@@ -128,6 +122,15 @@ $asset = $product->addAsset('/path/to/video.mp4')
         'duration' => '2:30',
     ])
     ->toAssetCollection(VideosCollection::class);
+
+// Add an asset with backend-only internal properties
+$assetAdder = $product->addAsset('/path/to/image.jpg')
+    ->withCustomProperty('title', 'Product Image');
+
+$assetAdder->metadata()->internal->set('processing_job_id', 'job-123');
+$assetAdder->metadata()->internal->set('source_adapter', 's3-import');
+
+$asset = $assetAdder->toAssetCollection(ImagesCollection::class);
 ```
 
 ### Retrieving Assets
@@ -192,8 +195,17 @@ The `Asset` entity provides methods for working with individual assets:
 // Get an asset
 $asset = $product->getFirstAsset(ImagesCollection::class);
 
-// Get the absolute path to the asset file
-$path = $asset->getAbsolutePath();
+// Get storage information
+$storage = $asset->storage; // e.g. "public"
+$path = $asset->path;       // e.g. "2026-06-11/97847659691b3cae8857/photo.jpg"
+
+// If the storage disk is local, get the local filesystem path for processing
+$localPath = $asset->local_path;
+
+// For remote disks or queue processing, stream the file into a temporary local file
+$asset->withTemporaryFile(static function (string $temporaryFile): void {
+    // Process $temporaryFile...
+});
 
 // Get the URL to the asset file
 $url = $asset->getUrl();
@@ -204,14 +216,20 @@ $properties = $asset->getCustomProperties();
 // Get a specific custom property
 $title = $asset->getCustomProperty('title');
 
+// Get backend-only internal metadata
+$jobId = $asset->getInternalProperty('processing_job_id');
+
+// Transfer the asset and variants to another storage disk
+$asset->transferToStorage('protected');
+
 // Get the file name
-$fileName = $asset->getFileName();
+$fileName = $asset->file_name;
 
 // Get the mime type
-$mimeType = $asset->getMimeType();
+$mimeType = $asset->mime_type;
 
 // Get the size in bytes
-$size = $asset->getSize();
+$size = $asset->size;
 
 // Get the human-readable size
 $readableSize = $asset->getHumanReadableSize();
@@ -262,11 +280,13 @@ class SecureDocumentsCollection implements AuthorizableAssetCollectionDefinition
             );
     }
 
-    public function checkAuthorization(array|Entity $entity, Asset $asset): bool
+    public function checkAuthorization(Asset $asset): bool
     {
         // Check if the user is authorized to access this asset
         // For example, check if the user owns the asset or has the right permissions
-        return $entity->id === $asset->entity_id;
+        $entity = $asset->getSubjectEntity();
+
+        return $entity !== null && $entity->id === $asset->entity_id;
     }
 
     public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void

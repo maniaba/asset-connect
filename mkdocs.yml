@@ -84,8 +84,11 @@ extra_javascript:
 nav:
   - Home: index.md
   - Installation: installation.md
+  - Upgrade:
+      - Upgrade from 1.0.2 to 2.0.0: upgrade-2.0.md
   - Configuration:
       - Overview: configuration.md
+      - Storage: storage.md
       - Custom Asset Collections: custom-asset-collections.md
       - Custom Path Generators: custom-path-generators.md
       - Custom URL Generator: custom-url-generator.md

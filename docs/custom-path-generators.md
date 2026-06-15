@@ -1,145 +1,154 @@
 # Custom Path Generators
 
-Path generators determine how file paths are generated for stored assets. This page explains how to create and customize path generators to suit your needs.
+Path generators determine the relative storage path for stored assets. They do not choose the physical filesystem root and they should not return absolute paths. Storage roots and public URL prefixes are configured through named storage disks.
 
 ## Creating Custom Path Generators
 
-Path generators determine how file paths are generated for stored assets. You can create custom path generators by implementing the `PathGeneratorInterface`:
+Create a custom path generator by implementing `PathGeneratorInterface`:
 
 ```php
-class CustomPathGenerator implements PathGeneratorInterface
+use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionGetterInterface;
+use Maniaba\AssetConnect\PathGenerator\Interfaces\PathGeneratorInterface;
+use Maniaba\AssetConnect\PathGenerator\PathGeneratorHelper;
+
+final class CustomPathGenerator implements PathGeneratorInterface
 {
-    // Get the path for the given asset, relative to the root storage path.
-    // It's important to generate unique paths to prevent file overwrites.
-    public function getPath(PathGeneratorHelper $generatorHelper, AssetCollectionGetterInterface $collection): string
-    {
-        // Check if the collection is protected (non-public) or public
-        $isProtected = $collection->getVisibility() === AssetVisibility::PROTECTED;
-
-        // Set the base path based on visibility
-        $basePath = $isProtected ? WRITEPATH : realpath(ROOTPATH . 'public') . DIRECTORY_SEPARATOR;
-
-        // Generate a unique path using helper methods
-        // This creates a structure like: assets/2023-05-25/123456.789/
-        return $basePath . $generatorHelper->getPathString(
-            'assets',
-            $generatorHelper->getDateTime(),
-            $generatorHelper->getUniqueId()
-        );
+    public function getFileRelativePath(
+        PathGeneratorHelper $generatorHelper,
+        AssetCollectionGetterInterface $collection,
+    ): string {
+        return $generatorHelper->getPathString(
+            $generatorHelper->getDate(),
+            $generatorHelper->getRandomId(),
+        ) . '/';
     }
 
-    // Get the path for variants (e.g., thumbnails) of the given asset.
-    // This should also generate unique paths.
-    public function getPathForVariants(PathGeneratorHelper $generatorHelper, AssetCollectionGetterInterface $collection): string
-    {
-        // Get the base path from the getPath method
-        $basePath = $this->getPath($generatorHelper, $collection);
-
-        // Add a 'variants' subdirectory
-        return $basePath . $generatorHelper->getPathString('variants');
+    public function getPath(
+        PathGeneratorHelper $generatorHelper,
+        AssetCollectionGetterInterface $collection,
+    ): string {
+        return $this->getFileRelativePath($generatorHelper, $collection);
     }
 
-    // This method is called when a directory is created by the system.
-    // You can use it to perform additional operations on the directory,
-    // such as setting permissions, creating additional subdirectories,
-    // or logging directory creation events.
-    public function onCreatedDirectory(string $path): void
-    {
-        // Example: Set specific permissions on the created directory
-        // chmod($path, 0755);
+    public function getFileRelativePathForVariants(
+        PathGeneratorHelper $generatorHelper,
+        AssetCollectionGetterInterface $collection,
+    ): string {
+        return $this->getFileRelativePath($generatorHelper, $collection) . 'variants/';
+    }
 
-        // Example: Log directory creation
-        // log_message('info', 'Directory created: ' . $path);
-
-        // Example: Create additional subdirectories if needed
-        // mkdir($path . 'thumbnails', 0755, true);
-
-        // Example: Create an index.html file to prevent directory listing
-        // file_put_contents($path . 'index.html', '<html><head><title>403 Forbidden</title></head><body><p>Directory access is forbidden.</p></body></html>');
-
-        // Example: Create a .htaccess file to restrict direct access
-        // file_put_contents($path . '.htaccess', "Options -Indexes\nDeny from all");
+    public function getPathForVariants(
+        PathGeneratorHelper $generatorHelper,
+        AssetCollectionGetterInterface $collection,
+    ): string {
+        return $this->getFileRelativePathForVariants($generatorHelper, $collection);
     }
 }
 ```
 
-## Securing Asset Directories
+This produces relative paths such as:
 
-When storing assets, especially in public directories, it's important to consider security. The `onCreatedDirectory` method provides an excellent opportunity to add security measures to your asset directories. Here are two common approaches:
-
-### Creating index.html Files
-
-Adding an index.html file to each directory prevents users from browsing the directory contents directly. If someone tries to access the directory in a browser, they'll see the contents of the index.html file instead of a listing of all files:
-
-```php
-// Create an index.html file to prevent directory listing
-file_put_contents($path . 'index.html', '<html><head><title>403 Forbidden</title></head><body><p>Directory access is forbidden.</p></body></html>');
+```text
+2026-06-11/97847659691b3cae8857/photo.jpg
+2026-06-11/97847659691b3cae8857/variants/photo-thumbnail.jpg
 ```
 
-This is a simple and effective approach that works on virtually all web servers.
+The database stores the relative path together with the selected storage disk name. The disk configuration decides where the file physically lives.
 
-### Creating .htaccess Files
+## Selecting Storage Is Not A Path Generator Responsibility
 
-For Apache servers, you can create a .htaccess file to have more control over directory access:
+Do not do this in a path generator:
 
 ```php
-// Create a .htaccess file to restrict direct access
-file_put_contents($path . '.htaccess', "Options -Indexes\nDeny from all");
+$basePath = $collection->isProtected() ? WRITEPATH : realpath(ROOTPATH . 'public') . DIRECTORY_SEPARATOR;
 ```
 
-This .htaccess file does two things:
-1. `Options -Indexes` - Prevents directory listing
-2. `Deny from all` - Blocks direct access to files in this directory
+That couples generated database values to the current application directory. Instead, configure disks:
 
-Note that when using .htaccess to deny all access, you'll need to create specific rules in your application's main .htaccess file to allow access to the files through your application's controllers.
+```php
+public array $storages = [
+    'public' => [
+        'driver'     => 'local',
+        'root'       => WRITEPATH . 'asset-connect/public',
+        'public_url' => 'assets/storage',
+        'visibility' => 'public',
+    ],
+];
+```
+
+Then choose a disk at collection level only when needed:
+
+```php
+public function definition(AssetCollectionSetterInterface $definition): void
+{
+    $definition
+        ->setStorage('public')
+        ->allowedExtensions('jpg', 'png');
+}
+```
 
 ## Understanding PathGeneratorHelper
 
-The `PathGeneratorHelper` class provides several useful methods for generating unique paths:
+The `PathGeneratorHelper` class provides methods for generating unique storage-relative paths:
 
-1. `getUniqueId(bool $moreEntropy = false)`: Generates a unique ID, with an option for more entropy.
+1. `getUniqueId(bool $moreEntropy = false)`: Generates a unique ID.
+
    ```php
-   // Basic unique ID
-   $uniqueId = $generatorHelper->getUniqueId(); // e.g., "1620000000_60a1b2c3"
-
-   // More secure unique ID with higher entropy
-   $secureId = $generatorHelper->getUniqueId(true); // SHA-256 hash
+   $uniqueId = $generatorHelper->getUniqueId();
    ```
 
-2. `getDateTime()`: Generates a date-time string formatted as a folder name.
+2. `getRandomId(int $length = 20)`: Generates a random hex ID suitable for short unique path segments.
+
    ```php
-   $dateTimeFolder = $generatorHelper->getDateTime(); // e.g., "2023-05-25/123456.789/"
+   $randomId = $generatorHelper->getRandomId();
    ```
 
-3. `getTime()`: Gets the current time formatted as a string.
+3. `getDate()`: Gets the current date formatted as a folder name.
+
    ```php
-   $timeString = $generatorHelper->getTime(); // e.g., "123456.789"
+   $dateFolder = $generatorHelper->getDate();
    ```
 
-4. `getPathString(string ...$segments)`: Joins path segments with the system's directory separator.
+4. `getDateTime()`: Generates a date-time folder string.
+
    ```php
-   $path = $generatorHelper->getPathString('folder1', 'folder2', 'folder3'); // "folder1/folder2/folder3/"
+   $dateTimeFolder = $generatorHelper->getDateTime();
+   ```
+
+5. `getTime()`: Gets the current time formatted as a string.
+
+   ```php
+   $timeString = $generatorHelper->getTime();
+   ```
+
+6. `getPathString(string ...$segments)`: Joins path segments.
+
+   ```php
+   $path = $generatorHelper->getPathString('folder1', 'folder2', 'folder3');
    ```
 
 ## Understanding AssetCollectionGetterInterface
 
-The `AssetCollectionGetterInterface` is passed to the path generator methods and provides information about the asset collection:
+The `AssetCollectionGetterInterface` is passed to path generator methods and provides collection metadata:
 
-1. `getVisibility()`: Returns the visibility of the collection (PUBLIC or PROTECTED).
-   ```php
-   $visibility = $collection->getVisibility(); // AssetVisibility::PUBLIC or AssetVisibility::PROTECTED
-   ```
+1. `getVisibility()`: Returns `AssetVisibility::PUBLIC` or `AssetVisibility::PROTECTED`.
+2. `getStorage()`: Returns the explicitly selected storage disk name, if one was configured.
+3. `getMaximumNumberOfItemsInCollection()`: Returns the maximum number of items allowed in the collection.
+4. `getMaxFileSize()`: Returns the maximum file size allowed for assets.
+5. `isSingleFileCollection()`: Returns whether the collection is limited to one file.
+6. `getAllowedMimeTypes()`: Returns allowed MIME types.
+7. `getAllowedExtensions()`: Returns allowed file extensions.
 
-2. `getMaximumNumberOfItemsInCollection()`: Returns the maximum number of items allowed in the collection.
-3. `getMaxFileSize()`: Returns the maximum file size allowed in the collection.
-4. `isSingleFileCollection()`: Returns whether the collection is limited to a single file.
-5. `getAllowedMimeTypes()`: Returns an array of allowed MIME types.
-6. `getAllowedExtensions()`: Returns an array of allowed file extensions.
+## Importance Of Unique Paths
 
-These methods can be useful when generating paths, especially `getVisibility()` which helps determine whether to store files in a public or protected location.
+Each stored asset should receive a unique relative path. This prevents uploads with the same file name from overwriting one another.
 
-## Importance of Unique Paths
+Use `getRandomId()` and `getDate()` to generate readable collision-resistant paths. A practical structure is:
 
-When implementing custom path generators, it's crucial to ensure that each asset gets a unique path. This prevents files from overwriting each other, especially in high-traffic applications where multiple files might be uploaded simultaneously.
+```text
+{date}/{random-id}/{file-name}
+```
 
-The `PathGeneratorHelper` class provides methods like `getUniqueId()` and `getDateTime()` specifically to help generate unique paths. By combining these with other identifiers (like collection names, entity IDs, etc.), you can create a robust path generation strategy that minimizes the risk of collisions.
+## Directory Security
+
+Directory permissions, web exposure, and public URLs belong to the storage configuration and server setup, not to path generation. For local storage disks that should have URLs, define `public_url` and expose the configured root with `php spark asset-connect:storage-link` or a web server alias.

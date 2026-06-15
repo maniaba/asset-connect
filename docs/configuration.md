@@ -103,6 +103,33 @@ public ?string $DBGroup = 'default';
 
 If set to `null` (default), the library will use the default database group configured in your application.
 
+### Storage Disks
+
+AssetConnect stores only the storage disk name and the relative path in the database. Physical root paths are configured in `Config\Asset`:
+
+```php
+public string $defaultPublicStorage = 'public';
+public string $defaultProtectedStorage = 'protected';
+
+public array $storages = [
+    'public' => [
+        'driver'     => 'local',
+        'root'       => WRITEPATH . 'asset-connect/public',
+        'public_url' => 'assets/storage',
+        'visibility' => 'public',
+    ],
+    'protected' => [
+        'driver'     => 'local',
+        'root'       => WRITEPATH . 'asset-connect/protected',
+        'visibility' => 'protected',
+    ],
+];
+```
+
+Use `setStorage('disk_name')` in a collection definition when a collection should use a specific disk. Otherwise AssetConnect chooses the default disk based on collection visibility.
+
+For local public storage disks with `public_url`, expose the configured roots through `php spark asset-connect:storage-link` or web server aliases. Protected disks should not define `public_url` and are served through AssetConnect routes. For FTP, SFTP, S3, Google Cloud Storage, Azure Blob Storage, MongoDB GridFS, WebDAV, memory, or any other Flysystem adapter, install the adapter package, set the disk `driver`, and add a matching `setupStorage{Driver}()` method that returns the adapter config. See [Storage](storage.md) for examples.
+
 ### Default Asset Collection
 
 You can change the default collection class that will be used when no specific collection is provided:
@@ -117,13 +144,13 @@ For detailed information about creating and customizing asset collections, see t
 
 ### Default Path Generator
 
-The path generator determines how file paths are generated for stored assets:
+The path generator determines how relative storage paths are generated for stored assets:
 
 ```php
 public string $defaultPathGenerator = CustomPathGenerator::class;
 ```
 
-The class must implement the `PathGeneratorInterface`.
+The class must implement the `PathGeneratorInterface`. It should return a relative path inside the selected storage disk, not an absolute filesystem path.
 
 For detailed information about creating and customizing path generators, see the [Custom Path Generators](custom-path-generators.md) documentation.
 

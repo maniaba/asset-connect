@@ -62,13 +62,13 @@ This method is called when an asset is added to the collection. You can use the 
 
 ### AuthorizableAssetCollectionDefinitionInterface
 
-The `AuthorizableAssetCollectionDefinitionInterface` extends `AssetCollectionDefinitionInterface` and adds authorization capabilities to asset collections. It defines an additional method:
+The `AuthorizableAssetCollectionDefinitionInterface` extends `AssetCollectionDefinitionInterface` and makes the collection use protected visibility by default. It defines an additional method:
 
 ```php
-public function checkAuthorization(array|Entity $entity, Asset $asset): bool;
+public function checkAuthorization(Asset $asset): bool;
 ```
 
-This method is called when an asset is accessed. You can use it to check if the user is authorized to access the asset. For example, you might check if the user owns the asset or has the necessary permissions.
+AssetConnect calls this method when protected assets are served through AssetConnect routes. Direct web-server links do not run this method, so protected storage roots should not be exposed with `public_url`, `asset-connect:storage-link`, or a web-server alias.
 
 ### AssetCollectionSetterInterface
 
@@ -81,6 +81,7 @@ public function onlyKeepLatest(int $maximumNumberOfItemsInCollection): static;
 public function setMaxFileSize(float|int $maxFileSize): static;
 public function singleFileCollection(): static;
 public function setPathGenerator(PathGeneratorInterface $pathGenerator): static;
+public function setStorage(string $storage): static;
 ```
 
 These methods allow you to:
@@ -90,16 +91,21 @@ These methods allow you to:
 - Set the maximum file size
 - Make the collection hold only a single file
 - Set the path generator for the collection
+- Select a configured storage disk for the collection
 
 ## CreateAssetVariantsInterface
 
 The `CreateAssetVariantsInterface` is implemented by classes that provide methods for creating asset variants. It's used in the `variants` method of `AssetVariantsInterface`. It defines the following method:
 
 ```php
-public function assetVariant(string $name, Closure $closure): ?AssetVariant;
+public function assetVariant(
+    string $name,
+    Closure $closure,
+    AssetExtension|string|null $extension = null,
+): ?AssetVariant;
 ```
 
-This method allows you to create a new asset variant with the given name and closure. The closure receives an `AssetVariant` and an `Asset` and is used to define how to process the variant.
+This method allows you to create a new asset variant with the given name and closure. The closure receives an `AssetVariant` and an `Asset` and is used to define how to process the variant. Pass `$extension` when a variant should be written with a different extension than the original file.
 
 ## AssetVariants Class
 
@@ -145,11 +151,13 @@ class ProfilePicturesCollection implements AuthorizableAssetCollectionDefinition
             ->setPathGenerator(new CustomPathGenerator());
     }
 
-    public function checkAuthorization(array|Entity $entity, Asset $asset): bool
+    public function checkAuthorization(Asset $asset): bool
     {
+        $entity = $asset->getSubjectEntity();
+
         // Check if the user is authorized to access this asset
         // For example, check if the user owns the asset
-        return $entity->id === $asset->entity_id;
+        return $entity !== null && $entity->id === $asset->entity_id;
     }
 
     public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void
@@ -161,12 +169,19 @@ class ProfilePicturesCollection implements AuthorizableAssetCollectionDefinition
         if ($asset->isImage()) {
             // Create a thumbnail variant
             $variants->assetVariant('thumbnail', static function (AssetVariant $variant, Asset $asset): void {
+                $source = $asset->local_path;
+                $target = $variant->local_path;
+
+                if ($source === null || $target === null) {
+                    throw new RuntimeException('This variant requires a local storage disk.');
+                }
+
                 // Use an image manipulation library to create the thumbnail
                 $imageService = \Config\Services::image();
-                $imageService->withFile($asset->path)
+                $imageService->withFile($source)
                     ->fit(300, 300, 'center')
                     ->text('Thumbnail')
-                    ->save($variant->path);
+                    ->save($target);
 
                 // Alternatively, you can use the writeFile method to write the file directly
                 // $variant->writeFile('thumbnail data');
@@ -175,6 +190,8 @@ class ProfilePicturesCollection implements AuthorizableAssetCollectionDefinition
     }
 }
 ```
+
+For remote disks, use `withTemporaryFile()` and write the processed output through `$variant->writeFile()`. See [Local And Temporary Paths For Processing](storage.md#local-and-temporary-paths-for-processing).
 
 ## Using Custom Asset Collections
 

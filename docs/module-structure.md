@@ -18,13 +18,23 @@ The central orchestrator. Holds the `AssetModel`, manages cached assets per enti
 
 | File | Description |
 |---|---|
-| `Asset.php` | CI4 `Entity` subclass representing a stored file. Contains all properties (`id`, `entity_type`, `entity_id`, `collection`, `name`, `file_name`, `path`, `mime_type`, `size`, `order`, `metadata`, timestamps). Provides `getUrl()`, `getTemporaryUrl()`, `download()`, `isImage()`, `isVideo()`, `isDocument()`, `getCustomProperty()`, `setCustomProperty()`, `save()`. |
+| `Asset.php` | CI4 `Entity` subclass representing a stored file. Contains all properties (`id`, `entity_type`, `entity_id`, `collection`, `storage`, `name`, `file_name`, relative `path`, `mime_type`, `size`, `order`, `metadata`, timestamps). Provides `getUrl()`, `getTemporaryUrl()`, `download()`, `transferToStorage()`, `copyToTemporaryFile()`, `withTemporaryFile()`, `isImage()`, `isVideo()`, `isDocument()`, `getCustomProperty()`, `setCustomProperty()`, `getInternalProperty()`, `setInternalProperty()`, `save()`. |
 | `AssetAdder.php` | Fluent builder returned by `entity->addAsset()`. Chains `withCustomProperties()`, `usingName()`, and terminates with `toAssetCollection()`. |
 | `AssetAdderMultiple.php` | Variant of `AssetAdder` for adding multiple files at once. |
-| `AssetMetadata.php` | Value object holding custom properties and variant references. |
+| `AssetMetadata.php` | Value object holding public custom properties, backend internal properties, and variant references. |
+| `AssetPersistenceManager.php` | Persists uploaded files to the configured storage disk, writes database rows, queues variant processing, and cleans up failed writes. |
+| `Interfaces/AssetAdderInterface.php` | Contract for fluent asset adders. Extends `AssetDefinitionInterface` and exposes `toAssetCollection()` and `metadata()`. |
+| `Interfaces/AssetCollectionGetterInterface.php` | Read-only collection configuration contract passed to path generators. |
 | `Interfaces/AssetCollectionDefinitionInterface.php` | Base interface every collection class must implement. Requires `definition(AssetCollectionSetterInterface)`. |
-| `Interfaces/AssetCollectionSetterInterface.php` | Fluent setter interface for collection configuration: `allowedExtensions()`, `allowedMimeTypes()`, `setMaxFileSize()`, `singleFileCollection()`, `onlyKeepLatest()`, `setPathGenerator()`. |
-| `Interfaces/AuthorizableAssetCollectionDefinitionInterface.php` | Extends the base definition interface; adds `checkAuthorization(Entity, Asset): bool` for private collections. |
+| `Interfaces/AssetCollectionSetterInterface.php` | Fluent setter interface for collection configuration: `allowedExtensions()`, `allowedMimeTypes()`, `setMaxFileSize()`, `singleFileCollection()`, `onlyKeepLatest()`, `setPathGenerator()`, `setStorage()`. |
+| `Interfaces/AssetDefinitionInterface.php` | Shared fluent contract for asset name, file name, order, preserve-original flag, and custom properties. |
+| `Interfaces/AuthorizableAssetCollectionDefinitionInterface.php` | Extends the base definition interface; adds `checkAuthorization(Asset): bool` for protected collections. |
+| `Properties/BaseProperty.php` | Base wrapper for namespaced metadata properties. |
+| `Properties/UserCustomProperty.php` | User-visible custom asset metadata stored under `user_custom`. |
+| `Properties/InternalProperty.php` | Backend-only metadata stored under `internal`. |
+| `Properties/AssetVariantProperty.php` | Metadata collection for registered asset variants. |
+| `Traits/AssetFileInfoTrait.php` | File-name, MIME type, extension, and size helper methods. |
+| `Traits/AssetMimeTypeTrait.php` | Type checks for images, videos, documents, audio, and related MIME groups. |
 
 ---
 
@@ -46,12 +56,22 @@ The central orchestrator. Holds the `AssetModel`, manages cached assets per enti
 
 | File | Description |
 |---|---|
-| `AssetVariant.php` | Represents a single generated variant (e.g. thumbnail). Holds `name`, `path`, `file_name`, and `writeFile()` helper. |
-| `AssetVariants.php` | Implements `CreateAssetVariantsInterface`. Collects variant closures and the `onQueue` flag. |
-| `AssetVariantsProcess.php` | Executes the variant closures for a given asset. |
-| `AssetVariantsProcessor.php` | Orchestrates variant processing; dispatches to queue or runs inline. |
+| `AssetVariant.php` | Represents a single generated variant (e.g. thumbnail). Holds `name`, `storage`, relative `path`, `file_name`, and helpers for `writeFile()`, `copyToTemporaryFile()`, and `withTemporaryFile()`. |
+| `AssetVariants.php` | Implements `CreateAssetVariantsInterface`. Registers variant metadata, triggers `variant.created`, and stores the `onQueue` flag. |
+| `AssetVariantsProcess.php` | Queues variant processing or runs it inline for a given asset and collection definition. |
+| `AssetVariantsProcessor.php` | Executes existing variant closures and updates variant metadata after processing. |
 | `Interfaces/AssetVariantsInterface.php` | Must be implemented by collections that define variants. Requires `variants(CreateAssetVariantsInterface, Asset)`. |
-| `Interfaces/CreateAssetVariantsInterface.php` | Interface passed to `variants()`; exposes `assetVariant(name, closure)` and `onQueue`. |
+| `Interfaces/CreateAssetVariantsInterface.php` | Interface passed to `variants()`; exposes `assetVariant(name, closure, extension = null)` and `onQueue`. |
+
+---
+
+## `Commands/`
+`Maniaba\AssetConnect\Commands`
+
+| File | Command | Description |
+|---|---|---|
+| `MigrateLegacyAssetPaths.php` | `asset-connect:migrate-paths` | Assigns storage disk names to legacy rows and normalizes supported legacy filesystem paths. |
+| `StorageLink.php` | `asset-connect:storage-link` | Creates public links for local storage disks that define `public_url`. |
 
 ---
 
@@ -60,9 +80,9 @@ The central orchestrator. Holds the `AssetModel`, manages cached assets per enti
 
 | File | Description |
 |---|---|
-| `Asset.php` | Library configuration class. Required arrays: `$entityKeyDefinitions`, `$collectionKeyDefinitions`. Optional: `$DBGroup`, `$defaultCollection`, `$defaultPathGenerator`, `$defaultUrlGenerator`, `$tables`, `$queue`, `$pendingStorage`. |
+| `Asset.php` | Library configuration class. Required arrays: `$entityKeyDefinitions`, `$collectionKeyDefinitions`. Optional: `$DBGroup`, `$defaultCollection`, `$defaultPathGenerator`, `$defaultUrlGenerator`, `$defaultPublicStorage`, `$defaultProtectedStorage`, `$storages`, `$tables`, `$queue`, `$pendingStorage`. |
 | `Registrar.php` | CI4 auto-discovery registrar; registers routes and validation rules. |
-| `Routes.php` | Defines the secure asset-access route. |
+| `Routes.php` | Registers AssetConnect routes through the configured URL generator. |
 | `Services.php` | CI4 `Services` extension; exposes `assetAccessService()`. |
 
 ---
@@ -80,7 +100,9 @@ The central orchestrator. Holds the `AssetModel`, manages cached assets per enti
 ## `Controllers/`
 `Maniaba\AssetConnect\Controllers`
 
-Contains the secure-download controller that gates access to non-public assets through `AuthorizableAssetCollectionDefinitionInterface::checkAuthorization()`.
+| File | Description |
+|---|---|
+| `AssetConnectController.php` | Serves protected and temporary asset routes by delegating authorization and response creation to `AssetAccessService`. |
 
 ---
 
@@ -91,6 +113,7 @@ Contains the secure-download controller that gates access to non-public assets t
 |---|---|
 | `BaseMigration.php` | Abstract base for library migrations. |
 | `Migrations/2025-06-18-180653_CreateAssetsTable.php` | Creates the `assets` table with all required columns and indexes. Run via `php spark migrate --namespace=Maniaba\\AssetConnect`. |
+| `Migrations/2026-06-12-000000_AddStorageToAssetsTable.php` | Adds the `storage` disk column and indexes needed by the 2.0.0 storage model. |
 
 ---
 
@@ -101,7 +124,7 @@ Contains the secure-download controller that gates access to non-public assets t
 |---|---|
 | `AssetExtension.php` | Backed enum of file extensions. Helper methods: `images()`, `documents()`, `videos()`, `rasterGraphics()`, `vectorGraphics()`, `spreadsheets()`, `presentations()`. |
 | `AssetMimeType.php` | Backed enum of MIME types. Static helpers: `isImage()`, `isVideo()`, `isDocument()`, `isAudio()`, `fromExtension()`, `fromAssetExtension()`, `getExtension()`. |
-| `AssetVisibility.php` | Enum for `public` vs `private` visibility. |
+| `AssetVisibility.php` | Enum for `public` vs `protected` storage visibility. |
 
 ---
 
@@ -121,7 +144,7 @@ Contains the secure-download controller that gates access to non-public assets t
 ## `Exceptions/`
 `Maniaba\AssetConnect\Exceptions`
 
-Domain-specific exceptions: `AssetException`, `FileException`, `InvalidArgumentException`, `PendingAssetException`.
+Domain-specific exceptions: `AssetException`, `AuthorizationException`, `FileException`, `FileVariantException`, `InvalidArgumentException`, `PageException`, `PendingAssetException`.
 
 ---
 
@@ -135,14 +158,17 @@ Domain-specific exceptions: `AssetException`, `FileException`, `InvalidArgumentE
 ## `Language/`
 `Maniaba\AssetConnect\Language`
 
-Validation and error message translations for 30+ locales (Arabic, Bulgarian, Bengali, Bosnian, Chinese (TW), Czech, German, Greek, English, Farsi, French, Gujarati, Indonesian, Italian, Japanese, Korean, Latvian, Malayalam, Dutch, Norwegian, Polish, Brazilian Portuguese, Portuguese, Romanian, Russian, Sinhala, Serbian, Swedish, Thai, Turkish, Ukrainian, Vietnamese).
+Validation and error message translations for 39 locales (Arabic, Bulgarian, Bengali, Bosnian, Chinese Simplified, Chinese Traditional, Czech, German, Greek, English, Spanish, Farsi, French, Gujarati, Hindi, Hungarian, Indonesian, Italian, Japanese, Korean, Lithuanian, Latvian, Malayalam, Dutch, Norwegian, Polish, Brazilian Portuguese, Portuguese, Romanian, Russian, Sinhala, Slovak, Serbian, Swedish, Tamil, Thai, Turkish, Ukrainian, Vietnamese).
 
 ---
 
 ## `Models/`
 `Maniaba\AssetConnect\Models`
 
-`AssetModel` – CI4 `Model` subclass with soft-delete enabled, scoped to the configured `$DBGroup` and table name.
+| File | Description |
+|---|---|
+| `BaseModel.php` | Base CI4 model that reads table names and `$DBGroup` from `Config\Asset`. |
+| `AssetModel.php` | CI4 `Model` subclass with soft-delete enabled, scoped to the configured `$DBGroup` and table name. |
 
 ---
 
@@ -151,9 +177,9 @@ Validation and error message translations for 30+ locales (Arabic, Bulgarian, Be
 
 | File | Description |
 |---|---|
-| `PathGeneratorInterface.php` | Contract: `getPath(Asset): string`. |
-| `DefaultPathGenerator.php` | Generates `{collection}/{entityType}/{entityId}/{fileName}` paths. |
-| `PathGenerator.php` | Resolves and delegates to the correct generator. |
+| `Interfaces/PathGeneratorInterface.php` | Contract for generating storage-relative directories for original assets and variants. |
+| `DefaultPathGenerator.php` | Generates `{date}/{random-id}/` relative storage paths. |
+| `PathGenerator.php` | Resolves and delegates to the correct generator, normalizing path separators for storage keys. |
 | `PathGeneratorFactory.php` | Builds generator instances from config or collection definition. |
 | `PathGeneratorHelper.php` | Shared path utilities. |
 
@@ -170,20 +196,39 @@ Two-step upload system – upload first, attach to entity later.
 | `PendingAssetManager.php` | Facade over `PendingStorageInterface`. Methods: `make()`, `store()`, `fetchById()`, `deleteById()`, `cleanExpiredPendingAssets()`. |
 | `DefaultPendingStorage.php` | Filesystem implementation; stores file + `metadata.json` per asset. |
 | `Interfaces/PendingStorageInterface.php` | Contract for custom storage backends. |
+| `Interfaces/PendingSecurityTokenInterface.php` | Contract for pending-asset token generation, retrieval, validation, and deletion. |
+| `PendingSecurityToken/AbstractPendingSecurityToken.php` | Base implementation for token length, TTL validation, random token generation, and comparison. |
+| `PendingSecurityToken/SessionPendingSecurityToken.php` | Default session-tempdata token strategy. |
+| `PendingSecurityToken/CookiePendingSecurityToken.php` | Cookie-backed token strategy. |
 
 ---
 
 ## `Repositories/`
 `Maniaba\AssetConnect\Repositories`
 
-`AssetRepository` / `AssetRepositoryInterface` – data-access abstraction over `AssetModel`; used internally by `AssetConnect`.
+`AssetRepository` / `Interfaces/AssetRepositoryInterface` – data-access abstraction over `AssetModel`; used internally by `AssetConnect`.
+
+---
+
+## `Storage/`
+`Maniaba\AssetConnect\Storage`
+
+| File | Description |
+|---|---|
+| `StorageManager.php` | Resolves configured storage disk names to disk instances and selects defaults by collection visibility. |
+| `FlysystemStorageDisk.php` | Flysystem-backed disk implementation for read/write/delete/metadata/public URL/local path operations. |
+| `StorageLinker.php` | Creates public filesystem links for local storage disks that define `public_url`. |
+| `StorageLinkResult.php` | Value object returned by storage link operations. |
+| `StorageLinkStatus.php` | Enum for storage link operation result statuses. |
+| `TemporaryStorageFile.php` | Streams a stored asset or variant into a local temporary file for queue-safe remote processing. |
+| `Interfaces/StorageDiskInterface.php` | Contract implemented by storage disks. |
 
 ---
 
 ## `Services/`
 `Maniaba\AssetConnect\Services`
 
-`AssetAccessService` / `AssetAccessServiceInterface` – resolves whether a request is authorised to access a private asset (delegates to the collection's `checkAuthorization()`).
+`AssetAccessService` / `Interfaces/AssetAccessServiceInterface` – optional service for applications that still serve files through a controller and need collection authorization checks.
 
 ---
 
@@ -202,11 +247,23 @@ Two-step upload system – upload first, attach to entity later.
 
 | File | Description |
 |---|---|
-| `UrlGeneratorInterface.php` | Contract: `getUrl()`, `getUrlRelative()`, `getTemporaryUrl()`, `getTemporaryUrlRelative()`. |
-| `DefaultUrlGenerator.php` | Generates public or signed URLs based on asset visibility. |
+| `Interfaces/UrlGeneratorInterface.php` | Contract: `getUrl()`, `getUrlRelative()`, `getTemporaryUrl()`, `getTemporaryUrlRelative()`. |
+| `DefaultUrlGenerator.php` | Registers legacy/controller routes for temporary or custom URL generation. |
 | `TempUrlToken.php` | Creates and validates HMAC-signed temporary URL tokens. |
-| `UrlGenerator.php` | Resolves and delegates to the configured generator. |
+| `UrlGenerator.php` | Generates direct storage-disk URLs and temporary route URLs. |
 | `Traits/UrlGeneratorTrait.php` | Shared URL-building helpers. |
+
+---
+
+## `Upgrade/`
+`Maniaba\AssetConnect\Upgrade`
+
+| File | Description |
+|---|---|
+| `LegacyAssetPathMigrationOptions.php` | Options value object for legacy path migration runs. |
+| `LegacyAssetPathMigrationProgress.php` | Per-row progress value object emitted by the migrator. |
+| `LegacyAssetPathMigrationSummary.php` | Summary counts for migrated, skipped, failed, and metadata-cleanup rows. |
+| `LegacyAssetPathMigrator.php` | Converts supported 1.x asset path rows into the 2.0.0 storage disk + relative path model. |
 
 ---
 
@@ -215,7 +272,7 @@ Two-step upload system – upload first, attach to entity later.
 
 | File | Description |
 |---|---|
-| `Format.php` | `humanReadableSize(int $bytes, int $precision): string` |
+| `Format.php` | `formatBytesHumanReadable(int $bytes, int $precision): string` |
 | `PhpIni.php` | Reads `upload_max_filesize` / `post_max_size` from `php.ini`. |
 
 ---
@@ -225,5 +282,5 @@ Two-step upload system – upload first, attach to entity later.
 
 | File | Description |
 |---|---|
-| `AssetConnectValidator.php` | High-level validator; maps field names → collection definitions → CI4 rule strings. Methods: `setFieldCollectionDefinition()`, `validate()`, `validateFields()`, `validateDefinedFields()`, `validateFieldsFromRequest()`, `validateDefinedFieldsFromRequest()`, `getRules()`, `getErrors()`. |
+| `AssetConnectValidator.php` | High-level validator; maps field names → collection definitions → CI4 validation rules. Methods: `setFieldCollectionDefinition()`, `validate()`, `validateFields()`, `validateDefinedFields()`, `validateFieldsFromRequest()`, `validateRequest()`, `getRules()`, `getErrors()`. |
 | `ValidationRuleCollector.php` | Implements `AssetCollectionSetterInterface`; collects constraints and converts them to CI4 validation rule strings. |

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Maniaba\AssetConnect\PathGenerator;
 
 use Maniaba\AssetConnect\AssetCollection\AssetCollection;
-use Maniaba\AssetConnect\Exceptions\FileException;
 use Maniaba\AssetConnect\PathGenerator\Interfaces\PathGeneratorInterface;
 
 final readonly class PathGenerator
@@ -21,123 +20,53 @@ final readonly class PathGenerator
     }
 
     /**
-     * Get the base storage directory where files will be stored.
-     * This is the root directory for all files, which can be either protected or public.
-     *
-     * @return string The base storage directory path
-     */
-    public function getStoreDirectory(): string
-    {
-        $storeDirectory = $this->pathGenerator->getStoreDirectory($this->helper, $this->collection);
-
-        // Ensure the directory exists
-        $this->ensurePathExists($storeDirectory);
-
-        return $storeDirectory;
-    }
-
-    /**
-     * Get the relative path within the storage directory for a specific file.
-     * This path is combined with the store directory to form the complete file path.
-     *
-     * @return string The relative path within the storage directory
+     * Get the relative path within the storage disk for a specific file.
      */
     public function getFileRelativePath(): string
     {
-        return $this->pathGenerator->getFileRelativePath($this->helper, $this->collection);
+        return $this->normalizeDirectoryPath(
+            $this->pathGenerator->getFileRelativePath($this->helper, $this->collection),
+        );
     }
 
     /**
-     * Get the complete path for the given media, combining store directory and relative path.
-     * This is a convenience method that combines getStoreDirectory and getFileRelativePath.
-     *
-     * @return string The complete file path
+     * Get the relative directory for the original asset file.
      */
     public function getPath(): string
     {
-        $path = $this->pathGenerator->getPath($this->helper, $this->collection);
-        // Ensure the path ends with a DIRECTORY_SEPARATOR
-        if (substr($path, -1) !== DIRECTORY_SEPARATOR) {
-            $path .= DIRECTORY_SEPARATOR;
-        }
-
-        $this->ensurePathExists($path);
-
-        return $path;
+        return $this->normalizeDirectoryPath(
+            $this->pathGenerator->getPath($this->helper, $this->collection),
+        );
     }
 
     /**
-     * Get the base storage directory where variant files will be stored.
-     * This is the root directory for all variant files, which can be either protected or public.
-     *
-     * @return string The base storage directory path for variants
-     */
-    public function getStoreDirectoryForVariants(): string
-    {
-        $storeDirectory = $this->pathGenerator->getStoreDirectoryForVariants($this->helper, $this->collection);
-
-        // Ensure the directory exists
-        $this->ensurePathExists($storeDirectory);
-
-        return $storeDirectory;
-    }
-
-    /**
-     * Get the relative path within the storage directory for a specific variant file.
-     * This path is combined with the store directory to form the complete variant file path.
-     *
-     * @return string The relative path within the storage directory for variants
+     * Get the relative path within the storage disk for a specific variant file.
      */
     public function getFileRelativePathForVariants(): string
     {
-        return $this->pathGenerator->getFileRelativePathForVariants($this->helper, $this->collection);
+        return $this->normalizeDirectoryPath(
+            $this->pathGenerator->getFileRelativePathForVariants($this->helper, $this->collection),
+        );
     }
 
     /**
-     * Get the path for conversions of the given media, relative to the root storage path.
-     * This is a convenience method that combines getStoreDirectoryForVariants and getFileRelativePathForVariants.
-     *
-     * @return string The path for variants
+     * Get the relative directory for asset variants.
      */
     public function getPathForVariants(): string
     {
-        $path = $this->pathGenerator->getPathForVariants($this->helper, $this->collection);
-        // Ensure the path ends with a DIRECTORY_SEPARATOR
-        if (substr($path, -1) !== DIRECTORY_SEPARATOR) {
-            $path .= DIRECTORY_SEPARATOR;
-        }
-
-        $this->ensurePathExists($path);
-
-        return $path;
+        return $this->normalizeDirectoryPath(
+            $this->pathGenerator->getPathForVariants($this->helper, $this->collection),
+        );
     }
 
-    /**
-     * Ensure the path is valid and exists or create it if necessary.
-     */
-    private function ensurePathExists(string $path): void
+    private function normalizeDirectoryPath(string $path): string
     {
-        if (! is_dir($path)) {
-            if (! mkdir($path, 0755, true) && ! is_dir($path)) {
-                $error = sprintf('Directory "%s" was not created', $path);
+        $path = trim(str_replace('\\', '/', $path), '/');
 
-                throw new FileException($error, $error, 500);
-            }
-            // Ensure the directory is writable
-            if (! is_writable($path)) {
-                $error = sprintf('Directory "%s" is not writable', $path);
-
-                throw new FileException($error, $error, 500);
-            }
-
-            // Ensure the directory is readable
-            if (! is_readable($path)) {
-                $error = sprintf('Directory "%s" is not readable', $path);
-
-                throw new FileException($error, $error, 500);
-            }
-
-            $this->pathGenerator->onCreatedDirectory($path);
+        if ($path === '') {
+            return '';
         }
+
+        return $path . '/';
     }
 }
