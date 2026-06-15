@@ -359,7 +359,7 @@
   <span class="md-ellipsis">
     
   
-    Configuration
+    Upgrade
   
 
     
@@ -372,6 +372,88 @@
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Upgrade
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../upgrade-2.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upgrade from 1.0.2 to 2.0.0
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -396,6 +478,34 @@
     
   
     Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Storage
   
 
     
@@ -515,10 +625,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
         
           
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
             
   
   
@@ -536,8 +646,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -655,10 +765,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
             
   
   
@@ -676,8 +786,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_5">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -982,10 +1092,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_4" >
         
           
-          <label class="md-nav__link" for="__nav_5_4" id="__nav_5_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_6_4" id="__nav_6_4_label" tabindex="0">
             
   
   
@@ -1003,8 +1113,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5_4">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_4">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1486,9 +1596,9 @@
 <pre class="highlight"><code class="language-php">public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void;</code></pre>
 <p>This method is called when an asset is added to the collection. You can use the provided <code>CreateAssetVariantsInterface</code> instance to create variants of the asset.</p>
 <h3 id="authorizableassetcollectiondefinitioninterface">AuthorizableAssetCollectionDefinitionInterface</h3>
-<p>The <code>AuthorizableAssetCollectionDefinitionInterface</code> extends <code>AssetCollectionDefinitionInterface</code> and adds authorization capabilities to asset collections. It defines an additional method:</p>
-<pre class="highlight"><code class="language-php">public function checkAuthorization(array|Entity $entity, Asset $asset): bool;</code></pre>
-<p>This method is called when an asset is accessed. You can use it to check if the user is authorized to access the asset. For example, you might check if the user owns the asset or has the necessary permissions.</p>
+<p>The <code>AuthorizableAssetCollectionDefinitionInterface</code> extends <code>AssetCollectionDefinitionInterface</code> and makes the collection use protected visibility by default. It defines an additional method:</p>
+<pre class="highlight"><code class="language-php">public function checkAuthorization(Asset $asset): bool;</code></pre>
+<p>AssetConnect calls this method when protected assets are served through AssetConnect routes. Direct web-server links do not run this method, so protected storage roots should not be exposed with <code>public_url</code>, <code>asset-connect:storage-link</code>, or a web-server alias.</p>
 <h3 id="assetcollectionsetterinterface">AssetCollectionSetterInterface</h3>
 <p>The <code>AssetCollectionSetterInterface</code> provides methods for configuring asset collections. It's used in the <code>definition</code> method of <code>AssetCollectionDefinitionInterface</code>. It defines the following methods:</p>
 <pre class="highlight"><code class="language-php">public function allowedExtensions(AssetExtension|string ...$extensions): static;
@@ -1496,18 +1606,24 @@ public function allowedMimeTypes(AssetMimeType|string ...$mimeTypes): static;
 public function onlyKeepLatest(int $maximumNumberOfItemsInCollection): static;
 public function setMaxFileSize(float|int $maxFileSize): static;
 public function singleFileCollection(): static;
-public function setPathGenerator(PathGeneratorInterface $pathGenerator): static;</code></pre>
+public function setPathGenerator(PathGeneratorInterface $pathGenerator): static;
+public function setStorage(string $storage): static;</code></pre>
 <p>These methods allow you to:
 - Specify allowed file extensions
 - Specify allowed MIME types
 - Limit the number of items in the collection
 - Set the maximum file size
 - Make the collection hold only a single file
-- Set the path generator for the collection</p>
+- Set the path generator for the collection
+- Select a configured storage disk for the collection</p>
 <h2 id="createassetvariantsinterface">CreateAssetVariantsInterface</h2>
 <p>The <code>CreateAssetVariantsInterface</code> is implemented by classes that provide methods for creating asset variants. It's used in the <code>variants</code> method of <code>AssetVariantsInterface</code>. It defines the following method:</p>
-<pre class="highlight"><code class="language-php">public function assetVariant(string $name, Closure $closure): ?AssetVariant;</code></pre>
-<p>This method allows you to create a new asset variant with the given name and closure. The closure receives an <code>AssetVariant</code> and an <code>Asset</code> and is used to define how to process the variant.</p>
+<pre class="highlight"><code class="language-php">public function assetVariant(
+    string $name,
+    Closure $closure,
+    AssetExtension|string|null $extension = null,
+): ?AssetVariant;</code></pre>
+<p>This method allows you to create a new asset variant with the given name and closure. The closure receives an <code>AssetVariant</code> and an <code>Asset</code> and is used to define how to process the variant. Pass <code>$extension</code> when a variant should be written with a different extension than the original file.</p>
 <h2 id="assetvariants-class">AssetVariants Class</h2>
 <p>The <code>AssetVariants</code> class implements the <code>CreateAssetVariantsInterface</code> and provides methods for creating asset variants. It has a property <code>onQueue</code> that can be set to true to indicate that variants should be processed on a queue:</p>
 <pre class="highlight"><code class="language-php">public bool $onQueue = false;</code></pre>
@@ -1542,11 +1658,13 @@ public function setPathGenerator(PathGeneratorInterface $pathGenerator): static;
             -&gt;setPathGenerator(new CustomPathGenerator());
     }
 
-    public function checkAuthorization(array|Entity $entity, Asset $asset): bool
+    public function checkAuthorization(Asset $asset): bool
     {
+        $entity = $asset-&gt;getSubjectEntity();
+
         // Check if the user is authorized to access this asset
         // For example, check if the user owns the asset
-        return $entity-&gt;id === $asset-&gt;entity_id;
+        return $entity !== null &amp;&amp; $entity-&gt;id === $asset-&gt;entity_id;
     }
 
     public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void
@@ -1558,12 +1676,19 @@ public function setPathGenerator(PathGeneratorInterface $pathGenerator): static;
         if ($asset-&gt;isImage()) {
             // Create a thumbnail variant
             $variants-&gt;assetVariant('thumbnail', static function (AssetVariant $variant, Asset $asset): void {
+                $source = $asset-&gt;local_path;
+                $target = $variant-&gt;local_path;
+
+                if ($source === null || $target === null) {
+                    throw new RuntimeException('This variant requires a local storage disk.');
+                }
+
                 // Use an image manipulation library to create the thumbnail
                 $imageService = \Config\Services::image();
-                $imageService-&gt;withFile($asset-&gt;path)
+                $imageService-&gt;withFile($source)
                     -&gt;fit(300, 300, 'center')
                     -&gt;text('Thumbnail')
-                    -&gt;save($variant-&gt;path);
+                    -&gt;save($target);
 
                 // Alternatively, you can use the writeFile method to write the file directly
                 // $variant-&gt;writeFile('thumbnail data');
@@ -1571,6 +1696,7 @@ public function setPathGenerator(PathGeneratorInterface $pathGenerator): static;
         }
     }
 }</code></pre>
+<p>For remote disks, use <code>withTemporaryFile()</code> and write the processed output through <code>$variant-&gt;writeFile()</code>. See <a href="../storage/#local-and-temporary-paths-for-processing">Local And Temporary Paths For Processing</a>.</p>
 <h2 id="using-custom-asset-collections">Using Custom Asset Collections</h2>
 <p>Once you've created a custom asset collection, you can use it in your entity's <code>setupAssetConnect</code> method:</p>
 <pre class="highlight"><code class="language-php">class User extends Entity

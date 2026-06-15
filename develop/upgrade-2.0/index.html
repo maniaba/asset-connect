@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://maniaba.github.io/asset-connect/latest/custom-pending-storage/">
+        <link rel="canonical" href="https://maniaba.github.io/asset-connect/latest/upgrade-2.0/">
       
       
-        <link rel="prev" href="../pending-asset-manager/">
+        <link rel="prev" href="../installation/">
       
       
-        <link rel="next" href="../pending-security-token/">
+        <link rel="next" href="../configuration/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>Custom Pending Storage - CodeIgniter AssetConnect</title>
+        <title>Upgrade from 1.0.2 to 2.0.0 - CodeIgniter AssetConnect</title>
       
     
     
@@ -84,7 +84,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#custom-pending-storage" class="md-skip">
+        <a href="#upgrade-from-102-to-200" class="md-skip">
           Skip to content
         </a>
       
@@ -135,7 +135,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Custom Pending Storage
+              Upgrade from 1.0.2 to 2.0.0
             
           </span>
         </div>
@@ -338,18 +338,20 @@
       
   
   
+    
   
   
+  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
@@ -370,7 +372,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -385,10 +387,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../upgrade-2.0/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upgrade from 1.0.2 to 2.0.0
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -404,6 +433,103 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#before-running" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Before Running
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dry-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dry Run
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#execute-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Execute Migration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#protected-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Protected Files
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#idempotency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Idempotency
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#large-tables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Large Tables
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#verify" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verify
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -752,20 +878,18 @@
       
   
   
-    
   
   
-  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
         
           
           <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
@@ -786,7 +910,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
@@ -885,20 +1009,18 @@
                 
   
   
-    
   
   
-  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_4" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_4" >
         
           
           <label class="md-nav__link" for="__nav_6_4" id="__nav_6_4_label" tabindex="0">
@@ -919,7 +1041,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_4_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6_4">
             <span class="md-nav__icon md-icon"></span>
             
@@ -990,37 +1112,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Custom Pending Storage
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../custom-pending-storage/" class="md-nav__link">
         
   
   
@@ -1036,325 +1131,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Overview
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#implementing-pendingstorageinterface" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Implementing PendingStorageInterface
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#required-methods" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Required Methods
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Required Methods">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#generatependingid" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        generatePendingId()
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#fetchbyid" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        fetchById()
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#store" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        store()
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#deletebyid" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        deleteById()
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#getdefaultttlseconds" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        getDefaultTTLSeconds()
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#cleanexpiredpendingassets" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        cleanExpiredPendingAssets()
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#pendingsecuritytoken" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        pendingSecurityToken()
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#storage-implementation-examples" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Storage Implementation Examples
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#configuring-custom-storage" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Configuring Custom Storage
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#using-custom-storage" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Using Custom Storage
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Using Custom Storage">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#using-custom-storage-per-request" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Using Custom Storage Per Request
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#best-practices" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Best Practices
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Best Practices">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-handle-expiration-properly" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Handle Expiration Properly
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-use-appropriate-ttl" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Use Appropriate TTL
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-implement-proper-error-handling" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Implement Proper Error Handling
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#4-cleanup-resources" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Cleanup Resources
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#5-add-logging" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Add Logging
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#troubleshooting" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Troubleshooting
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Troubleshooting">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#storage-connection-issues" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Storage Connection Issues
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#large-file-handling" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Large File Handling
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#memory-management" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Memory Management
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#see-also" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        See Also
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1538,10 +1314,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
+  <a href="#before-running" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Overview
+        Before Running
       
     </span>
   </a>
@@ -1549,10 +1325,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#implementing-pendingstorageinterface" class="md-nav__link">
+  <a href="#dry-run" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Implementing PendingStorageInterface
+        Dry Run
       
     </span>
   </a>
@@ -1560,104 +1336,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#required-methods" class="md-nav__link">
+  <a href="#execute-migration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Required Methods
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Required Methods">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#generatependingid" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        generatePendingId()
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#fetchbyid" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        fetchById()
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#store" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        store()
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#deletebyid" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        deleteById()
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#getdefaultttlseconds" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        getDefaultTTLSeconds()
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#cleanexpiredpendingassets" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        cleanExpiredPendingAssets()
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#pendingsecuritytoken" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        pendingSecurityToken()
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#storage-implementation-examples" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Storage Implementation Examples
+        Execute Migration
       
     </span>
   </a>
@@ -1665,10 +1347,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#configuring-custom-storage" class="md-nav__link">
+  <a href="#protected-files" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Configuring Custom Storage
+        Protected Files
       
     </span>
   </a>
@@ -1676,160 +1358,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#using-custom-storage" class="md-nav__link">
+  <a href="#idempotency" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Using Custom Storage
+        Idempotency
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Using Custom Storage">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#using-custom-storage-per-request" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Using Custom Storage Per Request
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#best-practices" class="md-nav__link">
+  <a href="#large-tables" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Best Practices
+        Large Tables
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Best Practices">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-handle-expiration-properly" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Handle Expiration Properly
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-use-appropriate-ttl" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Use Appropriate TTL
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-implement-proper-error-handling" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Implement Proper Error Handling
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#4-cleanup-resources" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Cleanup Resources
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#5-add-logging" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Add Logging
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#troubleshooting" class="md-nav__link">
+  <a href="#verify" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Troubleshooting
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Troubleshooting">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#storage-connection-issues" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Storage Connection Issues
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#large-file-handling" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Large File Handling
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#memory-management" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Memory Management
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#see-also" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        See Also
+        Verify
       
     </span>
   </a>
@@ -1853,7 +1407,7 @@
 
 
   
-    <a href="https://github.com/maniaba/asset-connect/edit/develop/docs/custom-pending-storage.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/maniaba/asset-connect/edit/develop/docs/upgrade-2.0.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -1861,317 +1415,76 @@
   
 
 
-<h1 id="custom-pending-storage">Custom Pending Storage</h1>
-<p>This guide explains how to create and configure custom storage implementations for pending assets. By default, AssetConnect uses filesystem storage (<code>DefaultPendingStorage</code>), but you can implement your own storage backend for services like Amazon S3, Redis, or any other storage solution.</p>
-<h2 id="overview">Overview</h2>
-<p>Custom pending storage allows you to:</p>
+<h1 id="upgrade-from-102-to-200">Upgrade from 1.0.2 to 2.0.0</h1>
+<p>AssetConnect 2.0.0 stores file locations as:</p>
 <ul>
-<li>Store pending assets in cloud storage (S3, Azure Blob, Google Cloud Storage)</li>
-<li>Use in-memory storage for testing or caching (Redis, Memcached)</li>
-<li>Implement custom TTL and cleanup logic</li>
-<li>Add custom security token providers</li>
-<li>Integrate with your existing storage infrastructure</li>
+<li><code>storage</code>: configured Flysystem disk name, for example <code>public</code> or <code>protected</code></li>
+<li><code>path</code>: relative path inside that storage disk</li>
 </ul>
-<h2 id="implementing-pendingstorageinterface">Implementing PendingStorageInterface</h2>
-<p>To create a custom pending storage, implement the <code>PendingStorageInterface</code>:</p>
-<pre class="highlight"><code class="language-php">use Maniaba\AssetConnect\Pending\Interfaces\PendingStorageInterface;
-use Maniaba\AssetConnect\Pending\PendingAsset;
-use Maniaba\AssetConnect\Pending\Interfaces\PendingSecurityTokenInterface;
-
-class MyCustomPendingStorage implements PendingStorageInterface
-{
-    public function generatePendingId(): string
-    {
-        // Generate unique ID for pending asset
-    }
-
-    public function fetchById(string $id): ?PendingAsset
-    {
-        // Retrieve pending asset by ID
-    }
-
-    public function store(PendingAsset $asset, ?string $id = null): void
-    {
-        // Store pending asset
-    }
-
-    public function deleteById(string $id): bool
-    {
-        // Delete pending asset by ID
-    }
-
-    public function getDefaultTTLSeconds(): int
-    {
-        // Return default TTL in seconds
-    }
-
-    public function cleanExpiredPendingAssets(): void
-    {
-        // Remove all expired pending assets
-    }
-
-    public function pendingSecurityToken(): ?PendingSecurityTokenInterface
-    {
-        // Return security token provider (optional)
-    }
-}</code></pre>
-<h2 id="required-methods">Required Methods</h2>
-<h3 id="generatependingid">generatePendingId()</h3>
-<p>Generates a unique identifier for a new pending asset.</p>
-<pre class="highlight"><code class="language-php">public function generatePendingId(): string</code></pre>
-<p><strong>Returns:</strong> Unique string identifier</p>
-<p><strong>Example:</strong>
-<pre class="highlight"><code class="language-php">public function generatePendingId(): string
-{
-    // Simple UUID
-    return bin2hex(random_bytes(16));
-
-    // Or with prefix
-    return uniqid('pending_', true);
-
-    // Or using UUID library
-    return Uuid::uuid4()-&gt;toString();
-}</code></pre></p>
-<h3 id="fetchbyid">fetchById()</h3>
-<p>Retrieves a pending asset by its ID.</p>
-<pre class="highlight"><code class="language-php">public function fetchById(string $id): ?PendingAsset</code></pre>
-<p><strong>Parameters:</strong>
-- <code>$id</code> - Unique identifier of the pending asset</p>
-<p><strong>Returns:</strong> <code>PendingAsset</code> object or <code>null</code> if not found</p>
-<p><strong>Example:</strong>
-<pre class="highlight"><code class="language-php">public function fetchById(string $id): ?PendingAsset
-{
-    $data = $this-&gt;storageClient-&gt;get($id);
-
-    if (!$data) {
-        return null;
-    }
-
-    // Reconstruct PendingAsset from stored data
-    return PendingAsset::createFromFile($data['file_path'], $data['metadata']);
-}</code></pre></p>
-<h3 id="store">store()</h3>
-<p>Stores a pending asset. Should handle both new creation and metadata updates.</p>
-<pre class="highlight"><code class="language-php">public function store(PendingAsset $asset, ?string $id = null): void</code></pre>
-<p><strong>Parameters:</strong>
-- <code>$asset</code> - The pending asset to store
-- <code>$id</code> - Optional ID (if updating existing asset)</p>
-<p><strong>Example:</strong>
-<pre class="highlight"><code class="language-php">public function store(PendingAsset $asset, ?string $id = null): void
-{
-    $id ??= $this-&gt;generatePendingId();
-    $asset-&gt;setId($id);
-
-    $data = [
-        'id' =&gt; $id,
-        'file' =&gt; $asset-&gt;file-&gt;getRealPath(),
-        'metadata' =&gt; json_encode($asset),
-        'created_at' =&gt; time(),
-        'ttl' =&gt; $asset-&gt;ttl
-    ];
-
-    $this-&gt;storageClient-&gt;put($id, $data);
-}</code></pre></p>
-<h3 id="deletebyid">deleteById()</h3>
-<p>Deletes a pending asset by its ID.</p>
-<pre class="highlight"><code class="language-php">public function deleteById(string $id): bool</code></pre>
-<p><strong>Parameters:</strong>
-- <code>$id</code> - Unique identifier of the pending asset to delete</p>
-<p><strong>Returns:</strong> <code>true</code> if deleted successfully, <code>false</code> otherwise</p>
-<p><strong>Example:</strong>
-<pre class="highlight"><code class="language-php">public function deleteById(string $id): bool
-{
-    return $this-&gt;storageClient-&gt;delete($id);
-}</code></pre></p>
-<h3 id="getdefaultttlseconds">getDefaultTTLSeconds()</h3>
-<p>Returns the default Time To Live for pending assets in seconds.</p>
-<pre class="highlight"><code class="language-php">public function getDefaultTTLSeconds(): int</code></pre>
-<p><strong>Returns:</strong> TTL in seconds</p>
-<p><strong>Example:</strong>
-<pre class="highlight"><code class="language-php">public function getDefaultTTLSeconds(): int
-{
-    // 1 hour
-    return 3600;
-
-    // 24 hours (default)
-    return 86400;
-
-    // 7 days
-    return 604800;
-}</code></pre></p>
-<h3 id="cleanexpiredpendingassets">cleanExpiredPendingAssets()</h3>
-<p>Removes all expired pending assets.</p>
-<pre class="highlight"><code class="language-php">public function cleanExpiredPendingAssets(): void</code></pre>
-<p><strong>Example:</strong>
-<pre class="highlight"><code class="language-php">public function cleanExpiredPendingAssets(): void
-{
-    $allAssets = $this-&gt;storageClient-&gt;getAll();
-    $now = time();
-
-    foreach ($allAssets as $id =&gt; $asset) {
-        $expiresAt = $asset['created_at'] + $asset['ttl'];
-
-        if ($expiresAt &lt; $now) {
-            $this-&gt;deleteById($id);
-        }
-    }
-}</code></pre></p>
-<h3 id="pendingsecuritytoken">pendingSecurityToken()</h3>
-<p>Returns a security token provider for pending operations (optional).</p>
-<pre class="highlight"><code class="language-php">public function pendingSecurityToken(): ?PendingSecurityTokenInterface</code></pre>
-<p><strong>Returns:</strong> Security token provider or <code>null</code></p>
-<p><strong>Example:</strong>
-<pre class="highlight"><code class="language-php">public function pendingSecurityToken(): ?PendingSecurityTokenInterface
-{
-    return new MyCustomSecurityToken();
-}</code></pre></p>
-<h2 id="storage-implementation-examples">Storage Implementation Examples</h2>
-<p>You can implement custom storage for various backends based on your needs:</p>
+<p>Older AssetConnect versions used <code>storage_base_directory_path</code> as part of the filesystem path model. That value is no longer stored because physical roots now live in <code>Config\Asset::$storages</code>.</p>
+<h2 id="before-running">Before Running</h2>
+<p>Back up the database and files before running the migration.</p>
+<p>Run the AssetConnect migrations first so the <code>storage</code> column exists:</p>
+<pre class="highlight"><code class="language-bash">php spark migrate --namespace=Maniaba\\AssetConnect</code></pre>
+<p>Configure the target storage disks in <code>Config\Asset</code>:</p>
+<pre class="highlight"><code class="language-php">public array $storages = [
+    'public' =&gt; [
+        'driver'     =&gt; 'local',
+        'root'       =&gt; WRITEPATH . 'asset-connect/public',
+        'public_url' =&gt; 'assets/storage',
+        'visibility' =&gt; 'public',
+    ],
+    'protected' =&gt; [
+        'driver'     =&gt; 'local',
+        'root'       =&gt; WRITEPATH . 'asset-connect/protected',
+        'visibility' =&gt; 'protected',
+    ],
+];</code></pre>
+<p>Legacy <code>assets.path</code> values should already be storage-relative paths. For rows created by older AssetConnect versions, the migration command can also derive the storage-relative path from <code>metadata.storage_info.storage_base_directory_path</code> when the absolute <code>assets.path</code> is under that legacy base directory.</p>
+<p>When the target Flysystem disk does not already contain the file, the command copies the readable legacy filesystem path into the selected storage disk before updating the database row. Arbitrary absolute filesystem paths are still rejected; the command only converts them when the legacy metadata proves which base directory should be removed.</p>
+<h2 id="dry-run">Dry Run</h2>
+<p>Start with a dry run. This prints the database update plan without changing rows:</p>
+<pre class="highlight"><code class="language-bash">php spark asset-connect:migrate-paths \
+    --storage public \
+    --dry-run</code></pre>
+<p>Use:</p>
 <ul>
-<li><strong>Cloud Storage</strong>: Amazon S3, Azure Blob Storage, Google Cloud Storage</li>
-<li><strong>In-Memory Storage</strong>: Redis, Memcached (useful for fast temporary storage with automatic TTL handling)</li>
-<li><strong>Database Storage</strong>: MySQL, PostgreSQL (store metadata and file paths or binary data)</li>
-<li><strong>Distributed Storage</strong>: Ceph, MinIO, or other object storage solutions</li>
+<li><code>--storage</code>: the 2.0.0 storage disk to assign to matching rows</li>
+<li><code>--dry-run</code>: print the plan without updating rows</li>
 </ul>
-<p>Each implementation should follow the <code>PendingStorageInterface</code> contract and handle file storage, metadata management, and expiration logic according to your specific infrastructure requirements.</p>
-<h2 id="configuring-custom-storage">Configuring Custom Storage</h2>
-<p>After implementing your custom storage, configure it in <code>app/Config/Asset.php</code>:</p>
-<pre class="highlight"><code class="language-php">namespace Config;
-
-use Maniaba\AssetConnect\Config\Asset as BaseConfig;
-use App\Storage\S3PendingStorage;
-
-class Asset extends BaseConfig
-{
-    public string $pendingStorage = S3PendingStorage::class;
-}</code></pre>
-<h2 id="using-custom-storage">Using Custom Storage</h2>
-<p>Once configured, your custom storage will be used automatically:</p>
-<pre class="highlight"><code class="language-php">// Uses your custom storage automatically
-$pending = PendingAsset::createFromFile('/path/to/file.jpg');
-$pending-&gt;store();
-
-// Also works with Pending Asset Manager
-$manager = PendingAssetManager::make();
-$pending = $manager-&gt;fetchById($id);</code></pre>
-<h3 id="using-custom-storage-per-request">Using Custom Storage Per Request</h3>
-<p>You can also use custom storage on a per-request basis:</p>
-<pre class="highlight"><code class="language-php">use App\Storage\S3PendingStorage;
-
-$customStorage = new S3PendingStorage();
-
-// With PendingAsset
-$pending = PendingAsset::createFromFile('/path/to/file.jpg');
-$pending-&gt;store($customStorage);
-
-// With Pending Asset Manager
-$manager = PendingAssetManager::make($customStorage);
-
-// With addAssetFromPending
-$user-&gt;addAssetFromPending($pendingId, $customStorage)
-    -&gt;toAssetCollection(Photos::class);</code></pre>
-<h2 id="best-practices">Best Practices</h2>
-<h3 id="1-handle-expiration-properly">1. Handle Expiration Properly</h3>
-<pre class="highlight"><code class="language-php">public function fetchById(string $id): ?PendingAsset
-{
-    // Always check TTL before returning
-    if ($this-&gt;isExpired($id)) {
-        $this-&gt;deleteById($id);
-        return null;
-    }
-
-    return $this-&gt;loadAsset($id);
-}</code></pre>
-<h3 id="2-use-appropriate-ttl">2. Use Appropriate TTL</h3>
-<pre class="highlight"><code class="language-php">public function getDefaultTTLSeconds(): int
-{
-    // Shorter TTL for memory storage
-    if ($this-&gt;isMemoryStorage()) {
-        return 3600; // 1 hour
-    }
-
-    // Longer TTL for persistent storage
-    return 86400; // 24 hours
-}</code></pre>
-<h3 id="3-implement-proper-error-handling">3. Implement Proper Error Handling</h3>
-<pre class="highlight"><code class="language-php">public function store(PendingAsset $asset, ?string $id = null): void
-{
-    try {
-        $this-&gt;doStore($asset, $id);
-    } catch (\Exception $e) {
-        log_message('error', 'Failed to store pending asset: ' . $e-&gt;getMessage());
-        throw PendingAssetException::forUnableToStorePendingAsset(
-            $id ?? 'unknown',
-            $e-&gt;getMessage()
-        );
-    }
-}</code></pre>
-<h3 id="4-cleanup-resources">4. Cleanup Resources</h3>
-<pre class="highlight"><code class="language-php">public function __destruct()
-{
-    // Close connections
-    if ($this-&gt;connection) {
-        $this-&gt;connection-&gt;close();
-    }
-}</code></pre>
-<h3 id="5-add-logging">5. Add Logging</h3>
-<pre class="highlight"><code class="language-php">public function deleteById(string $id): bool
-{
-    $success = $this-&gt;performDelete($id);
-
-    if ($success) {
-        log_message('info', "Deleted pending asset: {$id}");
-    } else {
-        log_message('warning', "Failed to delete pending asset: {$id}");
-    }
-
-    return $success;
-}</code></pre>
-<h2 id="troubleshooting">Troubleshooting</h2>
-<h3 id="storage-connection-issues">Storage Connection Issues</h3>
-<pre class="highlight"><code class="language-php">public function __construct()
-{
-    try {
-        $this-&gt;initializeStorage();
-    } catch (\Exception $e) {
-        log_message('critical', 'Failed to initialize pending storage: ' . $e-&gt;getMessage());
-        throw new \RuntimeException('Pending storage initialization failed');
-    }
-}</code></pre>
-<h3 id="large-file-handling">Large File Handling</h3>
-<pre class="highlight"><code class="language-php">public function store(PendingAsset $asset, ?string $id = null): void
-{
-    $fileSize = $asset-&gt;size;
-    $maxSize = 100 * 1024 * 1024; // 100MB
-
-    if ($fileSize &gt; $maxSize) {
-        throw new PendingAssetException("File too large for pending storage: {$fileSize} bytes");
-    }
-
-    // Use streaming for large files
-    $this-&gt;streamStore($asset, $id);
-}</code></pre>
-<h3 id="memory-management">Memory Management</h3>
-<pre class="highlight"><code class="language-php">public function fetchById(string $id): ?PendingAsset
-{
-    // Don't load entire file into memory
-    $metadata = $this-&gt;fetchMetadata($id);
-
-    if (!$metadata) {
-        return null;
-    }
-
-    // Stream file to temp location
-    $tempFile = $this-&gt;streamToTemp($id);
-
-    return PendingAsset::createFromFile($tempFile, $metadata);
-}</code></pre>
-<h2 id="see-also">See Also</h2>
+<p>If <code>--storage</code> is omitted, AssetConnect tries to resolve the disk from the asset collection configuration and falls back to the configured default public disk.</p>
+<h2 id="execute-migration">Execute Migration</h2>
+<p>After reviewing the dry run, remove <code>--dry-run</code>:</p>
+<pre class="highlight"><code class="language-bash">php spark asset-connect:migrate-paths --storage public</code></pre>
+<p>The command prints one line per asset:</p>
+<pre class="highlight"><code class="language-text">[1/250] asset #15 MIGRATED public:assets/2026/06/file.jpg - Database row updated.</code></pre>
+<p>For each migrated asset the command:</p>
+<ol>
+<li>Resolves the target storage disk.</li>
+<li>Validates that <code>assets.path</code> is storage-relative, or derives it from supported legacy storage metadata.</li>
+<li>Verifies that the file exists on the target storage disk, or copies it from the readable legacy absolute path.</li>
+<li>Updates the row to <code>storage = &lt;disk&gt;</code> and <code>path = &lt;relative path&gt;</code>.</li>
+<li>Removes the legacy <code>metadata.storage_info</code> property from rows whose storage disk and relative path are already normalized.</li>
+</ol>
+<h2 id="protected-files">Protected Files</h2>
+<p>Run the command for protected files using the protected disk:</p>
+<pre class="highlight"><code class="language-bash">php spark asset-connect:migrate-paths --storage protected</code></pre>
+<h2 id="idempotency">Idempotency</h2>
+<p>The command is safe to re-run:</p>
 <ul>
-<li><a href="../pending/">Pending Assets</a> - Overview of pending assets functionality</li>
-<li><a href="../pending-asset-manager/">Pending Asset Manager</a> - Manager class documentation</li>
-<li><a href="../pending/#defaultpendingstorage">DefaultPendingStorage</a> - Default filesystem implementation</li>
+<li>Rows that already have a non-empty <code>storage</code> value are ignored by path migration, but still have obsolete <code>metadata.storage_info</code> cleaned when their path is already storage-relative.</li>
+<li>Rows with arbitrary absolute filesystem paths are rejected instead of being split into root and relative path.</li>
+<li>Rows with older <code>metadata.storage_info.storage_base_directory_path</code> metadata can be converted when the absolute path is inside that base directory.</li>
 </ul>
+<h2 id="large-tables">Large Tables</h2>
+<p>Limit one run:</p>
+<pre class="highlight"><code class="language-bash">php spark asset-connect:migrate-paths --storage public --limit=500</code></pre>
+<p>Change query batch size:</p>
+<pre class="highlight"><code class="language-bash">php spark asset-connect:migrate-paths --storage public --batch-size=50</code></pre>
+<h2 id="verify">Verify</h2>
+<p>After migration, asset rows should have a non-empty <code>storage</code> value and <code>path</code> should remain a storage-relative path.</p>
+<p>For local storage, make sure each public storage URL points to its configured storage root:</p>
+<pre class="highlight"><code class="language-bash">php spark asset-connect:storage-link</code></pre>
 
 
 
@@ -2207,7 +1520,7 @@ $user-&gt;addAssetFromPending($pendingId, $customStorage)
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../pending-asset-manager/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Pending Asset Manager">
+          <a href="../installation/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Installation">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -2217,20 +1530,20 @@ $user-&gt;addAssetFromPending($pendingId, $customStorage)
                 Previous
               </span>
               <div class="md-ellipsis">
-                Pending Asset Manager
+                Installation
               </div>
             </div>
           </a>
         
         
           
-          <a href="../pending-security-token/" class="md-footer__link md-footer__link--next" aria-label="Next: Pending Security Token">
+          <a href="../configuration/" class="md-footer__link md-footer__link--next" aria-label="Next: Overview">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Pending Security Token
+                Overview
               </div>
             </div>
             <div class="md-footer__button md-icon">

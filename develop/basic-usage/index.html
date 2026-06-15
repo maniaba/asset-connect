@@ -359,7 +359,7 @@
   <span class="md-ellipsis">
     
   
-    Configuration
+    Upgrade
   
 
     
@@ -372,6 +372,88 @@
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Upgrade
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../upgrade-2.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upgrade from 1.0.2 to 2.0.0
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -396,6 +478,34 @@
     
   
     Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Storage
   
 
     
@@ -517,10 +627,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
           
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
             
   
   
@@ -538,8 +648,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_4">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -918,10 +1028,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
             
   
   
@@ -939,8 +1049,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1049,10 +1159,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_4" >
         
           
-          <label class="md-nav__link" for="__nav_5_4" id="__nav_5_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_6_4" id="__nav_6_4_label" tabindex="0">
             
   
   
@@ -1070,8 +1180,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5_4">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_4">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1627,12 +1737,6 @@ class ImagesCollection implements AssetCollectionDefinitionInterface, AssetVaria
             -&gt;setMaxFileSize(5 * 1024 * 1024); // 5MB
     }
 
-    public function checkAuthorization(array|Entity $entity, Asset $asset): bool
-    {
-        // Check if the user is authorized to access this asset
-        return true;
-    }
-
     public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void
     {
         // Define file variants (e.g., thumbnails)
@@ -1673,7 +1777,16 @@ $asset = $product-&gt;addAsset('/path/to/video.mp4')
         'description' =&gt; 'A demonstration of the product features',
         'duration' =&gt; '2:30',
     ])
-    -&gt;toAssetCollection(VideosCollection::class);</code></pre>
+    -&gt;toAssetCollection(VideosCollection::class);
+
+// Add an asset with backend-only internal properties
+$assetAdder = $product-&gt;addAsset('/path/to/image.jpg')
+    -&gt;withCustomProperty('title', 'Product Image');
+
+$assetAdder-&gt;metadata()-&gt;internal-&gt;set('processing_job_id', 'job-123');
+$assetAdder-&gt;metadata()-&gt;internal-&gt;set('source_adapter', 's3-import');
+
+$asset = $assetAdder-&gt;toAssetCollection(ImagesCollection::class);</code></pre>
 <h3 id="retrieving-assets">Retrieving Assets</h3>
 <p>You can retrieve assets from an entity using various methods:</p>
 <pre class="highlight"><code class="language-php">// Get all assets
@@ -1718,8 +1831,17 @@ $imagesCollection-&gt;deleteAssets();</code></pre>
 <pre class="highlight"><code class="language-php">// Get an asset
 $asset = $product-&gt;getFirstAsset(ImagesCollection::class);
 
-// Get the absolute path to the asset file
-$path = $asset-&gt;getAbsolutePath();
+// Get storage information
+$storage = $asset-&gt;storage; // e.g. "public"
+$path = $asset-&gt;path;       // e.g. "2026-06-11/97847659691b3cae8857/photo.jpg"
+
+// If the storage disk is local, get the local filesystem path for processing
+$localPath = $asset-&gt;local_path;
+
+// For remote disks or queue processing, stream the file into a temporary local file
+$asset-&gt;withTemporaryFile(static function (string $temporaryFile): void {
+    // Process $temporaryFile...
+});
 
 // Get the URL to the asset file
 $url = $asset-&gt;getUrl();
@@ -1730,14 +1852,20 @@ $properties = $asset-&gt;getCustomProperties();
 // Get a specific custom property
 $title = $asset-&gt;getCustomProperty('title');
 
+// Get backend-only internal metadata
+$jobId = $asset-&gt;getInternalProperty('processing_job_id');
+
+// Transfer the asset and variants to another storage disk
+$asset-&gt;transferToStorage('protected');
+
 // Get the file name
-$fileName = $asset-&gt;getFileName();
+$fileName = $asset-&gt;file_name;
 
 // Get the mime type
-$mimeType = $asset-&gt;getMimeType();
+$mimeType = $asset-&gt;mime_type;
 
 // Get the size in bytes
-$size = $asset-&gt;getSize();
+$size = $asset-&gt;size;
 
 // Get the human-readable size
 $readableSize = $asset-&gt;getHumanReadableSize();
@@ -1780,11 +1908,13 @@ if ($asset-&gt;isDocument()) {
             );
     }
 
-    public function checkAuthorization(array|Entity $entity, Asset $asset): bool
+    public function checkAuthorization(Asset $asset): bool
     {
         // Check if the user is authorized to access this asset
         // For example, check if the user owns the asset or has the right permissions
-        return $entity-&gt;id === $asset-&gt;entity_id;
+        $entity = $asset-&gt;getSubjectEntity();
+
+        return $entity !== null &amp;&amp; $entity-&gt;id === $asset-&gt;entity_id;
     }
 
     public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void

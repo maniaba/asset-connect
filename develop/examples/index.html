@@ -359,7 +359,7 @@
   <span class="md-ellipsis">
     
   
-    Configuration
+    Upgrade
   
 
     
@@ -372,6 +372,88 @@
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Upgrade
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../upgrade-2.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upgrade from 1.0.2 to 2.0.0
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -396,6 +478,34 @@
     
   
     Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Storage
   
 
     
@@ -517,10 +627,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
           
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
             
   
   
@@ -538,8 +648,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_4">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -929,10 +1039,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
             
   
   
@@ -950,8 +1060,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1060,10 +1170,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_4" >
         
           
-          <label class="md-nav__link" for="__nav_5_4" id="__nav_5_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_6_4" id="__nav_6_4_label" tabindex="0">
             
   
   
@@ -1081,8 +1191,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5_4">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_4">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1637,9 +1747,11 @@ $model-&gt;filterAssets(function(AssetModel $model) {
     $model-&gt;filterBySize(1024, '&gt;='); // Files &gt;= 1KB
 });
 
-// Find assets with a specific path
+// Find assets with a specific storage-relative path
 $model-&gt;filterAssets(function(AssetModel $model) {
-    $model-&gt;filterByPath('/uploads/images/');
+    $model
+        -&gt;filterByStorage('public')
+        -&gt;filterByPath('2026-06-11/97847659691b3cae8857/photo.jpg');
 });
 
 // Find assets with a specific order
@@ -1800,8 +1912,12 @@ $user-&gt;deleteAssets(ImagesCollection::class);</code></pre>
 <pre class="highlight"><code class="language-php">// Get an asset
 $asset = $user-&gt;getFirstAsset();
 
-// Get the absolute path to the asset file
-$path = $asset-&gt;getAbsolutePath();
+// Get the storage disk name and relative path
+$storage = $asset-&gt;storage;
+$path = $asset-&gt;path;
+
+// For local disks only, get a local filesystem path for processing
+$localPath = $asset-&gt;local_path;
 
 // Get the URL to the asset file
 $url = $asset-&gt;getUrl();
@@ -1813,13 +1929,13 @@ $properties = $asset-&gt;getCustomProperties();
 $title = $asset-&gt;getCustomProperty('title');
 
 // Get the file name
-$fileName = $asset-&gt;getFileName();
+$fileName = $asset-&gt;file_name;
 
 // Get the mime type
-$mimeType = $asset-&gt;getMimeType();
+$mimeType = $asset-&gt;mime_type;
 
 // Get the size in bytes
-$size = $asset-&gt;getSize();
+$size = $asset-&gt;size;
 
 // Get the human-readable size
 $readableSize = $asset-&gt;getHumanReadableSize();
@@ -1884,11 +2000,6 @@ class ImagesCollection implements AssetCollectionDefinitionInterface, AssetVaria
             -&gt;setMaxFileSize(10 * 1024 * 1024); // 10MB
     }
 
-    public function checkAuthorization(array|Entity $entity, Asset $asset): bool
-    {
-        return true;
-    }
-
     public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void
     {
         // No variants needed as we'll create thumbnails separately
@@ -1915,11 +2026,6 @@ class ThumbnailsCollection implements AssetCollectionDefinitionInterface, AssetV
                 AssetMimeType::IMAGE_WEBP
             )
             -&gt;setMaxFileSize(2 * 1024 * 1024); // 2MB
-    }
-
-    public function checkAuthorization(array|Entity $entity, Asset $asset): bool
-    {
-        return true;
     }
 
     public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void
