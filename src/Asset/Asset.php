@@ -17,13 +17,21 @@ use Maniaba\AssetConnect\Asset\Interfaces\AuthorizableAssetCollectionDefinitionI
 use Maniaba\AssetConnect\Asset\Traits\AssetFileInfoTrait;
 use Maniaba\AssetConnect\Asset\Traits\AssetMimeTypeTrait;
 use Maniaba\AssetConnect\AssetCollection\AssetCollectionDefinitionFactory;
+use Maniaba\AssetConnect\AssetVariants\AssetVariant;
 use Maniaba\AssetConnect\Config\Asset as AssetConfig;
+use Maniaba\AssetConnect\Enums\AssetVisibility;
 use Maniaba\AssetConnect\Events\AssetUpdated;
+use Maniaba\AssetConnect\Exceptions\AssetException;
+use Maniaba\AssetConnect\Exceptions\FileException;
 use Maniaba\AssetConnect\Models\AssetModel;
 use Maniaba\AssetConnect\Services\AssetAccessService;
+use Maniaba\AssetConnect\Storage\Interfaces\StorageDiskInterface;
+use Maniaba\AssetConnect\Storage\StorageManager;
+use Maniaba\AssetConnect\Storage\TemporaryStorageFile;
 use Maniaba\AssetConnect\UrlGenerator\Traits\UrlGeneratorTrait;
 use Maniaba\AssetConnect\Utils\Format;
 use Override;
+use Throwable;
 
 /**
  * @property      string                                           $collection                  name of the collection to which the asset belongs (md5 hash of the class name)
@@ -41,12 +49,14 @@ use Override;
  * @property      string                                           $mime_type                   MIME type of the file
  * @property      string                                           $name                        name of the asset
  * @property      int                                              $order                       order of the asset in the collection
- * @property      string                                           $path                        path to the file on the server
+ * @property      string                                           $path                        relative path to the file in the configured storage disk
+ * @property-read string|null                                      $local_path                  local filesystem path if the configured storage disk is local
  * @property-read AssetMetadata                                    $metadata
- * @property-read string                                           $path_dirname                directory path of the file on the server
- * @property-read string                                           $relative_path               relative path of the file in the storage
+ * @property-read string                                           $path_dirname                relative directory path of the file in the configured storage disk
+ * @property-read string                                           $relative_path               relative path of the file in the storage disk
  * @property      int                                              $size                        size of the file in bytes
  * @property-read string                                           $relative_path_for_url       relative path of the file in the storage
+ * @property      string                                           $storage                     configured storage disk name
  * @property-read class-string<Entity>                             $subject_entity_class        class name of the entity to which the asset belongs
  * @property      Time                                             $updated_at                  timestamp when the asset was last updated
  * @property-read string                                           $url                         URL to access the asset
@@ -63,6 +73,7 @@ class Asset extends Entity implements JsonSerializable
         'entity_id'   => 'int',
         'order'       => 'int',
         'collection'  => 'string',
+        'storage'     => 'string',
         'size'        => 'int',
     ];
     private AssetMetadata $metadata;
@@ -149,8 +160,8 @@ class Asset extends Entity implements JsonSerializable
         $rawArray             = parent::toRawArray($onlyChanged, $recursive);
         $rawArray['metadata'] = json_encode($this->getMetadata());
 
-        // if not exists key size, path or mime_type, we need to add them by calling their getters
-        $requiredKeys    = ['size', 'path', 'mime_type'];
+        // if not exists key size, storage, path or mime_type, we need to add them by calling their getters
+        $requiredKeys    = ['size', 'storage', 'path', 'mime_type'];
         $isUpdateRequest = $this->id !== null && $this->id > 0;
 
         if (! $isUpdateRequest) {
@@ -177,21 +188,19 @@ class Asset extends Entity implements JsonSerializable
 
     public function getExtension(): string
     {
-        // If file is set, we try to get extension from it
-        if (isset($this->file) && $this->file instanceof File) {
-            return $this->file->getExtension();
+        // The stored file name is the final name after AssetAdder configuration.
+        $fileName = $this->attributes['file_name'] ?? null;
+        if (is_string($fileName) && $fileName !== '') {
+            return pathinfo($fileName, PATHINFO_EXTENSION);
         }
 
-        // Otherwise, we check the path attribute
         $path = $this->attributes['path'] ?? null;
         if (is_string($path) && $path !== '') {
             return pathinfo($path, PATHINFO_EXTENSION);
         }
 
-        // If file_name is set, we try to get extension from it
-        $fileName = $this->attributes['file_name'] ?? null;
-        if (is_string($fileName) && $fileName !== '') {
-            return pathinfo($fileName, PATHINFO_EXTENSION);
+        if (isset($this->file) && $this->file instanceof File) {
+            return $this->file->getExtension();
         }
 
         throw new \Maniaba\AssetConnect\Exceptions\InvalidArgumentException('Invalid argument provided');
@@ -203,7 +212,70 @@ class Asset extends Entity implements JsonSerializable
             throw new \Maniaba\AssetConnect\Exceptions\InvalidArgumentException('Path directory not set.');
         }
 
-        return dirname($this->path) . DIRECTORY_SEPARATOR;
+        return rtrim(str_replace('\\', '/', dirname($this->path)), '/') . '/';
+    }
+
+    protected function getLocalPath(): ?string
+    {
+        return $this->getStorageDisk()->localPath($this->path);
+    }
+
+    public function getStorageDisk(): StorageDiskInterface
+    {
+        return StorageManager::make()->disk($this->storage);
+    }
+
+    public function copyToTemporaryFile(?string $variantName = null, ?string $directory = null, string $prefix = 'asset_connect_'): string
+    {
+        if ($variantName !== null && $variantName !== '' && $variantName !== '0') {
+            $variant = $this->getMetadata()->assetVariant->getAssetVariant($variantName);
+
+            if (! $variant instanceof AssetVariant) {
+                throw new \Maniaba\AssetConnect\Exceptions\InvalidArgumentException("Variant '{$variantName}' does not exist for asset '{$this->id}'.");
+            }
+
+            $storage = $variant->storage !== '' ? $variant->storage : $this->storage;
+
+            return TemporaryStorageFile::copyFromStorage(
+                StorageManager::make()->disk($storage),
+                $variant->path,
+                $variant->extension,
+                $directory,
+                $prefix,
+            );
+        }
+
+        return TemporaryStorageFile::copyFromStorage(
+            $this->getStorageDisk(),
+            $this->path,
+            $this->extension,
+            $directory,
+            $prefix,
+        );
+    }
+
+    /**
+     * @template TReturn
+     *
+     * @param callable(string): TReturn $callback
+     *
+     * @return TReturn
+     */
+    public function withTemporaryFile(
+        callable $callback,
+        ?string $variantName = null,
+        ?string $directory = null,
+        string $prefix = 'asset_connect_',
+    ): mixed {
+        $temporaryFile = $this->copyToTemporaryFile($variantName, $directory, $prefix);
+
+        try {
+            return $callback($temporaryFile);
+        } finally {
+            if (is_file($temporaryFile)) {
+                @unlink($temporaryFile);
+            }
+        }
     }
 
     /**
@@ -222,14 +294,21 @@ class Asset extends Entity implements JsonSerializable
     }
 
     /**
-     * Check if the collection is protected.
+     * Check if the asset is stored on a protected disk.
      *
-     * A collection is considered protected if it implements the AuthorizableAssetCollectionDefinitionInterface.
+     * Before the asset has a storage disk, authorizable collections still
+     * default to protected visibility.
      *
      * @return bool True if the collection is protected, false otherwise.
      */
     protected function getIsProtectedCollection(): bool
     {
+        $storage = $this->attributes['storage'] ?? null;
+
+        if (is_string($storage) && trim($storage) !== '') {
+            return StorageManager::make()->disk($storage)->visibility() === AssetVisibility::PROTECTED;
+        }
+
         return is_subclass_of($this->collection_definition_class, AuthorizableAssetCollectionDefinitionInterface::class);
     }
 
@@ -284,7 +363,7 @@ class Asset extends Entity implements JsonSerializable
 
     public function setCustomProperty(string $propertyName, mixed $value): static
     {
-        $this->metadata->userCustom->set($propertyName, $value);
+        $this->getMetadata()->userCustom->set($propertyName, $value);
 
         return $this;
     }
@@ -297,6 +376,106 @@ class Asset extends Entity implements JsonSerializable
     public function getCustomProperties(): array
     {
         return $this->getMetadata()->userCustom->getAll();
+    }
+
+    public function getInternalProperty(string $propertyName): mixed
+    {
+        return $this->getMetadata()->internal->get($propertyName);
+    }
+
+    public function setInternalProperty(string $propertyName, mixed $value): static
+    {
+        $this->getMetadata()->internal->set($propertyName, $value);
+
+        return $this;
+    }
+
+    /**
+     * Get all internal properties.
+     *
+     * Internal properties are intended for application/backend metadata and
+     * are not included in the public asset JSON representation.
+     *
+     * @return array<string, mixed>
+     */
+    public function getInternalProperties(): array
+    {
+        return $this->getMetadata()->internal->getAll();
+    }
+
+    /**
+     * Transfer the asset file to another configured storage disk.
+     *
+     * The storage-relative path stays the same. Existing variants are moved
+     * with the asset by default, and unprocessed variants have only their
+     * metadata storage updated so queued processors write them to the new disk.
+     */
+    public function transferToStorage(string $storage, bool $withVariants = true, bool $deleteSource = true): static
+    {
+        $targetStorage = trim($storage);
+        if ($targetStorage === '') {
+            throw new \Maniaba\AssetConnect\Exceptions\InvalidArgumentException('Target storage disk name must not be empty.');
+        }
+
+        $storageManager = StorageManager::make();
+        $targetDisk     = $storageManager->disk($targetStorage);
+        $sourceStorage  = $this->storage;
+        $sourcePath     = $this->path;
+
+        /** @var list<array{disk: StorageDiskInterface, path: string}> $copiedTargets */
+        $copiedTargets = [];
+        /** @var list<array{disk: StorageDiskInterface, path: string}> $deleteSources */
+        $deleteSources = [];
+        /** @var array<string, string> $variantSourceStorages */
+        $variantSourceStorages = [];
+
+        try {
+            if ($sourceStorage !== $targetStorage) {
+                $sourceDisk = $storageManager->disk($sourceStorage);
+                $this->copyStoragePath($sourceDisk, $targetDisk, $sourcePath);
+
+                $copiedTargets[] = ['disk' => $targetDisk, 'path' => $sourcePath];
+                $deleteSources[] = ['disk' => $sourceDisk, 'path' => $sourcePath];
+            }
+
+            if ($withVariants) {
+                foreach ($this->getMetadata()->assetVariant->getVariants() as $variantName => $variant) {
+                    $variantSourceStorages[$variantName] = $variant->storage;
+                    $variantSourceStorage                = $variant->storage !== '' ? $variant->storage : $sourceStorage;
+
+                    if ($variantSourceStorage !== $targetStorage) {
+                        $variantSourceDisk = $storageManager->disk($variantSourceStorage);
+
+                        if ($variantSourceDisk->fileExists($variant->path)) {
+                            $this->copyStoragePath($variantSourceDisk, $targetDisk, $variant->path);
+
+                            $copiedTargets[] = ['disk' => $targetDisk, 'path' => $variant->path];
+                            $deleteSources[] = ['disk' => $variantSourceDisk, 'path' => $variant->path];
+                        } elseif ($variant->processed) {
+                            throw FileException::forFileNotFound($variantSourceDisk->name() . ':' . $variant->path);
+                        }
+                    }
+
+                    $variant->storage = $targetStorage;
+                    $this->getMetadata()->assetVariant->updateAssetVariant($variant);
+                }
+            }
+
+            $this->storage = $targetStorage;
+            $this->persistStorageTransfer();
+        } catch (Throwable $exception) {
+            $this->storage = $sourceStorage;
+            $this->restoreVariantStorages($variantSourceStorages);
+            $this->deleteStoragePaths($copiedTargets);
+
+            throw $exception;
+        }
+
+        if ($deleteSource) {
+            $this->deleteStoragePaths($deleteSources);
+        }
+
+        return $this;
     }
 
     /**
@@ -325,6 +504,84 @@ class Asset extends Entity implements JsonSerializable
         return $result;
     }
 
+    private function copyStoragePath(StorageDiskInterface $sourceDisk, StorageDiskInterface $targetDisk, string $path): void
+    {
+        if (! $sourceDisk->fileExists($path)) {
+            throw FileException::forFileNotFound($sourceDisk->name() . ':' . $path);
+        }
+
+        if ($targetDisk->fileExists($path)) {
+            throw FileException::forCannotCopyFile($sourceDisk->name() . ':' . $path, $targetDisk->name() . ':' . $path);
+        }
+
+        $stream = $sourceDisk->readStream($path);
+
+        try {
+            $targetDisk->writeStream($path, $stream, [
+                'visibility' => $targetDisk->visibility()->value,
+            ]);
+        } catch (Throwable $exception) {
+            throw FileException::forCannotWriteToStorage($targetDisk->name(), $path, $exception);
+        } finally {
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
+        }
+    }
+
+    private function persistStorageTransfer(): void
+    {
+        $this->updated_at = Time::now();
+
+        $model  = AssetModel::init(false);
+        $result = $model->save(Asset::create([
+            'id'         => $this->id,
+            'storage'    => $this->storage,
+            'path'       => $this->path,
+            'metadata'   => $this->getMetadata(),
+            'updated_at' => $this->updated_at,
+        ]));
+
+        if (! $result) {
+            throw AssetException::forDatabaseError($model->errors() ?: ['Unable to update asset storage.']);
+        }
+
+        Events::trigger(AssetUpdated::name(), AssetUpdated::createFromId($this->id));
+    }
+
+    /**
+     * @param array<string, string> $variantSourceStorages
+     */
+    private function restoreVariantStorages(array $variantSourceStorages): void
+    {
+        foreach ($variantSourceStorages as $variantName => $storage) {
+            $variant = $this->getMetadata()->assetVariant->getAssetVariant($variantName);
+
+            if (! $variant instanceof AssetVariant) {
+                continue;
+            }
+
+            $variant->storage = $storage;
+            $this->getMetadata()->assetVariant->updateAssetVariant($variant);
+        }
+    }
+
+    /**
+     * @param list<array{disk: StorageDiskInterface, path: string}> $paths
+     */
+    private function deleteStoragePaths(array $paths): void
+    {
+        foreach ($paths as $path) {
+            try {
+                $path['disk']->delete($path['path']);
+            } catch (Throwable $exception) {
+                log_message('error', 'Failed to delete storage path after asset transfer: {message}', [
+                    'message' => $exception->getMessage(),
+                ]);
+            }
+        }
+    }
+
     #[Override]
     protected function mimeTypeValue(): string
     {
@@ -333,13 +590,13 @@ class Asset extends Entity implements JsonSerializable
 
     protected function getRelativePath(): string
     {
-        $relativePath = $this->getMetadata()->storage->fileRelativePath();
+        $relativePath = $this->path;
 
-        if ($relativePath === null) {
+        if (! is_string($relativePath) || $relativePath === '') {
             throw new \Maniaba\AssetConnect\Exceptions\InvalidArgumentException('File relative path not set.');
         }
 
-        $relativePath = rtrim($relativePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $this->file_name;
+        $relativePath = str_replace('\\', '/', $relativePath);
 
         // Ensure the relative path starts with a slash
         if ($relativePath[0] !== '/') {

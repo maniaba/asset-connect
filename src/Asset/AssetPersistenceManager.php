@@ -7,7 +7,6 @@ namespace Maniaba\AssetConnect\Asset;
 use CodeIgniter\Entity\Entity;
 use CodeIgniter\Events\Events;
 use CodeIgniter\Files\File;
-use CodeIgniter\HTTP\Files\UploadedFile;
 use CodeIgniter\I18n\Time;
 use Maniaba\AssetConnect\AssetCollection\AssetCollection;
 use Maniaba\AssetConnect\AssetCollection\SetupAssetCollection;
@@ -22,14 +21,17 @@ use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Maniaba\AssetConnect\Models\AssetModel;
 use Maniaba\AssetConnect\PathGenerator\PathGenerator;
 use Maniaba\AssetConnect\PathGenerator\PathGeneratorFactory;
+use Maniaba\AssetConnect\Storage\Interfaces\StorageDiskInterface;
+use Maniaba\AssetConnect\Storage\StorageManager;
 use Throwable;
 
 final class AssetPersistenceManager
 {
     private readonly PathGenerator $pathGenerator;
-    private string $storePath;
     private readonly AssetCollection $collection;
     private AssetVariants $assetVariants;
+    private ?StorageDiskInterface $storageDisk = null;
+    private ?string $storedPath                = null;
 
     public function __construct(
         /**
@@ -48,7 +50,7 @@ final class AssetPersistenceManager
     }
 
     /**
-     * Store the asset in the appropriate storage path based on the collection type
+     * Store the asset in the configured storage disk.
      *
      * @return Asset The stored asset
      *
@@ -120,35 +122,48 @@ final class AssetPersistenceManager
      */
     private function storeFile(): void
     {
-        $file            = $this->asset->file;
-        $sourcePath      = $file->getRealPath();
-        $this->storePath = $storePath = $this->pathGenerator->getPath();
+        $file = $this->asset->file;
 
-        // Set the asset path and file properties
-        $this->asset->path = $storePath . $this->asset->file_name;
-        // Set the asset metadata basic info properties
-        $this->asset->metadata->storage->setStorageBaseDirectoryPath($this->pathGenerator->getStoreDirectory());
-        $this->asset->metadata->storage->setFileRelativePath($this->pathGenerator->getFileRelativePath());
+        if (! $file instanceof File) {
+            throw new InvalidArgumentException('Unsupported asset type for storage.');
+        }
 
-        $this->asset->file = new File($this->asset->path);
+        $sourcePath = $file->getRealPath();
+        if (! is_string($sourcePath) || $sourcePath === '' || ! file_exists($sourcePath)) {
+            throw FileException::forFileNotFound((string) $sourcePath);
+        }
 
-        if (! file_exists($sourcePath)) {
+        $storageManager = StorageManager::make();
+        $storageName    = $this->collection->getStorage()
+            ?? $storageManager->defaultDiskNameForVisibility($this->collection->getVisibility());
+
+        $this->storageDisk = $storageManager->disk($storageName);
+
+        $relativeDirectory = $this->pathGenerator->getPath();
+        $relativePath      = $relativeDirectory . $this->asset->file_name;
+
+        $this->storedPath     = $relativePath;
+        $this->asset->storage = $storageName;
+        $this->asset->path    = $relativePath;
+
+        $stream = fopen($sourcePath, 'rb');
+        if ($stream === false) {
             throw FileException::forFileNotFound($sourcePath);
         }
 
-        // Preserve the original file, delete the temporary file
-        if ($file instanceof UploadedFile) {
-            $result = $file->move($storePath, $this->asset->file_name);
-            if (! $result) {
-                throw FileException::forCannotMoveFile($sourcePath, $storePath);
-            }
-        } elseif ($file instanceof File) {
-            // For CodeIgniter File objects, we can use the move method
-            if (! copy($sourcePath, $this->asset->path)) {
-                throw FileException::forCannotCopyFile($sourcePath, $this->asset->path);
-            }
-        } else {
-            throw new InvalidArgumentException('Unsupported asset type for storage.');
+        try {
+            $this->storageDisk->writeStream($relativePath, $stream, [
+                'visibility' => $this->collection->getVisibility()->value,
+            ]);
+        } catch (Throwable $exception) {
+            throw FileException::forCannotWriteToStorage($storageName, $relativePath, $exception);
+        } finally {
+            fclose($stream);
+        }
+
+        $localPath = $this->storageDisk->localPath($relativePath);
+        if ($localPath !== null) {
+            $this->asset->file = new File($localPath);
         }
     }
 
@@ -197,19 +212,22 @@ final class AssetPersistenceManager
      */
     private function processFileVariants(): void
     {
-        if ($this->setupAssetCollection->getCollectionDefinition() instanceof AssetVariantsInterface) {
-            $definition          = $this->setupAssetCollection->getCollectionDefinition();
-            $this->assetVariants = new AssetVariants(
-                $this->pathGenerator,
-                $this->asset,
-            );
+        $definition = $this->setupAssetCollection->getCollectionDefinition();
 
-            $definition->variants($this->assetVariants, $this->asset);
+        if (! $definition instanceof AssetVariantsInterface) {
+            return;
+        }
 
-            if (! $this->assetVariants->onQueue) {
-                // If the definition indicates that variants should be processed immediately,
-                AssetVariantsProcess::run($this->asset, $definition);
-            }
+        $this->assetVariants = new AssetVariants(
+            $this->pathGenerator,
+            $this->asset,
+        );
+
+        $definition->variants($this->assetVariants, $this->asset);
+
+        if (! $this->assetVariants->onQueue) {
+            // If the definition indicates that variants should be processed immediately,
+            AssetVariantsProcess::run($this->asset, $definition);
         }
     }
 
@@ -218,10 +236,9 @@ final class AssetPersistenceManager
      */
     private function cleanGarbage(): void
     {
-        if (isset($this->storePath)) {
-            // remove directory if it exists recursively
+        if ($this->storageDisk !== null && $this->storedPath !== null) {
             try {
-                self::removeStoragePath($this->storePath);
+                self::removeStoragePath($this->storageDisk->name(), $this->storedPath);
             } catch (Throwable $exception) {
                 // Log the error but do not throw it, as we are already handling an exception
                 log_message('error', 'Failed to clean up garbage after asset storage failure: {message}', ['message' => $exception->getMessage()]);
@@ -235,19 +252,9 @@ final class AssetPersistenceManager
         }
     }
 
-    public static function removeStoragePath(string $path): void
+    public static function removeStoragePath(string $storage, string $path): void
     {
-        helper('filesystem');
-        if (is_dir($path)) {
-            try {
-                delete_files($path, true, false, true);
-                @rmdir($path);
-            } catch (Throwable $exception) {
-                log_message('error', 'Failed to remove storage path: {message}', ['message' => $exception->getMessage()]);
-            }
-        } elseif (file_exists($path)) {
-            @unlink($path);
-        }
+        StorageManager::make()->disk($storage)->delete($path);
     }
 
     /**

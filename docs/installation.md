@@ -7,6 +7,7 @@ Before installing CodeIgniter Asset Connect, ensure your environment meets the f
 - PHP 8.3 or higher
 - CodeIgniter 4.6 or higher
 - CodeIgniter Queue
+- Flysystem 3 (installed as a package dependency)
 - Composer
 
 ## Installation Steps
@@ -29,7 +30,17 @@ php spark migrate --namespace=Maniaba\\AssetConnect
 
 This will create the `assets` table in your database.
 
-### 3. Configure Your Entities
+### 3. Link Local Storage
+
+If you use the default local public storage disk, expose the configured public storage root from your public folder:
+
+```bash
+php spark asset-connect:storage-link
+```
+
+The command creates links for public local disks that define `public_url`. Protected disks are served through AssetConnect routes and should not be exposed through a public link or web-server alias.
+
+### 4. Configure Your Entities
 
 To use Asset Connect with your entities, you need to add the `UseAssetConnectTrait` to any entity you want to associate files with:
 
@@ -59,7 +70,7 @@ class User extends Entity
 }
 ```
 
-### 4. Configure Your Models (Optional)
+### 5. Configure Your Models (Optional)
 
 If you want to automatically load the Asset Connect functionality when retrieving entities from your models, you can add the `UseAssetConnectModelTrait` to your models:
 
@@ -109,7 +120,7 @@ class UserModel extends Model
 }
 ```
 
-### 5. Configure Entity and Collection Definitions (Required)
+### 6. Configure Entity and Collection Definitions (Required)
 
 **This is a required step for Asset Connect to function properly.**
 

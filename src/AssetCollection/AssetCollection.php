@@ -33,6 +33,7 @@ final class AssetCollection implements AssetCollectionSetterInterface, AssetColl
     private float|int $maxFileSize = 0;
 
     private AssetVisibility $visibility = AssetVisibility::PUBLIC;
+    private ?string $storage            = null;
 
     /**
      * Maximum number of files
@@ -71,6 +72,26 @@ final class AssetCollection implements AssetCollectionSetterInterface, AssetColl
         }
 
         return $this->pathGenerator;
+    }
+
+    #[Override]
+    public function setStorage(string $storage): static
+    {
+        $storage = trim($storage);
+
+        if ($storage === '') {
+            throw new InvalidArgumentException('Storage disk name cannot be empty.');
+        }
+
+        $this->storage = $storage;
+
+        return $this;
+    }
+
+    #[Override]
+    public function getStorage(): ?string
+    {
+        return $this->storage;
     }
 
     /**

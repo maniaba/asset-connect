@@ -21,4 +21,6 @@ interface AssetCollectionSetterInterface
     public function singleFileCollection(): static;
 
     public function setPathGenerator(PathGeneratorInterface $pathGenerator): static;
+
+    public function setStorage(string $storage): static;
 }

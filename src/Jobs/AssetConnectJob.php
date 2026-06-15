@@ -109,10 +109,10 @@ final class AssetConnectJob extends BaseJob implements JobInterface
             $variants = $asset->metadata->assetVariant->getVariants();
 
             foreach ($variants as $variant) {
-                AssetPersistenceManager::removeStoragePath($variant->path);
+                AssetPersistenceManager::removeStoragePath($variant->storage, $variant->path);
             }
 
-            AssetPersistenceManager::removeStoragePath($asset->path);
+            AssetPersistenceManager::removeStoragePath($asset->storage, $asset->path);
 
             AssetModel::init(false)->delete((int) $asset->id, true);
 

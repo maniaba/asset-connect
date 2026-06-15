@@ -26,6 +26,7 @@ final class AssetVariantsTest extends CIUnitTestCase
         $this->asset = new Asset();
         // Set up the asset with required properties
         $this->asset->file_name = 'test_image.jpg';
+        $this->asset->storage   = 'public';
         // Create TestAssetVariants instance
         $this->assetVariants = new AssetVariants(
             $this->mockPathGenerator(),
@@ -40,10 +41,6 @@ final class AssetVariantsTest extends CIUnitTestCase
 
         // Set expectations for the methods used in the tests
         $pathGenerator->method('getPathForVariants')
-            ->willReturn(HOMEPATH . '/build/path/to/variants/');
-        $pathGenerator->method('getStoreDirectoryForVariants')
-            ->willReturn(HOMEPATH . '/build/path/to/');
-        $pathGenerator->method('getFileRelativePathForVariants')
             ->willReturn('variants/');
 
         return $pathGenerator;
@@ -56,7 +53,7 @@ final class AssetVariantsTest extends CIUnitTestCase
     {
         // Arrange
         $variantName = 'thumbnail';
-        $variantPath = HOMEPATH . '/build/path/to/variants/';
+        $variantPath = 'variants/';
 
         // Define a simple closure for the variant
         $closure = static function (AssetVariant $variant, Asset $asset) {
@@ -86,7 +83,7 @@ final class AssetVariantsTest extends CIUnitTestCase
     {
         // Arrange
         $variantName = 'medium';
-        $variantPath = HOMEPATH . '/build/path/to/variants/';
+        $variantPath = 'variants/';
 
         // Test with different file names
         $fileNames = [
@@ -132,7 +129,7 @@ final class AssetVariantsTest extends CIUnitTestCase
         // Arrange
         $variantName     = 'webp_variant';
         $customExtension = 'webp';
-        $variantPath     = HOMEPATH . '/build/path/to/variants/';
+        $variantPath     = 'variants/';
 
         // Define a simple closure for the variant
         $closure = static function (AssetVariant $variant, Asset $asset) {
@@ -162,7 +159,7 @@ final class AssetVariantsTest extends CIUnitTestCase
     {
         // Arrange
         $variantName = 'null_extension_test';
-        $variantPath = HOMEPATH . '/build/path/to/variants/';
+        $variantPath = 'variants/';
 
         // Define a simple closure for the variant
         $closure = static function (AssetVariant $variant, Asset $asset) {
@@ -183,7 +180,7 @@ final class AssetVariantsTest extends CIUnitTestCase
      */
     public function testAssetVariantWithVariousCustomExtensions(): void
     {
-        $variantPath = HOMEPATH . '/build/path/to/variants/';
+        $variantPath = 'variants/';
         $closure     = static function (AssetVariant $variant, Asset $asset) {};
 
         $testCases = [
@@ -209,7 +206,7 @@ final class AssetVariantsTest extends CIUnitTestCase
      */
     public function testAssetVariantWithDifferentOriginalExtensions(): void
     {
-        $variantPath = HOMEPATH . '/build/path/to/variants/';
+        $variantPath = 'variants/';
         $closure     = static function (AssetVariant $variant, Asset $asset) {};
 
         $testCases = [
@@ -241,7 +238,7 @@ final class AssetVariantsTest extends CIUnitTestCase
         $this->asset->file_name = 'image.jpg'; // Original is JPG
         $variantName            = 'converted';
         $customExtension        = 'png'; // Convert to PNG
-        $variantPath            = HOMEPATH . '/build/path/to/variants/';
+        $variantPath            = 'variants/';
 
         $closure = static function (AssetVariant $variant, Asset $asset) {};
 

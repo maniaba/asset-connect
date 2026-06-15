@@ -37,13 +37,10 @@ final class AssetVariants implements CreateAssetVariantsInterface
 
         $variant = new AssetVariant([
             'name'      => $name,
+            'storage'   => $this->asset->storage,
             'path'      => $this->pathGenerator->getPathForVariants() . $variantFileName,
             'size'      => 0, // Size will be updated after writing the file
             'processed' => false,
-            'paths'     => [
-                'storage_base_directory_path' => $this->pathGenerator->getStoreDirectoryForVariants(),
-                'file_relative_path'          => $this->pathGenerator->getFileRelativePathForVariants(),
-            ],
         ]);
 
         $this->asset->metadata->assetVariant->addAssetVariant($variant);

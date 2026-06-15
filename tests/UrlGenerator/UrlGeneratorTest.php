@@ -8,6 +8,8 @@ use CodeIgniter\Config\Factories;
 use CodeIgniter\Config\Services;
 use CodeIgniter\I18n\Time;
 use CodeIgniter\Test\CIUnitTestCase;
+use League\Flysystem\Filesystem;
+use League\Flysystem\Local\LocalFilesystemAdapter;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Maniaba\AssetConnect\UrlGenerator\UrlGenerator;
@@ -29,21 +31,16 @@ final class UrlGeneratorTest extends CIUnitTestCase
         $this->asset = new Asset([
             'id'         => '123',
             'file_name'  => 'test.jpg',
-            'path'       => '/path/to/test.jpg',
+            'storage'    => 'public',
+            'path'       => 'uploads/test.jpg',
             'collection' => 'default_collection',
             'metadata'   => json_encode([
-                'storage_info' => [
-                    'file_relative_path' => 'uploads',
-                ],
                 'asset_variants' => [
                     'thumbnail' => [
                         'name'                  => 'thumbnail',
+                        'storage'               => 'public',
                         'path'                  => 'uploads/variants/test_thumbnail.jpg',
                         'relative_path_for_url' => 'uploads/variants/test_thumbnail.jpg',
-                        'paths'                 => [
-                            'storage_base_directory_path' => '/path/to',
-                            'file_relative_path'          => 'uploads/variants',
-                        ],
                     ],
                 ],
             ]),
@@ -98,7 +95,7 @@ final class UrlGeneratorTest extends CIUnitTestCase
         $url = $urlGenerator->getUrl();
 
         // Assert
-        $this->assertSame('https://example.com/index.php/uploads/test.jpg', $url);
+        $this->assertSame('https://example.com/index.php/assets/storage/uploads/test.jpg', $url);
     }
 
     /**
@@ -115,39 +112,96 @@ final class UrlGeneratorTest extends CIUnitTestCase
         $urlGenerator->getUrl('non_existent');
     }
 
-    /**
-     * Test getUrl method for protected collection without variant
-     */
-    public function testGetUrlForProtectedCollectionWithoutVariant(): void
+    public function testGetUrlForPublicStorageWithoutPublicUrlGeneratorThrowsConfigurationMessage(): void
     {
-        // Arrange
-        // Create a new Asset object with a protected collection
+        $config           = new TestAssetConfig();
+        $config->storages = [
+            'ftp_public' => [
+                'filesystem' => new Filesystem(new LocalFilesystemAdapter(sys_get_temp_dir())),
+                'visibility' => 'public',
+            ],
+        ];
+
+        Factories::injectMock('config', \Maniaba\AssetConnect\Config\Asset::class, $config);
+
         $asset = new Asset([
             'id'         => '123',
             'file_name'  => 'test.jpg',
-            'path'       => '/path/to/test.jpg',
+            'storage'    => 'ftp_public',
+            'path'       => 'uploads/test.jpg',
             'collection' => 'default_collection',
             'metadata'   => json_encode([
-                'storage_info' => [
-                    'file_relative_path' => 'uploads',
-                ],
+                'asset_variants' => [],
+            ]),
+        ]);
+
+        try {
+            UrlGenerator::create($asset)->getUrl();
+        } catch (InvalidArgumentException $exception) {
+            $this->assertSame(
+                ["Public storage disk 'ftp_public' cannot generate asset URLs. Configure public_url for this disk, provide a Flysystem public URL generator, or mark the disk as protected to serve assets through AssetConnect routes."],
+                $exception->errors,
+            );
+
+            return;
+        }
+
+        $this->fail('Expected missing public URL generator exception.');
+    }
+
+    public function testGetUrlForProtectedStorageUsesControllerRoute(): void
+    {
+        $asset = new Asset([
+            'id'         => '123',
+            'file_name'  => 'test.jpg',
+            'storage'    => 'protected',
+            'path'       => 'secure/test.jpg',
+            'collection' => 'default_collection',
+            'metadata'   => json_encode([
                 'asset_variants' => [
                     'thumbnail' => [
                         'name'                  => 'thumbnail',
-                        'relative_path_for_url' => 'uploads/variants/test_thumbnail.jpg',
+                        'storage'               => 'protected',
+                        'path'                  => 'secure/variants/test_thumbnail.jpg',
+                        'relative_path_for_url' => 'secure/variants/test_thumbnail.jpg',
                     ],
                 ],
             ]),
         ]);
 
-        // Create the URL generator
         $urlGenerator = UrlGenerator::create($asset);
 
-        // Act
         $url = $urlGenerator->getUrl();
 
-        // Assert
-        $this->assertSame('https://example.com/index.php/uploads/test.jpg', $url);
+        $this->assertSame('https://example.com/index.php/assets/123/test.jpg', $url);
+    }
+
+    public function testGetUrlForProtectedStorageVariantUsesControllerRoute(): void
+    {
+        $asset = new Asset([
+            'id'         => '123',
+            'file_name'  => 'test.jpg',
+            'storage'    => 'protected',
+            'path'       => 'secure/test.jpg',
+            'collection' => 'default_collection',
+            'metadata'   => json_encode([
+                'asset_variants' => [
+                    'thumbnail' => [
+                        'name'                  => 'thumbnail',
+                        'file_name'             => 'test_thumbnail.jpg',
+                        'storage'               => 'protected',
+                        'path'                  => 'secure/variants/test_thumbnail.jpg',
+                        'relative_path_for_url' => 'secure/variants/test_thumbnail.jpg',
+                    ],
+                ],
+            ]),
+        ]);
+
+        $urlGenerator = UrlGenerator::create($asset);
+
+        $url = $urlGenerator->getUrl('thumbnail');
+
+        $this->assertSame('https://example.com/index.php/assets/123/variant/thumbnail/test_thumbnail.jpg', $url);
     }
 
     /**
@@ -169,7 +223,7 @@ final class UrlGeneratorTest extends CIUnitTestCase
         $url = $urlGenerator->getTemporaryUrl($expiration, $variantName);
 
         // Assert
-        $this->assertSame('/assets/temporary/b0a4ae59595b37c409e6196189b3f22854f578e66a1fe526cee293792c8b166c/variant/thumbnail/test_thumbnail.jpg', $url);
+        $this->assertSame('https://example.com/index.php/assets/temporary/b0a4ae59595b37c409e6196189b3f22854f578e66a1fe526cee293792c8b166c/variant/thumbnail/test_thumbnail.jpg', $url);
     }
 
     /**

@@ -226,7 +226,6 @@ if (!empty($result['avatar'])) {
     $pending = $result['avatar'][0]; // Get first (and only) file
 
     $pending->usingName('Profile Photo')
-        ->toAssetCollection(ProfilePhotos::class)
         ->store();
 
     return $this->response->setJSON(['pending_id' => $pending->id]);

@@ -23,6 +23,12 @@ interface AssetCollectionGetterInterface
     public function isProtected(): bool;
 
     /**
+     * Returns the configured storage disk name for this collection, if one was
+     * explicitly selected by the collection definition.
+     */
+    public function getStorage(): ?string;
+
+    /**
      * Returns the maximum number of items allowed in the collection.
      *
      * @return int The maximum number of items that can be stored in this collection

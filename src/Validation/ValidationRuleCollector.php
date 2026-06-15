@@ -168,6 +168,13 @@ final class ValidationRuleCollector implements AssetCollectionSetterInterface
         return $this;
     }
 
+    #[Override]
+    public function setStorage(string $storage): static
+    {
+        // This doesn't translate to a validation rule
+        return $this;
+    }
+
     /**
      * Set maximum image dimensions
      *

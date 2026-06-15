@@ -173,6 +173,28 @@ $asset = $user->addAsset('/path/to/file.jpg')
     ->toAssetCollection();
 ```
 
+### metadata
+
+```php
+public function metadata(): AssetMetadata
+```
+
+Returns the asset metadata object before the asset is stored. Use this when you need to set backend-only internal properties that should be persisted with the asset but not exposed through `custom_properties`.
+
+**Returns:**
+- The `AssetMetadata` instance for the pending asset.
+
+**Example:**
+```php
+$assetAdder = $user->addAsset('/path/to/file.jpg')
+    ->withCustomProperty('title', 'Profile Picture');
+
+$assetAdder->metadata()->internal->set('processing_job_id', 'job-123');
+$assetAdder->metadata()->internal->set('source_adapter', 's3-import');
+
+$asset = $assetAdder->toAssetCollection();
+```
+
 ### toAssetCollection
 
 ```php
@@ -240,7 +262,7 @@ For handling uploaded files from HTTP requests, use the `addAssetFromRequest` me
 
 ### Using addAssetFromRequest
 
-The `addAssetFromRequest` method provides a convenient way to add assets directly from HTTP request files. This method handles the validation and processing of uploaded files automatically.
+The `addAssetFromRequest` method provides a convenient way to add assets directly from valid HTTP request files. Use `AssetConnectValidator` when you need to validate request files against collection rules before storing them.
 
 ```php
 public function addAssetFromRequest(string ...$keyNames): AssetAdderMultiple

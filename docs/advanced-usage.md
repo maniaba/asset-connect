@@ -37,13 +37,6 @@ class ProductImagesCollection implements AssetCollectionDefinitionInterface, Ass
             ->setPathGenerator(new CustomPathGenerator());
     }
 
-    public function checkAuthorization(array|Entity $entity, Asset $asset): bool
-    {
-        // Check if the user is authorized to access this asset
-        // For example, check if the user owns the asset
-        return true;
-    }
-
     public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void
     {
         // Define file variants for this asset collection
@@ -144,24 +137,38 @@ public function variants(CreateAssetVariantsInterface $variants, Asset $asset): 
     // Create a thumbnail variant for images
     if ($asset->isImage()) {
         $variants->assetVariant('thumbnail', static function (AssetVariant $variant, Asset $asset): void {
+            $source = $asset->local_path;
+            $target = $variant->local_path;
+
+            if ($source === null || $target === null) {
+                throw new RuntimeException('This variant requires a local storage disk.');
+            }
+
             // Use CodeIgniter's image manipulation service
             $imageService = \Config\Services::image();
-            $imageService->withFile($asset->path)
+            $imageService->withFile($source)
                 ->fit(300, 300, 'center')
-                ->save($variant->path);
+                ->save($target);
         });
 
         // Create a medium-sized variant
         $variants->assetVariant('medium', static function (AssetVariant $variant, Asset $asset): void {
+            $source = $asset->local_path;
+            $target = $variant->local_path;
+
+            if ($source === null || $target === null) {
+                throw new RuntimeException('This variant requires a local storage disk.');
+            }
+
             $imageService = \Config\Services::image();
-            $imageService->withFile($asset->path)
+            $imageService->withFile($source)
                 ->resize(800, 600, true)
-                ->save($variant->path);
+                ->save($target);
         });
     }
 
     // Create a preview variant for PDF documents
-    if ($asset->getMimeType() === 'application/pdf') {
+    if ($asset->mime_type === 'application/pdf') {
         $variants->assetVariant('preview', static function (AssetVariant $variant, Asset $asset): void {
             // Use a PDF library to create a preview image of the first page
             // This is just a placeholder - in a real application, you would
@@ -171,6 +178,8 @@ public function variants(CreateAssetVariantsInterface $variants, Asset $asset): 
     }
 }
 ```
+
+For remote disks or queue workers that need a local source file while `local_path` is `null`, use `withTemporaryFile()` and write the generated output through `$variant->writeFile()`. See [Local And Temporary Paths For Processing](storage.md#local-and-temporary-paths-for-processing).
 
 ### Queue Processing
 

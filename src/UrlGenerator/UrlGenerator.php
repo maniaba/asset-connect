@@ -6,18 +6,18 @@ namespace Maniaba\AssetConnect\UrlGenerator;
 
 use CodeIgniter\I18n\Time;
 use CodeIgniter\Router\RouteCollection;
+use League\Flysystem\UnableToGeneratePublicUrl;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\AssetVariants\AssetVariant;
+use Maniaba\AssetConnect\Enums\AssetVisibility;
 use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
+use Maniaba\AssetConnect\Storage\StorageManager;
 use Maniaba\AssetConnect\UrlGenerator\Interfaces\UrlGeneratorInterface;
 
 final readonly class UrlGenerator
 {
-    private bool $isProtectedCollection;
-
     private function __construct(private Asset $asset)
     {
-        $this->isProtectedCollection = $this->asset->is_protected_collection;
     }
 
     /**
@@ -29,27 +29,42 @@ final readonly class UrlGenerator
      */
     public function getUrl(?string $variantName = null): string
     {
-        $relativePath = $this->asset->relative_path_for_url;
+        $storage   = $this->asset->storage;
+        $path      = $this->asset->path;
+        $routeName = 'asset-connect.show';
 
-        // If the asset is not part of a protected collection, return the URL directly
-        if (! $this->isProtectedCollection) {
-            if ($variantName !== null && $variantName !== '' && $variantName !== '0') {
-                $variant = $this->asset->metadata->assetVariant->getAssetVariant($variantName);
+        if ($variantName !== null && $variantName !== '' && $variantName !== '0') {
+            $variant = $this->asset->metadata->assetVariant->getAssetVariant($variantName);
 
-                if ($variant === null) {
-                    throw new InvalidArgumentException("Variant '{$variantName}' does not exist for asset '{$this->asset->id}'.");
-                }
-
-                $relativePath = $variant->relative_path_for_url;
+            if ($variant === null) {
+                throw new InvalidArgumentException("Variant '{$variantName}' does not exist for asset '{$this->asset->id}'.");
             }
 
-            return site_url($relativePath);
+            $storage   = $variant->storage;
+            $path      = $variant->path;
+            $routeName = 'asset-connect.show_variant';
         }
 
-        // If the asset is part of a protected collection, return the URL with go to controller route
-        $method = $variantName === null || $variantName === '' ? 'asset-connect.show' : 'asset-connect.show_variant';
+        $disk = StorageManager::make()->disk($storage);
 
-        return self::routeTo($method, $this->asset, $variantName);
+        if ($disk->visibility() === AssetVisibility::PROTECTED) {
+            $url = self::routeTo($routeName, $this->asset, $variantName);
+
+            return $url === '' ? '' : self::toAbsoluteUrl($url);
+        }
+
+        try {
+            $publicUrl = $disk->publicUrl($path);
+        } catch (UnableToGeneratePublicUrl $exception) {
+            throw new InvalidArgumentException(
+                self::publicUrlFailureMessage($storage),
+                'Unable to generate public asset URL',
+                0,
+                $exception,
+            );
+        }
+
+        return self::toAbsoluteUrl($publicUrl);
     }
 
     /**
@@ -66,7 +81,7 @@ final readonly class UrlGenerator
         $token  = TempUrlToken::createToken($this->asset, $variantName, $expiration);
         $method = $variantName === null || $variantName === '' ? 'asset-connect.temporary' : 'asset-connect.temporary_variant';
 
-        return self::routeTo($method, $this->asset, $variantName, $token);
+        return self::toAbsoluteUrl(self::routeTo($method, $this->asset, $variantName, $token));
     }
 
     public static function routes(RouteCollection &$routes): void
@@ -125,5 +140,19 @@ final readonly class UrlGenerator
     public static function create(Asset $asset): self
     {
         return new self($asset);
+    }
+
+    private static function publicUrlFailureMessage(string $storage): string
+    {
+        return "Public storage disk '{$storage}' cannot generate asset URLs. Configure public_url for this disk, provide a Flysystem public URL generator, or mark the disk as protected to serve assets through AssetConnect routes.";
+    }
+
+    private static function toAbsoluteUrl(string $url): string
+    {
+        if (preg_match('#^[a-z][a-z0-9+.-]*://#i', $url) === 1 || str_starts_with($url, '//')) {
+            return $url;
+        }
+
+        return site_url(ltrim($url, '/'));
     }
 }

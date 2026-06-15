@@ -128,3 +128,5 @@ nb-configuration.xml
 
 /.php-cs-fixer.php
 /site/
+/.venv-docs/
+/cache/

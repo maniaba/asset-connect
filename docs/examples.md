@@ -42,9 +42,11 @@ $model->filterAssets(function(AssetModel $model) {
     $model->filterBySize(1024, '>='); // Files >= 1KB
 });
 
-// Find assets with a specific path
+// Find assets with a specific storage-relative path
 $model->filterAssets(function(AssetModel $model) {
-    $model->filterByPath('/uploads/images/');
+    $model
+        ->filterByStorage('public')
+        ->filterByPath('2026-06-11/97847659691b3cae8857/photo.jpg');
 });
 
 // Find assets with a specific order
@@ -269,8 +271,12 @@ Once you have an asset, you can work with its properties:
 // Get an asset
 $asset = $user->getFirstAsset();
 
-// Get the absolute path to the asset file
-$path = $asset->getAbsolutePath();
+// Get the storage disk name and relative path
+$storage = $asset->storage;
+$path = $asset->path;
+
+// For local disks only, get a local filesystem path for processing
+$localPath = $asset->local_path;
 
 // Get the URL to the asset file
 $url = $asset->getUrl();
@@ -282,13 +288,13 @@ $properties = $asset->getCustomProperties();
 $title = $asset->getCustomProperty('title');
 
 // Get the file name
-$fileName = $asset->getFileName();
+$fileName = $asset->file_name;
 
 // Get the mime type
-$mimeType = $asset->getMimeType();
+$mimeType = $asset->mime_type;
 
 // Get the size in bytes
-$size = $asset->getSize();
+$size = $asset->size;
 
 // Get the human-readable size
 $readableSize = $asset->getHumanReadableSize();
@@ -363,11 +369,6 @@ class ImagesCollection implements AssetCollectionDefinitionInterface, AssetVaria
             ->setMaxFileSize(10 * 1024 * 1024); // 10MB
     }
 
-    public function checkAuthorization(array|Entity $entity, Asset $asset): bool
-    {
-        return true;
-    }
-
     public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void
     {
         // No variants needed as we'll create thumbnails separately
@@ -394,11 +395,6 @@ class ThumbnailsCollection implements AssetCollectionDefinitionInterface, AssetV
                 AssetMimeType::IMAGE_WEBP
             )
             ->setMaxFileSize(2 * 1024 * 1024); // 2MB
-    }
-
-    public function checkAuthorization(array|Entity $entity, Asset $asset): bool
-    {
-        return true;
     }
 
     public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void
