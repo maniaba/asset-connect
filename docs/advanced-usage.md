@@ -186,6 +186,8 @@ public function variants(CreateAssetVariantsInterface $variants, Asset $asset): 
 }
 ```
 
+For remote disks or queue workers that need a local source file while `local_path` is `null`, use `withTemporaryFile()` and write the generated output through `$variant->writeFile()`. See [Local And Temporary Paths For Processing](storage.md#local-and-temporary-paths-for-processing).
+
 ### Queue Processing
 
 Setting `$variants->onQueue = true` tells Asset Connect to process the variants asynchronously using a queue job. This is especially useful for large files or complex processing operations that might take a significant amount of time. The queue job will be processed in the background, allowing your application to continue responding to user requests.

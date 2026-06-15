@@ -208,6 +208,11 @@ $path = $asset->path;       // e.g. "2026-06-11/97847659691b3cae8857/photo.jpg"
 // If the storage disk is local, get the local filesystem path for processing
 $localPath = $asset->local_path;
 
+// For remote disks or queue processing, stream the file into a temporary local file
+$asset->withTemporaryFile(static function (string $temporaryFile): void {
+    // Process $temporaryFile...
+});
+
 // Get the URL to the asset file
 $url = $asset->getUrl();
 

@@ -8,6 +8,7 @@ use CodeIgniter\Entity\Entity;
 use Maniaba\AssetConnect\Exceptions\FileVariantException;
 use Maniaba\AssetConnect\Storage\Interfaces\StorageDiskInterface;
 use Maniaba\AssetConnect\Storage\StorageManager;
+use Maniaba\AssetConnect\Storage\TemporaryStorageFile;
 use Throwable;
 
 /**
@@ -102,6 +103,37 @@ final class AssetVariant extends Entity
     protected function getLocalPath(): ?string
     {
         return $this->getStorageDisk()->localPath($this->path);
+    }
+
+    public function copyToTemporaryFile(?string $directory = null, string $prefix = 'asset_connect_'): string
+    {
+        return TemporaryStorageFile::copyFromStorage(
+            $this->getStorageDisk(),
+            $this->path,
+            $this->extension,
+            $directory,
+            $prefix,
+        );
+    }
+
+    /**
+     * @template TReturn
+     *
+     * @param callable(string): TReturn $callback
+     *
+     * @return TReturn
+     */
+    public function withTemporaryFile(callable $callback, ?string $directory = null, string $prefix = 'asset_connect_'): mixed
+    {
+        $temporaryFile = $this->copyToTemporaryFile($directory, $prefix);
+
+        try {
+            return $callback($temporaryFile);
+        } finally {
+            if (is_file($temporaryFile)) {
+                @unlink($temporaryFile);
+            }
+        }
     }
 
     public function getStorageDisk(): StorageDiskInterface

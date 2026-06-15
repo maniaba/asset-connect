@@ -374,6 +374,65 @@ Transfers the asset file to another configured storage disk. The storage-relativ
 $asset->transferToStorage('protected');
 ```
 
+### copyToTemporaryFile
+
+```php
+public function copyToTemporaryFile(?string $variantName = null, ?string $directory = null, string $prefix = 'asset_connect_'): string
+```
+
+Copies the original asset file, or a named variant, from its configured storage disk into a local temporary file. This is useful for remote disks where `local_path` is `null`, and for queue jobs that need to pass a real local file path to an image, video, or document processing library.
+
+The caller owns the returned temporary file and must delete it when processing is complete.
+
+**Parameters:**
+- `$variantName`: Optional variant name to copy instead of the original asset.
+- `$directory`: Optional temp directory. Defaults to `sys_get_temp_dir()`.
+- `$prefix`: Prefix passed to `tempnam()`.
+
+**Returns:**
+- The local temporary file path.
+
+**Example:**
+```php
+$temporaryFile = $asset->copyToTemporaryFile();
+
+try {
+    service('image')
+        ->withFile($temporaryFile)
+        ->fit(300, 300, 'center')
+        ->save($previewPath);
+} finally {
+    @unlink($temporaryFile);
+}
+```
+
+### withTemporaryFile
+
+```php
+public function withTemporaryFile(callable $callback, ?string $variantName = null, ?string $directory = null, string $prefix = 'asset_connect_'): mixed
+```
+
+Streams the asset file into a local temporary file, passes that path to the callback, and deletes the temporary file in a `finally` block. Prefer this method in queued processors because cleanup happens even when processing throws an exception.
+
+**Parameters:**
+- `$callback`: Callback that receives the local temporary file path.
+- `$variantName`: Optional variant name to copy instead of the original asset.
+- `$directory`: Optional temp directory. Defaults to `sys_get_temp_dir()`.
+- `$prefix`: Prefix passed to `tempnam()`.
+
+**Returns:**
+- The callback return value.
+
+**Example:**
+```php
+$asset->withTemporaryFile(static function (string $source): void {
+    service('image')
+        ->withFile($source)
+        ->resize(1200, 900, true)
+        ->save(WRITEPATH . 'cache/processed.jpg');
+});
+```
+
 ### save
 
 ```php
@@ -645,6 +704,48 @@ $asset->transferToStorage('archive', withVariants: false);
 ```
 
 The transfer uses storage streams, so it works for local disks, S3/MinIO, and other Flysystem adapters. If variants are not processed yet, their metadata is updated to the target storage so queued variant processors write them to the new disk.
+
+### Processing Remote Assets In Queue Jobs
+
+For local disks, `local_path` can be passed directly to processing libraries. For remote disks such as S3 or MinIO, `local_path` is `null`, so use `withTemporaryFile()`:
+
+```php
+$asset->withTemporaryFile(static function (string $source): void {
+    service('image')
+        ->withFile($source)
+        ->fit(300, 300, 'center')
+        ->save(WRITEPATH . 'cache/thumbnail.jpg');
+});
+```
+
+To generate a variant on remote storage, write the processed output back through the variant:
+
+```php
+$variants->assetVariant('thumbnail', static function (AssetVariant $variant, Asset $asset): void {
+    $asset->withTemporaryFile(static function (string $source) use ($variant): void {
+        $target = tempnam(sys_get_temp_dir(), 'asset_variant_');
+        if ($target === false) {
+            throw new RuntimeException('Unable to create temporary variant file.');
+        }
+
+        try {
+            service('image')
+                ->withFile($source)
+                ->fit(300, 300, 'center')
+                ->save($target);
+
+            $contents = file_get_contents($target);
+            if ($contents === false) {
+                throw new RuntimeException('Unable to read processed variant file.');
+            }
+
+            $variant->writeFile($contents);
+        } finally {
+            @unlink($target);
+        }
+    });
+});
+```
 
 ### Downloading Assets
 

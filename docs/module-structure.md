@@ -18,7 +18,7 @@ The central orchestrator. Holds the `AssetModel`, manages cached assets per enti
 
 | File | Description |
 |---|---|
-| `Asset.php` | CI4 `Entity` subclass representing a stored file. Contains all properties (`id`, `entity_type`, `entity_id`, `collection`, `storage`, `name`, `file_name`, relative `path`, `mime_type`, `size`, `order`, `metadata`, timestamps). Provides `getUrl()`, `getTemporaryUrl()`, `download()`, `transferToStorage()`, `isImage()`, `isVideo()`, `isDocument()`, `getCustomProperty()`, `setCustomProperty()`, `getInternalProperty()`, `setInternalProperty()`, `save()`. |
+| `Asset.php` | CI4 `Entity` subclass representing a stored file. Contains all properties (`id`, `entity_type`, `entity_id`, `collection`, `storage`, `name`, `file_name`, relative `path`, `mime_type`, `size`, `order`, `metadata`, timestamps). Provides `getUrl()`, `getTemporaryUrl()`, `download()`, `transferToStorage()`, `copyToTemporaryFile()`, `withTemporaryFile()`, `isImage()`, `isVideo()`, `isDocument()`, `getCustomProperty()`, `setCustomProperty()`, `getInternalProperty()`, `setInternalProperty()`, `save()`. |
 | `AssetAdder.php` | Fluent builder returned by `entity->addAsset()`. Chains `withCustomProperties()`, `usingName()`, and terminates with `toAssetCollection()`. |
 | `AssetAdderMultiple.php` | Variant of `AssetAdder` for adding multiple files at once. |
 | `AssetMetadata.php` | Value object holding public custom properties, backend internal properties, and variant references. |
@@ -46,7 +46,7 @@ The central orchestrator. Holds the `AssetModel`, manages cached assets per enti
 
 | File | Description |
 |---|---|
-| `AssetVariant.php` | Represents a single generated variant (e.g. thumbnail). Holds `name`, `storage`, relative `path`, `file_name`, and `writeFile()` helper. |
+| `AssetVariant.php` | Represents a single generated variant (e.g. thumbnail). Holds `name`, `storage`, relative `path`, `file_name`, and helpers for `writeFile()`, `copyToTemporaryFile()`, and `withTemporaryFile()`. |
 | `AssetVariants.php` | Implements `CreateAssetVariantsInterface`. Collects variant closures and the `onQueue` flag. |
 | `AssetVariantsProcess.php` | Executes the variant closures for a given asset. |
 | `AssetVariantsProcessor.php` | Orchestrates variant processing; dispatches to queue or runs inline. |

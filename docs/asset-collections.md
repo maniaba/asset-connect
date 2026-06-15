@@ -183,6 +183,8 @@ class ProfilePicturesCollection implements AuthorizableAssetCollectionDefinition
 }
 ```
 
+For remote disks, use `withTemporaryFile()` and write the processed output through `$variant->writeFile()`. See [Local And Temporary Paths For Processing](storage.md#local-and-temporary-paths-for-processing).
+
 ## Using Custom Asset Collections
 
 Once you've created a custom asset collection, you can use it in your entity's `setupAssetConnect` method:

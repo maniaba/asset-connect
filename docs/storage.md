@@ -161,7 +161,7 @@ protected function setupStorageRemoteFilesystem(array $storage): array
 }
 ```
 
-For non-local adapters, `local_path` is `null`. Use storage streams, `writeFile()`, or a processor that reads and writes through the disk instead of passing paths to APIs that require local files.
+For non-local adapters, `local_path` is `null`. Use storage streams, `copyToTemporaryFile()`, `withTemporaryFile()`, `writeFile()`, or a processor that reads and writes through the disk instead of passing storage-relative paths to APIs that require local files.
 
 ## Link Local Storage
 
@@ -247,7 +247,7 @@ The storage-relative `path` stays unchanged. AssetConnect copies through `readSt
 
 If a variant is already registered but not processed yet, `transferToStorage()` updates its metadata to the target disk and skips copying the missing file. A later queued processor will write that variant to the new storage.
 
-## Local Paths For Processing
+## Local And Temporary Paths For Processing
 
 `Asset::path` and `AssetVariant::path` are storage-relative paths. Do not pass them directly to APIs that require local filesystem paths.
 
@@ -267,7 +267,65 @@ service('image')
     ->save($target);
 ```
 
-For non-local disks, use storage streams or write the result through `$variant->writeFile()`.
+For remote disks, queued processors, or any code that needs a local source file regardless of storage driver, use `withTemporaryFile()`. AssetConnect streams the stored file into a local temp file and deletes it after the callback finishes:
+
+```php
+$asset->withTemporaryFile(static function (string $source): void {
+    service('image')
+        ->withFile($source)
+        ->fit(300, 300, 'center')
+        ->save(WRITEPATH . 'cache/preview.jpg');
+});
+```
+
+For variant processing on remote storage, use a temporary output file and write the processed contents back through the variant storage disk:
+
+```php
+$variants->assetVariant('thumbnail', static function (AssetVariant $variant, Asset $asset): void {
+    $asset->withTemporaryFile(static function (string $source) use ($variant): void {
+        $target = tempnam(sys_get_temp_dir(), 'asset_variant_');
+        if ($target === false) {
+            throw new RuntimeException('Unable to create temporary variant file.');
+        }
+
+        try {
+            service('image')
+                ->withFile($source)
+                ->fit(300, 300, 'center')
+                ->save($target);
+
+            $contents = file_get_contents($target);
+            if ($contents === false) {
+                throw new RuntimeException('Unable to read processed variant file.');
+            }
+
+            $variant->writeFile($contents);
+        } finally {
+            @unlink($target);
+        }
+    });
+});
+```
+
+If you need manual control over cleanup, use `copyToTemporaryFile()` and delete the returned path in a `finally` block:
+
+```php
+$temporaryFile = $asset->copyToTemporaryFile();
+
+try {
+    // Process $temporaryFile...
+} finally {
+    @unlink($temporaryFile);
+}
+```
+
+The same methods are available on `AssetVariant` when you need to process an existing variant:
+
+```php
+$variant->withTemporaryFile(static function (string $variantFile): void {
+    // Process existing variant file...
+});
+```
 
 ## Migration Note
 

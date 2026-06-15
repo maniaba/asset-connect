@@ -27,6 +27,7 @@ use Maniaba\AssetConnect\Models\AssetModel;
 use Maniaba\AssetConnect\Services\AssetAccessService;
 use Maniaba\AssetConnect\Storage\Interfaces\StorageDiskInterface;
 use Maniaba\AssetConnect\Storage\StorageManager;
+use Maniaba\AssetConnect\Storage\TemporaryStorageFile;
 use Maniaba\AssetConnect\UrlGenerator\Traits\UrlGeneratorTrait;
 use Maniaba\AssetConnect\Utils\Format;
 use Override;
@@ -222,6 +223,59 @@ class Asset extends Entity implements JsonSerializable
     public function getStorageDisk(): StorageDiskInterface
     {
         return StorageManager::make()->disk($this->storage);
+    }
+
+    public function copyToTemporaryFile(?string $variantName = null, ?string $directory = null, string $prefix = 'asset_connect_'): string
+    {
+        if ($variantName !== null && $variantName !== '' && $variantName !== '0') {
+            $variant = $this->getMetadata()->assetVariant->getAssetVariant($variantName);
+
+            if (! $variant instanceof AssetVariant) {
+                throw new \Maniaba\AssetConnect\Exceptions\InvalidArgumentException("Variant '{$variantName}' does not exist for asset '{$this->id}'.");
+            }
+
+            $storage = $variant->storage !== '' ? $variant->storage : $this->storage;
+
+            return TemporaryStorageFile::copyFromStorage(
+                StorageManager::make()->disk($storage),
+                $variant->path,
+                $variant->extension,
+                $directory,
+                $prefix,
+            );
+        }
+
+        return TemporaryStorageFile::copyFromStorage(
+            $this->getStorageDisk(),
+            $this->path,
+            $this->extension,
+            $directory,
+            $prefix,
+        );
+    }
+
+    /**
+     * @template TReturn
+     *
+     * @param callable(string): TReturn $callback
+     *
+     * @return TReturn
+     */
+    public function withTemporaryFile(
+        callable $callback,
+        ?string $variantName = null,
+        ?string $directory = null,
+        string $prefix = 'asset_connect_',
+    ): mixed {
+        $temporaryFile = $this->copyToTemporaryFile($variantName, $directory, $prefix);
+
+        try {
+            return $callback($temporaryFile);
+        } finally {
+            if (is_file($temporaryFile)) {
+                @unlink($temporaryFile);
+            }
+        }
     }
 
     /**

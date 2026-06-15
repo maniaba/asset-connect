@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added support for official Flysystem adapters through driver-specific `setupStorage{Driver}()` methods, including S3-style and other remote storage backends.
 - Added `asset-connect:migrate-paths` to normalize legacy rows into the new `storage` plus relative `path` model.
 - Added `Asset::transferToStorage()` for moving or copying an existing asset between configured disks, including variants and database metadata updates.
+- Added `copyToTemporaryFile()` and `withTemporaryFile()` on assets and variants for queue-safe processing of files stored on remote disks.
 - Added internal asset metadata through `getInternalProperty()`, `setInternalProperty()`, and `getInternalProperties()` for backend-only state that should not be mixed with user custom properties.
 - Added path helper methods `getDate()` and `getRandomId()` for readable collision-resistant custom path generators.
 
