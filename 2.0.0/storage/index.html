@@ -395,7 +395,7 @@
   <span class="md-ellipsis">
     
   
-    Upgrade to 2.0.0
+    Upgrade from 1.0.2 to 2.0.0
   
 
     
@@ -1740,7 +1740,7 @@ try {
 <h2 id="migration-note">Migration Note</h2>
 <p>Use the <code>asset-connect:migrate-paths</code> command when upgrading legacy rows that have no <code>storage</code> disk value and either storage-relative paths or supported legacy storage metadata:</p>
 <pre class="highlight"><code class="language-bash">php spark asset-connect:migrate-paths --storage public --dry-run</code></pre>
-<p>For older rows that still contain absolute filesystem paths, the command can convert them only when <code>metadata.storage_info.storage_base_directory_path</code> identifies the legacy base directory. If the selected Flysystem disk does not already contain the file, the command copies the legacy source file into that disk before updating the row. After a row has a normalized storage disk and relative path, the command removes the obsolete <code>metadata.storage_info</code> property. See <a href="../upgrade-2.0/">Upgrade to 2.0.0</a> for the full migration workflow.</p>
+<p>For older rows that still contain absolute filesystem paths, the command can convert them only when <code>metadata.storage_info.storage_base_directory_path</code> identifies the legacy base directory. If the selected Flysystem disk does not already contain the file, the command copies the legacy source file into that disk before updating the row. After a row has a normalized storage disk and relative path, the command removes the obsolete <code>metadata.storage_info</code> property. See <a href="../upgrade-2.0/">Upgrade from 1.0.2 to 2.0.0</a> for the full migration workflow.</p>
 
 
 

@@ -395,7 +395,7 @@
   <span class="md-ellipsis">
     
   
-    Upgrade to 2.0.0
+    Upgrade from 1.0.2 to 2.0.0
   
 
     
@@ -1773,11 +1773,6 @@
             -&gt;allowedExtensions(...AssetExtension::images());
     }
 
-    public function checkAuthorization(array|Entity $entity, Asset $asset): bool
-    {
-        return true;
-    }
-
     public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void
     {
         // No variants needed
@@ -1821,12 +1816,6 @@
         -&gt;setPathGenerator(new CustomPathGenerator());
     }
 
-    public function checkAuthorization(array|Entity $entity, Asset $asset): bool
-    {
-        // Check if the user is authorized to access this asset
-        return true;
-    }
-
     public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void
     {
         // Define file variants (e.g., thumbnails)
@@ -1866,7 +1855,7 @@
         $entity = $asset-&gt;getSubjectEntity();
 
         // Check if the user is the owner of the entity or an admin
-        return ($user-&gt;id === $entity-&gt;user_id) || $user-&gt;isAdmin();
+        return $entity !== null &amp;&amp; (($user-&gt;id === $entity-&gt;user_id) || $user-&gt;isAdmin());
     }
 }</code></pre>
 <p>In this example, the <code>checkAuthorization</code> method checks if the current user is either the owner of the entity that the asset belongs to or an admin. If either condition is true, access is granted; otherwise, it's denied.</p>
@@ -1909,11 +1898,13 @@
 <pre class="highlight"><code class="language-php">$definition-&gt;singleFileCollection();</code></pre>
 <h3 id="implement-proper-authorization">Implement Proper Authorization</h3>
 <p>If your application serves assets through its own controller or service layer, implement proper authorization checks in the <code>checkAuthorization</code> method before returning a file response.</p>
-<pre class="highlight"><code class="language-php">public function checkAuthorization(array|Entity $entity, Asset $asset): bool
+<pre class="highlight"><code class="language-php">public function checkAuthorization(Asset $asset): bool
 {
     // Check if the user is authorized to access this asset
     $user = service('auth')-&gt;user();
-    return $user-&gt;id === $entity-&gt;user_id || $user-&gt;isAdmin();
+    $entity = $asset-&gt;getSubjectEntity();
+
+    return $entity !== null &amp;&amp; ($user-&gt;id === $entity-&gt;user_id || $user-&gt;isAdmin());
 }</code></pre>
 <h2 id="conclusion">Conclusion</h2>
 <p>Custom asset collections provide a powerful way to organize and manage files in your application. By implementing the <code>AssetCollectionDefinitionInterface</code> and configuring your collections appropriately, you can ensure that your application handles files in a secure, efficient, and organized manner.</p>

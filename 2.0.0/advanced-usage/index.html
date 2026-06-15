@@ -395,7 +395,7 @@
   <span class="md-ellipsis">
     
   
-    Upgrade to 2.0.0
+    Upgrade from 1.0.2 to 2.0.0
   
 
     
@@ -1549,13 +1549,6 @@
             -&gt;setPathGenerator(new CustomPathGenerator());
     }
 
-    public function checkAuthorization(array|Entity $entity, Asset $asset): bool
-    {
-        // Check if the user is authorized to access this asset
-        // For example, check if the user owns the asset
-        return true;
-    }
-
     public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void
     {
         // Define file variants for this asset collection
@@ -1659,7 +1652,7 @@ class Asset extends BaseConfig
     }
 
     // Create a preview variant for PDF documents
-    if ($asset-&gt;getMimeType() === 'application/pdf') {
+    if ($asset-&gt;mime_type === 'application/pdf') {
         $variants-&gt;assetVariant('preview', static function (AssetVariant $variant, Asset $asset): void {
             // Use a PDF library to create a preview image of the first page
             // This is just a placeholder - in a real application, you would

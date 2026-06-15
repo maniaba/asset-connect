@@ -395,7 +395,7 @@
   <span class="md-ellipsis">
     
   
-    Upgrade to 2.0.0
+    Upgrade from 1.0.2 to 2.0.0
   
 
     
@@ -970,10 +970,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#getpathdirname" class="md-nav__link">
+  <a href="#path_dirname" class="md-nav__link">
     <span class="md-ellipsis">
       
-        getPathDirname
+        path_dirname
       
     </span>
   </a>
@@ -981,10 +981,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#getassetcollectiondefinitionclass" class="md-nav__link">
+  <a href="#getcollectiondefinitionclass" class="md-nav__link">
     <span class="md-ellipsis">
       
-        getAssetCollectionDefinitionClass
+        getCollectionDefinitionClass
       
     </span>
   </a>
@@ -1014,10 +1014,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#getsubjectentityclassname" class="md-nav__link">
+  <a href="#getsubjectentityclass" class="md-nav__link">
     <span class="md-ellipsis">
       
-        getSubjectEntityClassName
+        getSubjectEntityClass
       
     </span>
   </a>
@@ -1135,10 +1135,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#getrelativepath" class="md-nav__link">
+  <a href="#relative_path" class="md-nav__link">
     <span class="md-ellipsis">
       
-        getRelativePath
+        relative_path
       
     </span>
   </a>
@@ -1884,10 +1884,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#getpathdirname" class="md-nav__link">
+  <a href="#path_dirname" class="md-nav__link">
     <span class="md-ellipsis">
       
-        getPathDirname
+        path_dirname
       
     </span>
   </a>
@@ -1895,10 +1895,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#getassetcollectiondefinitionclass" class="md-nav__link">
+  <a href="#getcollectiondefinitionclass" class="md-nav__link">
     <span class="md-ellipsis">
       
-        getAssetCollectionDefinitionClass
+        getCollectionDefinitionClass
       
     </span>
   </a>
@@ -1928,10 +1928,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#getsubjectentityclassname" class="md-nav__link">
+  <a href="#getsubjectentityclass" class="md-nav__link">
     <span class="md-ellipsis">
       
-        getSubjectEntityClassName
+        getSubjectEntityClass
       
     </span>
   </a>
@@ -2049,10 +2049,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#getrelativepath" class="md-nav__link">
+  <a href="#relative_path" class="md-nav__link">
     <span class="md-ellipsis">
       
-        getRelativePath
+        relative_path
       
     </span>
   </a>
@@ -2425,7 +2425,7 @@ $relativeTemporaryUrl = $asset-&gt;getTemporaryUrlRelative($expiration);
 <tr>
 <td><code>entity_type</code></td>
 <td>string</td>
-<td>Type of the entity to which the asset belongs (md5 hash of the class name)</td>
+<td>Configured entity key for the entity class that owns the asset</td>
 </tr>
 <tr>
 <td><code>entity_id</code></td>
@@ -2435,7 +2435,12 @@ $relativeTemporaryUrl = $asset-&gt;getTemporaryUrlRelative($expiration);
 <tr>
 <td><code>collection</code></td>
 <td>string</td>
-<td>Name of the collection to which the asset belongs (md5 hash of the class name)</td>
+<td>Configured collection key for the asset collection</td>
+</tr>
+<tr>
+<td><code>storage</code></td>
+<td>string</td>
+<td>Configured storage disk where the file is stored</td>
 </tr>
 <tr>
 <td><code>name</code></td>
@@ -2450,7 +2455,22 @@ $relativeTemporaryUrl = $asset-&gt;getTemporaryUrlRelative($expiration);
 <tr>
 <td><code>path</code></td>
 <td>string</td>
-<td>Path to the file on the server</td>
+<td>Storage-relative file path inside the configured disk</td>
+</tr>
+<tr>
+<td><code>local_path</code></td>
+<td>string|null</td>
+<td>Local filesystem path when the storage disk supports it, otherwise null</td>
+</tr>
+<tr>
+<td><code>path_dirname</code></td>
+<td>string</td>
+<td>Storage-relative directory path ending with <code>/</code></td>
+</tr>
+<tr>
+<td><code>relative_path</code></td>
+<td>string</td>
+<td>Storage-relative path normalized with a leading <code>/</code></td>
 </tr>
 <tr>
 <td><code>mime_type</code></td>
@@ -2500,24 +2520,24 @@ $relativeTemporaryUrl = $asset-&gt;getTemporaryUrlRelative($expiration);
 - <code>InvalidArgumentException</code>: If the extension cannot be determined.</p>
 <p><strong>Example:</strong>
 <pre class="highlight"><code class="language-php">$extension = $asset-&gt;getExtension(); // e.g., "jpg"</code></pre></p>
-<h3 id="getpathdirname">getPathDirname</h3>
-<pre class="highlight"><code class="language-php">protected function getPathDirname(): string</code></pre>
-<p>Gets the directory path of the file on the server.</p>
+<h3 id="path_dirname">path_dirname</h3>
+<pre class="highlight"><code class="language-php">$asset-&gt;path_dirname</code></pre>
+<p>Gets the storage-relative directory path of the file.</p>
 <p><strong>Returns:</strong>
 - The directory path as a string.</p>
 <p><strong>Throws:</strong>
 - <code>InvalidArgumentException</code>: If the path is not set.</p>
 <p><strong>Example:</strong>
-<pre class="highlight"><code class="language-php">$dirPath = $asset-&gt;getPathDirname(); // e.g., "/var/www/uploads/images/"</code></pre></p>
-<h3 id="getassetcollectiondefinitionclass">getAssetCollectionDefinitionClass</h3>
-<pre class="highlight"><code class="language-php">public function getAssetCollectionDefinitionClass(): ?string</code></pre>
+<pre class="highlight"><code class="language-php">$dirPath = $asset-&gt;path_dirname; // e.g., "images/"</code></pre></p>
+<h3 id="getcollectiondefinitionclass">getCollectionDefinitionClass</h3>
+<pre class="highlight"><code class="language-php">public function getCollectionDefinitionClass(): string</code></pre>
 <p>Gets the class name of the asset collection definition for this asset.</p>
 <p><strong>Returns:</strong>
-- The class name of the asset collection definition, or null if not set.</p>
+- The class name of the asset collection definition.</p>
 <p><strong>Throws:</strong>
 - <code>InvalidArgumentException</code>: If the collection class does not exist or does not implement AssetCollectionDefinitionInterface.</p>
 <p><strong>Example:</strong>
-<pre class="highlight"><code class="language-php">$collectionClass = $asset-&gt;getAssetCollectionDefinitionClass(); // e.g., "App\Collections\ImagesCollection"</code></pre></p>
+<pre class="highlight"><code class="language-php">$collectionClass = $asset-&gt;getCollectionDefinitionClass(); // e.g., "App\Collections\ImagesCollection"</code></pre></p>
 <h3 id="getassetcollectiondefinition">getAssetCollectionDefinition</h3>
 <pre class="highlight"><code class="language-php">public function getAssetCollectionDefinition(...$definitionArguments): ?AssetCollectionDefinitionInterface</code></pre>
 <p>Gets the asset collection definition for this asset.</p>
@@ -2536,15 +2556,15 @@ $relativeTemporaryUrl = $asset-&gt;getTemporaryUrlRelative($expiration);
 - The entity that this asset belongs to, or null if not set.</p>
 <p><strong>Example:</strong>
 <pre class="highlight"><code class="language-php">$entity = $asset-&gt;getSubjectEntity();</code></pre></p>
-<h3 id="getsubjectentityclassname">getSubjectEntityClassName</h3>
-<pre class="highlight"><code class="language-php">public function getSubjectEntityClassName(): ?string</code></pre>
+<h3 id="getsubjectentityclass">getSubjectEntityClass</h3>
+<pre class="highlight"><code class="language-php">public function getSubjectEntityClass(): string</code></pre>
 <p>Gets the class name of the subject entity which this asset belongs to.</p>
 <p><strong>Returns:</strong>
-- The class name of the subject entity, or null if not set.</p>
+- The class name of the subject entity.</p>
 <p><strong>Throws:</strong>
 - <code>InvalidArgumentException</code>: If the entity class does not exist or does not extend Entity.</p>
 <p><strong>Example:</strong>
-<pre class="highlight"><code class="language-php">$entityClass = $asset-&gt;getSubjectEntityClassName(); // e.g., "App\Models\User"</code></pre></p>
+<pre class="highlight"><code class="language-php">$entityClass = $asset-&gt;getSubjectEntityClass(); // e.g., "App\Models\User"</code></pre></p>
 <h3 id="getcustomproperty">getCustomProperty</h3>
 <pre class="highlight"><code class="language-php">public function getCustomProperty(string $propertyName): mixed</code></pre>
 <p>Gets a custom property value.</p>
@@ -2662,15 +2682,15 @@ try {
 - True if the asset was saved successfully, false otherwise.</p>
 <p><strong>Example:</strong>
 <pre class="highlight"><code class="language-php">$result = $asset-&gt;save();</code></pre></p>
-<h3 id="getrelativepath">getRelativePath</h3>
-<pre class="highlight"><code class="language-php">protected function getRelativePath(): string</code></pre>
-<p>Gets the relative path of the file in the storage.</p>
+<h3 id="relative_path">relative_path</h3>
+<pre class="highlight"><code class="language-php">$asset-&gt;relative_path</code></pre>
+<p>Gets the storage-relative path normalized with a leading <code>/</code>.</p>
 <p><strong>Returns:</strong>
 - The relative path as a string.</p>
 <p><strong>Throws:</strong>
 - <code>InvalidArgumentException</code>: If the relative path is not set.</p>
 <p><strong>Example:</strong>
-<pre class="highlight"><code class="language-php">$relativePath = $asset-&gt;getRelativePath(); // e.g., "/uploads/images/profile.jpg"</code></pre></p>
+<pre class="highlight"><code class="language-php">$relativePath = $asset-&gt;relative_path; // e.g., "/images/profile.jpg"</code></pre></p>
 <h3 id="download">download</h3>
 <pre class="highlight"><code class="language-php">public function download(?string $variantName = null): DownloadResponse</code></pre>
 <p>Creates a download response for the asset.</p>

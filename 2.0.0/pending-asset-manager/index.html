@@ -395,7 +395,7 @@
   <span class="md-ellipsis">
     
   
-    Upgrade to 2.0.0
+    Upgrade from 1.0.2 to 2.0.0
   
 
     
@@ -2202,15 +2202,15 @@ $user-&gt;addAssetFromPending($pendingId)
     -&gt;toAssetCollection(Photos::class);
 // File is automatically removed from pending storage</code></pre>
 <h3 id="2-check-for-expiration">2. Check for Expiration</h3>
-<pre class="highlight"><code class="language-php">// Good ✓
+<pre class="highlight"><code class="language-php">// Good
 $pending = $manager-&gt;fetchById($id);
 if (!$pending) {
     return response()-&gt;json(['error' =&gt; 'Expired'], 410);
 }
 
-// Bad ✗
+// Bad
 $pending = $manager-&gt;fetchById($id);
-$user-&gt;addAssetFromPending($pending)-&gt;save(); // May be null!</code></pre>
+$user-&gt;addAssetFromPending($pending)-&gt;toAssetCollection(Photos::class); // May be null!</code></pre>
 <h3 id="3-use-appropriate-ttl">3. Use Appropriate TTL</h3>
 <pre class="highlight"><code class="language-php">// Short-lived uploads (e.g., profile picture)
 $manager-&gt;store($pending, 1800); // 30 minutes

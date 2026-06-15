@@ -395,7 +395,7 @@
   <span class="md-ellipsis">
     
   
-    Upgrade to 2.0.0
+    Upgrade from 1.0.2 to 2.0.0
   
 
     
@@ -1597,8 +1597,8 @@
 <p>This method is called when an asset is added to the collection. You can use the provided <code>CreateAssetVariantsInterface</code> instance to create variants of the asset.</p>
 <h3 id="authorizableassetcollectiondefinitioninterface">AuthorizableAssetCollectionDefinitionInterface</h3>
 <p>The <code>AuthorizableAssetCollectionDefinitionInterface</code> extends <code>AssetCollectionDefinitionInterface</code> and makes the collection use protected visibility by default. It defines an additional method:</p>
-<pre class="highlight"><code class="language-php">public function checkAuthorization(array|Entity $entity, Asset $asset): bool;</code></pre>
-<p>Use this method from your own controller or service layer when you need runtime authorization before returning a file response. Default AssetConnect URLs are generated directly from the configured storage disk.</p>
+<pre class="highlight"><code class="language-php">public function checkAuthorization(Asset $asset): bool;</code></pre>
+<p>AssetConnect calls this method when protected assets are served through AssetConnect routes. Direct web-server links do not run this method, so protected storage roots should not be exposed with <code>public_url</code>, <code>asset-connect:storage-link</code>, or a web-server alias.</p>
 <h3 id="assetcollectionsetterinterface">AssetCollectionSetterInterface</h3>
 <p>The <code>AssetCollectionSetterInterface</code> provides methods for configuring asset collections. It's used in the <code>definition</code> method of <code>AssetCollectionDefinitionInterface</code>. It defines the following methods:</p>
 <pre class="highlight"><code class="language-php">public function allowedExtensions(AssetExtension|string ...$extensions): static;
@@ -1606,18 +1606,24 @@ public function allowedMimeTypes(AssetMimeType|string ...$mimeTypes): static;
 public function onlyKeepLatest(int $maximumNumberOfItemsInCollection): static;
 public function setMaxFileSize(float|int $maxFileSize): static;
 public function singleFileCollection(): static;
-public function setPathGenerator(PathGeneratorInterface $pathGenerator): static;</code></pre>
+public function setPathGenerator(PathGeneratorInterface $pathGenerator): static;
+public function setStorage(string $storage): static;</code></pre>
 <p>These methods allow you to:
 - Specify allowed file extensions
 - Specify allowed MIME types
 - Limit the number of items in the collection
 - Set the maximum file size
 - Make the collection hold only a single file
-- Set the path generator for the collection</p>
+- Set the path generator for the collection
+- Select a configured storage disk for the collection</p>
 <h2 id="createassetvariantsinterface">CreateAssetVariantsInterface</h2>
 <p>The <code>CreateAssetVariantsInterface</code> is implemented by classes that provide methods for creating asset variants. It's used in the <code>variants</code> method of <code>AssetVariantsInterface</code>. It defines the following method:</p>
-<pre class="highlight"><code class="language-php">public function assetVariant(string $name, Closure $closure): ?AssetVariant;</code></pre>
-<p>This method allows you to create a new asset variant with the given name and closure. The closure receives an <code>AssetVariant</code> and an <code>Asset</code> and is used to define how to process the variant.</p>
+<pre class="highlight"><code class="language-php">public function assetVariant(
+    string $name,
+    Closure $closure,
+    AssetExtension|string|null $extension = null,
+): ?AssetVariant;</code></pre>
+<p>This method allows you to create a new asset variant with the given name and closure. The closure receives an <code>AssetVariant</code> and an <code>Asset</code> and is used to define how to process the variant. Pass <code>$extension</code> when a variant should be written with a different extension than the original file.</p>
 <h2 id="assetvariants-class">AssetVariants Class</h2>
 <p>The <code>AssetVariants</code> class implements the <code>CreateAssetVariantsInterface</code> and provides methods for creating asset variants. It has a property <code>onQueue</code> that can be set to true to indicate that variants should be processed on a queue:</p>
 <pre class="highlight"><code class="language-php">public bool $onQueue = false;</code></pre>
@@ -1652,11 +1658,13 @@ public function setPathGenerator(PathGeneratorInterface $pathGenerator): static;
             -&gt;setPathGenerator(new CustomPathGenerator());
     }
 
-    public function checkAuthorization(array|Entity $entity, Asset $asset): bool
+    public function checkAuthorization(Asset $asset): bool
     {
+        $entity = $asset-&gt;getSubjectEntity();
+
         // Check if the user is authorized to access this asset
         // For example, check if the user owns the asset
-        return $entity-&gt;id === $asset-&gt;entity_id;
+        return $entity !== null &amp;&amp; $entity-&gt;id === $asset-&gt;entity_id;
     }
 
     public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void

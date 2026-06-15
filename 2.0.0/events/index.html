@@ -395,7 +395,7 @@
   <span class="md-ellipsis">
     
   
-    Upgrade to 2.0.0
+    Upgrade from 1.0.2 to 2.0.0
   
 
     
@@ -1237,10 +1237,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#generating-additional-variants" class="md-nav__link">
+  <a href="#recording-variant-metadata" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Generating Additional Variants
+        Recording Variant Metadata
       
     </span>
   </a>
@@ -1496,10 +1496,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#generating-additional-variants" class="md-nav__link">
+  <a href="#recording-variant-metadata" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Generating Additional Variants
+        Recording Variant Metadata
       
     </span>
   </a>
@@ -1577,7 +1577,7 @@
 </tr>
 <tr>
 <td><code>variant.created</code></td>
-<td>Fired when a variant is created</td>
+<td>Fired when a variant metadata entry is created</td>
 <td><code>VariantCreated</code></td>
 </tr>
 </tbody>
@@ -1713,27 +1713,15 @@ Events::on('asset.created', function (AssetCreated $event) {
     $emailService-&gt;setMessage('A new asset has been added to your account: ' . $asset-&gt;name);
     $emailService-&gt;send();
 });</code></pre>
-<h3 id="generating-additional-variants">Generating Additional Variants</h3>
-<pre class="highlight"><code class="language-php">// Generate additional variants when a variant is created
+<h3 id="recording-variant-metadata">Recording Variant Metadata</h3>
+<pre class="highlight"><code class="language-php">// Store backend metadata when a variant is registered
 Events::on('variant.created', function (VariantCreated $event) {
     $asset = $event-&gt;getAsset();
     $variant = $event-&gt;getVariant();
-    $variantName = $variant-&gt;name;
 
-    // Only process certain variants
-    if ($variantName === 'thumbnail' &amp;&amp; $asset-&gt;isImage()) {
-        // Generate additional variants based on the thumbnail
-        $imageService = service('image');
-        $thumbnailPath = $asset-&gt;getVariantPath('thumbnail');
-
-        // Generate a smaller version for mobile
-        $imageService-&gt;withFile($thumbnailPath)
-            -&gt;resize(100, 100, true)
-            -&gt;save($asset-&gt;getPathDirname() . 'mobile_' . $asset-&gt;file_name);
-
-        // Add the new variant to the asset
-        $asset-&gt;addVariant('mobile', 'mobile_' . $asset-&gt;file_name);
-        $asset-&gt;save();
+    // The variant file may still be processed later, especially when variants run on a queue.
+    if ($variant-&gt;name === 'thumbnail' &amp;&amp; $asset-&gt;isImage()) {
+        $asset-&gt;setInternalProperty('thumbnail_variant_path', $variant-&gt;path);
     }
 });</code></pre>
 <h2 id="conclusion">Conclusion</h2>

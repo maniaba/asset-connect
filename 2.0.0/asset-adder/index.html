@@ -395,7 +395,7 @@
   <span class="md-ellipsis">
     
   
-    Upgrade to 2.0.0
+    Upgrade from 1.0.2 to 2.0.0
   
 
     
@@ -1914,7 +1914,7 @@ $asset = $user-&gt;addAsset('/path/to/file.jpg')
 <h3 id="working-with-uploaded-files">Working with Uploaded Files</h3>
 <p>For handling uploaded files from HTTP requests, use the <code>addAssetFromRequest</code> method described in the next section. This method provides a more convenient and robust way to handle file uploads directly from requests.</p>
 <h3 id="using-addassetfromrequest">Using addAssetFromRequest</h3>
-<p>The <code>addAssetFromRequest</code> method provides a convenient way to add assets directly from HTTP request files. This method handles the validation and processing of uploaded files automatically.</p>
+<p>The <code>addAssetFromRequest</code> method provides a convenient way to add assets directly from valid HTTP request files. Use <code>AssetConnectValidator</code> when you need to validate request files against collection rules before storing them.</p>
 <pre class="highlight"><code class="language-php">public function addAssetFromRequest(string ...$keyNames): AssetAdderMultiple</code></pre>
 <p><strong>Parameters:</strong>
 - <code>$keyNames</code>: One or more strings representing the names of the file input fields in the request. At least one key name must be provided.</p>

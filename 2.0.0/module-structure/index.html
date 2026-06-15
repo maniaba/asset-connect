@@ -393,7 +393,7 @@
   <span class="md-ellipsis">
     
   
-    Upgrade to 2.0.0
+    Upgrade from 1.0.2 to 2.0.0
   
 
     
@@ -1260,6 +1260,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Commands/
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#config" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1440,6 +1451,17 @@
     <span class="md-ellipsis">
       
         UrlGenerator/
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#upgrade" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Upgrade/
       
     </span>
   </a>
@@ -1564,6 +1586,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Commands/
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#config" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1751,6 +1784,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#upgrade" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Upgrade/
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#utils" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1832,6 +1876,18 @@
 <td>Value object holding public custom properties, backend internal properties, and variant references.</td>
 </tr>
 <tr>
+<td><code>AssetPersistenceManager.php</code></td>
+<td>Persists uploaded files to the configured storage disk, writes database rows, queues variant processing, and cleans up failed writes.</td>
+</tr>
+<tr>
+<td><code>Interfaces/AssetAdderInterface.php</code></td>
+<td>Contract for fluent asset adders. Extends <code>AssetDefinitionInterface</code> and exposes <code>toAssetCollection()</code> and <code>metadata()</code>.</td>
+</tr>
+<tr>
+<td><code>Interfaces/AssetCollectionGetterInterface.php</code></td>
+<td>Read-only collection configuration contract passed to path generators.</td>
+</tr>
+<tr>
 <td><code>Interfaces/AssetCollectionDefinitionInterface.php</code></td>
 <td>Base interface every collection class must implement. Requires <code>definition(AssetCollectionSetterInterface)</code>.</td>
 </tr>
@@ -1840,8 +1896,36 @@
 <td>Fluent setter interface for collection configuration: <code>allowedExtensions()</code>, <code>allowedMimeTypes()</code>, <code>setMaxFileSize()</code>, <code>singleFileCollection()</code>, <code>onlyKeepLatest()</code>, <code>setPathGenerator()</code>, <code>setStorage()</code>.</td>
 </tr>
 <tr>
+<td><code>Interfaces/AssetDefinitionInterface.php</code></td>
+<td>Shared fluent contract for asset name, file name, order, preserve-original flag, and custom properties.</td>
+</tr>
+<tr>
 <td><code>Interfaces/AuthorizableAssetCollectionDefinitionInterface.php</code></td>
-<td>Extends the base definition interface; adds <code>checkAuthorization(Entity, Asset): bool</code> for private collections.</td>
+<td>Extends the base definition interface; adds <code>checkAuthorization(Asset): bool</code> for protected collections.</td>
+</tr>
+<tr>
+<td><code>Properties/BaseProperty.php</code></td>
+<td>Base wrapper for namespaced metadata properties.</td>
+</tr>
+<tr>
+<td><code>Properties/UserCustomProperty.php</code></td>
+<td>User-visible custom asset metadata stored under <code>user_custom</code>.</td>
+</tr>
+<tr>
+<td><code>Properties/InternalProperty.php</code></td>
+<td>Backend-only metadata stored under <code>internal</code>.</td>
+</tr>
+<tr>
+<td><code>Properties/AssetVariantProperty.php</code></td>
+<td>Metadata collection for registered asset variants.</td>
+</tr>
+<tr>
+<td><code>Traits/AssetFileInfoTrait.php</code></td>
+<td>File-name, MIME type, extension, and size helper methods.</td>
+</tr>
+<tr>
+<td><code>Traits/AssetMimeTypeTrait.php</code></td>
+<td>Type checks for images, videos, documents, audio, and related MIME groups.</td>
 </tr>
 </tbody>
 </table>
@@ -1895,15 +1979,15 @@
 </tr>
 <tr>
 <td><code>AssetVariants.php</code></td>
-<td>Implements <code>CreateAssetVariantsInterface</code>. Collects variant closures and the <code>onQueue</code> flag.</td>
+<td>Implements <code>CreateAssetVariantsInterface</code>. Registers variant metadata, triggers <code>variant.created</code>, and stores the <code>onQueue</code> flag.</td>
 </tr>
 <tr>
 <td><code>AssetVariantsProcess.php</code></td>
-<td>Executes the variant closures for a given asset.</td>
+<td>Queues variant processing or runs it inline for a given asset and collection definition.</td>
 </tr>
 <tr>
 <td><code>AssetVariantsProcessor.php</code></td>
-<td>Orchestrates variant processing; dispatches to queue or runs inline.</td>
+<td>Executes existing variant closures and updates variant metadata after processing.</td>
 </tr>
 <tr>
 <td><code>Interfaces/AssetVariantsInterface.php</code></td>
@@ -1911,7 +1995,31 @@
 </tr>
 <tr>
 <td><code>Interfaces/CreateAssetVariantsInterface.php</code></td>
-<td>Interface passed to <code>variants()</code>; exposes <code>assetVariant(name, closure)</code> and <code>onQueue</code>.</td>
+<td>Interface passed to <code>variants()</code>; exposes <code>assetVariant(name, closure, extension = null)</code> and <code>onQueue</code>.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="commands"><code>Commands/</code></h2>
+<p><code>Maniaba\AssetConnect\Commands</code></p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MigrateLegacyAssetPaths.php</code></td>
+<td><code>asset-connect:migrate-paths</code></td>
+<td>Assigns storage disk names to legacy rows and normalizes supported legacy filesystem paths.</td>
+</tr>
+<tr>
+<td><code>StorageLink.php</code></td>
+<td><code>asset-connect:storage-link</code></td>
+<td>Creates public links for local storage disks that define <code>public_url</code>.</td>
 </tr>
 </tbody>
 </table>
@@ -1936,7 +2044,7 @@
 </tr>
 <tr>
 <td><code>Routes.php</code></td>
-<td>Defines the secure asset-access route.</td>
+<td>Registers AssetConnect routes through the configured URL generator.</td>
 </tr>
 <tr>
 <td><code>Services.php</code></td>
@@ -1968,7 +2076,20 @@
 <hr />
 <h2 id="controllers"><code>Controllers/</code></h2>
 <p><code>Maniaba\AssetConnect\Controllers</code></p>
-<p>Contains the secure-download controller that gates access to non-public assets through <code>AuthorizableAssetCollectionDefinitionInterface::checkAuthorization()</code>.</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AssetConnectController.php</code></td>
+<td>Serves protected and temporary asset routes by delegating authorization and response creation to <code>AssetAccessService</code>.</td>
+</tr>
+</tbody>
+</table>
 <hr />
 <h2 id="database"><code>Database/</code></h2>
 <p><code>Maniaba\AssetConnect\Database</code></p>
@@ -1987,6 +2108,10 @@
 <tr>
 <td><code>Migrations/2025-06-18-180653_CreateAssetsTable.php</code></td>
 <td>Creates the <code>assets</code> table with all required columns and indexes. Run via <code>php spark migrate --namespace=Maniaba\\AssetConnect</code>.</td>
+</tr>
+<tr>
+<td><code>Migrations/2026-06-12-000000_AddStorageToAssetsTable.php</code></td>
+<td>Adds the <code>storage</code> disk column and indexes needed by the 2.0.0 storage model.</td>
 </tr>
 </tbody>
 </table>
@@ -2011,7 +2136,7 @@
 </tr>
 <tr>
 <td><code>AssetVisibility.php</code></td>
-<td>Enum for <code>public</code> vs <code>private</code> visibility.</td>
+<td>Enum for <code>public</code> vs <code>protected</code> storage visibility.</td>
 </tr>
 </tbody>
 </table>
@@ -2057,7 +2182,7 @@
 <hr />
 <h2 id="exceptions"><code>Exceptions/</code></h2>
 <p><code>Maniaba\AssetConnect\Exceptions</code></p>
-<p>Domain-specific exceptions: <code>AssetException</code>, <code>FileException</code>, <code>InvalidArgumentException</code>, <code>PendingAssetException</code>.</p>
+<p>Domain-specific exceptions: <code>AssetException</code>, <code>AuthorizationException</code>, <code>FileException</code>, <code>FileVariantException</code>, <code>InvalidArgumentException</code>, <code>PageException</code>, <code>PendingAssetException</code>.</p>
 <hr />
 <h2 id="jobs"><code>Jobs/</code></h2>
 <p><code>Maniaba\AssetConnect\Jobs</code></p>
@@ -2065,11 +2190,28 @@
 <hr />
 <h2 id="language"><code>Language/</code></h2>
 <p><code>Maniaba\AssetConnect\Language</code></p>
-<p>Validation and error message translations for 30+ locales (Arabic, Bulgarian, Bengali, Bosnian, Chinese (TW), Czech, German, Greek, English, Farsi, French, Gujarati, Indonesian, Italian, Japanese, Korean, Latvian, Malayalam, Dutch, Norwegian, Polish, Brazilian Portuguese, Portuguese, Romanian, Russian, Sinhala, Serbian, Swedish, Thai, Turkish, Ukrainian, Vietnamese).</p>
+<p>Validation and error message translations for 39 locales (Arabic, Bulgarian, Bengali, Bosnian, Chinese Simplified, Chinese Traditional, Czech, German, Greek, English, Spanish, Farsi, French, Gujarati, Hindi, Hungarian, Indonesian, Italian, Japanese, Korean, Lithuanian, Latvian, Malayalam, Dutch, Norwegian, Polish, Brazilian Portuguese, Portuguese, Romanian, Russian, Sinhala, Slovak, Serbian, Swedish, Tamil, Thai, Turkish, Ukrainian, Vietnamese).</p>
 <hr />
 <h2 id="models"><code>Models/</code></h2>
 <p><code>Maniaba\AssetConnect\Models</code></p>
-<p><code>AssetModel</code> – CI4 <code>Model</code> subclass with soft-delete enabled, scoped to the configured <code>$DBGroup</code> and table name.</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>BaseModel.php</code></td>
+<td>Base CI4 model that reads table names and <code>$DBGroup</code> from <code>Config\Asset</code>.</td>
+</tr>
+<tr>
+<td><code>AssetModel.php</code></td>
+<td>CI4 <code>Model</code> subclass with soft-delete enabled, scoped to the configured <code>$DBGroup</code> and table name.</td>
+</tr>
+</tbody>
+</table>
 <hr />
 <h2 id="pathgenerator"><code>PathGenerator/</code></h2>
 <p><code>Maniaba\AssetConnect\PathGenerator</code></p>
@@ -2082,7 +2224,7 @@
 </thead>
 <tbody>
 <tr>
-<td><code>PathGeneratorInterface.php</code></td>
+<td><code>Interfaces/PathGeneratorInterface.php</code></td>
 <td>Contract for generating storage-relative directories for original assets and variants.</td>
 </tr>
 <tr>
@@ -2131,12 +2273,28 @@
 <td><code>Interfaces/PendingStorageInterface.php</code></td>
 <td>Contract for custom storage backends.</td>
 </tr>
+<tr>
+<td><code>Interfaces/PendingSecurityTokenInterface.php</code></td>
+<td>Contract for pending-asset token generation, retrieval, validation, and deletion.</td>
+</tr>
+<tr>
+<td><code>PendingSecurityToken/AbstractPendingSecurityToken.php</code></td>
+<td>Base implementation for token length, TTL validation, random token generation, and comparison.</td>
+</tr>
+<tr>
+<td><code>PendingSecurityToken/SessionPendingSecurityToken.php</code></td>
+<td>Default session-tempdata token strategy.</td>
+</tr>
+<tr>
+<td><code>PendingSecurityToken/CookiePendingSecurityToken.php</code></td>
+<td>Cookie-backed token strategy.</td>
+</tr>
 </tbody>
 </table>
 <hr />
 <h2 id="repositories"><code>Repositories/</code></h2>
 <p><code>Maniaba\AssetConnect\Repositories</code></p>
-<p><code>AssetRepository</code> / <code>AssetRepositoryInterface</code> – data-access abstraction over <code>AssetModel</code>; used internally by <code>AssetConnect</code>.</p>
+<p><code>AssetRepository</code> / <code>Interfaces/AssetRepositoryInterface</code> – data-access abstraction over <code>AssetModel</code>; used internally by <code>AssetConnect</code>.</p>
 <hr />
 <h2 id="storage"><code>Storage/</code></h2>
 <p><code>Maniaba\AssetConnect\Storage</code></p>
@@ -2169,6 +2327,10 @@
 <td>Enum for storage link operation result statuses.</td>
 </tr>
 <tr>
+<td><code>TemporaryStorageFile.php</code></td>
+<td>Streams a stored asset or variant into a local temporary file for queue-safe remote processing.</td>
+</tr>
+<tr>
 <td><code>Interfaces/StorageDiskInterface.php</code></td>
 <td>Contract implemented by storage disks.</td>
 </tr>
@@ -2177,7 +2339,7 @@
 <hr />
 <h2 id="services"><code>Services/</code></h2>
 <p><code>Maniaba\AssetConnect\Services</code></p>
-<p><code>AssetAccessService</code> / <code>AssetAccessServiceInterface</code> – optional service for applications that still serve files through a controller and need collection authorization checks.</p>
+<p><code>AssetAccessService</code> / <code>Interfaces/AssetAccessServiceInterface</code> – optional service for applications that still serve files through a controller and need collection authorization checks.</p>
 <hr />
 <h2 id="traits"><code>Traits/</code></h2>
 <p><code>Maniaba\AssetConnect\Traits</code></p>
@@ -2211,7 +2373,7 @@
 </thead>
 <tbody>
 <tr>
-<td><code>UrlGeneratorInterface.php</code></td>
+<td><code>Interfaces/UrlGeneratorInterface.php</code></td>
 <td>Contract: <code>getUrl()</code>, <code>getUrlRelative()</code>, <code>getTemporaryUrl()</code>, <code>getTemporaryUrlRelative()</code>.</td>
 </tr>
 <tr>
@@ -2233,6 +2395,35 @@
 </tbody>
 </table>
 <hr />
+<h2 id="upgrade"><code>Upgrade/</code></h2>
+<p><code>Maniaba\AssetConnect\Upgrade</code></p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>LegacyAssetPathMigrationOptions.php</code></td>
+<td>Options value object for legacy path migration runs.</td>
+</tr>
+<tr>
+<td><code>LegacyAssetPathMigrationProgress.php</code></td>
+<td>Per-row progress value object emitted by the migrator.</td>
+</tr>
+<tr>
+<td><code>LegacyAssetPathMigrationSummary.php</code></td>
+<td>Summary counts for migrated, skipped, failed, and metadata-cleanup rows.</td>
+</tr>
+<tr>
+<td><code>LegacyAssetPathMigrator.php</code></td>
+<td>Converts supported 1.x asset path rows into the 2.0.0 storage disk + relative path model.</td>
+</tr>
+</tbody>
+</table>
+<hr />
 <h2 id="utils"><code>Utils/</code></h2>
 <p><code>Maniaba\AssetConnect\Utils</code></p>
 <table>
@@ -2245,7 +2436,7 @@
 <tbody>
 <tr>
 <td><code>Format.php</code></td>
-<td><code>humanReadableSize(int $bytes, int $precision): string</code></td>
+<td><code>formatBytesHumanReadable(int $bytes, int $precision): string</code></td>
 </tr>
 <tr>
 <td><code>PhpIni.php</code></td>
@@ -2266,7 +2457,7 @@
 <tbody>
 <tr>
 <td><code>AssetConnectValidator.php</code></td>
-<td>High-level validator; maps field names → collection definitions → CI4 rule strings. Methods: <code>setFieldCollectionDefinition()</code>, <code>validate()</code>, <code>validateFields()</code>, <code>validateDefinedFields()</code>, <code>validateFieldsFromRequest()</code>, <code>validateDefinedFieldsFromRequest()</code>, <code>getRules()</code>, <code>getErrors()</code>.</td>
+<td>High-level validator; maps field names → collection definitions → CI4 validation rules. Methods: <code>setFieldCollectionDefinition()</code>, <code>validate()</code>, <code>validateFields()</code>, <code>validateDefinedFields()</code>, <code>validateFieldsFromRequest()</code>, <code>validateRequest()</code>, <code>getRules()</code>, <code>getErrors()</code>.</td>
 </tr>
 <tr>
 <td><code>ValidationRuleCollector.php</code></td>

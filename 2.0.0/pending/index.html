@@ -395,7 +395,7 @@
   <span class="md-ellipsis">
     
   
-    Upgrade to 2.0.0
+    Upgrade from 1.0.2 to 2.0.0
   
 
     
@@ -2708,7 +2708,6 @@ if (!empty($result['avatar'])) {
     $pending = $result['avatar'][0]; // Get first (and only) file
 
     $pending-&gt;usingName('Profile Photo')
-        -&gt;toAssetCollection(ProfilePhotos::class)
         -&gt;store();
 
     return $this-&gt;response-&gt;setJSON(['pending_id' =&gt; $pending-&gt;id]);

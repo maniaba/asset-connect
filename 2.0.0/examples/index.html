@@ -395,7 +395,7 @@
   <span class="md-ellipsis">
     
   
-    Upgrade to 2.0.0
+    Upgrade from 1.0.2 to 2.0.0
   
 
     
@@ -1929,13 +1929,13 @@ $properties = $asset-&gt;getCustomProperties();
 $title = $asset-&gt;getCustomProperty('title');
 
 // Get the file name
-$fileName = $asset-&gt;getFileName();
+$fileName = $asset-&gt;file_name;
 
 // Get the mime type
-$mimeType = $asset-&gt;getMimeType();
+$mimeType = $asset-&gt;mime_type;
 
 // Get the size in bytes
-$size = $asset-&gt;getSize();
+$size = $asset-&gt;size;
 
 // Get the human-readable size
 $readableSize = $asset-&gt;getHumanReadableSize();
@@ -2000,11 +2000,6 @@ class ImagesCollection implements AssetCollectionDefinitionInterface, AssetVaria
             -&gt;setMaxFileSize(10 * 1024 * 1024); // 10MB
     }
 
-    public function checkAuthorization(array|Entity $entity, Asset $asset): bool
-    {
-        return true;
-    }
-
     public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void
     {
         // No variants needed as we'll create thumbnails separately
@@ -2031,11 +2026,6 @@ class ThumbnailsCollection implements AssetCollectionDefinitionInterface, AssetV
                 AssetMimeType::IMAGE_WEBP
             )
             -&gt;setMaxFileSize(2 * 1024 * 1024); // 2MB
-    }
-
-    public function checkAuthorization(array|Entity $entity, Asset $asset): bool
-    {
-        return true;
     }
 
     public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void
