@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Maniaba\AssetConnect\PathGenerator;
 
 use CodeIgniter\I18n\Time;
+use InvalidArgumentException;
 
 final class PathGeneratorHelper
 {
@@ -21,6 +22,20 @@ final class PathGeneratorHelper
         return hash('sha256', $uniqueId);
     }
 
+    public function getRandomId(int $length = 20): string
+    {
+        if ($length < 1) {
+            throw new InvalidArgumentException('Random ID length must be greater than zero.');
+        }
+
+        return substr(bin2hex(random_bytes(intdiv($length + 1, 2))), 0, $length);
+    }
+
+    public function getDate(): string
+    {
+        return $this->getDateTimeFormat('Y-m-d');
+    }
+
     /**
      * Generates a date-time string formatted as a folder name.
      *
@@ -28,12 +43,12 @@ final class PathGeneratorHelper
      */
     public function getDateTime(): string
     {
-        return $this->getPathString($this->getDateTimeFormat('Y-m-d'), $this->getDateTimeFormat('His.U'));
+        return $this->getPathString($this->getDateTimeFormat('Y-m-d'), $this->getDateTimeFormat('His.u'));
     }
 
     public function getTime(): string
     {
-        return $this->getDateTimeFormat('His.U');
+        return $this->getDateTimeFormat('His.u');
     }
 
     private function getDateTimeFormat(string $format): string

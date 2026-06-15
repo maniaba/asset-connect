@@ -3,7 +3,7 @@
 AssetConnect stores files through named storage disks. The database stores only:
 
 - `storage`: the configured disk name, for example `public`, `protected`, or `s3`
-- `path`: the relative path inside that disk, for example `assets/2026-06-11/101530.123456/photo.jpg`
+- `path`: the relative path inside that disk, for example `2026-06-11/97847659691b3cae8857/photo.jpg`
 
 Physical root paths are not stored in the database. This keeps assets portable when the application directory changes, because only the storage configuration needs to point to the new root.
 

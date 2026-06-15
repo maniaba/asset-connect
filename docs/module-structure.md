@@ -152,7 +152,7 @@ Validation and error message translations for 30+ locales (Arabic, Bulgarian, Be
 | File | Description |
 |---|---|
 | `PathGeneratorInterface.php` | Contract for generating storage-relative directories for original assets and variants. |
-| `DefaultPathGenerator.php` | Generates `assets/{date}/{time}/` relative storage paths. |
+| `DefaultPathGenerator.php` | Generates `{date}/{random-id}/` relative storage paths. |
 | `PathGenerator.php` | Resolves and delegates to the correct generator, normalizing path separators for storage keys. |
 | `PathGeneratorFactory.php` | Builds generator instances from config or collection definition. |
 | `PathGeneratorHelper.php` | Shared path utilities. |

@@ -18,10 +18,9 @@ final class CustomPathGenerator implements PathGeneratorInterface
         AssetCollectionGetterInterface $collection,
     ): string {
         return $generatorHelper->getPathString(
-            'assets',
-            $generatorHelper->getDateTime(),
-            $generatorHelper->getUniqueId(),
-        );
+            $generatorHelper->getDate(),
+            $generatorHelper->getRandomId(),
+        ) . '/';
     }
 
     public function getPath(
@@ -50,8 +49,8 @@ final class CustomPathGenerator implements PathGeneratorInterface
 This produces relative paths such as:
 
 ```text
-assets/2026-06-11/101530.123456/6649d3/photo.jpg
-assets/2026-06-11/101530.123456/6649d3/variants/photo-thumbnail.jpg
+2026-06-11/97847659691b3cae8857/photo.jpg
+2026-06-11/97847659691b3cae8857/variants/photo-thumbnail.jpg
 ```
 
 The database stores the relative path together with the selected storage disk name. The disk configuration decides where the file physically lives.
@@ -98,19 +97,31 @@ The `PathGeneratorHelper` class provides methods for generating unique storage-r
    $uniqueId = $generatorHelper->getUniqueId();
    ```
 
-2. `getDateTime()`: Generates a date-time folder string.
+2. `getRandomId(int $length = 20)`: Generates a random hex ID suitable for short unique path segments.
+
+   ```php
+   $randomId = $generatorHelper->getRandomId();
+   ```
+
+3. `getDate()`: Gets the current date formatted as a folder name.
+
+   ```php
+   $dateFolder = $generatorHelper->getDate();
+   ```
+
+4. `getDateTime()`: Generates a date-time folder string.
 
    ```php
    $dateTimeFolder = $generatorHelper->getDateTime();
    ```
 
-3. `getTime()`: Gets the current time formatted as a string.
+5. `getTime()`: Gets the current time formatted as a string.
 
    ```php
    $timeString = $generatorHelper->getTime();
    ```
 
-4. `getPathString(string ...$segments)`: Joins path segments.
+6. `getPathString(string ...$segments)`: Joins path segments.
 
    ```php
    $path = $generatorHelper->getPathString('folder1', 'folder2', 'folder3');
@@ -132,10 +143,10 @@ The `AssetCollectionGetterInterface` is passed to path generator methods and pro
 
 Each stored asset should receive a unique relative path. This prevents uploads with the same file name from overwriting one another.
 
-Use `getUniqueId()` and `getDateTime()` to generate collision-resistant paths. A practical structure is:
+Use `getRandomId()` and `getDate()` to generate readable collision-resistant paths. A practical structure is:
 
 ```text
-assets/{date}/{time-or-id}/{file-name}
+{date}/{random-id}/{file-name}
 ```
 
 ## Directory Security

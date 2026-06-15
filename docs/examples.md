@@ -46,7 +46,7 @@ $model->filterAssets(function(AssetModel $model) {
 $model->filterAssets(function(AssetModel $model) {
     $model
         ->filterByStorage('public')
-        ->filterByPath('assets/2026-06-11/photo.jpg');
+        ->filterByPath('2026-06-11/97847659691b3cae8857/photo.jpg');
 });
 
 // Find assets with a specific order

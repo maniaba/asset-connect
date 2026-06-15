@@ -10,6 +10,8 @@ use Override;
 
 final class DefaultPathGenerator implements PathGeneratorInterface
 {
+    private const int UNIQUE_DIRECTORY_LENGTH = 20;
+
     private string $path;
     private string $fileRelativePath;
 
@@ -19,7 +21,10 @@ final class DefaultPathGenerator implements PathGeneratorInterface
     #[Override]
     public function getFileRelativePath(PathGeneratorHelper $generatorHelper, AssetCollectionGetterInterface $collection): string
     {
-        return $this->fileRelativePath ?? $this->fileRelativePath = 'assets/' . $generatorHelper->getDateTime() . '/';
+        return $this->fileRelativePath ?? $this->fileRelativePath = $generatorHelper->getPathString(
+            $generatorHelper->getDate(),
+            $generatorHelper->getRandomId(self::UNIQUE_DIRECTORY_LENGTH),
+        ) . '/';
     }
 
     /**
