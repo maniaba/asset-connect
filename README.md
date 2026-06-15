@@ -11,9 +11,21 @@
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
 AssetConnect is a file management library for CodeIgniter 4 that allows you to associate files with any entity in your application.
-It provides a robust, flexible solution for handling file uploads, storage, and retrieval with powerful features like collections, custom properties, and secure access control.
+It provides a robust, flexible solution for handling file uploads, storage, retrieval, variants, public custom metadata, backend-only internal metadata, and secure access control.
 
 Storage is backed by named Flysystem disks. Asset records store the disk name and relative storage path, not absolute filesystem paths, so moving the application directory does not invalidate stored assets.
+
+## Features
+
+- Associate files with any CodeIgniter entity
+- Organize files into typed asset collections
+- Store files on named Flysystem disks, including local, S3-compatible, FTP, SFTP, Google Cloud Storage, Azure Blob Storage, WebDAV, memory, or custom adapters
+- Generate public URLs from disk `public_url` configuration or serve protected assets through AssetConnect routes
+- Generate variants inline or through CodeIgniter Queue
+- Move existing assets between storage disks with `Asset::transferToStorage()`
+- Process remote files through `copyToTemporaryFile()` and `withTemporaryFile()` when `local_path` is not available
+- Keep public custom properties separate from backend-only internal properties
+- Use pending assets for multi-step upload confirmation flows
 
 ## Requirements
 
@@ -21,6 +33,26 @@ Storage is backed by named Flysystem disks. Asset records store the disk name an
 - CodeIgniter 4.6 or higher
 - CodeIgniter Queue
 - Flysystem 3
+
+## Installation
+
+Install the package:
+
+```bash
+composer require maniaba/asset-connect
+```
+
+Run the package migrations:
+
+```bash
+php spark migrate --namespace=Maniaba\\AssetConnect
+```
+
+If you use the default local public disk, expose it from `public/`:
+
+```bash
+php spark asset-connect:storage-link
+```
 
 ## Example Usage
 
@@ -31,23 +63,75 @@ $asset = $user->addAsset('/path/to/file.jpg')
         'title' => 'Profile Picture',
         'description' => 'User profile picture'
     ])
-    ->toAssetCollection();
+    ->toAssetCollection(ImagesCollection::class);
 
 // Get all assets for a user
 $assets = $user->getAssets();
 
+// Get assets from a specific collection
+$images = $user->getAssets(ImagesCollection::class);
+
 // Get the URL to an asset
-$url = $user->getFirstAsset()->getUrl();
+$url = $user->getFirstAsset(ImagesCollection::class)->getUrl();
 
 // Delete assets from a specific collection
 $user->deleteAssets(ImagesCollection::class);
 ```
 
+## Storage Quick Start
+
+AssetConnect stores only `storage` and a storage-relative `path` in the database. Configure physical roots, visibility, and public URL prefixes in `Config\Asset`:
+
+```php
+public string $defaultPublicStorage = 'public';
+public string $defaultProtectedStorage = 'protected';
+
+public array $storages = [
+    'public' => [
+        'driver'     => 'local',
+        'root'       => WRITEPATH . 'asset-connect/public',
+        'public_url' => 'assets/storage',
+        'visibility' => 'public',
+    ],
+    'protected' => [
+        'driver'     => 'local',
+        'root'       => WRITEPATH . 'asset-connect/protected',
+        'visibility' => 'protected',
+    ],
+];
+```
+
+Remote disks can be added through Flysystem adapters and driver-specific setup methods such as `setupStorageAwsS3()`. Public remote disks should define an HTTP `public_url`; protected disks are served through AssetConnect routes and authorization.
+
+For remote disks, `local_path` can be `null`. Use temporary-file helpers for processors that require a local filesystem path:
+
+```php
+$asset->withTemporaryFile(static function (string $source): void {
+    service('image')
+        ->withFile($source)
+        ->resize(1200, 900, true)
+        ->save(WRITEPATH . 'cache/processed.jpg');
+});
+```
+
+Move an existing asset and its variants to another configured disk:
+
+```php
+$asset->transferToStorage('protected');
+$asset->transferToStorage('s3_public', deleteSource: false);
+```
+
+## Upgrade From 1.0.2 To 2.0.0
+
+Version 2.0.0 changes storage from filesystem-root paths to named storage disks.
+
+Read the full guide before migrating production data: [Upgrade from 1.0.2 to 2.0.0](docs/upgrade-2.0.md).
+
 ## Documentation
 
 Comprehensive documentation is available at [https://maniaba.github.io/asset-connect/](https://maniaba.github.io/asset-connect/).
 
-Versioned documentation is published with `mike`. The Docs workflow validates docs on pull requests, publishes every push to `develop` as the `develop` docs version, and publishes release documentation from release tags such as `v1.1.0`. Stable releases move the `latest` alias and default redirect to the released docs version.
+Versioned documentation is published with `mike`. The Docs workflow validates docs on pull requests, publishes every push to `develop` as the `develop` docs version, and publishes release documentation from release tags such as `v2.0.0`. Stable releases move the `latest` alias and default redirect to the released docs version.
 
 For local checks and manual publishing:
 
@@ -55,7 +139,7 @@ For local checks and manual publishing:
 pip install -r docs/requirements.txt
 mkdocs build --strict
 mike deploy --push develop
-mike deploy --push --update-aliases 1.1.0 latest
+mike deploy --push --update-aliases 2.0.0 latest
 mike set-default --push latest
 ```
 
