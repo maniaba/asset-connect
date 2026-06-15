@@ -282,5 +282,5 @@ Two-step upload system – upload first, attach to entity later.
 
 | File | Description |
 |---|---|
-| `AssetConnectValidator.php` | High-level validator; maps field names → collection definitions → CI4 rule strings. Methods: `setFieldCollectionDefinition()`, `validate()`, `validateFields()`, `validateDefinedFields()`, `validateFieldsFromRequest()`, `validateDefinedFieldsFromRequest()`, `getRules()`, `getErrors()`. |
+| `AssetConnectValidator.php` | High-level validator; maps field names → collection definitions → CI4 validation rules. Methods: `setFieldCollectionDefinition()`, `validate()`, `validateFields()`, `validateDefinedFields()`, `validateFieldsFromRequest()`, `validateRequest()`, `getRules()`, `getErrors()`. |
 | `ValidationRuleCollector.php` | Implements `AssetCollectionSetterInterface`; collects constraints and converts them to CI4 validation rule strings. |

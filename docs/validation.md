@@ -18,7 +18,7 @@ The `AssetConnectValidator` class provides a flexible way to validate file uploa
 $collectionDefinition = new YourCollectionDefinition();
 
 // Create a validator
-$validator = new \Maniaba\AssetConnect\Validation\AssetConnectValidator($collectionDefinition);
+$validator = new \Maniaba\AssetConnect\Validation\AssetConnectValidator();
 
 // Set a field collection definition (required)
 $validator->setFieldCollectionDefinition('file', $collectionDefinition);
@@ -44,7 +44,7 @@ You must define field names using the `setFieldCollectionDefinition` method:
 
 ```php
 // Create a validator
-$validator = new \Maniaba\AssetConnect\Validation\AssetConnectValidator($collectionDefinition);
+$validator = new \Maniaba\AssetConnect\Validation\AssetConnectValidator();
 
 // Define a field name
 $validator->setFieldCollectionDefinition('upload_file', $collectionDefinition);
@@ -67,14 +67,12 @@ You can set different collection definitions for different fields using the `set
 
 ```php
 // Create a validator
-$validator = new \Maniaba\AssetConnect\Validation\AssetConnectValidator(
-    new DefaultCollectionDefinition()
-);
+$validator = new \Maniaba\AssetConnect\Validation\AssetConnectValidator();
 
 // Set collection definitions for fields
-$validator->setFieldCollectionDefinition('file1', new DefaultCollectionDefinition());
-$validator->setFieldCollectionDefinition('file2', new DefaultCollectionDefinition());
-$validator->setFieldCollectionDefinition('testfile', new NewCollectionDefinition());
+$validator->setFieldCollectionDefinition('file1', new ImagesCollection());
+$validator->setFieldCollectionDefinition('file2', new DocumentsCollection());
+$validator->setFieldCollectionDefinition('testfile', new AvatarCollection());
 
 // Validate data
 $data = [
@@ -112,14 +110,12 @@ After setting up field collection definitions with `setFieldCollectionDefinition
 
 ```php
 // Create a validator
-$validator = new \Maniaba\AssetConnect\Validation\AssetConnectValidator(
-    new DefaultCollectionDefinition()
-);
+$validator = new \Maniaba\AssetConnect\Validation\AssetConnectValidator();
 
 // Set collection definitions for fields
-$validator->setFieldCollectionDefinition('file1', new DefaultCollectionDefinition());
-$validator->setFieldCollectionDefinition('file2', new DefaultCollectionDefinition());
-$validator->setFieldCollectionDefinition('testfile', new NewCollectionDefinition());
+$validator->setFieldCollectionDefinition('file1', new ImagesCollection());
+$validator->setFieldCollectionDefinition('file2', new DocumentsCollection());
+$validator->setFieldCollectionDefinition('testfile', new AvatarCollection());
 
 // Validate all defined fields (file1, file2, testfile)
 $data = [
@@ -177,7 +173,7 @@ if ($validator->validateFieldsFromRequest('file1', 'documents')) {
 Similar to `validateDefinedFields`, you can validate all defined fields directly from the request without having to specify them again:
 
 ```php
-if ($validator->validateDefinedFieldsFromRequest()) {
+if ($validator->validateRequest()) {
     // Validation passed for all defined fields from the request
     // Process the files
 } else {
@@ -269,19 +265,23 @@ When you set this collection definition for a field, the generated validation ru
 ```php
 // For field name 'image'
 [
-    'image' => 'uploaded[image]|ext_in[image,jpg,png,gif]|mime_in[image,image/jpeg,image/png,image/gif]|max_size[image,2048]|max_file_count[1]'
+    'image' => [
+        'uploaded[image]',
+        'ext_in[image,jpg,png,gif]',
+        'mime_in[image,image/jpeg,image/png,image/gif]',
+        'max_size[image,2048]',
+        // A max file count rule for one file
+    ],
 ]
 ```
 
 ## Validating Multiple Fields with Different Collection Definitions
 
-As shown in the previous section, you can use the `CollectionValidator` class to validate multiple fields with different collection definitions:
+As shown in the previous section, you can use the `AssetConnectValidator` class to validate multiple fields with different collection definitions:
 
 ```php
 // Create a validator
-$validator = new \Maniaba\AssetConnect\Validation\AssetConnectValidator(
-    new ImagesCollection()
-);
+$validator = new \Maniaba\AssetConnect\Validation\AssetConnectValidator();
 
 // Set collection definitions for fields
 $validator->setFieldCollectionDefinition('file1', new ImagesCollection());
@@ -320,36 +320,6 @@ And get rules for specific fields:
 $file1Rules = $validator->getRulesForFields('file1');
 ```
 
-### Legacy Approach: MultiFieldCollectionValidator
-
-For backward compatibility, the `MultiFieldCollectionValidator` class is still available, but using the enhanced `CollectionValidator` class as shown above is the recommended approach:
-
-```php
-// Create a multi-field validator
-$multiValidator = new \Maniaba\AssetConnect\Validation\MultiFieldCollectionValidator();
-
-// Add fields with their respective collection definitions
-$multiValidator->addField('file1', new ImagesCollection());
-$multiValidator->addField('multipleFileCollection', new DocumentsCollection());
-$multiValidator->addField('profilePicture', new AvatarCollection());
-
-// Validate data
-$data = [
-    'file1' => $this->request->getFile('upload1'),
-    'multipleFileCollection' => $this->request->getFileMultiple('documents'),
-    'profilePicture' => $this->request->getFile('avatar')
-];
-
-if ($multiValidator->validate($data)) {
-    // Validation passed for all fields
-    // Process the files
-} else {
-    // Validation failed
-    $errors = $multiValidator->getErrors();
-    // Handle errors
-}
-```
-
 ## Working with ValidationRuleCollector
 
 The `ValidationRuleCollector` class is used internally by `AssetConnectValidator` to collect validation rules from asset collection definitions. It implements the `AssetCollectionSetterInterface` and provides methods to set various validation constraints.
@@ -373,11 +343,7 @@ The `ValidationRuleCollector` provides the following methods for setting validat
 - `singleFileCollection()`: Ensures only a single file is uploaded
 - `onlyKeepLatest(int $maximumNumberOfItemsInCollection)`: Limits the number of files
 
-#### Image Validation
-
-- `setMaxImageDimensions(int $width, int $height)`: Validates maximum image dimensions
-- `setMinImageDimensions(int $width, int $height)`: Validates minimum image dimensions
-- `requireImage()`: Ensures the file is an image
+The collector also has image-specific helper methods such as `requireImage()`, `setMaxImageDimensions()`, and `setMinImageDimensions()`. These helpers are not part of `AssetCollectionSetterInterface`, so do not call them unguarded from normal collection definitions that are also used for asset storage.
 
 ## Advanced Usage
 
@@ -394,7 +360,6 @@ class MultipleImagesCollection implements AssetCollectionDefinitionInterface
             ->allowedExtensions(AssetExtension::JPG, AssetExtension::PNG)
             ->allowedMimeTypes(AssetMimeType::IMAGE_JPEG, AssetMimeType::IMAGE_PNG)
             ->setMaxFileSize(2 * 1024 * 1024) // 2MB
-            ->requireImage()
             ->onlyKeepLatest(5); // Allow up to 5 images
     }
 }
@@ -425,8 +390,6 @@ class ProfileImageCollection implements AssetCollectionDefinitionInterface
             ->allowedExtensions(AssetExtension::JPG, AssetExtension::PNG)
             ->allowedMimeTypes(AssetMimeType::IMAGE_JPEG, AssetMimeType::IMAGE_PNG)
             ->setMaxFileSize(1 * 1024 * 1024) // 1MB
-            ->setMaxImageDimensions(500, 500)
-            ->requireImage()
             ->singleFileCollection();
     }
 }

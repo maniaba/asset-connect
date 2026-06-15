@@ -262,7 +262,7 @@ For handling uploaded files from HTTP requests, use the `addAssetFromRequest` me
 
 ### Using addAssetFromRequest
 
-The `addAssetFromRequest` method provides a convenient way to add assets directly from HTTP request files. This method handles the validation and processing of uploaded files automatically.
+The `addAssetFromRequest` method provides a convenient way to add assets directly from valid HTTP request files. Use `AssetConnectValidator` when you need to validate request files against collection rules before storing them.
 
 ```php
 public function addAssetFromRequest(string ...$keyNames): AssetAdderMultiple
