@@ -1,13 +1,13 @@
 # Asset
 
-The `Asset` class is a core component of CodeIgniter Asset Connect that represents a file associated with an entity. It provides methods for accessing and manipulating asset properties, retrieving file information, and managing custom properties.
+The `Asset` class is a core component of CodeIgniter Asset Connect that represents a file associated with an entity. It provides methods for accessing and manipulating asset properties, retrieving file information, and managing public custom properties and backend internal properties.
 
 ## What is an Asset?
 
 An Asset in CodeIgniter Asset Connect represents a file that has been associated with an entity in your application. Each Asset contains:
 
 - Basic file information (name, path, size, MIME type)
-- Metadata about the asset (custom properties, collection information)
+- Metadata about the asset (custom properties, internal properties, collection information)
 - Methods for accessing and manipulating the asset
 
 Assets are stored in collections and can be associated with any entity in your application that uses the `UseAssetConnectTrait`.
@@ -294,6 +294,65 @@ $properties = $asset->getCustomProperties();
 // ]
 ```
 
+### getInternalProperty
+
+```php
+public function getInternalProperty(string $propertyName): mixed
+```
+
+Gets an internal property value. Internal properties are intended for application/backend metadata and are not included in the public asset JSON representation.
+
+**Parameters:**
+- `$propertyName`: The name of the internal property.
+
+**Returns:**
+- The value of the internal property, or null if not set.
+
+**Example:**
+```php
+$jobId = $asset->getInternalProperty('processing_job_id');
+```
+
+### setInternalProperty
+
+```php
+public function setInternalProperty(string $propertyName, mixed $value): static
+```
+
+Sets an internal property value.
+
+**Parameters:**
+- `$propertyName`: The name of the internal property.
+- `$value`: The value to set.
+
+**Returns:**
+- The Asset instance for method chaining.
+
+**Example:**
+```php
+$asset->setInternalProperty('processing_job_id', 'job-123');
+```
+
+### getInternalProperties
+
+```php
+public function getInternalProperties(): array
+```
+
+Gets all internal properties.
+
+**Returns:**
+- An associative array of internal properties.
+
+**Example:**
+```php
+$properties = $asset->getInternalProperties();
+// [
+//     'processing_job_id' => 'job-123',
+//     's3_etag' => 'etag-value'
+// ]
+```
+
 ### save
 
 ```php
@@ -532,6 +591,25 @@ $asset->setCustomProperty('title', 'New Title');
 $asset->save();
 ```
 
+### Working with Internal Properties
+
+```php
+// Get an asset
+$asset = $user->getFirstAsset();
+
+// Store backend-only metadata
+$asset->setInternalProperty('processing_job_id', 'job-123');
+$asset->setInternalProperty('processor', ['name' => 'image-resizer', 'version' => 2]);
+
+// Read backend-only metadata
+$jobId = $asset->getInternalProperty('processing_job_id');
+
+// Save the changes
+$asset->save();
+```
+
+Internal properties are stored in `metadata.internal`. They are useful for processing state, adapter metadata, external IDs, checksums, queue IDs, and similar backend data. They are not returned from `jsonSerialize()` and are not included in `custom_properties`.
+
 ### Downloading Assets
 
 ```php
@@ -607,6 +685,14 @@ $asset->setCustomProperty('visibility', 'private');
 $asset->save();
 ```
 
+Use internal properties for backend metadata that should be persisted with the asset but not exposed as public custom properties:
+
+```php
+$asset->setInternalProperty('s3_etag', 'etag-value');
+$asset->setInternalProperty('scan_status', 'clean');
+$asset->save();
+```
+
 ## Conclusion
 
-The `Asset` class is a fundamental component of CodeIgniter Asset Connect that provides a rich set of methods for working with files associated with entities in your application. By using its methods, you can access file information, manage custom properties, generate URLs, and more.
+The `Asset` class is a fundamental component of CodeIgniter Asset Connect that provides a rich set of methods for working with files associated with entities in your application. By using its methods, you can access file information, manage public custom properties and backend internal properties, generate URLs, and more.

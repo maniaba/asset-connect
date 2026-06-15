@@ -128,6 +128,15 @@ $asset = $product->addAsset('/path/to/video.mp4')
         'duration' => '2:30',
     ])
     ->toAssetCollection(VideosCollection::class);
+
+// Add an asset with backend-only internal properties
+$assetAdder = $product->addAsset('/path/to/image.jpg')
+    ->withCustomProperty('title', 'Product Image');
+
+$assetAdder->metadata()->internal->set('processing_job_id', 'job-123');
+$assetAdder->metadata()->internal->set('source_adapter', 's3-import');
+
+$asset = $assetAdder->toAssetCollection(ImagesCollection::class);
 ```
 
 ### Retrieving Assets
@@ -207,6 +216,9 @@ $properties = $asset->getCustomProperties();
 
 // Get a specific custom property
 $title = $asset->getCustomProperty('title');
+
+// Get backend-only internal metadata
+$jobId = $asset->getInternalProperty('processing_job_id');
 
 // Get the file name
 $fileName = $asset->getFileName();

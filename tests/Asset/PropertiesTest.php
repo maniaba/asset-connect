@@ -21,13 +21,14 @@ final class PropertiesTest extends CIUnitTestCase
     }
 
     /**
-     * Test that the constructor creates UserCustomProperties and FileVariantProperties
+     * Test that the constructor creates metadata property objects
      */
     public function testConstructorCreatesProperties(): void
     {
         // Assert
-        $this->assertNotNull($this->properties->userCustom);
-        $this->assertNotNull($this->properties->assetVariant);
+        $this->assertSame([], $this->properties->userCustom->getAll());
+        $this->assertSame([], $this->properties->internal->getAll());
+        $this->assertSame([], $this->properties->assetVariant->getAll());
     }
 
     /**
@@ -41,6 +42,9 @@ final class PropertiesTest extends CIUnitTestCase
                 'name'        => 'Test Name',
                 'description' => 'Test Description',
             ],
+            'internal' => [
+                'processing_job_id' => 'job-123',
+            ],
             'asset_variants' => [
                 'thumbnail' => 'thumbnail.jpg',
                 'medium'    => 'medium.jpg',
@@ -53,6 +57,7 @@ final class PropertiesTest extends CIUnitTestCase
         // Assert
         $this->assertSame('Test Name', $properties->userCustom->get('name'));
         $this->assertSame('Test Description', $properties->userCustom->get('description'));
+        $this->assertSame('job-123', $properties->internal->get('processing_job_id'));
         $this->assertSame('thumbnail.jpg', $properties->assetVariant->get('thumbnail'));
         $this->assertSame('medium.jpg', $properties->assetVariant->get('medium'));
     }
@@ -68,6 +73,9 @@ final class PropertiesTest extends CIUnitTestCase
                 'name'        => 'Test Name',
                 'description' => 'Test Description',
             ],
+            'internal' => [
+                'processing_job_id' => 'job-123',
+            ],
             'asset_variants' => [
                 'thumbnail' => 'thumbnail.jpg',
                 'medium'    => 'medium.jpg',
@@ -80,8 +88,10 @@ final class PropertiesTest extends CIUnitTestCase
 
         // Assert
         $this->assertArrayHasKey('user_custom', $json);
+        $this->assertArrayHasKey('internal', $json);
         $this->assertArrayHasKey('asset_variants', $json);
         $this->assertSame($values['user_custom'], $json['user_custom']);
+        $this->assertSame($values['internal'], $json['internal']);
         $this->assertSame($values['asset_variants'], $json['asset_variants']);
     }
 
@@ -95,6 +105,9 @@ final class PropertiesTest extends CIUnitTestCase
             'user_custom' => [
                 'name'        => 'Test Name',
                 'description' => 'Test Description',
+            ],
+            'internal' => [
+                'processing_job_id' => 'job-123',
             ],
             'asset_variants' => [
                 'thumbnail' => 'thumbnail.jpg',
@@ -110,8 +123,10 @@ final class PropertiesTest extends CIUnitTestCase
         $decoded = json_decode($string, true);
         $this->assertIsArray($decoded);
         $this->assertArrayHasKey('user_custom', $decoded);
+        $this->assertArrayHasKey('internal', $decoded);
         $this->assertArrayHasKey('asset_variants', $decoded);
         $this->assertSame($values['user_custom'], $decoded['user_custom']);
+        $this->assertSame($values['internal'], $decoded['internal']);
         $this->assertSame($values['asset_variants'], $decoded['asset_variants']);
     }
 }

@@ -223,6 +223,8 @@ final class AssetConnectEntityFlowTest extends AssetConnectFeatureTestCase
         $asset->name  = 'Updated Accessor Document';
         $asset->order = 9;
         $asset->setCustomProperty('reviewed', true);
+        $asset->setInternalProperty('processing_job_id', 'job-123');
+        $asset->metadata->internal->set('processor', ['name' => 'test']);
 
         $this->assertTrue($asset->save());
 
@@ -232,6 +234,11 @@ final class AssetConnectEntityFlowTest extends AssetConnectFeatureTestCase
         $this->assertSame('Updated Accessor Document', $refetched->name);
         $this->assertSame(9, $refetched->order);
         $this->assertTrue($refetched->getCustomProperty('reviewed'));
+        $this->assertSame('job-123', $refetched->getInternalProperty('processing_job_id'));
+        $this->assertSame([
+            'processing_job_id' => 'job-123',
+            'processor'         => ['name' => 'test'],
+        ], $refetched->getInternalProperties());
 
         $this->injectUrlRequest();
 
@@ -239,6 +246,7 @@ final class AssetConnectEntityFlowTest extends AssetConnectFeatureTestCase
 
         $this->assertArrayNotHasKey('path', $serialized);
         $this->assertArrayNotHasKey('storage', $serialized);
+        $this->assertArrayNotHasKey('internal', $serialized);
         $this->assertSame($refetched->id, $serialized['id']);
         $this->assertSame($refetched->file_name, $serialized['file_name']);
         $this->assertSame($refetched->getCustomProperties(), $serialized['custom_properties']);

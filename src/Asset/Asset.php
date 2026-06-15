@@ -305,7 +305,7 @@ class Asset extends Entity implements JsonSerializable
 
     public function setCustomProperty(string $propertyName, mixed $value): static
     {
-        $this->metadata->userCustom->set($propertyName, $value);
+        $this->getMetadata()->userCustom->set($propertyName, $value);
 
         return $this;
     }
@@ -318,6 +318,31 @@ class Asset extends Entity implements JsonSerializable
     public function getCustomProperties(): array
     {
         return $this->getMetadata()->userCustom->getAll();
+    }
+
+    public function getInternalProperty(string $propertyName): mixed
+    {
+        return $this->getMetadata()->internal->get($propertyName);
+    }
+
+    public function setInternalProperty(string $propertyName, mixed $value): static
+    {
+        $this->getMetadata()->internal->set($propertyName, $value);
+
+        return $this;
+    }
+
+    /**
+     * Get all internal properties.
+     *
+     * Internal properties are intended for application/backend metadata and
+     * are not included in the public asset JSON representation.
+     *
+     * @return array<string, mixed>
+     */
+    public function getInternalProperties(): array
+    {
+        return $this->getMetadata()->internal->getAll();
     }
 
     /**
