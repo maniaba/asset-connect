@@ -14,11 +14,6 @@ class SingleImageCollection implements AssetCollectionDefinitionInterface, Asset
             ->allowedExtensions(...AssetExtension::images());
     }
 
-    public function checkAuthorization(array|Entity $entity, Asset $asset): bool
-    {
-        return true;
-    }
-
     public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void
     {
         // No variants needed
@@ -64,12 +59,6 @@ class ProfilePicturesCollection implements AssetCollectionDefinitionInterface, A
 
         // Set a custom path generator for this collection
         ->setPathGenerator(new CustomPathGenerator());
-    }
-
-    public function checkAuthorization(array|Entity $entity, Asset $asset): bool
-    {
-        // Check if the user is authorized to access this asset
-        return true;
     }
 
     public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void
@@ -130,7 +119,7 @@ class SecureDocumentsCollection implements AuthorizableAssetCollectionDefinition
         $entity = $asset->getSubjectEntity();
 
         // Check if the user is the owner of the entity or an admin
-        return ($user->id === $entity->user_id) || $user->isAdmin();
+        return $entity !== null && (($user->id === $entity->user_id) || $user->isAdmin());
     }
 }
 ```
@@ -235,11 +224,13 @@ $definition->singleFileCollection();
 If your application serves assets through its own controller or service layer, implement proper authorization checks in the `checkAuthorization` method before returning a file response.
 
 ```php
-public function checkAuthorization(array|Entity $entity, Asset $asset): bool
+public function checkAuthorization(Asset $asset): bool
 {
     // Check if the user is authorized to access this asset
     $user = service('auth')->user();
-    return $user->id === $entity->user_id || $user->isAdmin();
+    $entity = $asset->getSubjectEntity();
+
+    return $entity !== null && ($user->id === $entity->user_id || $user->isAdmin());
 }
 ```
 

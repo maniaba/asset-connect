@@ -288,13 +288,13 @@ $properties = $asset->getCustomProperties();
 $title = $asset->getCustomProperty('title');
 
 // Get the file name
-$fileName = $asset->getFileName();
+$fileName = $asset->file_name;
 
 // Get the mime type
-$mimeType = $asset->getMimeType();
+$mimeType = $asset->mime_type;
 
 // Get the size in bytes
-$size = $asset->getSize();
+$size = $asset->size;
 
 // Get the human-readable size
 $readableSize = $asset->getHumanReadableSize();
@@ -369,11 +369,6 @@ class ImagesCollection implements AssetCollectionDefinitionInterface, AssetVaria
             ->setMaxFileSize(10 * 1024 * 1024); // 10MB
     }
 
-    public function checkAuthorization(array|Entity $entity, Asset $asset): bool
-    {
-        return true;
-    }
-
     public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void
     {
         // No variants needed as we'll create thumbnails separately
@@ -400,11 +395,6 @@ class ThumbnailsCollection implements AssetCollectionDefinitionInterface, AssetV
                 AssetMimeType::IMAGE_WEBP
             )
             ->setMaxFileSize(2 * 1024 * 1024); // 2MB
-    }
-
-    public function checkAuthorization(array|Entity $entity, Asset $asset): bool
-    {
-        return true;
     }
 
     public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void

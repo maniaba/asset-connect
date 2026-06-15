@@ -48,12 +48,6 @@ class ImagesCollection implements AssetCollectionDefinitionInterface, AssetVaria
             ->setMaxFileSize(5 * 1024 * 1024); // 5MB
     }
 
-    public function checkAuthorization(array|Entity $entity, Asset $asset): bool
-    {
-        // Check if the user is authorized to access this asset
-        return true;
-    }
-
     public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void
     {
         // Define file variants (e.g., thumbnails)
@@ -229,13 +223,13 @@ $jobId = $asset->getInternalProperty('processing_job_id');
 $asset->transferToStorage('protected');
 
 // Get the file name
-$fileName = $asset->getFileName();
+$fileName = $asset->file_name;
 
 // Get the mime type
-$mimeType = $asset->getMimeType();
+$mimeType = $asset->mime_type;
 
 // Get the size in bytes
-$size = $asset->getSize();
+$size = $asset->size;
 
 // Get the human-readable size
 $readableSize = $asset->getHumanReadableSize();
@@ -286,11 +280,13 @@ class SecureDocumentsCollection implements AuthorizableAssetCollectionDefinition
             );
     }
 
-    public function checkAuthorization(array|Entity $entity, Asset $asset): bool
+    public function checkAuthorization(Asset $asset): bool
     {
         // Check if the user is authorized to access this asset
         // For example, check if the user owns the asset or has the right permissions
-        return $entity->id === $asset->entity_id;
+        $entity = $asset->getSubjectEntity();
+
+        return $entity !== null && $entity->id === $asset->entity_id;
     }
 
     public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void

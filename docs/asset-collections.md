@@ -65,10 +65,10 @@ This method is called when an asset is added to the collection. You can use the 
 The `AuthorizableAssetCollectionDefinitionInterface` extends `AssetCollectionDefinitionInterface` and makes the collection use protected visibility by default. It defines an additional method:
 
 ```php
-public function checkAuthorization(array|Entity $entity, Asset $asset): bool;
+public function checkAuthorization(Asset $asset): bool;
 ```
 
-Use this method from your own controller or service layer when you need runtime authorization before returning a file response. Default AssetConnect URLs are generated directly from the configured storage disk.
+AssetConnect calls this method when protected assets are served through AssetConnect routes. Direct web-server links do not run this method, so protected storage roots should not be exposed with `public_url`, `asset-connect:storage-link`, or a web-server alias.
 
 ### AssetCollectionSetterInterface
 
@@ -81,6 +81,7 @@ public function onlyKeepLatest(int $maximumNumberOfItemsInCollection): static;
 public function setMaxFileSize(float|int $maxFileSize): static;
 public function singleFileCollection(): static;
 public function setPathGenerator(PathGeneratorInterface $pathGenerator): static;
+public function setStorage(string $storage): static;
 ```
 
 These methods allow you to:
@@ -90,16 +91,21 @@ These methods allow you to:
 - Set the maximum file size
 - Make the collection hold only a single file
 - Set the path generator for the collection
+- Select a configured storage disk for the collection
 
 ## CreateAssetVariantsInterface
 
 The `CreateAssetVariantsInterface` is implemented by classes that provide methods for creating asset variants. It's used in the `variants` method of `AssetVariantsInterface`. It defines the following method:
 
 ```php
-public function assetVariant(string $name, Closure $closure): ?AssetVariant;
+public function assetVariant(
+    string $name,
+    Closure $closure,
+    AssetExtension|string|null $extension = null,
+): ?AssetVariant;
 ```
 
-This method allows you to create a new asset variant with the given name and closure. The closure receives an `AssetVariant` and an `Asset` and is used to define how to process the variant.
+This method allows you to create a new asset variant with the given name and closure. The closure receives an `AssetVariant` and an `Asset` and is used to define how to process the variant. Pass `$extension` when a variant should be written with a different extension than the original file.
 
 ## AssetVariants Class
 
@@ -145,11 +151,13 @@ class ProfilePicturesCollection implements AuthorizableAssetCollectionDefinition
             ->setPathGenerator(new CustomPathGenerator());
     }
 
-    public function checkAuthorization(array|Entity $entity, Asset $asset): bool
+    public function checkAuthorization(Asset $asset): bool
     {
+        $entity = $asset->getSubjectEntity();
+
         // Check if the user is authorized to access this asset
         // For example, check if the user owns the asset
-        return $entity->id === $asset->entity_id;
+        return $entity !== null && $entity->id === $asset->entity_id;
     }
 
     public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void

@@ -37,13 +37,6 @@ class ProductImagesCollection implements AssetCollectionDefinitionInterface, Ass
             ->setPathGenerator(new CustomPathGenerator());
     }
 
-    public function checkAuthorization(array|Entity $entity, Asset $asset): bool
-    {
-        // Check if the user is authorized to access this asset
-        // For example, check if the user owns the asset
-        return true;
-    }
-
     public function variants(CreateAssetVariantsInterface $variants, Asset $asset): void
     {
         // Define file variants for this asset collection
@@ -175,7 +168,7 @@ public function variants(CreateAssetVariantsInterface $variants, Asset $asset): 
     }
 
     // Create a preview variant for PDF documents
-    if ($asset->getMimeType() === 'application/pdf') {
+    if ($asset->mime_type === 'application/pdf') {
         $variants->assetVariant('preview', static function (AssetVariant $variant, Asset $asset): void {
             // Use a PDF library to create a preview image of the first page
             // This is just a placeholder - in a real application, you would

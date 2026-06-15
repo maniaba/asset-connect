@@ -102,12 +102,16 @@ The `Asset` class has the following properties:
 | Property | Type | Description                                                                    |
 |----------|------|--------------------------------------------------------------------------------|
 | `id` | int | Unique identifier for the asset                                                |
-| `entity_type` | string | Type of the entity to which the asset belongs (md5 hash of the class name)     |
+| `entity_type` | string | Configured entity key for the entity class that owns the asset                 |
 | `entity_id` | int | Identifier for the entity to which the asset belongs                           |
-| `collection` | string | Name of the collection to which the asset belongs (md5 hash of the class name) |
+| `collection` | string | Configured collection key for the asset collection                             |
+| `storage` | string | Configured storage disk where the file is stored                               |
 | `name` | string | Display name of the asset                                                      |
 | `file_name` | string | Name of the file associated with the asset                                     |
-| `path` | string | Path to the file on the server                                                 |
+| `path` | string | Storage-relative file path inside the configured disk                          |
+| `local_path` | string\|null | Local filesystem path when the storage disk supports it, otherwise null        |
+| `path_dirname` | string | Storage-relative directory path ending with `/`                                |
+| `relative_path` | string | Storage-relative path normalized with a leading `/`                            |
 | `mime_type` | string | MIME type of the file                                                          |
 | `size` | int | Size of the file in bytes                                                      |
 | `order` | int | Order of the asset in the collection                                           |
@@ -139,13 +143,13 @@ Gets the file extension of the asset.
 $extension = $asset->getExtension(); // e.g., "jpg"
 ```
 
-### getPathDirname
+### path_dirname
 
 ```php
-protected function getPathDirname(): string
+$asset->path_dirname
 ```
 
-Gets the directory path of the file on the server.
+Gets the storage-relative directory path of the file.
 
 **Returns:**
 - The directory path as a string.
@@ -155,26 +159,26 @@ Gets the directory path of the file on the server.
 
 **Example:**
 ```php
-$dirPath = $asset->getPathDirname(); // e.g., "/var/www/uploads/images/"
+$dirPath = $asset->path_dirname; // e.g., "images/"
 ```
 
-### getAssetCollectionDefinitionClass
+### getCollectionDefinitionClass
 
 ```php
-public function getAssetCollectionDefinitionClass(): ?string
+public function getCollectionDefinitionClass(): string
 ```
 
 Gets the class name of the asset collection definition for this asset.
 
 **Returns:**
-- The class name of the asset collection definition, or null if not set.
+- The class name of the asset collection definition.
 
 **Throws:**
 - `InvalidArgumentException`: If the collection class does not exist or does not implement AssetCollectionDefinitionInterface.
 
 **Example:**
 ```php
-$collectionClass = $asset->getAssetCollectionDefinitionClass(); // e.g., "App\Collections\ImagesCollection"
+$collectionClass = $asset->getCollectionDefinitionClass(); // e.g., "App\Collections\ImagesCollection"
 ```
 
 ### getAssetCollectionDefinition
@@ -215,23 +219,23 @@ Gets the subject entity which this asset belongs to.
 $entity = $asset->getSubjectEntity();
 ```
 
-### getSubjectEntityClassName
+### getSubjectEntityClass
 
 ```php
-public function getSubjectEntityClassName(): ?string
+public function getSubjectEntityClass(): string
 ```
 
 Gets the class name of the subject entity which this asset belongs to.
 
 **Returns:**
-- The class name of the subject entity, or null if not set.
+- The class name of the subject entity.
 
 **Throws:**
 - `InvalidArgumentException`: If the entity class does not exist or does not extend Entity.
 
 **Example:**
 ```php
-$entityClass = $asset->getSubjectEntityClassName(); // e.g., "App\Models\User"
+$entityClass = $asset->getSubjectEntityClass(); // e.g., "App\Models\User"
 ```
 
 ### getCustomProperty
@@ -449,13 +453,13 @@ Saves the asset to the database.
 $result = $asset->save();
 ```
 
-### getRelativePath
+### relative_path
 
 ```php
-protected function getRelativePath(): string
+$asset->relative_path
 ```
 
-Gets the relative path of the file in the storage.
+Gets the storage-relative path normalized with a leading `/`.
 
 **Returns:**
 - The relative path as a string.
@@ -465,7 +469,7 @@ Gets the relative path of the file in the storage.
 
 **Example:**
 ```php
-$relativePath = $asset->getRelativePath(); // e.g., "/uploads/images/profile.jpg"
+$relativePath = $asset->relative_path; // e.g., "/images/profile.jpg"
 ```
 
 ### download

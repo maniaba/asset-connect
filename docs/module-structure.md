@@ -28,7 +28,7 @@ The central orchestrator. Holds the `AssetModel`, manages cached assets per enti
 | `Interfaces/AssetCollectionDefinitionInterface.php` | Base interface every collection class must implement. Requires `definition(AssetCollectionSetterInterface)`. |
 | `Interfaces/AssetCollectionSetterInterface.php` | Fluent setter interface for collection configuration: `allowedExtensions()`, `allowedMimeTypes()`, `setMaxFileSize()`, `singleFileCollection()`, `onlyKeepLatest()`, `setPathGenerator()`, `setStorage()`. |
 | `Interfaces/AssetDefinitionInterface.php` | Shared fluent contract for asset name, file name, order, preserve-original flag, and custom properties. |
-| `Interfaces/AuthorizableAssetCollectionDefinitionInterface.php` | Extends the base definition interface; adds `checkAuthorization(Entity, Asset): bool` for private collections. |
+| `Interfaces/AuthorizableAssetCollectionDefinitionInterface.php` | Extends the base definition interface; adds `checkAuthorization(Asset): bool` for protected collections. |
 | `Properties/BaseProperty.php` | Base wrapper for namespaced metadata properties. |
 | `Properties/UserCustomProperty.php` | User-visible custom asset metadata stored under `user_custom`. |
 | `Properties/InternalProperty.php` | Backend-only metadata stored under `internal`. |
@@ -57,11 +57,11 @@ The central orchestrator. Holds the `AssetModel`, manages cached assets per enti
 | File | Description |
 |---|---|
 | `AssetVariant.php` | Represents a single generated variant (e.g. thumbnail). Holds `name`, `storage`, relative `path`, `file_name`, and helpers for `writeFile()`, `copyToTemporaryFile()`, and `withTemporaryFile()`. |
-| `AssetVariants.php` | Implements `CreateAssetVariantsInterface`. Collects variant closures and the `onQueue` flag. |
-| `AssetVariantsProcess.php` | Executes the variant closures for a given asset. |
-| `AssetVariantsProcessor.php` | Orchestrates variant processing; dispatches to queue or runs inline. |
+| `AssetVariants.php` | Implements `CreateAssetVariantsInterface`. Registers variant metadata, triggers `variant.created`, and stores the `onQueue` flag. |
+| `AssetVariantsProcess.php` | Queues variant processing or runs it inline for a given asset and collection definition. |
+| `AssetVariantsProcessor.php` | Executes existing variant closures and updates variant metadata after processing. |
 | `Interfaces/AssetVariantsInterface.php` | Must be implemented by collections that define variants. Requires `variants(CreateAssetVariantsInterface, Asset)`. |
-| `Interfaces/CreateAssetVariantsInterface.php` | Interface passed to `variants()`; exposes `assetVariant(name, closure)` and `onQueue`. |
+| `Interfaces/CreateAssetVariantsInterface.php` | Interface passed to `variants()`; exposes `assetVariant(name, closure, extension = null)` and `onQueue`. |
 
 ---
 
