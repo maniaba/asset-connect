@@ -67,11 +67,12 @@ Each event provides an event object that contains relevant information about the
 
 ### AssetCreated
 
-The `AssetCreated` event object provides access to the newly created asset:
+The `AssetCreated` event object provides access to the newly created asset and its subject entity:
 
 ```php
 Events::on('asset.created', function (AssetCreated $event) {
     $asset = $event->getAsset();
+    $subject = $event->getSubjectEntity();
 
     // Access asset properties
     $assetId = $asset->id;
