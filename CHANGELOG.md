@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- Added the upgrade guide for moving from 2.0.0 to 2.1.0.
+
+### Changed
+- Storage setup methods are now resolved from the configured storage disk name first, with legacy driver-based `setupStorage{Driver}()` methods still supported as a fallback.
+
 ## [v2.0.0](https://github.com/maniaba/asset-connect/tree/v2.0.0) - 2026-06-15
 
 ### Breaking Changes

@@ -237,23 +237,24 @@ class Asset extends BaseConfig
             return;
         }
 
-        $this->registerStorageDriverSetups();
+        $this->registerStorageSetups();
     }
 
-    private function registerStorageDriverSetups(): void
+    private function registerStorageSetups(): void
     {
         foreach ($this->storages as $storageName => $storageConfig) {
             if (! is_array($storageConfig)) {
                 continue;
             }
 
-            $driver = $storageConfig['driver'] ?? null;
-            if (! is_string($driver) || $driver === '') {
-                continue;
-            }
+            $storageNameString = (string) $storageName;
+            $driver            = $storageConfig['driver'] ?? null;
+            $methodName        = $this->resolveStorageSetupMethodName(
+                $storageNameString,
+                is_string($driver) && $driver !== '' ? $driver : null,
+            );
 
-            $methodName = $this->storageSetupMethodName($driver);
-            if (! method_exists($this, $methodName)) {
+            if ($methodName === null) {
                 continue;
             }
 
@@ -264,22 +265,40 @@ class Asset extends BaseConfig
 
             $setupConfig = $this->invokeStorageSetupMethod($method, $storageConfig);
 
-            $storageNameString                  = (string) $storageName;
             $this->storages[$storageNameString] = array_replace($storageConfig, $setupConfig);
             $this->initStorageEnvValue($storageNameString);
         }
     }
 
-    private function storageSetupMethodName(string $driver): string
+    private function resolveStorageSetupMethodName(string $storageName, ?string $driver): ?string
     {
-        $driver = strtolower(trim($driver));
-        $driver = preg_replace('/[^a-z0-9]+/', ' ', $driver);
+        $storageMethodName = $this->storageSetupMethodName($storageName);
+        if (method_exists($this, $storageMethodName)) {
+            return $storageMethodName;
+        }
 
-        if (! is_string($driver) || $driver === '') {
+        if ($driver === null) {
+            return null;
+        }
+
+        $driverMethodName = $this->storageSetupMethodName($driver);
+        if (method_exists($this, $driverMethodName)) {
+            return $driverMethodName;
+        }
+
+        return null;
+    }
+
+    private function storageSetupMethodName(string $identifier): string
+    {
+        $identifier = strtolower(trim($identifier));
+        $identifier = preg_replace('/[^a-z0-9]+/', ' ', $identifier);
+
+        if (! is_string($identifier) || $identifier === '') {
             return 'setupStorage';
         }
 
-        return 'setupStorage' . str_replace(' ', '', ucwords($driver));
+        return 'setupStorage' . str_replace(' ', '', ucwords($identifier));
     }
 
     /**
