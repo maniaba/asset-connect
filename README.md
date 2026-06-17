@@ -101,7 +101,7 @@ public array $storages = [
 ];
 ```
 
-Remote disks can be added through Flysystem adapters and driver-specific setup methods such as `setupStorageAwsS3()`. Public remote disks should define an HTTP `public_url`; protected disks are served through AssetConnect routes and authorization.
+Remote disks can be added through Flysystem adapters and storage-specific setup methods such as `setupStorageS3()`. Legacy driver-specific setup methods such as `setupStorageAwsS3()` are still supported as a fallback. Public remote disks should define an HTTP `public_url`; protected disks are served through AssetConnect routes and authorization.
 
 For remote disks, `local_path` can be `null`. Use temporary-file helpers for processors that require a local filesystem path:
 
@@ -121,7 +121,11 @@ $asset->transferToStorage('protected');
 $asset->transferToStorage('s3_public', deleteSource: false);
 ```
 
-## Upgrade From 1.0.2 To 2.0.0
+## Upgrade Guides
+
+Version 2.1.0 resolves custom storage setup methods from the configured storage disk name first, with a legacy driver-based fallback.
+
+Read the full guide when upgrading from 2.0.0: [Upgrade from 2.0.0 to 2.1.0](docs/upgrade-2.1.md).
 
 Version 2.0.0 changes storage from filesystem-root paths to named storage disks.
 
@@ -131,7 +135,7 @@ Read the full guide before migrating production data: [Upgrade from 1.0.2 to 2.0
 
 Comprehensive documentation is available at [https://maniaba.github.io/asset-connect/](https://maniaba.github.io/asset-connect/).
 
-Versioned documentation is published with `mike`. The Docs workflow validates docs on pull requests, publishes every push to `develop` as the `develop` docs version, and publishes release documentation from release tags such as `v2.0.0`. Stable releases move the `latest` alias and default redirect to the released docs version.
+Versioned documentation is published with `mike`. The Docs workflow validates docs on pull requests, publishes every push to `develop` as the `develop` docs version, and publishes release documentation from release tags such as `v2.1.0`. Stable releases move the `latest` alias and default redirect to the released docs version.
 
 For local checks and manual publishing:
 
@@ -139,7 +143,7 @@ For local checks and manual publishing:
 pip install -r docs/requirements.txt
 mkdocs build --strict
 mike deploy --push develop
-mike deploy --push --update-aliases 2.0.0 latest
+mike deploy --push --update-aliases 2.1.0 latest
 mike set-default --push latest
 ```
 
