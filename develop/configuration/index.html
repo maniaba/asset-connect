@@ -388,6 +388,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../upgrade-2.1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upgrade from 2.0.0 to 2.1.0
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../upgrade-2.0/" class="md-nav__link">
         
   
@@ -1601,7 +1629,7 @@ public array $storages = [
     ],
 ];</code></pre>
 <p>Use <code>setStorage('disk_name')</code> in a collection definition when a collection should use a specific disk. Otherwise AssetConnect chooses the default disk based on collection visibility.</p>
-<p>For local public storage disks with <code>public_url</code>, expose the configured roots through <code>php spark asset-connect:storage-link</code> or web server aliases. Protected disks should not define <code>public_url</code> and are served through AssetConnect routes. For FTP, SFTP, S3, Google Cloud Storage, Azure Blob Storage, MongoDB GridFS, WebDAV, memory, or any other Flysystem adapter, install the adapter package, set the disk <code>driver</code>, and add a matching <code>setupStorage{Driver}()</code> method that returns the adapter config. See <a href="../storage/">Storage</a> for examples.</p>
+<p>For local public storage disks with <code>public_url</code>, expose the configured roots through <code>php spark asset-connect:storage-link</code> or web server aliases. Protected disks should not define <code>public_url</code> and are served through AssetConnect routes. For FTP, SFTP, S3, Google Cloud Storage, Azure Blob Storage, MongoDB GridFS, WebDAV, memory, or any other Flysystem adapter, install the adapter package, set the disk <code>driver</code>, and add a matching <code>setupStorage{StorageName}()</code> method that returns the adapter config. Legacy <code>setupStorage{Driver}()</code> methods are still supported as a fallback. See <a href="../storage/">Storage</a> for examples.</p>
 <h3 id="default-asset-collection">Default Asset Collection</h3>
 <p>You can change the default collection class that will be used when no specific collection is provided:</p>
 <pre class="highlight"><code class="language-php">public string $defaultCollection = CustomAssetCollection::class;</code></pre>

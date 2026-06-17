@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://maniaba.github.io/asset-connect/latest/storage/">
+        <link rel="canonical" href="https://maniaba.github.io/asset-connect/latest/upgrade-2.1/">
       
       
-        <link rel="prev" href="../configuration/">
+        <link rel="prev" href="../installation/">
       
       
-        <link rel="next" href="../custom-asset-collections/">
+        <link rel="next" href="../upgrade-2.0/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>Storage - CodeIgniter AssetConnect</title>
+        <title>Upgrade from 2.0.0 to 2.1.0 - CodeIgniter AssetConnect</title>
       
     
     
@@ -84,7 +84,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#storage" class="md-skip">
+        <a href="#upgrade-from-200-to-210" class="md-skip">
           Skip to content
         </a>
       
@@ -135,7 +135,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Storage
+              Upgrade from 2.0.0 to 2.1.0
             
           </span>
         </div>
@@ -338,18 +338,20 @@
       
   
   
+    
   
   
+  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
@@ -370,7 +372,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -385,10 +387,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../upgrade-2.1/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upgrade from 2.0.0 to 2.1.0
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -404,6 +433,81 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compatibility
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended Migration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multiple-storages-using-one-driver" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multiple Storages Using One Driver
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#no-data-migration-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        No Data Migration Required
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verification
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -448,20 +552,18 @@
       
   
   
-    
   
   
-  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
         
           
           <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
@@ -482,7 +584,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
@@ -525,37 +627,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Storage
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../storage/" class="md-nav__link">
         
   
   
@@ -571,125 +646,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#flysystem" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Flysystem
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#default-configuration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Default Configuration
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#official-flysystem-adapters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Official Flysystem Adapters
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#link-local-storage" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Link Local Storage
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#protected-storage" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Protected Storage
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#selecting-storage-per-collection" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Selecting Storage Per Collection
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#transfer-assets-between-storage-disks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Transfer Assets Between Storage Disks
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#local-and-temporary-paths-for-processing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Local And Temporary Paths For Processing
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#migration-note" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Migration Note
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1364,10 +1320,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#flysystem" class="md-nav__link">
+  <a href="#compatibility" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Flysystem
+        Compatibility
       
     </span>
   </a>
@@ -1375,10 +1331,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#default-configuration" class="md-nav__link">
+  <a href="#recommended-migration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Default Configuration
+        Recommended Migration
       
     </span>
   </a>
@@ -1386,10 +1342,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#official-flysystem-adapters" class="md-nav__link">
+  <a href="#multiple-storages-using-one-driver" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Official Flysystem Adapters
+        Multiple Storages Using One Driver
       
     </span>
   </a>
@@ -1397,10 +1353,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#link-local-storage" class="md-nav__link">
+  <a href="#no-data-migration-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Link Local Storage
+        No Data Migration Required
       
     </span>
   </a>
@@ -1408,54 +1364,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#protected-storage" class="md-nav__link">
+  <a href="#verification" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Protected Storage
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#selecting-storage-per-collection" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Selecting Storage Per Collection
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#transfer-assets-between-storage-disks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Transfer Assets Between Storage Disks
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#local-and-temporary-paths-for-processing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Local And Temporary Paths For Processing
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#migration-note" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Migration Note
+        Verification
       
     </span>
   </a>
@@ -1479,7 +1391,7 @@
 
 
   
-    <a href="https://github.com/maniaba/asset-connect/edit/develop/docs/storage.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/maniaba/asset-connect/edit/develop/docs/upgrade-2.1.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -1487,96 +1399,32 @@
   
 
 
-<h1 id="storage">Storage</h1>
-<p>AssetConnect stores files through named storage disks. The database stores only:</p>
-<ul>
-<li><code>storage</code>: the configured disk name, for example <code>public</code>, <code>protected</code>, or <code>s3</code></li>
-<li><code>path</code>: the relative path inside that disk, for example <code>2026-06-11/97847659691b3cae8857/photo.jpg</code></li>
-</ul>
-<p>Physical root paths are not stored in the database. This keeps assets portable when the application directory changes, because only the storage configuration needs to point to the new root.</p>
-<h2 id="flysystem">Flysystem</h2>
-<p>AssetConnect uses Flysystem 3 for storage operations. Local disks are supported out of the box through the configured <code>local</code> driver. Any official Flysystem adapter can be provided through configuration as an <code>adapter</code>. You can also provide a prebuilt <code>FilesystemOperator</code> or a custom <code>StorageDiskInterface</code> implementation when you need full control.</p>
-<p>Core operations use storage-relative paths:</p>
-<pre class="highlight"><code class="language-php">$disk-&gt;writeStream('assets/photo.jpg', $stream);
-$disk-&gt;readStream('assets/photo.jpg');
-$disk-&gt;delete('assets/photo.jpg');
-$disk-&gt;publicUrl('assets/photo.jpg');</code></pre>
-<h2 id="default-configuration">Default Configuration</h2>
-<pre class="highlight"><code class="language-php">public string $defaultPublicStorage = 'public';
-public string $defaultProtectedStorage = 'protected';
-
-public array $storages = [
-    'public' =&gt; [
-        'driver'     =&gt; 'local',
-        'root'       =&gt; WRITEPATH . 'asset-connect/public',
-        'public_url' =&gt; 'assets/storage',
-        'visibility' =&gt; 'public',
-    ],
-    'protected' =&gt; [
-        'driver'     =&gt; 'local',
-        'root'       =&gt; WRITEPATH . 'asset-connect/protected',
-        'visibility' =&gt; 'protected',
+<h1 id="upgrade-from-200-to-210">Upgrade from 2.0.0 to 2.1.0</h1>
+<p>AssetConnect 2.1.0 changes how custom storage setup methods are resolved.</p>
+<p>In 2.0.0, setup methods were resolved from the storage <code>driver</code> value:</p>
+<pre class="highlight"><code class="language-php">public array $storages = [
+    'remote' =&gt; [
+        'driver' =&gt; 'custom_remote',
     ],
 ];</code></pre>
-<p>Public collections use <code>$defaultPublicStorage</code> unless the collection selects a storage disk explicitly. Protected collections use <code>$defaultProtectedStorage</code>.</p>
-<h2 id="official-flysystem-adapters">Official Flysystem Adapters</h2>
-<p>AssetConnect keeps only the local Flysystem dependency in its own <code>composer.json</code>. Applications install the extra adapter package they need, define the disk in <code>$storages</code>, and add a <code>setupStorage{StorageName}()</code> method that creates the adapter for that configured disk.</p>
-<p>See the <a href="https://flysystem.thephpleague.com/docs/">official Flysystem adapter documentation</a> for connection-specific options.</p>
-<table>
-<thead>
-<tr>
-<th>Adapter</th>
-<th>Package</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Local</td>
-<td>Included with <code>league/flysystem</code></td>
-</tr>
-<tr>
-<td>FTP</td>
-<td><code>league/flysystem-ftp:^3.0</code></td>
-</tr>
-<tr>
-<td>SFTP</td>
-<td><code>league/flysystem-sftp-v3:^3.0</code></td>
-</tr>
-<tr>
-<td>Memory</td>
-<td><code>league/flysystem-memory:^3.0</code></td>
-</tr>
-<tr>
-<td>AWS S3</td>
-<td><code>league/flysystem-aws-s3-v3:^3.0</code></td>
-</tr>
-<tr>
-<td>AsyncAws S3</td>
-<td><code>league/flysystem-async-aws-s3:^3.0</code></td>
-</tr>
-<tr>
-<td>Google Cloud Storage</td>
-<td><code>league/flysystem-google-cloud-storage:^3.0</code></td>
-</tr>
-<tr>
-<td>Azure Blob Storage</td>
-<td><code>league/flysystem-azure-blob-storage:^3.0</code></td>
-</tr>
-<tr>
-<td>MongoDB GridFS</td>
-<td><code>league/flysystem-gridfs:^3.0</code></td>
-</tr>
-<tr>
-<td>WebDAV</td>
-<td><code>league/flysystem-webdav:^3.0</code></td>
-</tr>
-</tbody>
-</table>
-<p>Generic configuration shape:</p>
-<pre class="highlight"><code class="language-php">use League\Flysystem\FilesystemAdapter;
-use Maniaba\AssetConnect\Enums\AssetVisibility;
-
-public array $storages = [
+<p>This called:</p>
+<pre class="highlight"><code class="language-php">protected function setupStorageCustomRemote(array $storage): array
+{
+    // ...
+}</code></pre>
+<p>In 2.1.0, setup methods are resolved from the configured storage disk name first:</p>
+<pre class="highlight"><code class="language-php">protected function setupStorageRemote(array $storage): array
+{
+    // ...
+}</code></pre>
+<h2 id="compatibility">Compatibility</h2>
+<p>This release is backward compatible with 2.0.0 storage setup methods.</p>
+<p>If <code>setupStorageRemote()</code> does not exist, AssetConnect falls back to the legacy driver-based method name, such as <code>setupStorageCustomRemote()</code>.</p>
+<p>That means existing 2.0.0 applications can upgrade to 2.1.0 without immediately renaming storage setup methods.</p>
+<h2 id="recommended-migration">Recommended Migration</h2>
+<p>Rename custom setup methods from driver-based names to storage-name-based names when convenient.</p>
+<p>Before:</p>
+<pre class="highlight"><code class="language-php">public array $storages = [
     'remote' =&gt; [
         'driver'     =&gt; 'custom_remote',
         'public_url' =&gt; 'https://cdn.example.com/assets',
@@ -1584,192 +1432,61 @@ public array $storages = [
     ],
 ];
 
-/**
- * @param array&lt;string, mixed&gt; $storage
- *
- * @return array{adapter: FilesystemAdapter}
- */
-protected function setupStorageRemote(array $storage): array
+protected function setupStorageCustomRemote(array $storage): array
 {
-    /** @var FilesystemAdapter $adapter */
-    $adapter = new SomeOfficialFlysystemAdapter(...);
-
-    return ['adapter' =&gt; $adapter];
-}</code></pre>
-<p>The setup method name is generated from the configured storage name. For example, <code>remote</code> calls <code>setupStorageRemote()</code>, <code>s3</code> calls <code>setupStorageS3()</code>, and <code>private_documents</code> calls <code>setupStoragePrivateDocuments()</code>. The returned array is merged over the original disk configuration.</p>
-<p>For backward compatibility, if no storage-name setup method exists, AssetConnect falls back to the legacy driver-based method name. For example, <code>driver =&gt; 'aws_s3'</code> can still call <code>setupStorageAwsS3()</code>. Prefer storage-name setup methods for new code, especially when multiple storage disks use the same driver.</p>
-<p>Example AWS S3 disk:</p>
-<pre class="highlight"><code class="language-bash">composer require league/flysystem-aws-s3-v3:^3.0 aws/aws-sdk-php</code></pre>
-<pre class="highlight"><code class="language-php">use Aws\S3\S3Client;
-use League\Flysystem\AwsS3V3\AwsS3V3Adapter;
-use Maniaba\AssetConnect\Enums\AssetVisibility;
-
-public array $storages = [
-    's3' =&gt; [
-        'driver'     =&gt; 'aws_s3',
-        'bucket'     =&gt; 'my-bucket',
-        'prefix'     =&gt; 'asset-connect',
-        'public_url' =&gt; 'https://cdn.example.com',
-        'visibility' =&gt; AssetVisibility::PUBLIC,
-    ],
-];
-
-/**
- * @param array&lt;string, mixed&gt; $storage
- *
- * @return array{adapter: AwsS3V3Adapter}
- */
-protected function setupStorageS3(array $storage): array
-{
-    $client = new S3Client([
-        'version' =&gt; 'latest',
-        'region'  =&gt; env('AWS_DEFAULT_REGION', 'eu-central-1'),
-    ]);
-
     return [
-        'adapter' =&gt; new AwsS3V3Adapter(
-            $client,
-            (string) $storage['bucket'],
-            (string) ($storage['prefix'] ?? ''),
-        ),
+        'adapter' =&gt; new SomeOfficialFlysystemAdapter(...),
     ];
 }</code></pre>
-<p>If the application already builds a Flysystem instance elsewhere, pass it with <code>filesystem</code> instead:</p>
-<pre class="highlight"><code class="language-php">use League\Flysystem\Filesystem;
-use Maniaba\AssetConnect\Enums\AssetVisibility;
-
-public array $storages = [
+<p>After:</p>
+<pre class="highlight"><code class="language-php">public array $storages = [
     'remote' =&gt; [
-        'driver'     =&gt; 'remote_filesystem',
+        'driver'     =&gt; 'custom_remote',
+        'public_url' =&gt; 'https://cdn.example.com/assets',
         'visibility' =&gt; AssetVisibility::PROTECTED,
     ],
 ];
 
-/**
- * @param array&lt;string, mixed&gt; $storage
- *
- * @return array{filesystem: Filesystem}
- */
 protected function setupStorageRemote(array $storage): array
 {
-    $adapter = new SomeOfficialFlysystemAdapter(...);
-
-    return ['filesystem' =&gt; new Filesystem($adapter)];
+    return [
+        'adapter' =&gt; new SomeOfficialFlysystemAdapter(...),
+    ];
 }</code></pre>
-<p>For non-local adapters, <code>local_path</code> is <code>null</code>. Use storage streams, <code>copyToTemporaryFile()</code>, <code>withTemporaryFile()</code>, <code>writeFile()</code>, or a processor that reads and writes through the disk instead of passing storage-relative paths to APIs that require local files.</p>
-<h2 id="link-local-storage">Link Local Storage</h2>
-<p>For local public storage disks that define <code>public_url</code>, expose the configured root through your web server. The recommended setup is to create links from the public folder to each public storage root:</p>
-<pre class="highlight"><code class="language-bash">php spark asset-connect:storage-link</code></pre>
-<p>This creates links such as:</p>
-<pre class="highlight"><code class="language-text">public/assets/storage -&gt; writable/asset-connect/public</code></pre>
-<p>Limit the command to one disk when needed:</p>
-<pre class="highlight"><code class="language-bash">php spark asset-connect:storage-link --storage public</code></pre>
-<p>The link path must match the disk's <code>public_url</code>. If you use a web server alias instead of a filesystem link, point it to the same storage root.</p>
-<p>Remote public disks such as S3, Google Cloud Storage, FTP-backed uploads, or CDN-backed disks are not linked into <code>public/</code>. Configure their absolute HTTP <code>public_url</code> and AssetConnect will return that URL directly from <code>$asset-&gt;getUrl()</code>. If a remote disk does not have an HTTP public URL, configure it as protected so assets are served through AssetConnect routes.</p>
-<h2 id="protected-storage">Protected Storage</h2>
-<p>Protected storage is a separate disk selected by protected collections. Protected asset URLs are generated through AssetConnect routes, so requests go through the AssetConnect controller and <code>AuthorizableAssetCollectionDefinitionInterface::checkAuthorization()</code>. Do not expose protected storage roots with <code>public_url</code>, <code>asset-connect:storage-link</code>, or a web-server alias.</p>
-<pre class="highlight"><code class="language-php">final class PrivateDocumentsCollection implements AuthorizableAssetCollectionDefinitionInterface
+<h2 id="multiple-storages-using-one-driver">Multiple Storages Using One Driver</h2>
+<p>The new resolution model lets each configured storage disk have its own setup logic even when they share the same driver:</p>
+<pre class="highlight"><code class="language-php">public array $storages = [
+    'images' =&gt; [
+        'driver' =&gt; 'custom_remote',
+    ],
+    'documents' =&gt; [
+        'driver' =&gt; 'custom_remote',
+    ],
+];
+
+protected function setupStorageImages(array $storage): array
 {
-    public function definition(AssetCollectionSetterInterface $definition): void
-    {
-        $definition
-            -&gt;setStorage('protected')
-            -&gt;allowedExtensions('pdf');
-    }
-
-    public function checkAuthorization(Asset $asset): bool
-    {
-        // Used by applications that still call the authorization service directly.
-        // Direct web-server URLs are not checked by this method.
-        return service('auth')-&gt;user()?-&gt;id === $asset-&gt;entity_id;
-    }
-}</code></pre>
-<h2 id="selecting-storage-per-collection">Selecting Storage Per Collection</h2>
-<p>Use <code>setStorage()</code> in a collection definition when a collection must use a specific disk:</p>
-<pre class="highlight"><code class="language-php">final class ProductImagesCollection implements AssetCollectionDefinitionInterface
-{
-    public function definition(AssetCollectionSetterInterface $definition): void
-    {
-        $definition
-            -&gt;setStorage('public')
-            -&gt;allowedExtensions('jpg', 'png', 'webp');
-    }
-}</code></pre>
-<p>If <code>setStorage()</code> is not used, AssetConnect selects the disk from the collection visibility.</p>
-<h2 id="transfer-assets-between-storage-disks">Transfer Assets Between Storage Disks</h2>
-<p>Use <code>transferToStorage()</code> when an existing asset needs to move from one configured disk to another:</p>
-<pre class="highlight"><code class="language-php">// Move original file and existing variants from the current disk to protected
-$asset-&gt;transferToStorage('protected');
-
-// Copy to S3 and keep the source files on the original disk
-$asset-&gt;transferToStorage('s3_public', deleteSource: false);
-
-// Move only the original file, without variant files
-$asset-&gt;transferToStorage('archive', withVariants: false);</code></pre>
-<p>The storage-relative <code>path</code> stays unchanged. AssetConnect copies through <code>readStream()</code> and <code>writeStream()</code>, updates the asset row, updates variant metadata when variants are included, then deletes source files after the database update succeeds. This works for local disks, S3/MinIO, and other Flysystem adapters.</p>
-<p>If a variant is already registered but not processed yet, <code>transferToStorage()</code> updates its metadata to the target disk and skips copying the missing file. A later queued processor will write that variant to the new storage.</p>
-<h2 id="local-and-temporary-paths-for-processing">Local And Temporary Paths For Processing</h2>
-<p><code>Asset::path</code> and <code>AssetVariant::path</code> are storage-relative paths. Do not pass them directly to APIs that require local filesystem paths.</p>
-<p>For local disks, use <code>local_path</code>:</p>
-<pre class="highlight"><code class="language-php">$source = $asset-&gt;local_path;
-$target = $variant-&gt;local_path;
-
-if ($source === null || $target === null) {
-    throw new RuntimeException('This variant processor requires a local storage disk.');
+    return [
+        'adapter' =&gt; new ImagesAdapter(...),
+    ];
 }
 
-service('image')
-    -&gt;withFile($source)
-    -&gt;fit(300, 300, 'center')
-    -&gt;save($target);</code></pre>
-<p>For remote disks, queued processors, or any code that needs a local source file regardless of storage driver, use <code>withTemporaryFile()</code>. AssetConnect streams the stored file into a local temp file and deletes it after the callback finishes:</p>
-<pre class="highlight"><code class="language-php">$asset-&gt;withTemporaryFile(static function (string $source): void {
-    service('image')
-        -&gt;withFile($source)
-        -&gt;fit(300, 300, 'center')
-        -&gt;save(WRITEPATH . 'cache/preview.jpg');
-});</code></pre>
-<p>For variant processing on remote storage, use a temporary output file and write the processed contents back through the variant storage disk:</p>
-<pre class="highlight"><code class="language-php">$variants-&gt;assetVariant('thumbnail', static function (AssetVariant $variant, Asset $asset): void {
-    $asset-&gt;withTemporaryFile(static function (string $source) use ($variant): void {
-        $target = tempnam(sys_get_temp_dir(), 'asset_variant_');
-        if ($target === false) {
-            throw new RuntimeException('Unable to create temporary variant file.');
-        }
-
-        try {
-            service('image')
-                -&gt;withFile($source)
-                -&gt;fit(300, 300, 'center')
-                -&gt;save($target);
-
-            $contents = file_get_contents($target);
-            if ($contents === false) {
-                throw new RuntimeException('Unable to read processed variant file.');
-            }
-
-            $variant-&gt;writeFile($contents);
-        } finally {
-            @unlink($target);
-        }
-    });
-});</code></pre>
-<p>If you need manual control over cleanup, use <code>copyToTemporaryFile()</code> and delete the returned path in a <code>finally</code> block:</p>
-<pre class="highlight"><code class="language-php">$temporaryFile = $asset-&gt;copyToTemporaryFile();
-
-try {
-    // Process $temporaryFile...
-} finally {
-    @unlink($temporaryFile);
+protected function setupStorageDocuments(array $storage): array
+{
+    return [
+        'adapter' =&gt; new DocumentsAdapter(...),
+    ];
 }</code></pre>
-<p>The same methods are available on <code>AssetVariant</code> when you need to process an existing variant:</p>
-<pre class="highlight"><code class="language-php">$variant-&gt;withTemporaryFile(static function (string $variantFile): void {
-    // Process existing variant file...
-});</code></pre>
-<h2 id="migration-note">Migration Note</h2>
-<p>Use the <code>asset-connect:migrate-paths</code> command when upgrading legacy rows that have no <code>storage</code> disk value and either storage-relative paths or supported legacy storage metadata:</p>
-<pre class="highlight"><code class="language-bash">php spark asset-connect:migrate-paths --storage public --dry-run</code></pre>
-<p>For older rows that still contain absolute filesystem paths, the command can convert them only when <code>metadata.storage_info.storage_base_directory_path</code> identifies the legacy base directory. If the selected Flysystem disk does not already contain the file, the command copies the legacy source file into that disk before updating the row. After a row has a normalized storage disk and relative path, the command removes the obsolete <code>metadata.storage_info</code> property. See <a href="../upgrade-2.0/">Upgrade from 1.0.2 to 2.0.0</a> for the full migration workflow.</p>
+<p>In 2.0.0, both disks would have resolved to <code>setupStorageCustomRemote()</code>. In 2.1.0, <code>images</code> resolves to <code>setupStorageImages()</code> and <code>documents</code> resolves to <code>setupStorageDocuments()</code>.</p>
+<h2 id="no-data-migration-required">No Data Migration Required</h2>
+<p>No database migration or asset path migration is required for this upgrade.</p>
+<p>Run the package migrations only if your application has not already applied the 2.0.0 migrations:</p>
+<pre class="highlight"><code class="language-bash">php spark migrate --namespace=Maniaba\\AssetConnect</code></pre>
+<h2 id="verification">Verification</h2>
+<p>After upgrading, run your normal test suite and static analysis:</p>
+<pre class="highlight"><code class="language-bash">composer test
+composer analyze</code></pre>
+<p>If your application uses custom storage setup methods, verify at least one upload or read operation for each configured custom storage disk.</p>
 
 
 
@@ -1805,7 +1522,7 @@ try {
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../configuration/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Overview">
+          <a href="../installation/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Installation">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1815,20 +1532,20 @@ try {
                 Previous
               </span>
               <div class="md-ellipsis">
-                Overview
+                Installation
               </div>
             </div>
           </a>
         
         
           
-          <a href="../custom-asset-collections/" class="md-footer__link md-footer__link--next" aria-label="Next: Custom Asset Collections">
+          <a href="../upgrade-2.0/" class="md-footer__link md-footer__link--next" aria-label="Next: Upgrade from 1.0.2 to 2.0.0">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Custom Asset Collections
+                Upgrade from 1.0.2 to 2.0.0
               </div>
             </div>
             <div class="md-footer__button md-icon">
