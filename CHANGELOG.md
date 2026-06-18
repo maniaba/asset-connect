@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Storage setup methods are now resolved from the configured storage disk name first, with legacy driver-based `setupStorage{Driver}()` methods still supported as a fallback.
+- Documentation now explains `Asset::save()` update event dispatching and `AssetCreated::getSubjectEntity()` usage.
 
 ## [v2.0.0](https://github.com/maniaba/asset-connect/tree/v2.0.0) - 2026-06-15
 
