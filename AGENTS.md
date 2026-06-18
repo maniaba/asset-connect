@@ -80,6 +80,18 @@ No database server is required for the test suite (uses vfsstream + SQLite in-me
 
 ---
 
+## Release Version Updates
+
+When preparing a release, update the version in these three places:
+
+1. `src/AssetConnect.php` – update `AssetConnect::VERSION`.
+2. `CHANGELOG.md` – promote the top release section to `## [vX.Y.Z](https://github.com/maniaba/asset-connect/tree/vX.Y.Z) - YYYY-MM-DD`.
+3. `docs/index.md` – update the documentation title and introductory version text.
+
+Do not add a `version` field to `composer.json`; this package is versioned from Git tags.
+
+---
+
 ## Required Registration
 
 Any new **entity** or **collection** added to the library examples or tests must be listed in `Config\Asset`:
