@@ -2706,6 +2706,7 @@ try {
 <h3 id="save">save</h3>
 <pre class="highlight"><code class="language-php">public function save(): bool</code></pre>
 <p>Saves the asset to the database.</p>
+<p>When the model save succeeds without model errors, <code>save()</code> dispatches <code>asset.updated</code>.</p>
 <p><strong>Returns:</strong>
 - True if the asset was saved successfully, false otherwise.</p>
 <p><strong>Example:</strong>

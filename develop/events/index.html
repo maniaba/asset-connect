@@ -1656,9 +1656,10 @@ Events::on('variant.created', function (VariantCreated $event) {
 <h2 id="event-objects">Event Objects</h2>
 <p>Each event provides an event object that contains relevant information about the event:</p>
 <h3 id="assetcreated">AssetCreated</h3>
-<p>The <code>AssetCreated</code> event object provides access to the newly created asset:</p>
+<p>The <code>AssetCreated</code> event object provides access to the newly created asset and its subject entity:</p>
 <pre class="highlight"><code class="language-php">Events::on('asset.created', function (AssetCreated $event) {
     $asset = $event-&gt;getAsset();
+    $subject = $event-&gt;getSubjectEntity();
 
     // Access asset properties
     $assetId = $asset-&gt;id;
