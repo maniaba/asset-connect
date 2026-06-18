@@ -5,7 +5,7 @@
 **AssetConnect** (`maniaba/asset-connect`) is a file-management library for **CodeIgniter 4**.
 It lets you associate any file with any CI4 entity through a trait-based API, organise those files into typed collections, generate signed/temporary URLs, validate uploads, and process file variants asynchronously via a queue.
 
-- **Version:** 2.0.0
+- **Version:** 2.1.0
 - **License:** MIT
 - **Namespace root:** `Maniaba\AssetConnect`
 - **Docs:** <https://maniaba.github.io/asset-connect/>
@@ -97,6 +97,18 @@ composer cs-fix          # PHP CS Fixer (apply)
 composer inspect         # Deptrac layer check
 composer ci              # Full CI pipeline
 ```
+
+---
+
+## Release Version Updates
+
+When preparing a release, update the version in these three places:
+
+1. `src/AssetConnect.php` – update `AssetConnect::VERSION`.
+2. `CHANGELOG.md` – promote the top release section to `## [vX.Y.Z](https://github.com/maniaba/asset-connect/tree/vX.Y.Z) - YYYY-MM-DD`.
+3. `docs/index.md` – update the documentation title and introductory version text.
+
+Do not add a `version` field to `composer.json`; this package is versioned from Git tags.
 
 ---
 
