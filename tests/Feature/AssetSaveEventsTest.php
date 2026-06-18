@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use CodeIgniter\Events\Events;
-use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Events\AssetCreated;
 use Maniaba\AssetConnect\Events\AssetUpdated;
 use Tests\Support\AssetCollections\FakeDocumentCollection;
 use Tests\Support\AssetConnectFeatureTestCase;
-use Tests\Support\Entities\FakeAssetEntity;
 
 /**
  * @internal
@@ -49,8 +47,6 @@ final class AssetSaveEventsTest extends AssetConnectFeatureTestCase
             $this->resetAssetSaveEventListeners();
         }
     }
-
-
 
     private function resetAssetSaveEventListeners(): void
     {
