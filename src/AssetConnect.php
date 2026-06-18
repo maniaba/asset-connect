@@ -22,7 +22,7 @@ use Serializable;
 
 final class AssetConnect implements Serializable
 {
-    public const string VERSION = '2.0.0';
+    public const string VERSION = '2.1.0';
 
     public readonly AssetModel $assetModel;
     private readonly SetupAssetCollection $setupAssetCollection;

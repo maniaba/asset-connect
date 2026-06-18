@@ -45,7 +45,7 @@ Public collections use `$defaultPublicStorage` unless the collection selects a s
 
 ## Official Flysystem Adapters
 
-AssetConnect keeps only the local Flysystem dependency in its own `composer.json`. Applications install the extra adapter package they need, define the disk in `$storages`, and add a `setupStorage{Driver}()` method that creates the adapter for that driver.
+AssetConnect keeps only the local Flysystem dependency in its own `composer.json`. Applications install the extra adapter package they need, define the disk in `$storages`, and add a `setupStorage{StorageName}()` method that creates the adapter for that configured disk.
 
 See the [official Flysystem adapter documentation](https://flysystem.thephpleague.com/docs/) for connection-specific options.
 
@@ -81,7 +81,7 @@ public array $storages = [
  *
  * @return array{adapter: FilesystemAdapter}
  */
-protected function setupStorageCustomRemote(array $storage): array
+protected function setupStorageRemote(array $storage): array
 {
     /** @var FilesystemAdapter $adapter */
     $adapter = new SomeOfficialFlysystemAdapter(...);
@@ -90,7 +90,9 @@ protected function setupStorageCustomRemote(array $storage): array
 }
 ```
 
-The setup method name is generated from the `driver` value. For example, `aws_s3` calls `setupStorageAwsS3()`, `async_aws_s3` calls `setupStorageAsyncAwsS3()`, and `webdav` calls `setupStorageWebdav()`. The returned array is merged over the original disk configuration.
+The setup method name is generated from the configured storage name. For example, `remote` calls `setupStorageRemote()`, `s3` calls `setupStorageS3()`, and `private_documents` calls `setupStoragePrivateDocuments()`. The returned array is merged over the original disk configuration.
+
+For backward compatibility, if no storage-name setup method exists, AssetConnect falls back to the legacy driver-based method name. For example, `driver => 'aws_s3'` can still call `setupStorageAwsS3()`. Prefer storage-name setup methods for new code, especially when multiple storage disks use the same driver.
 
 Example AWS S3 disk:
 
@@ -118,7 +120,7 @@ public array $storages = [
  *
  * @return array{adapter: AwsS3V3Adapter}
  */
-protected function setupStorageAwsS3(array $storage): array
+protected function setupStorageS3(array $storage): array
 {
     $client = new S3Client([
         'version' => 'latest',
@@ -153,7 +155,7 @@ public array $storages = [
  *
  * @return array{filesystem: Filesystem}
  */
-protected function setupStorageRemoteFilesystem(array $storage): array
+protected function setupStorageRemote(array $storage): array
 {
     $adapter = new SomeOfficialFlysystemAdapter(...);
 

@@ -15,7 +15,7 @@ use Maniaba\AssetConnect\Storage\StorageManager;
  */
 final class AssetConfigTest extends CIUnitTestCase
 {
-    public function testStorageDriverSetupMethodsCanTransformStorageConfig(): void
+    public function testStorageNameSetupMethodsCanTransformStorageConfig(): void
     {
         $config = new class () extends Asset {
             public array $receivedStorageConfig = [];
@@ -36,7 +36,7 @@ final class AssetConfigTest extends CIUnitTestCase
              *
              * @return array{driver: string, root: string}
              */
-            protected function setupStorageTestingRemote(array $storage): array
+            protected function setupStorageRemote(array $storage): array
             {
                 $this->receivedStorageConfig = $storage;
 
@@ -58,7 +58,106 @@ final class AssetConfigTest extends CIUnitTestCase
         $this->assertSame(AssetVisibility::PROTECTED, $disk->visibility());
     }
 
-    public function testStorageDriverNamesAreConvertedToSetupMethodNames(): void
+    public function testStorageNameSetupMethodsCanCustomizeStoragesUsingSameDriver(): void
+    {
+        $config = new class () extends Asset {
+            /**
+             * {@inheritDoc}
+             */
+            public array $storages = [
+                'images' => [
+                    'driver' => 'custom_remote',
+                ],
+                'documents' => [
+                    'driver' => 'custom_remote',
+                ],
+            ];
+
+            /**
+             * @param array<string, mixed> $storage
+             *
+             * @return array{driver: string, root: string, visibility: AssetVisibility}
+             */
+            protected function setupStorageImages(array $storage): array
+            {
+                return [
+                    'driver'     => 'local',
+                    'root'       => HOMEPATH . 'build/asset-connect/images',
+                    'visibility' => AssetVisibility::PUBLIC,
+                ];
+            }
+
+            /**
+             * @param array<string, mixed> $storage
+             *
+             * @return array{driver: string, root: string, visibility: AssetVisibility}
+             */
+            protected function setupStorageDocuments(array $storage): array
+            {
+                return [
+                    'driver'     => 'local',
+                    'root'       => HOMEPATH . 'build/asset-connect/documents',
+                    'visibility' => AssetVisibility::PROTECTED,
+                ];
+            }
+        };
+
+        $this->assertSame(HOMEPATH . 'build/asset-connect/images', $config->storages['images']['root']);
+        $this->assertSame(AssetVisibility::PUBLIC, $config->storages['images']['visibility']);
+        $this->assertSame(HOMEPATH . 'build/asset-connect/documents', $config->storages['documents']['root']);
+        $this->assertSame(AssetVisibility::PROTECTED, $config->storages['documents']['visibility']);
+    }
+
+    public function testStorageNameSetupMethodsTakePriorityOverDriverSetupMethods(): void
+    {
+        $config = new class () extends Asset {
+            public string $usedSetupMethod = '';
+
+            /**
+             * {@inheritDoc}
+             */
+            public array $storages = [
+                's3' => [
+                    'driver' => 'aws_s3',
+                ],
+            ];
+
+            /**
+             * @param array<string, mixed> $storage
+             *
+             * @return array{driver: string, root: string}
+             */
+            protected function setupStorageS3(array $storage): array
+            {
+                $this->usedSetupMethod = 'storage-name';
+
+                return [
+                    'driver' => 'local',
+                    'root'   => HOMEPATH . 'build/asset-connect/by-name',
+                ];
+            }
+
+            /**
+             * @param array<string, mixed> $storage
+             *
+             * @return array{driver: string, root: string}
+             */
+            protected function setupStorageAwsS3(array $storage): array
+            {
+                $this->usedSetupMethod = 'driver';
+
+                return [
+                    'driver' => 'local',
+                    'root'   => HOMEPATH . 'build/asset-connect/by-driver',
+                ];
+            }
+        };
+
+        $this->assertSame('storage-name', $config->usedSetupMethod);
+        $this->assertSame(HOMEPATH . 'build/asset-connect/by-name', $config->storages['s3']['root']);
+    }
+
+    public function testStorageDriverSetupMethodsStillWorkAsBackwardCompatibleFallback(): void
     {
         $config = new class () extends Asset {
             public array $receivedStorageConfig = [];
@@ -67,7 +166,7 @@ final class AssetConfigTest extends CIUnitTestCase
              * {@inheritDoc}
              */
             public array $storages = [
-                's3' => [
+                'legacy' => [
                     'driver'     => 'aws_s3',
                     'root'       => 'before-setup',
                     'visibility' => 'public',
@@ -91,13 +190,13 @@ final class AssetConfigTest extends CIUnitTestCase
             }
         };
 
-        $this->assertArrayHasKey('s3', $config->storages);
+        $this->assertArrayHasKey('legacy', $config->storages);
         $this->assertSame('aws_s3', $config->receivedStorageConfig['driver']);
-        $this->assertSame('local', $config->storages['s3']['driver']);
-        $this->assertSame('public', $config->storages['s3']['visibility']);
+        $this->assertSame('local', $config->storages['legacy']['driver']);
+        $this->assertSame('public', $config->storages['legacy']['visibility']);
     }
 
-    public function testStorageDriverSetupMethodsMustReturnArrays(): void
+    public function testStorageSetupMethodsMustReturnArrays(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage("Storage setup method 'setupStorageBroken' must return an array.");

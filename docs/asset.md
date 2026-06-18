@@ -445,6 +445,8 @@ public function save(): bool
 
 Saves the asset to the database.
 
+When the model save succeeds without model errors, `save()` dispatches `asset.updated`.
+
 **Returns:**
 - True if the asset was saved successfully, false otherwise.
 
