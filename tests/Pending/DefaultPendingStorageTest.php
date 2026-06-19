@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Pending;
 
-use CodeIgniter\I18n\Time;
+use CodeIgniter\Config\Factories;
 use CodeIgniter\Test\CIUnitTestCase;
 use InvalidArgumentException;
+use Maniaba\AssetConnect\Config\Asset as AssetConfig;
 use Maniaba\AssetConnect\Exceptions\PendingAssetException;
 use Maniaba\AssetConnect\Pending\DefaultPendingStorage;
 use Maniaba\AssetConnect\Pending\PendingAsset;
+use Tests\Support\Config\TestAssetConfig;
 
 /**
  * @internal
@@ -19,16 +21,34 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
     private DefaultPendingStorage $storage;
     private string $tempFilePath;
     private string $basePendingPath;
+    private string $storageRoot;
 
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->storageRoot = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR)
+            . DIRECTORY_SEPARATOR
+            . 'asset-connect-pending-storage-test-' . bin2hex(random_bytes(4));
+
+        $config           = new TestAssetConfig();
+        $config->storages = [
+            'protected' => [
+                'driver'     => 'local',
+                'root'       => $this->storageRoot,
+                'visibility' => 'protected',
+            ],
+        ];
+
+        Factories::injectMock('config', AssetConfig::class, $config);
+        Factories::injectMock('config', 'Asset', $config);
+
         $this->storage = new DefaultPendingStorage();
         // Create a temporary file for testing
         $this->tempFilePath = tempnam(sys_get_temp_dir(), 'test_storage_');
         file_put_contents($this->tempFilePath, 'test storage content');
         // Set up base pending path
-        $this->basePendingPath = WRITEPATH . 'assets_pending' . DIRECTORY_SEPARATOR;
+        $this->basePendingPath = $this->storageRoot . DIRECTORY_SEPARATOR . 'assets_pending' . DIRECTORY_SEPARATOR;
         // Ensure the base directory exists
         if (! is_dir($this->basePendingPath)) {
             mkdir($this->basePendingPath, 0755, true);
@@ -48,6 +68,14 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
             delete_files($this->basePendingPath, true, true, true);
             @rmdir($this->basePendingPath);
         }
+
+        if (is_dir($this->storageRoot)) {
+            helper('filesystem');
+            delete_files($this->storageRoot, true, true, true);
+            @rmdir($this->storageRoot);
+        }
+
+        Factories::reset('config');
     }
 
     /**
@@ -60,6 +88,36 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
 
         // Assert
         $this->assertInstanceOf(DefaultPendingStorage::class, $storage);
+    }
+
+    public function testUsesDefaultProtectedStorageWhenPendingStorageDiskIsNotConfigured(): void
+    {
+        $pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
+
+        $this->storage->store($pendingAsset, 'fallback-protected-id');
+
+        $this->assertFileExists($this->basePendingPath . 'fallback-protected-id' . DIRECTORY_SEPARATOR . 'file');
+    }
+
+    public function testRejectsPublicPendingStorageDisk(): void
+    {
+        $config                     = new TestAssetConfig();
+        $config->pendingStorageDisk = 'public';
+        $config->storages           = [
+            'public' => [
+                'driver'     => 'local',
+                'root'       => $this->storageRoot,
+                'visibility' => 'public',
+            ],
+        ];
+
+        Factories::injectMock('config', AssetConfig::class, $config);
+        Factories::injectMock('config', 'Asset', $config);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Pending storage disk must be protected.');
+
+        new DefaultPendingStorage();
     }
 
     /**
@@ -92,23 +150,18 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
         $this->assertNotSame($id1, $id3);
     }
 
-    /**
-     * Test generatePendingId avoids collision when directory exists
-     */
     public function testGeneratePendingIdAvoidsCollision(): void
     {
-        // Arrange - Create a directory with a potential ID
         $existingId  = bin2hex(random_bytes(16));
         $existingDir = $this->basePendingPath . $existingId . DIRECTORY_SEPARATOR;
         mkdir($existingDir, 0755, true);
+        file_put_contents($existingDir . 'file', 'existing content');
 
-        // Act
         $newId = $this->storage->generatePendingId();
 
-        // Assert
         $this->assertNotSame($existingId, $newId);
 
-        // Cleanup
+        @unlink($existingDir . 'file');
         rmdir($existingDir);
     }
 
@@ -170,17 +223,13 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
         $this->assertSame(32, strlen($pendingAsset->id));
     }
 
-    /**
-     * Test store creates directory if not exists
-     */
-    public function testStoreCreatesDirectoryIfNotExists(): void
+    public function testStoreCreatesPendingPrefixIfNotExists(): void
     {
         // Arrange
         $pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
         $id           = 'new-directory-id';
         $expectedDir  = $this->basePendingPath . $id . DIRECTORY_SEPARATOR;
 
-        // Verify directory doesn't exist before
         $this->assertDirectoryDoesNotExist($expectedDir);
 
         // Act
@@ -314,12 +363,8 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
         $this->storage->fetchById($id);
     }
 
-    /**
-     * Test deleteById removes pending asset directory
-     */
-    public function testDeleteByIdRemovesPendingAssetDirectory(): void
+    public function testDeleteByIdRemovesPendingAssetFiles(): void
     {
-        // Arrange
         $pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
         $id           = 'delete-test-id';
 
@@ -328,18 +373,14 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
         $dir = $this->basePendingPath . $id . DIRECTORY_SEPARATOR;
         $this->assertDirectoryExists($dir);
 
-        // Act
         $result = $this->storage->deleteById($id);
 
-        // Assert
         $this->assertTrue($result);
-        $this->assertDirectoryDoesNotExist($dir);
+        $this->assertFileDoesNotExist($dir . 'file');
+        $this->assertFileDoesNotExist($dir . 'metadata.json');
     }
 
-    /**
-     * Test deleteById returns true when directory does not exist
-     */
-    public function testDeleteByIdReturnsTrueWhenDirectoryDoesNotExist(): void
+    public function testDeleteByIdReturnsTrueWhenPendingFilesDoNotExist(): void
     {
         // Act
         $result = $this->storage->deleteById('non-existent-id');
@@ -348,87 +389,34 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
         $this->assertTrue($result);
     }
 
-    /**
-     * Test deleteById removes all files in directory recursively
-     */
-    public function testDeleteByIdRemovesAllFilesRecursively(): void
+    public function testDeleteByIdRemovesKnownPendingFiles(): void
     {
-        // Arrange
-        $id  = 'recursive-delete-id';
-        $dir = $this->basePendingPath . $id . DIRECTORY_SEPARATOR;
-        mkdir($dir . 'subdir', 0755, true);
-        file_put_contents($dir . 'file1.txt', 'content1');
-        file_put_contents($dir . 'subdir/file2.txt', 'content2');
+        $id           = 'recursive-delete-id';
+        $pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
 
-        // Act
+        $this->storage->store($pendingAsset, $id);
+
+        $dir = $this->basePendingPath . $id . DIRECTORY_SEPARATOR;
+        mkdir($dir . 'variants', 0755, true);
+        file_put_contents($dir . 'variants/thumb.txt', 'thumb');
+
         $result = $this->storage->deleteById($id);
 
-        // Assert
         $this->assertTrue($result);
-        $this->assertDirectoryDoesNotExist($dir);
+        $this->assertFileDoesNotExist($dir . 'file');
+        $this->assertFileDoesNotExist($dir . 'metadata.json');
+        $this->assertFileExists($dir . 'variants/thumb.txt');
     }
 
-    /**
-     * Test cleanExpiredPendingAssets removes expired assets
-     */
-    public function testCleanExpiredPendingAssetsRemovesExpiredAssets(): void
-    {
-        // Arrange
-        $expiredId = 'expired-asset-id';
-        $validId   = 'valid-asset-id';
-
-        // Create separate temp files for each asset
-        $expiredTempFile = tempnam(sys_get_temp_dir(), 'test_expired_');
-        $validTempFile   = tempnam(sys_get_temp_dir(), 'test_valid_');
-        file_put_contents($expiredTempFile, 'expired content');
-        file_put_contents($validTempFile, 'valid content');
-
-        // Create expired asset (created 2 days ago)
-        $expiredAsset = PendingAsset::createFromFile($expiredTempFile);
-        $this->setPrivateProperty($expiredAsset, 'created_at', Time::now()->subDays(2));
-        $this->storage->store($expiredAsset, $expiredId);
-
-        // Create valid asset (created 1 hour ago)
-        $validAsset = PendingAsset::createFromFile($validTempFile);
-        $this->setPrivateProperty($validAsset, 'created_at', Time::now()->subHours(1));
-        $this->storage->store($validAsset, $validId);
-
-        // Update metadata files with correct timestamps
-        $this->updateMetadataTimestamp($expiredId, Time::now()->subDays(2));
-        $this->updateMetadataTimestamp($validId, Time::now()->subHours(1));
-
-        // Act
-        $this->storage->cleanExpiredPendingAssets();
-
-        // Assert
-        $expiredDir = $this->basePendingPath . $expiredId . DIRECTORY_SEPARATOR;
-        $validDir   = $this->basePendingPath . $validId . DIRECTORY_SEPARATOR;
-
-        $this->assertDirectoryDoesNotExist($expiredDir, 'Expired asset should be deleted');
-        $this->assertDirectoryExists($validDir, 'Valid asset should still exist');
-
-        // Cleanup temp files
-        @unlink($expiredTempFile);
-        @unlink($validTempFile);
-    }
-
-    /**
-     * Test cleanExpiredPendingAssets does nothing when base directory does not exist
-     */
     public function testCleanExpiredPendingAssetsDoesNothingWhenBaseDirNotExists(): void
     {
-        // Arrange - Delete base directory
         delete_files($this->basePendingPath, true, true, true);
         rmdir($this->basePendingPath);
 
-        // Act & Assert - Should not throw exception
         $this->storage->cleanExpiredPendingAssets();
-        $this->assertTrue(true); // If we get here, no exception was thrown
+        $this->assertTrue(true);
     }
 
-    /**
-     * Test cleanExpiredPendingAssets handles empty directory
-     */
     public function testCleanExpiredPendingAssetsHandlesEmptyDirectory(): void
     {
         // Act & Assert - Should not throw exception
@@ -436,10 +424,7 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
         $this->assertTrue(true);
     }
 
-    /**
-     * Test cleanExpiredPendingAssets skips directory without metadata
-     */
-    public function testCleanExpiredPendingAssetsSkipsDirectoryWithoutMetadata(): void
+    public function testCleanExpiredPendingAssetsDoesNotListPendingPrefixes(): void
     {
         // Arrange
         $id  = 'no-metadata-id';
@@ -448,10 +433,8 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
         file_put_contents($dir . 'file', 'content');
         // Don't create metadata.json
 
-        // Act
         $this->storage->cleanExpiredPendingAssets();
 
-        // Assert - Directory should still exist
         $this->assertDirectoryExists($dir);
     }
 
@@ -701,18 +684,5 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
             $currentInode = fileinode($storedFilePath);
             $this->assertSame($originalInode, $currentInode, "File inode should remain the same after update {$i}");
         }
-    }
-
-    /**
-     * Helper method to update metadata timestamp
-     */
-    private function updateMetadataTimestamp(string $id, Time $createdAt): void
-    {
-        $metadataPath = $this->basePendingPath . $id . DIRECTORY_SEPARATOR . 'metadata.json';
-        $metadata     = json_decode(file_get_contents($metadataPath), true);
-
-        $metadata['created_at'] = $createdAt->format('Y-m-d H:i:s');
-
-        file_put_contents($metadataPath, json_encode($metadata));
     }
 }

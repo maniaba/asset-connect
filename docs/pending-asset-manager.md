@@ -182,7 +182,7 @@ if ($success) {
 
 ### cleanExpiredPendingAssets()
 
-Manually triggers cleanup of all expired pending assets.
+Delegates expired cleanup to the configured pending storage.
 
 ```php
 public function cleanExpiredPendingAssets(): void
@@ -196,11 +196,7 @@ $manager->cleanExpiredPendingAssets();
 echo "Expired assets cleaned";
 ```
 
-**Automatic Cleanup:**
-
-Expired pending assets are automatically cleaned up by the `AssetConnectJob` queue job. When assets are processed, the job also handles cleanup of expired pending assets from the default pending storage. This ensures that temporary files don't accumulate over time.
-
-If you need to manually trigger cleanup outside of the queue job, you can use the method shown above.
+`DefaultPendingStorage` does not list remote storage buckets to discover expired entries. It deletes expired assets when a known pending ID is fetched and found expired. For S3-compatible storage, use storage lifecycle rules on the pending prefix if you need background cleanup for unconsumed pending assets.
 
 ## Complete Usage Examples
 
@@ -456,7 +452,7 @@ $manager->store($pending, 1800); // 30 minutes
 $manager->store($pending, 86400 * 7); // 7 days
 ```
 
-> **Note:** Expired pending assets are automatically cleaned up by the `AssetConnectJob` queue job when processing assets. No additional setup is required for automatic cleanup.
+> **Note:** Default pending storage avoids bucket listing. Use storage lifecycle rules or a custom pending storage implementation if you need scheduled cleanup of unconsumed expired pending assets.
 
 ## Configuration
 
@@ -468,6 +464,8 @@ use Maniaba\AssetConnect\Pending\DefaultPendingStorage;
 class Asset extends BaseConfig
 {
     public string $pendingStorage = DefaultPendingStorage::class;
+    public ?string $pendingStorageDisk = null; // falls back to defaultProtectedStorage
+    public string $pendingStoragePrefix = 'assets_pending';
 }
 ```
 

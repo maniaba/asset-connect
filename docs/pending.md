@@ -6,19 +6,19 @@ Pending assets allow temporary storage of files and their metadata before final 
 
 A pending asset represents a temporary file that is not yet permanently attached to an entity in your application. Each pending asset contains:
 
-- The actual file stored on disk
+- The actual file stored on the configured protected storage disk
 - Metadata about the asset (name, custom properties, order, preserve_original)
 - Expiration time (TTL - Time To Live)
 - A unique ID for identification
 
-Pending assets are stored in a temporary directory and automatically deleted after the TTL expires (default 24 hours).
+Pending assets are stored under a protected storage prefix and are deleted when consumed or when a known pending ID expires.
 
 ## Where are Pending Assets Stored?
 
-The default storage (`DefaultPendingStorage`) uses the filesystem to store pending assets. The directory structure is as follows:
+The default storage (`DefaultPendingStorage`) uses the AssetConnect storage disk system. If `pendingStorageDisk` is not configured, it falls back to `defaultProtectedStorage`. The resolved disk must be protected.
 
 ```
-WRITEPATH/assets_pending/
+<protected-disk>:assets_pending/
 ├── <pendingId>/
 │   ├── file              # Raw file
 │   └── metadata.json     # Metadata in JSON format
@@ -26,15 +26,17 @@ WRITEPATH/assets_pending/
 
 **Example:**
 ```
-writable/assets_pending/
+protected:assets_pending/
 ├── a1b2c3d4e5f6/
 │   ├── file              # profile.jpg
 │   └── metadata.json     # {"id":"a1b2c3d4e5f6","name":"Profile Photo",...}
 ```
 
+The `assets_pending` prefix is configurable with `Config\Asset::$pendingStoragePrefix`.
+
 **Default expiration time (TTL):** 86400 seconds (24 hours)
 
-After an asset expires (`created_at + ttl < now`), `PendingAssetManager::fetchById()` will return `null` and attempt to automatically delete the expired asset.
+After an asset expires (`created_at + ttl < now`), `PendingAssetManager::fetchById()` returns `null` and attempts to delete that known pending ID. Default storage deletes known object keys (`file` and `metadata.json`) and does not list remote buckets to find expired entries; use storage lifecycle rules or an application-side index if you need background cleanup for unconsumed pending assets.
 
 ## Main Classes
 
@@ -98,7 +100,7 @@ For detailed documentation, see [Pending Asset Manager](pending-asset-manager.md
 
 ### DefaultPendingStorage
 
-Default filesystem implementation for storing pending assets.
+Default protected Flysystem storage implementation for storing pending assets.
 
 **Namespace:** `Maniaba\AssetConnect\Pending\DefaultPendingStorage`
 
@@ -352,8 +354,8 @@ One of the key characteristics of pending storage is the distinction between cre
 
 When a pending asset **does not have** an ID, `store()` will:
 1. Generate a new unique ID
-2. Store the raw file in `WRITEPATH/assets_pending/<id>/file`
-3. Store metadata in `WRITEPATH/assets_pending/<id>/metadata.json`
+2. Store the raw file at `<pending-storage-disk>:<pendingStoragePrefix>/<id>/file`
+3. Store metadata at `<pending-storage-disk>:<pendingStoragePrefix>/<id>/metadata.json`
 
 ```php
 $pending = PendingAsset::createFromFile('/path/to/photo.jpg');
@@ -701,26 +703,9 @@ For advanced topics including custom storage implementations (S3, Redis, etc.), 
 **Possible causes:**
 
 1. **Asset has expired** - check if `created_at + ttl < now`
-2. **ID doesn't exist** - check if directory `WRITEPATH/assets_pending/<id>` was created
+2. **ID doesn't exist** - check if object keys exist under `<pendingStoragePrefix>/<id>/` on the protected pending storage disk
 3. **Corrupted metadata** - check if `metadata.json` is valid JSON
-4. **Missing file** - check if `file` exists in the directory
-
-**Verification:**
-```php
-$id = 'a1b2c3d4e5f6';
-$basePath = WRITEPATH . 'assets_pending' . DIRECTORY_SEPARATOR . $id . DIRECTORY_SEPARATOR;
-
-if (!is_dir($basePath)) {
-    echo "Directory does not exist";
-} elseif (!file_exists($basePath . 'file')) {
-    echo "File does not exist";
-} elseif (!file_exists($basePath . 'metadata.json')) {
-    echo "Metadata does not exist";
-} else {
-    $metadata = json_decode(file_get_contents($basePath . 'metadata.json'), true);
-    print_r($metadata);
-}
-```
+4. **Missing file** - check if `file` exists under the pending ID prefix
 
 ### `AssetException::forPendingAssetNotFound()`
 
@@ -739,24 +724,20 @@ try {
 }
 ```
 
-### Disk space issues
+### Storage cleanup
 
-Pending assets take up space. Ensure regular cleanup:
+Pending assets take up space. The safest cleanup path is consuming or deleting a known pending ID:
 
 ```php
-// Run daily in cron
 $manager = PendingAssetManager::make();
-$manager->cleanExpiredPendingAssets();
+$manager->deleteById($pendingId);
 ```
+
+Default pending storage intentionally does not list remote buckets to discover expired entries. It deletes known object keys under the pending ID prefix. For S3-compatible storage, configure lifecycle expiration for the pending prefix. For local storage, use a custom pending storage implementation if you need directory scanning.
 
 ### Permissions issues
 
-Ensure `WRITEPATH/assets_pending/` has correct permissions:
-
-```bash
-chmod -R 755 writable/assets_pending
-chown -R www-data:www-data writable/assets_pending
-```
+Ensure the configured protected storage disk can write, read, and delete the pending prefix.
 
 ## Summary
 
@@ -765,7 +746,7 @@ chown -R www-data:www-data writable/assets_pending
 - **Create vs Update**: if pending has an ID, `store()` updates only metadata without overwriting the file
 - **`addAssetFromPending()`** converts a pending asset into a real asset - simple and fast
 - **Automatic cleanup**: pending IDs are consumed and removed from storage before the real asset is stored from a temporary source file
-- **Expired assets cleanup**: expired pending assets are automatically cleaned up by the `AssetConnectJob` queue job when processing assets
+- **Expired known IDs**: expired pending assets are rejected by `fetchById()` and that known ID is deleted when possible
 
 Pending assets make upload processes more flexible and allow users to first upload a file, then edit metadata, and finally confirm where the asset will be added.
 

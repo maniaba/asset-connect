@@ -168,6 +168,26 @@ class Asset extends BaseConfig
 
     /**
      * --------------------------------------------------------------------
+     * Pending Assets Storage Disk
+     * --------------------------------------------------------------------
+     *
+     * Storage disk used by DefaultPendingStorage. If null, the configured
+     * default protected storage disk is used. The resolved disk must have
+     * protected visibility.
+     */
+    public ?string $pendingStorageDisk = null;
+
+    /**
+     * --------------------------------------------------------------------
+     * Pending Assets Storage Prefix
+     * --------------------------------------------------------------------
+     *
+     * Relative directory inside the pending storage disk.
+     */
+    public string $pendingStoragePrefix = 'assets_pending';
+
+    /**
+     * --------------------------------------------------------------------
      * Pending Assets Security Token
      * --------------------------------------------------------------------
      *

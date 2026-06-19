@@ -171,9 +171,14 @@ For detailed information about URL generators, see the [Custom URL Generator](cu
 Pending uploads are protected by a configurable security token strategy:
 
 ```php
+public string $pendingStorage = \Maniaba\AssetConnect\Pending\DefaultPendingStorage::class;
+public ?string $pendingStorageDisk = null; // falls back to defaultProtectedStorage
+public string $pendingStoragePrefix = 'assets_pending';
 public ?string $pendingSecurityToken = \Maniaba\AssetConnect\Pending\PendingSecurityToken\SessionPendingSecurityToken::class;
 public ?string $pendingSecurityKey = null;
 ```
+
+`DefaultPendingStorage` stores pending files through the configured AssetConnect storage system. The pending disk must be protected. If `pendingStorageDisk` is `null`, AssetConnect uses `defaultProtectedStorage`.
 
 `SessionPendingSecurityToken` is the default browser flow. It stores a per-pending secret in the current session and stores only an HMAC digest in pending metadata, so the client only needs to submit `pending_id`.
 

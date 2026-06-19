@@ -4,17 +4,38 @@ declare(strict_types=1);
 
 namespace Maniaba\AssetConnect\Pending;
 
-use CodeIgniter\Files\File;
 use CodeIgniter\I18n\Time;
-use ErrorException;
 use InvalidArgumentException;
+use Maniaba\AssetConnect\Config\Asset as AssetConfig;
+use Maniaba\AssetConnect\Enums\AssetVisibility;
 use Maniaba\AssetConnect\Exceptions\PendingAssetException;
 use Maniaba\AssetConnect\Pending\Interfaces\PendingStorageInterface;
+use Maniaba\AssetConnect\Storage\Interfaces\StorageDiskInterface;
+use Maniaba\AssetConnect\Storage\StorageManager;
 use Override;
 use Random\RandomException;
+use Throwable;
 
 class DefaultPendingStorage implements PendingStorageInterface
 {
+    private readonly StorageDiskInterface $disk;
+    private readonly string $basePath;
+
+    public function __construct(?StorageDiskInterface $disk = null, ?string $basePath = null)
+    {
+        /** @var AssetConfig $config */
+        $config = config('Asset');
+
+        $pendingDiskName = $config->pendingStorageDisk ?? $config->defaultProtectedStorage;
+
+        $this->disk = $disk ?? StorageManager::make($config)->disk($pendingDiskName);
+        if ($this->disk->visibility() !== AssetVisibility::PROTECTED) {
+            throw new InvalidArgumentException('Pending storage disk must be protected.');
+        }
+
+        $this->basePath = $this->normalizeBasePath($basePath ?? $config->pendingStoragePrefix);
+    }
+
     /**
      * @throws PendingAssetException|RandomException if unable to generate unique ID
      */
@@ -26,7 +47,7 @@ class DefaultPendingStorage implements PendingStorageInterface
         $limitTries = 5;
         $tries      = 0;
 
-        while (is_dir($this->getBasePendingPath() . $randomId . DIRECTORY_SEPARATOR)) {
+        while ($this->pendingAssetExists($randomId)) {
             $randomId = bin2hex(random_bytes(16));
             $tries++;
             if ($tries >= $limitTries) {
@@ -54,23 +75,34 @@ class DefaultPendingStorage implements PendingStorageInterface
         $filePath     = $this->getPendingRawFilePath($id);
         $metadataPath = $this->getPendingMetadataFilePath($id);
 
-        if (! file_exists($filePath) || ! file_exists($metadataPath)) {
+        if (! $this->disk->fileExists($filePath) || ! $this->disk->fileExists($metadataPath)) {
             return null;
         }
 
-        $metadataJson = file_get_contents($metadataPath);
-        if ($metadataJson === false) {
-            // Unable to read metadata file
+        try {
+            $metadataJson = $this->disk->read($metadataPath);
+        } catch (Throwable) {
             throw PendingAssetException::forUnableToReadMetadata($id);
         }
 
         $metadata = json_decode($metadataJson, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            // Invalid JSON in metadata file
+        if (json_last_error() !== JSON_ERROR_NONE || ! is_array($metadata)) {
             throw PendingAssetException::forUnableToReadMetadata($id);
         }
 
-        return PendingAsset::createFromFile($filePath, $metadata);
+        $temporaryPath = $this->copyPendingFileToTemporarySource($filePath, $id);
+
+        try {
+            return PendingAsset::createFromFile($temporaryPath, $this->normalizeMetadata($metadata));
+        } catch (Throwable $exception) {
+            @unlink($temporaryPath);
+
+            if ($exception instanceof PendingAssetException) {
+                throw $exception;
+            }
+
+            throw PendingAssetException::forUnableToReadMetadata($id);
+        }
     }
 
     #[Override]
@@ -78,23 +110,25 @@ class DefaultPendingStorage implements PendingStorageInterface
     {
         $this->assertValidPendingId($id);
 
-        $basePath = $this->getBasePendingPath() . $id . DIRECTORY_SEPARATOR;
-
-        if (! is_dir($basePath)) {
-            return true; // Directory does not exist, nothing to delete
+        if (! $this->pendingAssetExists($id)) {
+            return true;
         }
 
-        // Recursively delete the directory and its contents
-        $result = delete_files($basePath, true, true, true);
+        try {
+            foreach ($this->getKnownPendingFilePaths($id) as $path) {
+                if ($this->disk->fileExists($path)) {
+                    $this->disk->delete($path);
+                }
+            }
 
-        // Finally, remove the base directory itself
-        @rmdir($basePath);
-
-        return $result;
+            return true;
+        } catch (Throwable) {
+            return false;
+        }
     }
 
     /**
-     * Retrieves the base path for pending operations or resources.
+     * Retrieves the base path for pending operations or resources within the configured storage disk.
      *  Example:
      *    base: pending/
      *    pendingId: abc123
@@ -106,7 +140,7 @@ class DefaultPendingStorage implements PendingStorageInterface
      */
     private function getBasePendingPath(): string
     {
-        return WRITEPATH . 'assets_pending' . DIRECTORY_SEPARATOR;
+        return $this->basePath;
     }
 
     /**
@@ -116,7 +150,7 @@ class DefaultPendingStorage implements PendingStorageInterface
      *   base: pending/
      *   pendingId: abc123
      * Resulting path:
-     *   pending/abc123/data.json
+     *   pending/abc123/file
      *
      * @param string $pendingId The unique identifier for the pending operation.
      *
@@ -124,7 +158,7 @@ class DefaultPendingStorage implements PendingStorageInterface
      */
     private function getPendingRawFilePath(string $pendingId): string
     {
-        return $this->getBasePendingPath() . $pendingId . DIRECTORY_SEPARATOR . 'file';
+        return $this->getPendingDirectoryPath($pendingId) . '/file';
     }
 
     /**
@@ -142,7 +176,12 @@ class DefaultPendingStorage implements PendingStorageInterface
      */
     private function getPendingMetadataFilePath(string $pendingId): string
     {
-        return $this->getBasePendingPath() . $pendingId . DIRECTORY_SEPARATOR . 'metadata.json';
+        return $this->getPendingDirectoryPath($pendingId) . '/metadata.json';
+    }
+
+    private function getPendingDirectoryPath(string $pendingId): string
+    {
+        return $this->getBasePendingPath() . '/' . $pendingId;
     }
 
     #[Override]
@@ -167,37 +206,38 @@ class DefaultPendingStorage implements PendingStorageInterface
         // Set the ID on the asset
         $asset->setId($id);
 
-        // store file on  getPendingFilePath
-        $storeFilePath = $this->getPendingRawFilePath($id);
-        $directory     = dirname($storeFilePath);
-
-        // Ensure the directory exists
-        if (! is_dir($directory)) {
-            mkdir($directory, 0755, true);
+        $sourcePath = $asset->file->getRealPath();
+        if (! is_string($sourcePath) || ! is_file($sourcePath)) {
+            throw PendingAssetException::forUnableToStorePendingAsset($id, 'Pending source file is not readable.');
         }
 
-        // Store metadata file
         $this->storeMetadataFile($asset);
 
+        $storeFilePath = $this->getPendingRawFilePath($id);
+
         // if file already exists at path, return because we do not want to overwrite
-        if (file_exists($storeFilePath)) {
-            if ($storeFilePath !== $asset->file->getRealPath()) {
-                // Delete the temporary file if it was created (since we're not using it for update)
-                @unlink($asset->file->getRealPath());
-            }
+        if ($this->disk->fileExists($storeFilePath)) {
+            @unlink($sourcePath);
 
             return;
         }
 
-        // Move or copy the file to the pending file path to $filePath
-        $success = copy($asset->file->getRealPath(), $storeFilePath);
-        if (! $success) {
-            throw PendingAssetException::forUnableToStorePendingAsset($id, 'Failed to copy file to pending storage.');
+        $stream = fopen($sourcePath, 'rb');
+        if ($stream === false) {
+            throw PendingAssetException::forUnableToStorePendingAsset($id, 'Failed to open source file stream.');
         }
-        // Delete the temporary file if it was created
-        @unlink($asset->file->getRealPath());
 
-        $asset->setFile(new File($storeFilePath));
+        try {
+            $this->disk->writeStream($storeFilePath, $stream, [
+                'visibility' => AssetVisibility::PROTECTED,
+            ]);
+        } catch (Throwable $exception) {
+            throw PendingAssetException::forUnableToStorePendingAsset($id, 'Failed to write file to pending storage: ' . $exception->getMessage());
+        } finally {
+            fclose($stream);
+        }
+
+        @unlink($sourcePath);
     }
 
     private function storeMetadataFile(PendingAsset $asset): void
@@ -205,21 +245,18 @@ class DefaultPendingStorage implements PendingStorageInterface
         $this->assertValidPendingId($asset->id);
 
         $metadataPath = $this->getPendingMetadataFilePath($asset->id);
-
-        if (file_exists($metadataPath)) {
-            // unlink an existing file to update it
-            @unlink($metadataPath);
-        }
-
-        // Store metadata as JSON
         $metadataJson = json_encode($asset);
 
+        if (! is_string($metadataJson)) {
+            throw PendingAssetException::forUnableToStorePendingAsset($asset->id, 'Failed to encode metadata.');
+        }
+
         try {
-            $result = file_put_contents($metadataPath, $metadataJson);
-            if ($result === false) {
-                throw PendingAssetException::forUnableToStorePendingAsset($asset->id, 'Failed to write metadata file.');
-            }
-        } catch (ErrorException $e) {
+            $this->disk->delete($metadataPath);
+            $this->disk->write($metadataPath, $metadataJson, [
+                'visibility' => AssetVisibility::PROTECTED,
+            ]);
+        } catch (Throwable $e) {
             throw PendingAssetException::forUnableToStorePendingAsset($asset->id, 'Failed to write metadata file: ' . $e->getMessage());
         }
     }
@@ -227,49 +264,131 @@ class DefaultPendingStorage implements PendingStorageInterface
     #[Override]
     public function cleanExpiredPendingAssets(): void
     {
-        $basePath   = $this->getBasePendingPath();
-        $ttlSeconds = $this->getDefaultTTLSeconds();
-        $now        = Time::now()->getTimestamp();
+        // Default storage avoids listing remote buckets. Expiration should be
+        // handled by storage lifecycle rules or by deleting known pending IDs.
+    }
 
-        if (! is_dir($basePath)) {
-            return; // No pending assets to clean
+    private function copyPendingFileToTemporarySource(string $filePath, string $id): string
+    {
+        $temporaryPath = tempnam(sys_get_temp_dir(), 'pending_asset_');
+        if ($temporaryPath === false) {
+            throw PendingAssetException::forUnableToReadMetadata($id);
         }
 
-        helper('filesystem');
+        $source = null;
+        $target = null;
 
-        $directories = directory_map($basePath, 1);
-        if ($directories === []) {
-            return; // No directories found
-        }
-
-        foreach ($directories as $directory) {
-            $pendingId    = rtrim((string) $directory, DIRECTORY_SEPARATOR);
-            $metadataPath = $this->getPendingMetadataFilePath($pendingId);
-
-            if (! is_file($metadataPath)) {
-                continue; // No metadata file, skip
+        try {
+            $source = $this->disk->readStream($filePath);
+            if (! is_resource($source)) {
+                throw PendingAssetException::forUnableToReadMetadata($id);
             }
 
-            $metadataJson = file_get_contents($metadataPath);
-            if ($metadataJson === false) {
-                continue; // Unable to read metadata, skip
+            $target = fopen($temporaryPath, 'wb');
+            if ($target === false || stream_copy_to_stream($source, $target) === false) {
+                throw PendingAssetException::forUnableToReadMetadata($id);
+            }
+        } catch (Throwable $exception) {
+            @unlink($temporaryPath);
+
+            if ($exception instanceof PendingAssetException) {
+                throw $exception;
             }
 
-            $metadata = json_decode($metadataJson, true);
-            if (json_last_error() !== JSON_ERROR_NONE || ! isset($metadata['created_at'])) {
-                continue; // Invalid metadata, skip
+            throw PendingAssetException::forUnableToReadMetadata($id);
+        } finally {
+            if (is_resource($target)) {
+                fclose($target);
             }
 
-            $createdAt = strtotime((string) $metadata['created_at']);
-            if ($createdAt === false) {
-                continue; // Invalid created_at format, skip
-            }
-
-            if (($createdAt + $ttlSeconds) < $now) {
-                // Asset has expired, delete it
-                $this->deleteById($pendingId);
+            if (is_resource($source)) {
+                fclose($source);
             }
         }
+
+        register_shutdown_function(static function () use ($temporaryPath): void {
+            if (is_file($temporaryPath)) {
+                @unlink($temporaryPath);
+            }
+        });
+
+        return $temporaryPath;
+    }
+
+    /**
+     * @param array<string, mixed> $metadata
+     *
+     * @return array<string, mixed>
+     */
+    private function normalizeMetadata(array $metadata): array
+    {
+        foreach (['created_at', 'updated_at'] as $key) {
+            $value     = $metadata[$key] ?? null;
+            $timestamp = null;
+
+            if ($value instanceof Time) {
+                $timestamp = $value->getTimestamp();
+            } elseif (is_array($value)) {
+                $date = $value['date'] ?? null;
+                if (is_string($date)) {
+                    $timestamp = $this->metadataTimeStringToTimestamp($date);
+                }
+            } elseif (is_string($value)) {
+                $timestamp = $this->metadataTimeStringToTimestamp($value);
+            }
+
+            if ($timestamp !== null) {
+                $metadata[$key] = Time::createFromTimestamp($timestamp);
+            }
+        }
+
+        return $metadata;
+    }
+
+    private function metadataTimeStringToTimestamp(string $value): ?int
+    {
+        if ($value === '') {
+            return null;
+        }
+
+        try {
+            return Time::parse($value)->getTimestamp();
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
+    private function pendingAssetExists(string $pendingId): bool
+    {
+        foreach ($this->getKnownPendingFilePaths($pendingId) as $path) {
+            if ($this->disk->fileExists($path)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function getKnownPendingFilePaths(string $pendingId): array
+    {
+        return [
+            $this->getPendingRawFilePath($pendingId),
+            $this->getPendingMetadataFilePath($pendingId),
+        ];
+    }
+
+    private function normalizeBasePath(string $basePath): string
+    {
+        $basePath = trim(str_replace('\\', '/', $basePath), '/');
+
+        if ($basePath === '') {
+            throw new InvalidArgumentException('Pending storage prefix must not be empty.');
+        }
+
+        return $basePath;
     }
 
     private function assertValidPendingId(string $pendingId): void
