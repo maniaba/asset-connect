@@ -11,11 +11,13 @@ use Config\App;
 use Config\Services;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Asset\AssetAdder;
+use Maniaba\AssetConnect\Asset\AssetAdderMultiple;
 use Maniaba\AssetConnect\Asset\AssetPersistenceManager;
 use Maniaba\AssetConnect\AssetConnect;
 use Maniaba\AssetConnect\AssetVariants\AssetVariant;
 use Maniaba\AssetConnect\Enums\AssetVisibility;
 use Maniaba\AssetConnect\Exceptions\FileException;
+use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Maniaba\AssetConnect\Models\AssetModel;
 use Maniaba\AssetConnect\Pending\PendingAsset;
 use Maniaba\AssetConnect\Pending\PendingAssetManager;
@@ -367,6 +369,44 @@ final class AssetConnectEntityFlowTest extends AssetConnectFeatureTestCase
         $this->assertSame('request-two.txt', $assets[1]->file_name);
     }
 
+    public function testMultipleAssetAdderAcceptsSingleUploadedFileValue(): void
+    {
+        $entity       = $this->createFakeEntity();
+        $uploadedFile = $this->createUploadedFileStub(
+            'single request.txt',
+            $this->createSourceFile('single-request-source.txt', 'single request'),
+        );
+        $multipleAdder = $this->createMultipleAssetAdder([
+            'document' => $uploadedFile,
+        ], $entity);
+
+        $assetAdders = $multipleAdder->forEach();
+
+        $this->assertCount(1, $assetAdders, 'forEach should wrap a single UploadedFile value into a list.');
+        $this->assertContainsOnlyInstancesOf(AssetAdder::class, $assetAdders, 'forEach should return asset adders for single UploadedFile values.');
+
+        $assets = $multipleAdder->toAssetCollection(FakeDocumentCollection::class);
+
+        $this->assertCount(1, $assets, 'toAssetCollection should wrap a single UploadedFile value into a list.');
+        $this->assertAssetWasStoredForEntity($assets[0], $entity, 'fake_documents');
+        $this->assertSame('single-request.txt', $assets[0]->file_name, 'Single uploaded file should be stored with its sanitized client file name.');
+    }
+
+    public function testMultipleAssetAdderRejectsInvalidUploadedFileItem(): void
+    {
+        $multipleAdder = $this->createMultipleAssetAdder([
+            'document' => ['not an uploaded file'],
+        ], $this->createFakeEntity());
+
+        try {
+            $multipleAdder->forEach();
+            $this->fail('forEach should reject items that are not UploadedFile instances.');
+        } catch (InvalidArgumentException $exception) {
+            $this->assertSame('Invalid argument provided', $exception->getMessage(), 'Invalid item should use the package invalid argument message.');
+            $this->assertSame(['Expected UploadedFile, got string'], $exception->errors, 'Invalid item should report the actual value type.');
+        }
+    }
+
     public function testAssetStoragePathCanBeRemovedWithoutDeletingDatabaseRow(): void
     {
         $entity = $this->createFakeEntity();
@@ -555,6 +595,14 @@ final class AssetConnectEntityFlowTest extends AssetConnectFeatureTestCase
         $uploadedFile->method('getRealPath')->willReturn($path);
 
         return $uploadedFile;
+    }
+
+    /**
+     * @param array<string, mixed> $uploadedFiles
+     */
+    private function createMultipleAssetAdder(array $uploadedFiles, FakeAssetEntity $entity): AssetAdderMultiple
+    {
+        return new AssetAdderMultiple($uploadedFiles, $entity);
     }
 
     private function injectUrlRequest(): void
