@@ -11,6 +11,8 @@ use Maniaba\AssetConnect\Config\Asset as AssetConfig;
 use Maniaba\AssetConnect\Pending\Interfaces\PendingOwnerResolverInterface;
 use Maniaba\AssetConnect\Pending\PendingAsset;
 use Maniaba\AssetConnect\Pending\PendingSecurityToken\OwnerPendingSecurityToken;
+use stdClass;
+use Tests\Support\Pending\StaticPendingOwnerResolver;
 
 /**
  * @internal
@@ -31,6 +33,8 @@ final class OwnerPendingSecurityTokenTest extends CIUnitTestCase
                 unlink($tempFile);
             }
         }
+
+        StaticPendingOwnerResolver::reset();
 
         Factories::reset('config');
 
@@ -126,7 +130,57 @@ final class OwnerPendingSecurityTokenTest extends CIUnitTestCase
         $tokenService->generateToken('pending-id-1');
     }
 
-    private function injectAssetConfig(?PendingOwnerResolverInterface $resolver): void
+    public function testDeleteTokenIsNoop(): void
+    {
+        $this->injectAssetConfig($this->resolver('user-123'));
+
+        $tokenService = new OwnerPendingSecurityToken();
+        $tokenService->deleteToken('pending-id-1');
+
+        $this->addToAssertionCount(1);
+    }
+
+    public function testConstructorAcceptsOwnerResolverClassString(): void
+    {
+        $pendingId = 'pending-id-1';
+        $ownerId   = 'user-123';
+
+        StaticPendingOwnerResolver::$ownerId = $ownerId;
+        $this->injectAssetConfig(StaticPendingOwnerResolver::class);
+
+        $tokenService = new OwnerPendingSecurityToken();
+
+        $this->assertSame(
+            $this->expectedDigest($pendingId, $ownerId),
+            $tokenService->generateToken($pendingId),
+            'Owner token service must instantiate a configured owner resolver class string.',
+        );
+    }
+
+    public function testConstructorRejectsInvalidOwnerResolverClassString(): void
+    {
+        $this->injectAssetConfig(stdClass::class);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Pending owner resolver must implement PendingOwnerResolverInterface.');
+
+        new OwnerPendingSecurityToken();
+    }
+
+    public function testValidateTokenReturnsFalseWhenPendingAssetHasNoSecurityToken(): void
+    {
+        $this->injectAssetConfig($this->resolver('user-123'));
+
+        $pendingAsset = $this->createPendingAsset('pending-id-1', null);
+        $tokenService = new OwnerPendingSecurityToken();
+
+        $this->assertFalse(
+            $tokenService->validateToken($pendingAsset),
+            'Owner token validation must fail when pending asset metadata has no security token.',
+        );
+    }
+
+    private function injectAssetConfig(PendingOwnerResolverInterface|string|null $resolver): void
     {
         $assetConfig                       = new AssetConfig();
         $assetConfig->pendingSecurityKey   = self::SECURITY_KEY;
@@ -149,7 +203,7 @@ final class OwnerPendingSecurityTokenTest extends CIUnitTestCase
         };
     }
 
-    private function createPendingAsset(string $pendingId, string $securityToken): PendingAsset
+    private function createPendingAsset(string $pendingId, ?string $securityToken): PendingAsset
     {
         $tempFile = tempnam(sys_get_temp_dir(), 'test_owner_token_');
         $this->assertIsString($tempFile);
@@ -159,7 +213,10 @@ final class OwnerPendingSecurityTokenTest extends CIUnitTestCase
 
         $pendingAsset = PendingAsset::createFromFile($tempFile);
         $pendingAsset->setId($pendingId);
-        $pendingAsset->setSecurityToken($securityToken);
+
+        if ($securityToken !== null) {
+            $pendingAsset->setSecurityToken($securityToken);
+        }
 
         return $pendingAsset;
     }

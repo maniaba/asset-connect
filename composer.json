@@ -59,6 +59,7 @@
     },
     "autoload-dev": {
         "files": [
+            "tests/_support/Pending/PendingAssetManagerFunctionOverrides.php",
             "tests/_support/Storage/TemporaryStorageFileFunctionOverrides.php"
         ],
         "psr-4": {

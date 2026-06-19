@@ -12,6 +12,7 @@ use InvalidArgumentException;
 use Maniaba\AssetConnect\Config\Asset as AssetConfig;
 use Maniaba\AssetConnect\Pending\PendingAsset;
 use Maniaba\AssetConnect\Pending\PendingSecurityToken\SessionPendingSecurityToken;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
@@ -56,6 +57,7 @@ final class SessionPendingSecurityTokenTest extends CIUnitTestCase
         parent::tearDown();
     }
 
+    #[AllowMockObjectsWithoutExpectations]
     public function testConstructorThrowsExceptionWhenTTLIsZero(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -64,6 +66,7 @@ final class SessionPendingSecurityTokenTest extends CIUnitTestCase
         new SessionPendingSecurityToken(0);
     }
 
+    #[AllowMockObjectsWithoutExpectations]
     public function testConstructorThrowsExceptionWhenTokenLengthIsInvalid(): void
     {
         $this->expectException(InvalidArgumentException::class);
