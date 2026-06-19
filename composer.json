@@ -58,6 +58,9 @@
         ]
     },
     "autoload-dev": {
+        "files": [
+            "tests/_support/Storage/TemporaryStorageFileFunctionOverrides.php"
+        ],
         "psr-4": {
             "Tests\\": "tests",
             "Tests\\Support\\": "tests/_support"
