@@ -294,11 +294,7 @@ class Asset extends BaseConfig
             }
 
             $storageNameString = (string) $storageName;
-            $driver            = $storageConfig['driver'] ?? null;
-            $methodName        = $this->resolveStorageSetupMethodName(
-                $storageNameString,
-                is_string($driver) && $driver !== '' ? $driver : null,
-            );
+            $methodName        = $this->resolveStorageSetupMethodName($storageNameString);
 
             if ($methodName === null) {
                 continue;
@@ -316,20 +312,11 @@ class Asset extends BaseConfig
         }
     }
 
-    private function resolveStorageSetupMethodName(string $storageName, ?string $driver): ?string
+    private function resolveStorageSetupMethodName(string $storageName): ?string
     {
         $storageMethodName = $this->storageSetupMethodName($storageName);
         if (method_exists($this, $storageMethodName)) {
             return $storageMethodName;
-        }
-
-        if ($driver === null) {
-            return null;
-        }
-
-        $driverMethodName = $this->storageSetupMethodName($driver);
-        if (method_exists($this, $driverMethodName)) {
-            return $driverMethodName;
         }
 
         return null;

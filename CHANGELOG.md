@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.0.0](https://github.com/maniaba/asset-connect/tree/v3.0.0) - 2026-06-19
+
+### Added
+- Added protected Flysystem-backed pending storage configuration through `pendingStorageDisk` and `pendingStoragePrefix`. If no pending disk is configured, `DefaultPendingStorage` uses the configured `defaultProtectedStorage` disk.
+- Added pending asset security token providers with HMAC validation: `SessionPendingSecurityToken`, `CookiePendingSecurityToken`, and `OwnerPendingSecurityToken` for stateless API/JWT ownership checks.
+- Added `pendingSecurityToken`, `pendingSecurityKey`, and `pendingOwnerResolver` configuration options for controlling pending asset ownership validation.
+- Added `PendingOwnerResolverInterface` so API/JWT applications can bind pending assets to the current authenticated owner instead of relying on a PHP session.
+- Added `PendingAssetManager::consumeById()` for the safe conversion flow used by `addAssetFromPending()`.
+
+### Changed
+- `DefaultPendingStorage` now stores pending files through the AssetConnect storage disk system instead of absolute local paths, making pending storage compatible with protected remote disks.
+- Pending storage now writes each pending asset to stable known keys under `<pendingStoragePrefix>/<pendingId>/file` and `<pendingStoragePrefix>/<pendingId>/metadata.json`.
+- Pending asset fetches from remote storage now stream the protected file into a temporary local source file before it is passed to the asset creation flow.
+- Pending asset updates with an existing ID update metadata only and do not overwrite the original pending file.
+- `addAssetFromPending()` now consumes pending IDs through `PendingAssetManager::consumeById()`, deletes the pending file/metadata and token, then stores the final asset from a temporary source file.
+- Expired pending IDs are rejected by `fetchById()` and the known pending file/metadata keys for that ID are deleted when possible.
+
+### Security
+- Pending asset access now validates HMAC ownership tokens by default using the current session context, with cookie and owner-resolver strategies available for other upload flows.
+- The HMAC digest is stored internally with pending metadata; clients only need to submit the pending ID when using the built-in session, cookie, or owner strategies.
+- Pending storage must resolve to a protected storage disk; public disks are rejected for `DefaultPendingStorage`.
+- Pending IDs are validated before storage access and may only contain safe ID characters, preventing path traversal through a crafted pending ID.
+- `DefaultPendingStorage` no longer lists pending directories or deletes whole directories. It deletes only the known pending object keys for a requested ID, which is safer for remote storage such as S3, FTP, SFTP, and similar adapters.
+
+### Breaking Changes
+- Removed the legacy driver-based storage setup fallback. Storage setup methods are now resolved only from the configured storage disk name, for example `remote` calls `setupStorageRemote()`. Rename old `setupStorage{Driver}()` methods such as `setupStorageAwsS3()` to the matching disk-name method.
+- Removed `cleanExpiredPendingAssets()` from pending storage and manager APIs. Default pending storage no longer lists storage prefixes; cleanup for unconsumed pending files should be handled with storage lifecycle rules or an application-side index.
+
 ## [v2.1.0](https://github.com/maniaba/asset-connect/tree/v2.1.0) - 2026-06-18
 
 ### Added

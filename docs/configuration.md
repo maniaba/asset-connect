@@ -128,7 +128,7 @@ public array $storages = [
 
 Use `setStorage('disk_name')` in a collection definition when a collection should use a specific disk. Otherwise AssetConnect chooses the default disk based on collection visibility.
 
-For local public storage disks with `public_url`, expose the configured roots through `php spark asset-connect:storage-link` or web server aliases. Protected disks should not define `public_url` and are served through AssetConnect routes. For FTP, SFTP, S3, Google Cloud Storage, Azure Blob Storage, MongoDB GridFS, WebDAV, memory, or any other Flysystem adapter, install the adapter package, set the disk `driver`, and add a matching `setupStorage{StorageName}()` method that returns the adapter config. Legacy `setupStorage{Driver}()` methods are still supported as a fallback. See [Storage](storage.md) for examples.
+For local public storage disks with `public_url`, expose the configured roots through `php spark asset-connect:storage-link` or web server aliases. Protected disks should not define `public_url` and are served through AssetConnect routes. For FTP, SFTP, S3, Google Cloud Storage, Azure Blob Storage, MongoDB GridFS, WebDAV, memory, or any other Flysystem adapter, install the adapter package, set the disk `driver`, and add a matching `setupStorage{StorageName}()` method that returns the adapter config. See [Storage](storage.md) for examples.
 
 ### Default Asset Collection
 
