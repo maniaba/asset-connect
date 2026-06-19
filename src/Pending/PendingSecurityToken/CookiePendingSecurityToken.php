@@ -6,7 +6,7 @@ namespace Maniaba\AssetConnect\Pending\PendingSecurityToken;
 
 use Override;
 
-final class CookiePendingSecurityToken extends AbstractPendingSecurityToken
+final class CookiePendingSecurityToken extends AbstractHmacPendingSecurityToken
 {
     private const string COOKIE_NAME = '__asset_pending_security_token__';
 
@@ -24,22 +24,34 @@ final class CookiePendingSecurityToken extends AbstractPendingSecurityToken
         if ($token === null) {
             $token = $this->randomStringToken();
 
-            // Store the token in a cookie
-            set_cookie(self::COOKIE_NAME, $token, $this->tokenTTLSeconds, httpOnly: true);
+            set_cookie([
+                'name'     => $this->cookieName($pendingId),
+                'value'    => $token,
+                'expire'   => $this->tokenTTLSeconds,
+                'httponly' => true,
+                'samesite' => 'Strict',
+            ]);
         }
 
-        return $token;
+        return $this->createTokenDigest($pendingId, $token);
     }
 
     #[Override]
     public function retrieveToken(string $pendingId): ?string
     {
-        return get_cookie(self::COOKIE_NAME);
+        $token = get_cookie($this->cookieName($pendingId));
+
+        return is_string($token) && $token !== '' ? $token : null;
     }
 
     #[Override]
     public function deleteToken(string $pendingId): void
     {
-        delete_cookie(self::COOKIE_NAME);
+        delete_cookie($this->cookieName($pendingId));
+    }
+
+    private function cookieName(string $pendingId): string
+    {
+        return self::COOKIE_NAME . '_' . hash('sha256', $pendingId);
     }
 }

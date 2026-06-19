@@ -213,6 +213,58 @@ final class PendingAssetManagerTest extends CIUnitTestCase
         $this->assertNotInstanceOf(PendingAsset::class, $result);
     }
 
+    public function testConsumeByIdCopiesFileToTemporarySourceAndDeletesPendingAsset(): void
+    {
+        // Arrange
+        $id = 'consume-id';
+
+        $pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
+        $pendingAsset->setId($id);
+        $this->setPrivateProperty($pendingAsset, 'created_at', Time::now());
+
+        $this->mockStorage->method('fetchById')->with($id)->willReturn($pendingAsset);
+        $this->mockStorage->method('getDefaultTTLSeconds')->willReturn(3600);
+        $this->mockStorage->expects($this->once())->method('deleteById')->with($id)->willReturn(true);
+
+        $manager = PendingAssetManager::make($this->mockStorage);
+
+        // Act
+        $result = $manager->consumeById($id);
+
+        // Assert
+        $this->assertInstanceOf(PendingAsset::class, $result);
+
+        $temporaryPath = $result->file->getRealPath();
+        $this->assertIsString($temporaryPath);
+
+        try {
+            $this->assertNotSame($this->tempFilePath, $temporaryPath);
+            $this->assertFileExists($temporaryPath);
+            $this->assertSame('test content', file_get_contents($temporaryPath));
+            $this->assertFalse($result->preserve_original);
+        } finally {
+            @unlink($temporaryPath);
+        }
+    }
+
+    public function testConsumeByIdReturnsNullWhenAssetIsNotFound(): void
+    {
+        // Arrange
+        $id = 'missing-consume-id';
+
+        $this->mockStorage->method('fetchById')->with($id)->willReturn(null);
+        $this->mockStorage->method('getDefaultTTLSeconds')->willReturn(3600);
+        $this->mockStorage->expects($this->never())->method('deleteById');
+
+        $manager = PendingAssetManager::make($this->mockStorage);
+
+        // Act
+        $result = $manager->consumeById($id);
+
+        // Assert
+        $this->assertNotInstanceOf(PendingAsset::class, $result);
+    }
+
     /**
      * Test deleteById returns true on successful deletion
      */

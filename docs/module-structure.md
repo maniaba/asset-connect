@@ -195,11 +195,14 @@ Two-step upload system – upload first, attach to entity later.
 | `PendingAsset.php` | Represents a temporarily stored file. Factory methods: `createFromFile()`, `createFromRequest()`. Fluent builder: `usingName()`, `withCustomProperty()`. |
 | `PendingAssetManager.php` | Facade over `PendingStorageInterface`. Methods: `make()`, `store()`, `fetchById()`, `deleteById()`, `cleanExpiredPendingAssets()`. |
 | `DefaultPendingStorage.php` | Filesystem implementation; stores file + `metadata.json` per asset. |
+| `Interfaces/PendingOwnerResolverInterface.php` | Contract for resolving the current pending owner in API/JWT flows. |
 | `Interfaces/PendingStorageInterface.php` | Contract for custom storage backends. |
 | `Interfaces/PendingSecurityTokenInterface.php` | Contract for pending-asset token generation, retrieval, validation, and deletion. |
 | `PendingSecurityToken/AbstractPendingSecurityToken.php` | Base implementation for token length, TTL validation, random token generation, and comparison. |
-| `PendingSecurityToken/SessionPendingSecurityToken.php` | Default session-tempdata token strategy. |
-| `PendingSecurityToken/CookiePendingSecurityToken.php` | Cookie-backed token strategy. |
+| `PendingSecurityToken/AbstractHmacPendingSecurityToken.php` | HMAC ownership validation base for session, cookie, and owner strategies. |
+| `PendingSecurityToken/SessionPendingSecurityToken.php` | Default per-pending session-secret HMAC strategy. |
+| `PendingSecurityToken/CookiePendingSecurityToken.php` | Per-pending HTTP-only cookie HMAC strategy. |
+| `PendingSecurityToken/OwnerPendingSecurityToken.php` | API/JWT owner HMAC strategy using `PendingOwnerResolverInterface`. |
 
 ---
 

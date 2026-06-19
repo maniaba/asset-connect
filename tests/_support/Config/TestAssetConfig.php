@@ -19,6 +19,8 @@ use Tests\Support\TestEntity;
  */
 final class TestAssetConfig extends BaseAsset
 {
+    public ?string $pendingSecurityKey = 'asset-connect-test-pending-security-key';
+
     /**
      * {@inheritDoc}
      */

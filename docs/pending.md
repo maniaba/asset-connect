@@ -60,7 +60,7 @@ A class that represents a pending asset. Contains the file and metadata.
 | `preserve_original` | bool | Whether to preserve the original file |
 | `custom_properties` | array | Additional custom properties |
 | `file` | File\|UploadedFile | Reference to the actual file |
-| `security_token` | string\|null | Short-lived security token assigned to the pending asset (set by PendingAssetManager when a token provider is configured) |
+| `security_token` | string\|null | Internal pending security digest/token assigned by `PendingAssetManager` when a token provider is configured |
 
 
 ### Available Methods
@@ -421,7 +421,7 @@ The `addAssetFromPending` method:
    - `preservingOriginal()` - preserve original
 5. Returns the `AssetAdder` which you can further configure (e.g., set collection) and save
 
-**Note:** Pending assets are automatically cleaned up from storage after being successfully added to an entity.
+**Note:** When using a pending ID, `addAssetFromPending()` consumes the pending asset, deletes the pending storage entry and token, then stores the real asset from a temporary source file.
 
 ### Usage Examples
 
@@ -764,7 +764,7 @@ chown -R www-data:www-data writable/assets_pending
 - **TTL** (default 24h) automatically deletes old pending assets
 - **Create vs Update**: if pending has an ID, `store()` updates only metadata without overwriting the file
 - **`addAssetFromPending()`** converts a pending asset into a real asset - simple and fast
-- **Automatic cleanup**: pending assets are automatically removed from storage after successful addition to an entity
+- **Automatic cleanup**: pending IDs are consumed and removed from storage before the real asset is stored from a temporary source file
 - **Expired assets cleanup**: expired pending assets are automatically cleaned up by the `AssetConnectJob` queue job when processing assets
 
 Pending assets make upload processes more flexible and allow users to first upload a file, then edit metadata, and finally confirm where the asset will be added.
@@ -783,7 +783,7 @@ Security tokens are short-lived tokens that ensure only authorized actions are p
 
    - Generate a pending ID (when creating a new pending asset)
    - Persist the pending file/metadata using the configured pending storage
-   - Invoke the configured token provider's `generateToken($pendingId)` and set the resulting token on the `PendingAsset` instance (`$pending->security_token`).
+   - Invoke the configured token provider's `generateToken($pendingId)` and store the resulting HMAC digest on the `PendingAsset` instance (`$pending->security_token`).
 
    Therefore you do NOT need to instantiate the token provider or call `generateToken()` manually in typical flows. Example:
 
@@ -796,23 +796,21 @@ $pending = $result['file'][0];
 // Persist pending asset - the PendingAssetManager will generate and persist the token
 $pending->store();
 
-// After storing, the token is available on the PendingAsset object (if a token provider is configured)
+// The client only needs the pending ID. The HMAC digest stays internal.
 return $this->response->setJSON([
     'pending_id' => $pending->id,
-    'security_token' => $pending->security_token,
 ]);
 ```
 
 2. Token validation / retrieval behavior
 
-   - `PendingSecurityTokenInterface::validateToken(PendingAsset $pendingAsset, ?string $tokenProvided = null): bool` validates the provided token against the pending asset's stored `security_token`.
-   - If you don't pass a `$tokenProvided`, most built-in token providers (the abstract implementation) will automatically call `retrieveToken($pendingId)` and validate the retrieved value. For example, `SessionPendingSecurityToken::retrieveToken()` reads the token from session tempdata.
+   - `PendingSecurityTokenInterface::validateToken(PendingAsset $pendingAsset, ?string $tokenProvided = null): bool` validates the pending asset against the configured token strategy.
+   - The built-in HMAC providers (`SessionPendingSecurityToken`, `CookiePendingSecurityToken`, and `OwnerPendingSecurityToken`) use server-side session/cookie/owner context and do not require the client to submit a separate token.
 
-   Example — validating a token that the client passed explicitly:
+   Example — validating ownership from the current request context:
 
 ```php
 use Maniaba\AssetConnect\Pending\PendingAssetManager;
-use Maniaba\AssetConnect\Pending\PendingSecurityToken\SessionPendingSecurityToken;
 
 $manager = PendingAssetManager::make();
 $pending = $manager->fetchById($pendingId);
@@ -821,33 +819,12 @@ if (! $pending) {
     throw new \RuntimeException('Pending asset not found');
 }
 
-// Validate by passing the token explicitly into fetchById().
-// If token is invalid the method returns null.
-$pending = $manager->fetchById($pendingId, $providedTokenFromClient);
-
-if ($pending === null) {
-    // Either asset not found, expired, or invalid token
-    throw new \RuntimeException('Pending asset not found or invalid security token.');
-}
-
-// proceed to convert pending asset into a real asset
-```
-
-   Example — let the provider retrieve the token itself (no explicit token passed):
-
-```php
-$pending = $manager->fetchById($pendingId);
-
-if ($pending === null) {
-    // Asset not found, expired, or provider failed to validate token
-    throw new \RuntimeException('Pending asset not found or invalid/expired token.');
-}
-
 // proceed to convert pending asset into a real asset
 ```
 
 Notes:
 
 - Token validation is executed inside `PendingAssetManager::fetchById(string $id, ?string $token = null): ?PendingAsset`. If the token provider is configured, `fetchById()` will call the provider's `validateToken()` internally. When validation fails `fetchById()` returns `null`.
-- You can explicitly pass the token into `fetchById()` (useful when the client sends token in the request body). If you omit the token, the configured provider will usually attempt `retrieveToken($pendingId)` itself (for example, `SessionPendingSecurityToken` reads session tempdata).
+- Built-in HMAC providers ignore explicit client-provided token values and validate against the current server-side session/cookie/owner context.
+- For API/JWT flows, use `OwnerPendingSecurityToken` with `PendingOwnerResolverInterface`; the resolver should return the current JWT subject or a stronger key such as `sub:jti` for token/device binding.
 - If `Config\Asset::$pendingSecurityToken` is `null`, token generation and validation are disabled and `fetchById()` will behave like a normal read (subject to expiration checks).

@@ -166,6 +166,44 @@ The class must implement the `UrlGeneratorInterface`. If set to `null`, the defa
 
 For detailed information about URL generators, see the [Custom URL Generator](custom-url-generator.md) documentation.
 
+### Pending Security
+
+Pending uploads are protected by a configurable security token strategy:
+
+```php
+public ?string $pendingSecurityToken = \Maniaba\AssetConnect\Pending\PendingSecurityToken\SessionPendingSecurityToken::class;
+public ?string $pendingSecurityKey = null;
+```
+
+`SessionPendingSecurityToken` is the default browser flow. It stores a per-pending secret in the current session and stores only an HMAC digest in pending metadata, so the client only needs to submit `pending_id`.
+
+For production, set a stable key through `.env`; CodeIgniter will override the `Asset` config property automatically:
+
+```dotenv
+asset.pendingSecurityKey = your-random-secret
+```
+
+For API/JWT flows, use `OwnerPendingSecurityToken` and configure a resolver:
+
+```php
+use Maniaba\AssetConnect\Pending\Interfaces\PendingOwnerResolverInterface;
+
+final class JwtPendingOwnerResolver implements PendingOwnerResolverInterface
+{
+    public function resolveOwnerId(): ?string
+    {
+        $claims = service('auth')->jwtClaims();
+
+        return $claims->sub; // Or "{$claims->sub}:{$claims->jti}" for token/device binding.
+    }
+}
+
+public ?string $pendingSecurityToken = \Maniaba\AssetConnect\Pending\PendingSecurityToken\OwnerPendingSecurityToken::class;
+public PendingOwnerResolverInterface|string|null $pendingOwnerResolver = JwtPendingOwnerResolver::class;
+```
+
+If `pendingSecurityKey` is null, AssetConnect uses `Config\Encryption::$key`. Do not set `pendingSecurityToken` to null when pending IDs are exposed to clients.
+
 ### Table Names
 
 You can customize the name of the database table used by Asset Connect:

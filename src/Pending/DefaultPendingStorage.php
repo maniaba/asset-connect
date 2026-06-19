@@ -7,6 +7,7 @@ namespace Maniaba\AssetConnect\Pending;
 use CodeIgniter\Files\File;
 use CodeIgniter\I18n\Time;
 use ErrorException;
+use InvalidArgumentException;
 use Maniaba\AssetConnect\Exceptions\PendingAssetException;
 use Maniaba\AssetConnect\Pending\Interfaces\PendingStorageInterface;
 use Override;
@@ -48,6 +49,8 @@ class DefaultPendingStorage implements PendingStorageInterface
     #[Override]
     public function fetchById(string $id): ?PendingAsset
     {
+        $this->assertValidPendingId($id);
+
         $filePath     = $this->getPendingRawFilePath($id);
         $metadataPath = $this->getPendingMetadataFilePath($id);
 
@@ -73,6 +76,8 @@ class DefaultPendingStorage implements PendingStorageInterface
     #[Override]
     public function deleteById(string $id): bool
     {
+        $this->assertValidPendingId($id);
+
         $basePath = $this->getBasePendingPath() . $id . DIRECTORY_SEPARATOR;
 
         if (! is_dir($basePath)) {
@@ -157,6 +162,7 @@ class DefaultPendingStorage implements PendingStorageInterface
     public function store(PendingAsset $asset, ?string $id = null): void
     {
         $id ??= $this->generatePendingId();
+        $this->assertValidPendingId($id);
 
         // Set the ID on the asset
         $asset->setId($id);
@@ -196,6 +202,8 @@ class DefaultPendingStorage implements PendingStorageInterface
 
     private function storeMetadataFile(PendingAsset $asset): void
     {
+        $this->assertValidPendingId($asset->id);
+
         $metadataPath = $this->getPendingMetadataFilePath($asset->id);
 
         if (file_exists($metadataPath)) {
@@ -262,5 +270,14 @@ class DefaultPendingStorage implements PendingStorageInterface
                 $this->deleteById($pendingId);
             }
         }
+    }
+
+    private function assertValidPendingId(string $pendingId): void
+    {
+        if (preg_match('/\A[A-Za-z0-9_-]{1,128}\z/', $pendingId) === 1) {
+            return;
+        }
+
+        throw new InvalidArgumentException('Pending asset ID contains invalid characters.');
     }
 }

@@ -6,6 +6,7 @@ namespace Tests\Pending;
 
 use CodeIgniter\I18n\Time;
 use CodeIgniter\Test\CIUnitTestCase;
+use InvalidArgumentException;
 use Maniaba\AssetConnect\Exceptions\PendingAssetException;
 use Maniaba\AssetConnect\Pending\DefaultPendingStorage;
 use Maniaba\AssetConnect\Pending\PendingAsset;
@@ -248,6 +249,14 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
 
         // Assert
         $this->assertNotInstanceOf(PendingAsset::class, $result);
+    }
+
+    public function testFetchByIdRejectsInvalidPendingId(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Pending asset ID contains invalid characters.');
+
+        $this->storage->fetchById('../outside');
     }
 
     /**

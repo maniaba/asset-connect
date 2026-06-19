@@ -178,7 +178,7 @@ if ($success) {
 }
 ```
 
-**Note:** When using `addAssetFromPending()`, pending assets are automatically cleaned up after successful addition to an entity.
+**Note:** When using `addAssetFromPending()` with a pending ID, the ID is consumed immediately after ownership validation. The pending storage entry and token are deleted, and the real asset is stored from a temporary source file.
 
 ### cleanExpiredPendingAssets()
 
@@ -426,7 +426,7 @@ try {
 ### 1. Pending Assets Are Auto-Cleaned
 
 ```php
-// Pending assets are automatically cleaned up after successful addition
+// Pending IDs are consumed and removed before the real asset is stored
 $user->addAssetFromPending($pendingId)
     ->toAssetCollection(Photos::class);
 // File is automatically removed from pending storage

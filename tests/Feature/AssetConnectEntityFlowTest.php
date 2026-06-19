@@ -18,6 +18,7 @@ use Maniaba\AssetConnect\Enums\AssetVisibility;
 use Maniaba\AssetConnect\Exceptions\FileException;
 use Maniaba\AssetConnect\Models\AssetModel;
 use Maniaba\AssetConnect\Pending\PendingAsset;
+use Maniaba\AssetConnect\Pending\PendingAssetManager;
 use Maniaba\AssetConnect\Storage\Interfaces\StorageDiskInterface;
 use PHPUnit\Framework\MockObject\Stub;
 use RuntimeException;
@@ -289,6 +290,35 @@ final class AssetConnectEntityFlowTest extends AssetConnectFeatureTestCase
         $this->assertSame('pending.txt', $asset->file_name);
         $this->assertSame(7, $asset->order);
         $this->assertSame('pending', $asset->getCustomProperty('source'));
+    }
+
+    public function testEntityDeletesStoredPendingAssetAfterConvertingPendingId(): void
+    {
+        $this->assetConfig->pendingSecurityToken = null;
+
+        $entity        = $this->createFakeEntity();
+        $pendingSource = $this->createSourceFile('stored-pending-source.txt', 'stored pending text');
+        $pendingAsset  = PendingAsset::createFromFile($pendingSource);
+        $pendingAsset
+            ->usingName('Stored Pending Document')
+            ->usingFileName('stored-pending.txt')
+            ->withCustomProperty('source', 'stored-pending');
+
+        $manager = PendingAssetManager::make();
+        $manager->store($pendingAsset);
+
+        $pendingAssetId = $pendingAsset->id;
+        $this->assertInstanceOf(PendingAsset::class, $manager->fetchById($pendingAssetId));
+
+        $asset = $entity->addAssetFromPending($pendingAssetId)
+            ->toAssetCollection(FakeDocumentCollection::class);
+
+        $this->assertAssetWasStoredForEntity($asset, $entity, 'fake_documents');
+        $this->assertAssetFileContains($asset, 'stored pending text');
+        $this->assertSame('Stored Pending Document', $asset->name);
+        $this->assertSame('stored-pending.txt', $asset->file_name);
+        $this->assertSame('stored-pending', $asset->getCustomProperty('source'));
+        $this->assertNull($manager->fetchById($pendingAssetId));
     }
 
     public function testEntityCanAddAssetsFromRequest(): void

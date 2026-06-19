@@ -34,7 +34,7 @@ use TypeError;
  * @property-read string               $name
  * @property-read int                  $order
  * @property-read bool                 $preserve_original
- * @property-read string|null          $security_token
+ * @property-read string|null          $security_token    Internal pending security digest/token.
  * @property-read int                  $ttl
  * @property-read Time                 $updated_at
  */
