@@ -226,6 +226,43 @@ final class UrlGeneratorTest extends CIUnitTestCase
         $this->assertSame('https://example.com/index.php/assets/temporary/b0a4ae59595b37c409e6196189b3f22854f578e66a1fe526cee293792c8b166c/variant/thumbnail/test_thumbnail.jpg', $url);
     }
 
+    public function testAssetTraitTemporaryUrlSupportsForceDownload(): void
+    {
+        Time::setTestNow('2025-10-01 12:00:00');
+
+        $expiration = Time::now()->addHours(1);
+
+        $this->assertSame(
+            'https://example.com/index.php/assets/temporary/b0a4ae59595b37c409e6196189b3f22854f578e66a1fe526cee293792c8b166c/variant/thumbnail/test_thumbnail.jpg?download=force',
+            $this->asset->getTemporaryUrl($expiration, 'thumbnail', true),
+            'Asset temporary URLs should append the force-download query when requested.',
+        );
+    }
+
+    public function testAssetTraitTemporaryRelativeUrlKeepsPathAndQuery(): void
+    {
+        Time::setTestNow('2025-10-01 12:00:00');
+
+        $expiration = Time::now()->addHours(1);
+
+        $this->assertSame(
+            '/index.php/assets/temporary/b0a4ae59595b37c409e6196189b3f22854f578e66a1fe526cee293792c8b166c/variant/thumbnail/test_thumbnail.jpg?download=force',
+            $this->asset->getTemporaryUrlRelative($expiration, 'thumbnail', true),
+            'Relative temporary URLs should strip scheme and host while keeping the query string.',
+        );
+    }
+
+    public function testAssetTraitRelativeUrlReturnsOriginalUrlWhenNoPathCanBeParsed(): void
+    {
+        $toRelativeUrl = $this->getPrivateMethodInvoker($this->asset, 'toRelativeUrl');
+
+        $this->assertSame(
+            'https://example.com',
+            $toRelativeUrl('https://example.com'),
+            'Relative URL conversion should return the original URL when it has no path component.',
+        );
+    }
+
     /**
      * Test routeTo method
      */

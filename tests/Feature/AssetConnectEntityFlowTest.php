@@ -26,6 +26,7 @@ use Maniaba\AssetConnect\Exceptions\FileException;
 use Maniaba\AssetConnect\Exceptions\FileVariantException;
 use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Maniaba\AssetConnect\Models\AssetModel;
+use Maniaba\AssetConnect\Pending\Interfaces\PendingStorageInterface;
 use Maniaba\AssetConnect\Pending\PendingAsset;
 use Maniaba\AssetConnect\Pending\PendingAssetManager;
 use Maniaba\AssetConnect\Storage\Interfaces\StorageDiskInterface;
@@ -46,6 +47,7 @@ use Tests\Support\Files\UnreadableStreamWrapper;
 use Tests\Support\Files\UnsupportedAssetFileValue;
 use Tests\Support\Models\FailingSaveAssetModel;
 use Tests\Support\Models\FakeAssetEntityModel;
+use Tests\Support\Models\InvalidAssetConnectReturnTypeModel;
 use Tests\Support\TestAssetCollection;
 
 /**
@@ -84,6 +86,27 @@ final class AssetConnectEntityFlowTest extends AssetConnectFeatureTestCase
         $this->assertSame($asset->id, $assets[0]->id);
         $this->assertSame($asset->id, $entity->getFirstAsset()?->id);
         $this->assertSame($asset->id, $entity->getLastAsset()?->id);
+    }
+
+    public function testEntityTraitReturnsEmptyAssetsAndNullFirstLastBeforeAssetsAreLoaded(): void
+    {
+        $entity = $this->createFakeEntity();
+
+        $this->assertSame([], $entity->getAssets(), 'Entity without assets should return an empty asset list.');
+        $this->assertNotInstanceOf(Asset::class, $entity->getFirstAsset(), 'Entity without assets should not have a first asset.');
+        $this->assertNotInstanceOf(Asset::class, $entity->getLastAsset(), 'Entity without assets should not have a last asset.');
+    }
+
+    public function testEntityTraitRejectsMissingFileBeforeCreatingAssetAdder(): void
+    {
+        $entity = $this->createFakeEntity();
+        $file   = $this->createStub(UploadedFile::class);
+        $file->method('isFile')->willReturn(false);
+        $file->method('getRealPath')->willReturn($this->sourceFilesRoot . DIRECTORY_SEPARATOR . 'missing-trait-source.txt');
+
+        $this->expectException(FileException::class);
+
+        $entity->addAsset($file);
     }
 
     public function testStorageWriteFailureExposesStorageSpecificException(): void
@@ -519,9 +542,13 @@ final class AssetConnectEntityFlowTest extends AssetConnectFeatureTestCase
 
         $model = new FakeAssetEntityModel($this->db);
 
+        $assetModel = $model->assetConnectModel();
+
         $entities = $model
-            ->filterAssets(static function (AssetModel $model): void {
-                $model->whereCollection(FakeAvatarCollection::class);
+            ->filterAssets(static function (AssetModel $filterModel) use ($assetModel): void {
+                self::assertSame($assetModel, $filterModel, 'Model trait should filter with the exposed AssetModel instance.');
+
+                $filterModel->whereCollection(FakeAvatarCollection::class);
             })
             ->findAll();
 
@@ -531,6 +558,14 @@ final class AssetConnectEntityFlowTest extends AssetConnectFeatureTestCase
 
         $this->assertSame($avatar->id, $assets[0]->id);
         $this->assertSame('avatar.txt', $assets[0]->file_name);
+    }
+
+    public function testModelTraitRejectsReturnTypeWithoutAssetConnectTrait(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('The return type must be an Entity and must use the UseAssetConnectTrait trait.');
+
+        new InvalidAssetConnectReturnTypeModel($this->db);
     }
 
     public function testPersistedAssetExposesAccessorsCanBeUpdatedAndSerialized(): void
@@ -709,6 +744,41 @@ final class AssetConnectEntityFlowTest extends AssetConnectFeatureTestCase
         $this->assertSame('request-two.txt', $assets[1]->file_name);
     }
 
+    public function testEntityRejectsAssetRequestWithoutKeyNames(): void
+    {
+        try {
+            $this->createFakeEntity()->addAssetFromRequest();
+        } catch (InvalidArgumentException $exception) {
+            $this->assertSame(
+                ['At least one key name must be provided.'],
+                $exception->errors,
+                'Missing request keys should be reported in the package exception errors.',
+            );
+
+            return;
+        }
+
+        $this->fail('Expected missing request key exception.');
+    }
+
+    public function testEntityRejectsInvalidUploadedFileFromRequest(): void
+    {
+        $request = $this->createStub(IncomingRequest::class);
+        $request->method('getFiles')->willReturn([
+            'documents' => ['not-an-uploaded-file'],
+        ]);
+
+        Services::injectMock('request', $request);
+
+        try {
+            $this->expectException(FileException::class);
+
+            $this->createFakeEntity()->addAssetFromRequest('documents');
+        } finally {
+            $this->injectUrlRequest();
+        }
+    }
+
     public function testMultipleAssetAdderAcceptsSingleUploadedFileValue(): void
     {
         $entity       = $this->createFakeEntity();
@@ -730,6 +800,59 @@ final class AssetConnectEntityFlowTest extends AssetConnectFeatureTestCase
         $this->assertCount(1, $assets, 'toAssetCollection should wrap a single UploadedFile value into a list.');
         $this->assertAssetWasStoredForEntity($assets[0], $entity, 'fake_documents');
         $this->assertSame('single-request.txt', $assets[0]->file_name, 'Single uploaded file should be stored with its sanitized client file name.');
+    }
+
+    public function testEntityRejectsInvalidBase64AssetPayload(): void
+    {
+        $this->expectException(FileException::class);
+
+        $this->createFakeEntity()->addAssetFromBase64('###');
+    }
+
+    public function testEntityRejectsMissingPendingAssetId(): void
+    {
+        $this->assetConfig->pendingSecurityToken = null;
+
+        $storage = $this->createMock(PendingStorageInterface::class);
+        $storage->expects($this->once())
+            ->method('fetchById')
+            ->with('missing-pending-id')
+            ->willReturn(null);
+        $storage->method('getDefaultTTLSeconds')->willReturn(3600);
+
+        try {
+            $this->createFakeEntity()->addAssetFromPending('missing-pending-id', $storage);
+        } catch (AssetException $exception) {
+            $this->assertSame(404, $exception->getCode(), 'Missing pending asset IDs should be reported as not found.');
+
+            return;
+        }
+
+        $this->fail('Expected missing pending asset exception.');
+    }
+
+    public function testEntityIgnoresUnrequestedAssetRequestFields(): void
+    {
+        $entity       = $this->createFakeEntity();
+        $uploadedFile = $this->createUploadedFileStub(
+            'ignored request.txt',
+            $this->createSourceFile('ignored-request-source.txt', 'ignored request'),
+        );
+
+        $request = $this->createStub(IncomingRequest::class);
+        $request->method('getFiles')->willReturn([
+            'ignored' => [$uploadedFile],
+        ]);
+
+        Services::injectMock('request', $request);
+
+        try {
+            $multipleAdder = $entity->addAssetFromRequest('documents');
+
+            $this->assertSame([], $multipleAdder->forEach(), 'Unrequested uploaded fields should be skipped.');
+        } finally {
+            $this->injectUrlRequest();
+        }
     }
 
     public function testMultipleAssetAdderRejectsInvalidUploadedFileItem(): void

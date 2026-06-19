@@ -102,9 +102,6 @@ final readonly class LegacyAssetPathMigrator
 
         while ($limit === null || $processed < $limit) {
             $remaining = $limit === null ? $batchSize : min($batchSize, $limit - $processed);
-            if ($remaining <= 0) {
-                break;
-            }
 
             $rows = $this->db->table($this->assetTable())
                 ->select('id, storage, path, metadata')
@@ -431,11 +428,7 @@ final readonly class LegacyAssetPathMigrator
             return null;
         }
 
-        $path = preg_replace('#/+#', '/', str_replace('\\', '/', $path));
-
-        if (! is_string($path)) {
-            return null;
-        }
+        $path = preg_replace('#/+#', '/', str_replace('\\', '/', $path)) ?? '';
 
         $path = ltrim($path, '/');
 

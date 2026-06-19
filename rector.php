@@ -116,6 +116,7 @@ return static function (RectorConfig $rectorConfig): void {
             __DIR__ . '/tests/AssetCollection/SetupAssetCollectionTest.php',
             __DIR__ . '/tests/_support/Entities/FakeAssetEntity.php',
             __DIR__ . '/tests/_support/Models/FakeAssetEntityModel.php',
+            __DIR__ . '/tests/_support/Models/InvalidAssetConnectReturnTypeModel.php',
         ],
 
         RemoveParentDelegatingConstructorRector::class => [
