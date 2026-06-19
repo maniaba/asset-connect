@@ -261,13 +261,6 @@ class DefaultPendingStorage implements PendingStorageInterface
         }
     }
 
-    #[Override]
-    public function cleanExpiredPendingAssets(): void
-    {
-        // Default storage avoids listing remote buckets. Expiration should be
-        // handled by storage lifecycle rules or by deleting known pending IDs.
-    }
-
     private function copyPendingFileToTemporarySource(string $filePath, string $id): string
     {
         $temporaryPath = tempnam(sys_get_temp_dir(), 'pending_asset_');

@@ -160,11 +160,6 @@ final class PendingAssetManager
         $this->storage->store($pendingAsset, $pendingAsset->id);
     }
 
-    public function cleanExpiredPendingAssets(): void
-    {
-        $this->storage->cleanExpiredPendingAssets();
-    }
-
     private function copyPendingFileToTemporarySource(PendingAsset $pendingAsset, string $id): string
     {
         $sourcePath = $pendingAsset->file->getRealPath();

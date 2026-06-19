@@ -180,23 +180,7 @@ if ($success) {
 
 **Note:** When using `addAssetFromPending()` with a pending ID, the ID is consumed immediately after ownership validation. The pending storage entry and token are deleted, and the real asset is stored from a temporary source file.
 
-### cleanExpiredPendingAssets()
-
-Delegates expired cleanup to the configured pending storage.
-
-```php
-public function cleanExpiredPendingAssets(): void
-```
-
-**Example:**
-```php
-$manager = PendingAssetManager::make();
-$manager->cleanExpiredPendingAssets();
-
-echo "Expired assets cleaned";
-```
-
-`DefaultPendingStorage` does not list remote storage buckets to discover expired entries. It deletes expired assets when a known pending ID is fetched and found expired. For S3-compatible storage, use storage lifecycle rules on the pending prefix if you need background cleanup for unconsumed pending assets.
+Expired pending assets are rejected when a known pending ID is fetched, and AssetConnect then attempts to delete that ID. `DefaultPendingStorage` does not list remote storage buckets to discover expired entries. For S3-compatible storage, use storage lifecycle rules on the pending prefix if you need background cleanup for unconsumed pending assets.
 
 ## Complete Usage Examples
 
@@ -452,7 +436,7 @@ $manager->store($pending, 1800); // 30 minutes
 $manager->store($pending, 86400 * 7); // 7 days
 ```
 
-> **Note:** Default pending storage avoids bucket listing. Use storage lifecycle rules or a custom pending storage implementation if you need scheduled cleanup of unconsumed expired pending assets.
+> **Note:** Default pending storage avoids bucket listing. Use storage lifecycle rules or an application-side index if you need scheduled cleanup of unconsumed expired pending assets.
 
 ## Configuration
 

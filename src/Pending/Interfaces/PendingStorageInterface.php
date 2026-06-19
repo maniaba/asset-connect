@@ -10,8 +10,8 @@ use Maniaba\AssetConnect\Pending\PendingAsset;
 
 /**
  * Interface for managing pending storage operations.
- * Defines methods for generating and validating security tokens,
- * managing pending data paths, and setting default time-to-live (TTL) values.
+ * Defines methods for generating IDs, storing pending assets, deleting known IDs,
+ * and setting default time-to-live (TTL) values.
  */
 interface PendingStorageInterface
 {
@@ -56,9 +56,4 @@ interface PendingStorageInterface
      * @param string $id ID of the pending asset to delete.
      */
     public function deleteById(string $id): bool;
-
-    /**
-     * Cleans up expired pending assets.
-     */
-    public function cleanExpiredPendingAssets(): void;
 }

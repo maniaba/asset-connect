@@ -193,7 +193,7 @@ Two-step upload system – upload first, attach to entity later.
 | File | Description |
 |---|---|
 | `PendingAsset.php` | Represents a temporarily stored file. Factory methods: `createFromFile()`, `createFromRequest()`. Fluent builder: `usingName()`, `withCustomProperty()`. |
-| `PendingAssetManager.php` | Facade over `PendingStorageInterface`. Methods: `make()`, `store()`, `fetchById()`, `deleteById()`, `cleanExpiredPendingAssets()`. |
+| `PendingAssetManager.php` | Facade over `PendingStorageInterface`. Methods: `make()`, `store()`, `fetchById()`, `consumeById()`, `deleteById()`. |
 | `DefaultPendingStorage.php` | Protected Flysystem storage implementation; stores known pending object keys under the configured prefix. |
 | `Interfaces/PendingOwnerResolverInterface.php` | Contract for resolving the current pending owner in API/JWT flows. |
 | `Interfaces/PendingStorageInterface.php` | Contract for custom storage backends. |

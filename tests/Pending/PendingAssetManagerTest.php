@@ -396,24 +396,6 @@ final class PendingAssetManagerTest extends CIUnitTestCase
     }
 
     /**
-     * Test cleanExpiredPendingAssets delegates to storage
-     */
-    public function testCleanExpiredPendingAssetsDelegatesToStorage(): void
-    {
-        // Arrange
-        $this->mockStorage->expects($this->once())
-            ->method('cleanExpiredPendingAssets');
-
-        $manager = PendingAssetManager::make($this->mockStorage);
-
-        // Act
-        $manager->cleanExpiredPendingAssets();
-
-        // Assert - expectation verified by PHPUnit
-        $this->assertTrue(true);
-    }
-
-    /**
      * Test store propagates exception from storage
      */
     #[AllowMockObjectsWithoutExpectations]
