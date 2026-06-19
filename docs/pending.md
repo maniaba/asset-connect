@@ -344,7 +344,7 @@ if ($pending) {
 }
 ```
 
-**Note:** For complete `PendingAssetManager` API documentation (fetching, deleting, cleaning), see [Pending Asset Manager](pending-asset-manager.md).
+**Note:** For complete `PendingAssetManager` API documentation (fetching, consuming, and deleting known pending IDs), see [Pending Asset Manager](pending-asset-manager.md).
 
 ## Create vs Update (Important!)
 
@@ -462,8 +462,8 @@ if ($pending->size > 5 * 1024 * 1024) {
     throw new \RuntimeException('File is too large');
 }
 
-// Add asset
-$user->addAssetFromPending($pending)
+// Add asset by ID so the pending entry is consumed and deleted
+$user->addAssetFromPending($pendingId)
     ->toAssetCollection(Documents::class);
 ```
 
@@ -665,10 +665,12 @@ public function testUpdatingPendingMetadataDoesNotOverwriteFile()
     $pending->store();
     $id = $pending->id;
 
-    // Check file checksum
-    $filePath = WRITEPATH . 'assets_pending' . DIRECTORY_SEPARATOR . $id . DIRECTORY_SEPARATOR . 'file';
-    $this->assertFileExists($filePath);
-    $checksumBefore = md5_file($filePath);
+    // Check file checksum through the manager, without relying on local storage paths
+    $loadedBefore = PendingAssetManager::make()->fetchById($id);
+    $this->assertNotNull($loadedBefore);
+    $loadedBeforePath = $loadedBefore->file->getRealPath();
+    $this->assertIsString($loadedBeforePath);
+    $checksumBefore = hash_file('sha256', $loadedBeforePath);
 
     // Update only metadata
     $pending->withCustomProperty('version', 2);
@@ -680,13 +682,15 @@ public function testUpdatingPendingMetadataDoesNotOverwriteFile()
     $this->assertNotNull($reloaded);
     $this->assertEquals(2, $reloaded->custom_properties['version']);
     $this->assertEquals('Updated name', $reloaded->name);
+    $reloadedPath = $reloaded->file->getRealPath();
+    $this->assertIsString($reloadedPath);
 
     // Verify file is identical
-    $checksumAfter = md5_file($filePath);
-    $this->assertEquals($checksumBefore, $checksumAfter);
+    $checksumAfter = hash_file('sha256', $reloadedPath);
+    $this->assertSame($checksumBefore, $checksumAfter);
 
     // Verify content is actually the same
-    $this->assertEquals($originalContent, file_get_contents($filePath));
+    $this->assertSame($originalContent, file_get_contents($reloadedPath));
 }
 ```
 

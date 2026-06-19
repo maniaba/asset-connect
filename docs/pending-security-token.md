@@ -4,14 +4,14 @@ This page documents the pending asset security token subsystem: what it is, why 
 
 ## What is a pending security token?
 
-A pending security token is a short-lived opaque value associated with a pending asset. It helps protect access to pending files and ensures that only the actor that created the pending asset (or a trusted flow that received the token) can access, confirm, or convert the pending asset into a permanent asset.
+A pending security token is a short-lived ownership proof associated with a pending asset. It helps protect access to pending files and ensures that only the actor that created the pending asset can access, confirm, or convert the pending asset into a permanent asset.
 
 Tokens are intentionally short-lived (configurable TTL) and are compared using a timing-safe comparison to avoid leaking information via timing attacks. The built-in session, cookie, and owner strategies store an HMAC digest on the pending asset, not the raw owner secret.
 
 ## Why use security tokens?
 
 - Prevents accidental or malicious access to pending files by ID alone.
-- Makes it safe to expose pending IDs to clients, since the token is required to confirm/convert the pending asset.
+- Makes it safe to expose pending IDs to clients, since ownership is validated before the pending asset can be read or converted.
 - Supports multiple storage strategies (session, cookie, headers, signed URLs, database) depending on your application's architecture.
 
 ## Configuration (Asset config)
@@ -47,7 +47,7 @@ Set `pendingSecurityToken` to `null` only when pending IDs are never exposed to 
 ## Available interfaces and base class
 
 - `Maniaba\AssetConnect\Pending\Interfaces\PendingSecurityTokenInterface` — interface that any token strategy must implement. Public methods:
-  - `generateToken(string $pendingId): string` — generate and persist a token for the given pending ID and return the token.
+  - `generateToken(string $pendingId): string` — generate the pending asset security value for the given pending ID. Built-in HMAC strategies return the digest stored in pending metadata.
   - `retrieveToken(string $pendingId): ?string` — retrieve the token for the given pending ID from the chosen strategy (session, cookie, header, etc.).
   - `validateToken(PendingAsset $pendingAsset, ?string $tokenProvided = null): bool` — validate the pending asset against the provider's current security context.
   - `deleteToken(string $pendingId): void` — remove stored token data for cleanup.

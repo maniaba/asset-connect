@@ -208,19 +208,13 @@ public function confirm()
 {
     $pendingId = $this->request->getPost('pending_id');
 
-    $manager = PendingAssetManager::make();
-    $pending = $manager->fetchById($pendingId);
-
-    if (!$pending) {
+    try {
+        // Add to entity by ID. This consumes and deletes the pending entry.
+        $user->addAssetFromPending($pendingId)
+            ->toAssetCollection(Photos::class);
+    } catch (\Maniaba\AssetConnect\Exceptions\AssetException) {
         return $this->response->setStatusCode(404);
     }
-
-    // Add to entity
-    $user->addAssetFromPending($pending)
-        ->toAssetCollection(Photos::class);
-
-    // Clean up
-    $manager->deleteById($pendingId);
 
     return $this->response->setJSON(['success' => true]);
 }
@@ -274,15 +268,12 @@ public function confirmUpload()
 {
     $pendingId = $this->request->getPost('pending_id');
 
-    $manager = PendingAssetManager::make();
-    $pending = $manager->fetchById($pendingId);
-
-    if (!$pending) {
+    try {
+        $user->addAssetFromPending($pendingId)
+            ->toAssetCollection(Images::class);
+    } catch (\Maniaba\AssetConnect\Exceptions\AssetException) {
         return $this->response->setStatusCode(404);
     }
-
-    $user->addAssetFromPending($pending)
-        ->toAssetCollection(Images::class);
 
     return $this->response->setJSON(['success' => true]);
 }
@@ -317,17 +308,14 @@ public function batchUpload()
 public function confirmBatch()
 {
     $pendingIds = $this->request->getPost('pending_ids');
-    $manager = PendingAssetManager::make();
 
     foreach ($pendingIds as $pendingId) {
-        $pending = $manager->fetchById($pendingId);
-
-        if (!$pending) {
-            continue; // Skip expired or invalid
+        try {
+            $product->addAssetFromPending($pendingId)
+                ->toAssetCollection(ProductImages::class);
+        } catch (\Maniaba\AssetConnect\Exceptions\AssetException) {
+            continue; // Skip expired, invalid, or already consumed IDs
         }
-
-        $product->addAssetFromPending($pending)
-            ->toAssetCollection(ProductImages::class);
     }
 
     return $this->response->setJSON(['success' => true]);
@@ -467,5 +455,5 @@ class Asset extends BaseConfig
 ## See Also
 
 - [Pending Assets](pending.md) - Overview of pending assets functionality
-- [DefaultPendingStorage](pending.md#defaultpendingstorage) - Default filesystem storage implementation
+- [DefaultPendingStorage](pending.md#defaultpendingstorage) - Default protected storage implementation
 - [Custom Pending Storage](custom-pending-storage.md) - Creating custom storage implementations
