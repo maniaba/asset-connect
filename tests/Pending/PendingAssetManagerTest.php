@@ -7,6 +7,7 @@ namespace Tests\Pending;
 use CodeIgniter\Config\Factories;
 use CodeIgniter\I18n\Time;
 use CodeIgniter\Test\CIUnitTestCase;
+use InvalidArgumentException;
 use Maniaba\AssetConnect\Config\Asset as AssetConfig;
 use Maniaba\AssetConnect\Exceptions\PendingAssetException;
 use Maniaba\AssetConnect\Pending\DefaultPendingStorage;
@@ -15,7 +16,12 @@ use Maniaba\AssetConnect\Pending\PendingAsset;
 use Maniaba\AssetConnect\Pending\PendingAssetManager;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
+use ReflectionProperty;
 use RuntimeException;
+use stdClass;
+use Tests\Support\Files\FixedSizeFile;
+use Tests\Support\Pending\FakePendingSecurityToken;
+use Tests\Support\Pending\PendingAssetManagerFunctionOverrides;
 
 /**
  * @internal
@@ -44,12 +50,21 @@ final class PendingAssetManagerTest extends CIUnitTestCase
 
     protected function tearDown(): void
     {
-        parent::tearDown();
+        $temporaryPath = PendingAssetManagerFunctionOverrides::$lastTemporaryPath;
+        if ($temporaryPath !== null && is_file($temporaryPath)) {
+            unlink($temporaryPath);
+        }
+
+        PendingAssetManagerFunctionOverrides::reset();
+        FakePendingSecurityToken::reset();
+
         // Clean up temporary file
         if (file_exists($this->tempFilePath)) {
             unlink($this->tempFilePath);
         }
         Factories::reset('config');
+
+        parent::tearDown();
     }
 
     /**
@@ -90,6 +105,30 @@ final class PendingAssetManagerTest extends CIUnitTestCase
 
         // Assert
         $this->assertInstanceOf(PendingAssetManager::class, $manager);
+    }
+
+    #[AllowMockObjectsWithoutExpectations]
+    public function testMakeRejectsInvalidConfiguredPendingStorage(): void
+    {
+        $this->setAssetConfigString('pendingStorage', stdClass::class);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Pending storage must be an instance of PendingStorageInterface');
+
+        PendingAssetManager::make();
+    }
+
+    #[AllowMockObjectsWithoutExpectations]
+    public function testMakeRejectsInvalidConfiguredSecurityTokenProvider(): void
+    {
+        $this->setAssetConfigString('pendingSecurityToken', stdClass::class);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Pending security token provider must be an instance of PendingSecurityTokenInterface',
+        );
+
+        PendingAssetManager::make($this->mockStorage);
     }
 
     /**
@@ -145,6 +184,33 @@ final class PendingAssetManagerTest extends CIUnitTestCase
 
         // Assert
         $this->assertNotInstanceOf(PendingAsset::class, $result);
+    }
+
+    public function testFetchByIdReturnsNullWhenSecurityTokenValidationFails(): void
+    {
+        $id = 'token-rejected-id';
+        $this->useFakePendingSecurityToken(validateResult: false);
+
+        $pendingAsset = $this->createFreshPendingAsset($id);
+        $pendingAsset->setSecurityToken('stored-token');
+
+        $this->mockStorage->method('fetchById')->with($id)->willReturn($pendingAsset);
+        $this->mockStorage->method('getDefaultTTLSeconds')->willReturn(3600);
+
+        $manager = PendingAssetManager::make($this->mockStorage);
+
+        $result = $manager->fetchById($id, 'submitted-token');
+
+        $this->assertNotInstanceOf(
+            PendingAsset::class,
+            $result,
+            'Pending asset must not be returned when security token validation fails.',
+        );
+        $this->assertSame(
+            [['id' => $id, 'token' => 'submitted-token']],
+            FakePendingSecurityToken::$validated,
+            'Pending manager must validate the submitted security token for the pending asset.',
+        );
     }
 
     /**
@@ -213,6 +279,170 @@ final class PendingAssetManagerTest extends CIUnitTestCase
         $this->assertNotInstanceOf(PendingAsset::class, $result);
     }
 
+    public function testConsumeByIdCopiesFileToTemporarySourceAndDeletesPendingAsset(): void
+    {
+        // Arrange
+        $id = 'consume-id';
+
+        $pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
+        $pendingAsset->setId($id);
+        $this->setPrivateProperty($pendingAsset, 'created_at', Time::now());
+
+        $this->mockStorage->method('fetchById')->with($id)->willReturn($pendingAsset);
+        $this->mockStorage->method('getDefaultTTLSeconds')->willReturn(3600);
+        $this->mockStorage->expects($this->once())->method('deleteById')->with($id)->willReturn(true);
+
+        $manager = PendingAssetManager::make($this->mockStorage);
+
+        // Act
+        $result = $manager->consumeById($id);
+
+        // Assert
+        $this->assertInstanceOf(PendingAsset::class, $result);
+
+        $temporaryPath = $result->file->getRealPath();
+        $this->assertIsString($temporaryPath);
+
+        try {
+            $this->assertNotSame($this->tempFilePath, $temporaryPath);
+            $this->assertFileExists($temporaryPath);
+            $this->assertSame('test content', file_get_contents($temporaryPath));
+            $this->assertFalse($result->preserve_original);
+        } finally {
+            @unlink($temporaryPath);
+        }
+    }
+
+    public function testConsumeByIdReturnsNullWhenAssetIsNotFound(): void
+    {
+        // Arrange
+        $id = 'missing-consume-id';
+
+        $this->mockStorage->method('fetchById')->with($id)->willReturn(null);
+        $this->mockStorage->method('getDefaultTTLSeconds')->willReturn(3600);
+        $this->mockStorage->expects($this->never())->method('deleteById');
+
+        $manager = PendingAssetManager::make($this->mockStorage);
+
+        // Act
+        $result = $manager->consumeById($id);
+
+        // Assert
+        $this->assertNotInstanceOf(PendingAsset::class, $result);
+    }
+
+    public function testConsumeByIdDeletesSecurityTokenAfterSuccessfulConsume(): void
+    {
+        $id = 'consume-token-id';
+        $this->useFakePendingSecurityToken();
+
+        $pendingAsset = $this->createFreshPendingAsset($id);
+
+        $this->mockStorage->method('fetchById')->with($id)->willReturn($pendingAsset);
+        $this->mockStorage->method('getDefaultTTLSeconds')->willReturn(3600);
+        $this->mockStorage->expects($this->once())->method('deleteById')->with($id)->willReturn(true);
+
+        $manager = PendingAssetManager::make($this->mockStorage);
+
+        $result = $manager->consumeById($id, 'submitted-token');
+
+        $this->assertInstanceOf(PendingAsset::class, $result, 'Pending asset must be returned after successful consume.');
+        $this->assertSame(
+            [$id],
+            FakePendingSecurityToken::$deleted,
+            'Security token must be deleted after pending asset is consumed.',
+        );
+    }
+
+    public function testConsumeByIdDeletesTemporaryCopyWhenPendingDeleteReturnsFalse(): void
+    {
+        $id           = 'consume-delete-false-id';
+        $pendingAsset = $this->createFreshPendingAsset($id);
+
+        $this->mockStorage->method('fetchById')->with($id)->willReturn($pendingAsset);
+        $this->mockStorage->method('getDefaultTTLSeconds')->willReturn(3600);
+        $this->mockStorage->expects($this->once())->method('deleteById')->with($id)->willReturn(false);
+
+        $manager = PendingAssetManager::make($this->mockStorage);
+
+        try {
+            $manager->consumeById($id);
+            $this->fail('Consume must fail when pending storage refuses to delete the consumed asset.');
+        } catch (PendingAssetException) {
+            $this->addToAssertionCount(1);
+        }
+
+        $temporaryPath = PendingAssetManagerFunctionOverrides::$lastTemporaryPath;
+        $this->assertIsString($temporaryPath, 'Pending manager must create a temporary copy before deleting storage.');
+        $this->assertFileDoesNotExist(
+            $temporaryPath,
+            'Temporary copy must be removed when pending asset consumption fails after copying.',
+        );
+    }
+
+    public function testConsumeByIdRejectsUnreadablePendingFile(): void
+    {
+        $id           = 'unreadable-source-id';
+        $pendingAsset = $this->createFreshPendingAsset($id);
+        $pendingAsset->setFile(new FixedSizeFile($this->tempFilePath . '.missing', 1));
+
+        $this->mockStorage->method('fetchById')->with($id)->willReturn($pendingAsset);
+        $this->mockStorage->method('getDefaultTTLSeconds')->willReturn(3600);
+        $this->mockStorage->expects($this->never())->method('deleteById');
+
+        $manager = PendingAssetManager::make($this->mockStorage);
+
+        $this->expectException(PendingAssetException::class);
+
+        $manager->consumeById($id);
+    }
+
+    public function testConsumeByIdRejectsTemporarySourceCreationFailure(): void
+    {
+        $id           = 'tempnam-failure-id';
+        $pendingAsset = $this->createFreshPendingAsset($id);
+
+        PendingAssetManagerFunctionOverrides::$failNextTempnam = true;
+
+        $this->mockStorage->method('fetchById')->with($id)->willReturn($pendingAsset);
+        $this->mockStorage->method('getDefaultTTLSeconds')->willReturn(3600);
+        $this->mockStorage->expects($this->never())->method('deleteById');
+
+        $manager = PendingAssetManager::make($this->mockStorage);
+
+        $this->expectException(PendingAssetException::class);
+
+        $manager->consumeById($id);
+    }
+
+    public function testConsumeByIdDeletesTemporaryFileWhenPendingCopyFails(): void
+    {
+        $id           = 'copy-failure-id';
+        $pendingAsset = $this->createFreshPendingAsset($id);
+
+        PendingAssetManagerFunctionOverrides::$failNextCopy = true;
+
+        $this->mockStorage->method('fetchById')->with($id)->willReturn($pendingAsset);
+        $this->mockStorage->method('getDefaultTTLSeconds')->willReturn(3600);
+        $this->mockStorage->expects($this->never())->method('deleteById');
+
+        $manager = PendingAssetManager::make($this->mockStorage);
+
+        try {
+            $manager->consumeById($id);
+            $this->fail('Consume must fail when the pending file cannot be copied to a temporary source.');
+        } catch (PendingAssetException) {
+            $this->addToAssertionCount(1);
+        }
+
+        $temporaryPath = PendingAssetManagerFunctionOverrides::$lastTemporaryPath;
+        $this->assertIsString($temporaryPath, 'Pending manager must create a temporary path before copying the file.');
+        $this->assertFileDoesNotExist(
+            $temporaryPath,
+            'Temporary path must be removed when copying the pending file fails.',
+        );
+    }
+
     /**
      * Test deleteById returns true on successful deletion
      */
@@ -261,6 +491,43 @@ final class PendingAssetManagerTest extends CIUnitTestCase
 
         // Assert
         $this->assertFalse($result);
+    }
+
+    public function testDeleteByIdReturnsFalseWhenAssetIsNotFound(): void
+    {
+        $id = 'missing-delete-id';
+
+        $this->mockStorage->method('fetchById')->with($id)->willReturn(null);
+        $this->mockStorage->method('getDefaultTTLSeconds')->willReturn(3600);
+        $this->mockStorage->expects($this->never())->method('deleteById');
+
+        $manager = PendingAssetManager::make($this->mockStorage);
+
+        $this->assertFalse(
+            $manager->deleteById($id),
+            'Deleting a missing pending asset must return false without touching storage delete.',
+        );
+    }
+
+    public function testDeleteByIdDeletesSecurityTokenBeforeStorageDelete(): void
+    {
+        $id = 'delete-token-id';
+        $this->useFakePendingSecurityToken();
+
+        $pendingAsset = $this->createFreshPendingAsset($id);
+
+        $this->mockStorage->method('fetchById')->with($id)->willReturn($pendingAsset);
+        $this->mockStorage->method('getDefaultTTLSeconds')->willReturn(3600);
+        $this->mockStorage->expects($this->once())->method('deleteById')->with($id)->willReturn(true);
+
+        $manager = PendingAssetManager::make($this->mockStorage);
+
+        $this->assertTrue($manager->deleteById($id, 'submitted-token'), 'Pending asset delete should succeed.');
+        $this->assertSame(
+            [$id],
+            FakePendingSecurityToken::$deleted,
+            'Security token must be deleted before pending storage delete returns.',
+        );
     }
 
     /**
@@ -314,6 +581,35 @@ final class PendingAssetManagerTest extends CIUnitTestCase
         $this->assertSame($customTTL, $pendingAsset->ttl);
     }
 
+    public function testStoreAssignsGeneratedSecurityToken(): void
+    {
+        $generatedId = 'tokenized-id';
+        $customTTL   = 7200;
+        $this->useFakePendingSecurityToken(generatedToken: 'stored-security-token');
+
+        $pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
+
+        $this->mockStorage->method('generatePendingId')->willReturn($generatedId);
+        $this->mockStorage->expects($this->once())
+            ->method('store')
+            ->with($this->identicalTo($pendingAsset), $generatedId);
+
+        $manager = PendingAssetManager::make($this->mockStorage);
+
+        $manager->store($pendingAsset, $customTTL);
+
+        $this->assertSame(
+            ['tokenized-id'],
+            FakePendingSecurityToken::$generatedFor,
+            'Pending manager must generate a security token for the stored pending asset ID.',
+        );
+        $this->assertSame(
+            'stored-security-token',
+            $pendingAsset->security_token,
+            'Generated pending security token must be written to pending asset metadata.',
+        );
+    }
+
     /**
      * Test store method updates pending asset properties
      */
@@ -341,24 +637,6 @@ final class PendingAssetManagerTest extends CIUnitTestCase
         // Assert
         $this->assertSame($generatedId, $pendingAsset->id);
         $this->assertSame($ttl, $pendingAsset->ttl);
-    }
-
-    /**
-     * Test cleanExpiredPendingAssets delegates to storage
-     */
-    public function testCleanExpiredPendingAssetsDelegatesToStorage(): void
-    {
-        // Arrange
-        $this->mockStorage->expects($this->once())
-            ->method('cleanExpiredPendingAssets');
-
-        $manager = PendingAssetManager::make($this->mockStorage);
-
-        // Act
-        $manager->cleanExpiredPendingAssets();
-
-        // Assert - expectation verified by PHPUnit
-        $this->assertTrue(true);
     }
 
     /**
@@ -672,5 +950,31 @@ final class PendingAssetManagerTest extends CIUnitTestCase
         $manager = PendingAssetManager::make($this->mockStorage);
 
         return $manager->fetchById($id);
+    }
+
+    private function createFreshPendingAsset(string $id): PendingAsset
+    {
+        $pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
+        $pendingAsset->setId($id);
+        $this->setPrivateProperty($pendingAsset, 'created_at', Time::now());
+
+        return $pendingAsset;
+    }
+
+    private function useFakePendingSecurityToken(
+        bool $validateResult = true,
+        string $generatedToken = 'fake-pending-token',
+    ): void {
+        FakePendingSecurityToken::reset();
+        FakePendingSecurityToken::$validateResult = $validateResult;
+        FakePendingSecurityToken::$generatedToken = $generatedToken;
+
+        $this->mockAssetConfig->pendingSecurityToken = FakePendingSecurityToken::class;
+    }
+
+    private function setAssetConfigString(string $property, string $value): void
+    {
+        $reflection = new ReflectionProperty($this->mockAssetConfig, $property);
+        $reflection->setValue($this->mockAssetConfig, $value);
     }
 }

@@ -8,6 +8,7 @@ use CodeIgniter\Config\Factories;
 use CodeIgniter\Test\CIUnitTestCase;
 use League\Flysystem\FilesystemAdapter;
 use League\Flysystem\FilesystemOperator;
+use League\Flysystem\Local\LocalFilesystemAdapter;
 use Maniaba\AssetConnect\Config\Asset;
 use Maniaba\AssetConnect\Enums\AssetVisibility;
 use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
@@ -91,6 +92,28 @@ final class StorageManagerTest extends CIUnitTestCase
         $this->assertSame('remote', $disk->name());
         $this->assertSame(AssetVisibility::PROTECTED, $disk->visibility());
         $this->assertNull($disk->localPath('file.txt'));
+    }
+
+    public function testDiskWrapsLocalFilesystemAdapterWithRootAndPublicUrlList(): void
+    {
+        $root   = HOMEPATH . 'build/asset-connect/storage-manager-local-adapter';
+        $config = new TestAssetConfig();
+
+        $config->storages = [
+            'local_adapter' => [
+                'adapter'    => new LocalFilesystemAdapter($root),
+                'root'       => $root,
+                'public_url' => ['https://cdn-one.example.test/assets', 'https://cdn-two.example.test/assets'],
+            ],
+        ];
+
+        $disk = (new StorageManager($config))->disk('local_adapter');
+
+        $this->assertSame($root . DIRECTORY_SEPARATOR . 'file.txt', $disk->localPath('file.txt'));
+        $this->assertContains($disk->publicUrl('file.txt'), [
+            'https://cdn-one.example.test/assets/file.txt',
+            'https://cdn-two.example.test/assets/file.txt',
+        ]);
     }
 
     public function testDiskThrowsWhenStorageIsNotConfigured(): void

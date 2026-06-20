@@ -20,7 +20,7 @@ interface PendingSecurityTokenInterface
     public function retrieveToken(string $pendingId): ?string;
 
     /**
-     * Validate user-provided token against the stored one.
+     * Validate the pending asset against the provider's current security context.
      */
     public function validateToken(PendingAsset $pendingAsset, ?string $tokenProvided = null): bool;
 

@@ -4,28 +4,51 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use CodeIgniter\Files\File;
 use CodeIgniter\HTTP\Files\UploadedFile;
 use CodeIgniter\HTTP\IncomingRequest;
 use CodeIgniter\HTTP\SiteURI;
+use CodeIgniter\Queue\Config\Services as QueueServices;
+use CodeIgniter\Queue\Interfaces\QueueInterface;
+use CodeIgniter\Queue\QueuePushResult;
 use Config\App;
 use Config\Services;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Asset\AssetAdder;
+use Maniaba\AssetConnect\Asset\AssetAdderMultiple;
 use Maniaba\AssetConnect\Asset\AssetPersistenceManager;
+use Maniaba\AssetConnect\AssetCollection\SetupAssetCollection;
 use Maniaba\AssetConnect\AssetConnect;
 use Maniaba\AssetConnect\AssetVariants\AssetVariant;
 use Maniaba\AssetConnect\Enums\AssetVisibility;
+use Maniaba\AssetConnect\Exceptions\AssetException;
 use Maniaba\AssetConnect\Exceptions\FileException;
+use Maniaba\AssetConnect\Exceptions\FileVariantException;
+use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Maniaba\AssetConnect\Models\AssetModel;
+use Maniaba\AssetConnect\Pending\Interfaces\PendingStorageInterface;
 use Maniaba\AssetConnect\Pending\PendingAsset;
+use Maniaba\AssetConnect\Pending\PendingAssetManager;
 use Maniaba\AssetConnect\Storage\Interfaces\StorageDiskInterface;
 use PHPUnit\Framework\MockObject\Stub;
 use RuntimeException;
 use Tests\Support\AssetCollections\FakeAvatarCollection;
 use Tests\Support\AssetCollections\FakeDocumentCollection;
+use Tests\Support\AssetCollections\ImmediateVariantTestAssetCollection;
+use Tests\Support\AssetCollections\MimeRestrictedTestAssetCollection;
+use Tests\Support\AssetCollections\QueuedVariantTestAssetCollection;
+use Tests\Support\AssetCollections\SingleFileTestAssetCollection;
+use Tests\Support\AssetCollections\SizeLimitedTestAssetCollection;
 use Tests\Support\AssetConnectFeatureTestCase;
 use Tests\Support\Entities\FakeAssetEntity;
+use Tests\Support\Files\FixedSizeFile;
+use Tests\Support\Files\UnreadableFile;
+use Tests\Support\Files\UnreadableStreamWrapper;
+use Tests\Support\Files\UnsupportedAssetFileValue;
+use Tests\Support\Models\FailingSaveAssetModel;
 use Tests\Support\Models\FakeAssetEntityModel;
+use Tests\Support\Models\InvalidAssetConnectReturnTypeModel;
+use Tests\Support\TestAssetCollection;
 
 /**
  * @internal
@@ -65,6 +88,27 @@ final class AssetConnectEntityFlowTest extends AssetConnectFeatureTestCase
         $this->assertSame($asset->id, $entity->getLastAsset()?->id);
     }
 
+    public function testEntityTraitReturnsEmptyAssetsAndNullFirstLastBeforeAssetsAreLoaded(): void
+    {
+        $entity = $this->createFakeEntity();
+
+        $this->assertSame([], $entity->getAssets(), 'Entity without assets should return an empty asset list.');
+        $this->assertNotInstanceOf(Asset::class, $entity->getFirstAsset(), 'Entity without assets should not have a first asset.');
+        $this->assertNotInstanceOf(Asset::class, $entity->getLastAsset(), 'Entity without assets should not have a last asset.');
+    }
+
+    public function testEntityTraitRejectsMissingFileBeforeCreatingAssetAdder(): void
+    {
+        $entity = $this->createFakeEntity();
+        $file   = $this->createStub(UploadedFile::class);
+        $file->method('isFile')->willReturn(false);
+        $file->method('getRealPath')->willReturn($this->sourceFilesRoot . DIRECTORY_SEPARATOR . 'missing-trait-source.txt');
+
+        $this->expectException(FileException::class);
+
+        $entity->addAsset($file);
+    }
+
     public function testStorageWriteFailureExposesStorageSpecificException(): void
     {
         $disk = $this->createMock(StorageDiskInterface::class);
@@ -98,6 +142,328 @@ final class AssetConnectEntityFlowTest extends AssetConnectFeatureTestCase
         }
 
         $this->fail('Expected storage write failure exception.');
+    }
+
+    public function testAssetPersistenceRejectsFilesOverCollectionLimit(): void
+    {
+        $entity = $this->createFakeEntity();
+
+        try {
+            $entity->addAsset($this->createSourceFile('oversized.txt', 'too large'))
+                ->usingFileName('oversized.txt')
+                ->preservingOriginal()
+                ->toAssetCollection(SizeLimitedTestAssetCollection::class);
+        } catch (AssetException $exception) {
+            $this->assertSame(413, $exception->getCode(), 'Oversized files should be rejected with a payload-too-large status.');
+            $this->assertSame('File size exceeds the maximum allowed size', $exception->getMessage(), 'Oversized files should use the file-size validation error.');
+            $this->assertSame([], AssetModel::init(false)->where('collection', 'size_limited')->findAll(), 'Rejected oversized files should not create asset rows.');
+
+            return;
+        }
+
+        $this->fail('Expected oversized file validation exception.');
+    }
+
+    public function testAssetPersistenceRejectsInvalidCollectionExtension(): void
+    {
+        $entity = $this->createFakeEntity();
+
+        try {
+            $entity->addAsset($this->createSourceFile('invalid-extension-source.txt', 'invalid extension'))
+                ->usingFileName('invalid.pdf')
+                ->preservingOriginal()
+                ->toAssetCollection(FakeDocumentCollection::class);
+        } catch (AssetException $exception) {
+            $this->assertSame(400, $exception->getCode(), 'Invalid extensions should be rejected as a bad request.');
+            $this->assertSame('Invalid file extension', $exception->getMessage(), 'Invalid extension validation should use its dedicated exception message.');
+            $this->assertSame([], AssetModel::init(false)->where('file_name', 'invalid.pdf')->findAll(), 'Rejected invalid extensions should not create asset rows.');
+
+            return;
+        }
+
+        $this->fail('Expected invalid extension validation exception.');
+    }
+
+    public function testAssetPersistenceRejectsInvalidCollectionMimeType(): void
+    {
+        $entity = $this->createFakeEntity();
+
+        try {
+            $entity->addAsset($this->createSourceFile('invalid-mime.txt', 'invalid mime'))
+                ->usingFileName('invalid-mime.txt')
+                ->preservingOriginal()
+                ->toAssetCollection(MimeRestrictedTestAssetCollection::class);
+        } catch (AssetException $exception) {
+            $this->assertSame(400, $exception->getCode(), 'Invalid MIME types should be rejected as a bad request.');
+            $this->assertSame('Invalid MIME type', $exception->getMessage(), 'Invalid MIME validation should use its dedicated exception message.');
+            $this->assertSame([], AssetModel::init(false)->where('collection', 'mime_restricted')->findAll(), 'Rejected MIME types should not create asset rows.');
+
+            return;
+        }
+
+        $this->fail('Expected invalid MIME validation exception.');
+    }
+
+    public function testAssetPersistenceRejectsUnsupportedAssetFileValue(): void
+    {
+        $entity  = $this->createFakeEntity();
+        $asset   = $this->createPersistenceAsset($entity, new UnsupportedAssetFileValue(1), 'unsupported.txt');
+        $manager = new AssetPersistenceManager(
+            $entity,
+            $asset,
+            $this->createSetupAssetCollection(FakeDocumentCollection::class),
+        );
+
+        try {
+            $manager->store();
+        } catch (InvalidArgumentException $exception) {
+            $this->assertSame('Invalid argument provided', $exception->getMessage(), 'Unsupported file values should use the package invalid argument exception.');
+            $this->assertSame(['Unsupported asset type for storage.'], $exception->errors, 'Unsupported file values should explain that storage requires a file object.');
+
+            return;
+        }
+
+        $this->fail('Expected unsupported asset type exception.');
+    }
+
+    public function testAssetPersistenceRejectsMissingSourceFile(): void
+    {
+        $entity  = $this->createFakeEntity();
+        $missing = $this->sourceFilesRoot . DIRECTORY_SEPARATOR . 'missing-source.txt';
+        $asset   = $this->createPersistenceAsset($entity, new FixedSizeFile($missing, 1), 'missing-source.txt');
+        $manager = new AssetPersistenceManager(
+            $entity,
+            $asset,
+            $this->createSetupAssetCollection(FakeDocumentCollection::class),
+        );
+
+        try {
+            $manager->store();
+        } catch (FileException $exception) {
+            $this->assertSame(404, $exception->getCode(), 'Missing source files should be reported as not found.');
+            $this->assertSame('File not found', $exception->getMessage(), 'Missing source files should use the storage file-not-found exception.');
+
+            return;
+        }
+
+        $this->fail('Expected missing source file exception.');
+    }
+
+    public function testAssetPersistenceRejectsUnreadableSourceFile(): void
+    {
+        $streamWrapperRegistered = false;
+        if (! in_array(UnreadableStreamWrapper::SCHEME, stream_get_wrappers(), true)) {
+            $streamWrapperRegistered = stream_wrapper_register(UnreadableStreamWrapper::SCHEME, UnreadableStreamWrapper::class);
+        }
+
+        $entity = $this->createFakeEntity();
+        $asset  = $this->createPersistenceAsset(
+            $entity,
+            new UnreadableFile(UnreadableStreamWrapper::path('unreadable-source.txt'), 10),
+            'unreadable-source.txt',
+            10,
+        );
+        $manager                = new AssetPersistenceManager($entity, $asset, $this->createSetupAssetCollection(FakeDocumentCollection::class));
+        $previousErrorReporting = error_reporting();
+
+        error_reporting($previousErrorReporting & ~E_WARNING);
+
+        try {
+            $manager->store();
+        } catch (FileException $exception) {
+            $this->assertSame(404, $exception->getCode(), 'Unreadable source files should be reported as not found by storage persistence.');
+            $this->assertSame('File not found', $exception->getMessage(), 'Unreadable source files should use the same file-not-found exception as missing sources.');
+
+            return;
+        } finally {
+            error_reporting($previousErrorReporting);
+            if ($streamWrapperRegistered) {
+                stream_wrapper_unregister(UnreadableStreamWrapper::SCHEME);
+            }
+        }
+
+        $this->fail('Expected unreadable source file exception.');
+    }
+
+    public function testAssetPersistenceFallsBackToDefaultPublicStorageWhenCollectionHasNoStorage(): void
+    {
+        $entity = $this->createFakeEntity();
+        $asset  = $entity->addAsset($this->createSourceFile('default-storage.txt', 'default storage'))
+            ->usingFileName('default-storage.txt')
+            ->preservingOriginal()
+            ->toAssetCollection(TestAssetCollection::class);
+
+        $this->assertSame('public', $asset->storage, 'Collections without explicit storage should use the default public storage disk.');
+        $this->assertAssetWasStoredForEntity($asset, $entity, 'test_collection');
+    }
+
+    public function testAssetPersistenceCleansStoredFileWhenDatabaseSaveFails(): void
+    {
+        $this->assetConfig->assetModel = FailingSaveAssetModel::class;
+        $entity                        = $this->createFakeEntity();
+        $expectedStoredPath            = 'fake-assets/documents/database-failure.txt';
+
+        try {
+            $entity->addAsset($this->createSourceFile('database-failure.txt', 'database failure'))
+                ->usingFileName('database-failure.txt')
+                ->preservingOriginal()
+                ->toAssetCollection(FakeDocumentCollection::class);
+        } catch (AssetException $exception) {
+            $this->assertSame(
+                ['storage' => 'Unable to update test asset storage.'],
+                $exception->errors,
+                'Database save failures should expose the model validation errors.',
+            );
+            $this->assertFileDoesNotExist(
+                $this->storagePathFor('public', $expectedStoredPath),
+                'Storage cleanup should remove the file written before the database save failure.',
+            );
+
+            return;
+        } finally {
+            $this->assetConfig->assetModel = AssetModel::class;
+        }
+
+        $this->fail('Expected database save failure exception.');
+    }
+
+    public function testAssetPersistenceLogsAndKeepsOriginalFailureWhenStorageCleanupFails(): void
+    {
+        $disk = $this->createMock(StorageDiskInterface::class);
+        $disk->method('name')->willReturn('public');
+        $disk->method('visibility')->willReturn(AssetVisibility::PUBLIC);
+        $disk->method('localPath')->willReturn(null);
+        $disk->expects($this->once())
+            ->method('writeStream')
+            ->with('fake-assets/documents/cleanup-delete-failure.txt');
+        $disk->expects($this->once())
+            ->method('delete')
+            ->with('fake-assets/documents/cleanup-delete-failure.txt')
+            ->willThrowException(new RuntimeException('delete failed'));
+
+        $this->assetConfig->storages['public'] = [
+            'disk' => $disk,
+        ];
+        $this->assetConfig->assetModel = FailingSaveAssetModel::class;
+        $entity                        = $this->createFakeEntity();
+
+        try {
+            $entity->addAsset($this->createSourceFile('cleanup-delete-failure.txt', 'cleanup failure'))
+                ->usingFileName('cleanup-delete-failure.txt')
+                ->preservingOriginal()
+                ->toAssetCollection(FakeDocumentCollection::class);
+        } catch (AssetException $exception) {
+            $this->assertSame(
+                ['storage' => 'Unable to update test asset storage.'],
+                $exception->errors,
+                'Cleanup failures should not replace the original database failure.',
+            );
+
+            return;
+        } finally {
+            $this->assetConfig->assetModel = AssetModel::class;
+        }
+
+        $this->fail('Expected original database save failure exception.');
+    }
+
+    public function testAssetPersistenceProcessesImmediateVariants(): void
+    {
+        $entity = $this->createFakeEntity();
+        $asset  = $entity->addAsset($this->createSourceFile('variant-source.txt', 'variant source'))
+            ->usingFileName('variant-source.txt')
+            ->preservingOriginal()
+            ->toAssetCollection(ImmediateVariantTestAssetCollection::class);
+
+        $this->assertAssetWasStoredForEntity($asset, $entity, 'immediate_variants');
+
+        $variant = $asset->metadata->assetVariant->getAssetVariant('preview');
+
+        $this->assertInstanceOf(AssetVariant::class, $variant, 'Immediate variant collections should attach the configured variant metadata.');
+        $this->assertTrue($variant->processed, 'Immediate variants should be processed before the asset is returned.');
+        $this->assertGreaterThan(0, $variant->size, 'Immediate variants should store their final file size.');
+        $this->assertSame(
+            'preview for variant-source.txt',
+            file_get_contents($this->storagePathFor($variant->storage, $variant->path)),
+            'Immediate variant processing should write the configured variant file contents.',
+        );
+    }
+
+    public function testAssetPersistenceCleansStoredAssetAndDatabaseRowWhenQueueingVariantsFails(): void
+    {
+        $queue = $this->createMock(QueueInterface::class);
+        $queue->expects($this->once())
+            ->method('push')
+            ->with(
+                'asset_queue',
+                'asset_connect',
+                $this->callback(static fn (array $payload): bool => ($payload['definition'] ?? null) === QueuedVariantTestAssetCollection::class
+                        && isset($payload['assetId'])
+                        && is_int($payload['assetId'])
+                        && $payload['assetId'] > 0),
+            )
+            ->willReturn(QueuePushResult::failure('queue disabled'));
+
+        QueueServices::injectMock('queue', $queue);
+
+        $entity             = $this->createFakeEntity();
+        $expectedStoredPath = 'fake-assets/queued-variants/queue-failure.txt';
+
+        try {
+            $entity->addAsset($this->createSourceFile('queue-failure.txt', 'queue failure'))
+                ->usingFileName('queue-failure.txt')
+                ->preservingOriginal()
+                ->toAssetCollection(QueuedVariantTestAssetCollection::class);
+        } catch (FileVariantException $exception) {
+            $this->assertSame(
+                ['Failed to queue asset variants processing.'],
+                $exception->errors,
+                'Queue failures should expose the asset variant queueing error.',
+            );
+            $this->assertFileDoesNotExist(
+                $this->storagePathFor('public', $expectedStoredPath),
+                'Queueing failures after save should remove the already stored asset file.',
+            );
+            $this->assertNull(
+                $this->db->table($this->tables['assets'])
+                    ->where('file_name', 'queue-failure.txt')
+                    ->get()
+                    ->getRowArray(),
+                'Queueing failures after save should force-delete the inserted asset row.',
+            );
+
+            return;
+        } finally {
+            QueueServices::resetSingle('queue');
+        }
+
+        $this->fail('Expected queued variant processing exception.');
+    }
+
+    public function testAssetPersistenceKeepsOnlyLatestAssetInSingleFileCollection(): void
+    {
+        $entity = $this->createFakeEntity();
+
+        $first = $entity->addAsset($this->createSourceFile('single-old.txt', 'old'))
+            ->usingFileName('single-old.txt')
+            ->preservingOriginal()
+            ->toAssetCollection(SingleFileTestAssetCollection::class);
+
+        $this->db->table($this->tables['assets'])
+            ->where('id', $first->id)
+            ->update(['created_at' => '2000-01-01 00:00:00']);
+
+        $second = $entity->addAsset($this->createSourceFile('single-new.txt', 'new'))
+            ->usingFileName('single-new.txt')
+            ->preservingOriginal()
+            ->toAssetCollection(SingleFileTestAssetCollection::class);
+
+        $assets = $this->assertEntityAssetCount($entity, 1, SingleFileTestAssetCollection::class);
+
+        $this->assertSame($second->id, $assets[0]->id, 'Single file collections should keep the newest asset in the entity cache.');
+        $this->assertSame('single-new.txt', $assets[0]->file_name, 'Single file collections should keep the newest asset row active.');
+        $this->assertAssetWasSoftDeleted($first);
+        $this->assertAssetRowExists($second);
     }
 
     public function testEntityCanMapAssetsToFileNamesAndCustomProperties(): void
@@ -176,9 +542,13 @@ final class AssetConnectEntityFlowTest extends AssetConnectFeatureTestCase
 
         $model = new FakeAssetEntityModel($this->db);
 
+        $assetModel = $model->assetConnectModel();
+
         $entities = $model
-            ->filterAssets(static function (AssetModel $model): void {
-                $model->whereCollection(FakeAvatarCollection::class);
+            ->filterAssets(static function (AssetModel $filterModel) use ($assetModel): void {
+                self::assertSame($assetModel, $filterModel, 'Model trait should filter with the exposed AssetModel instance.');
+
+                $filterModel->whereCollection(FakeAvatarCollection::class);
             })
             ->findAll();
 
@@ -188,6 +558,14 @@ final class AssetConnectEntityFlowTest extends AssetConnectFeatureTestCase
 
         $this->assertSame($avatar->id, $assets[0]->id);
         $this->assertSame('avatar.txt', $assets[0]->file_name);
+    }
+
+    public function testModelTraitRejectsReturnTypeWithoutAssetConnectTrait(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('The return type must be an Entity and must use the UseAssetConnectTrait trait.');
+
+        new InvalidAssetConnectReturnTypeModel($this->db);
     }
 
     public function testPersistedAssetExposesAccessorsCanBeUpdatedAndSerialized(): void
@@ -291,6 +669,35 @@ final class AssetConnectEntityFlowTest extends AssetConnectFeatureTestCase
         $this->assertSame('pending', $asset->getCustomProperty('source'));
     }
 
+    public function testEntityDeletesStoredPendingAssetAfterConvertingPendingId(): void
+    {
+        $this->assetConfig->pendingSecurityToken = null;
+
+        $entity        = $this->createFakeEntity();
+        $pendingSource = $this->createSourceFile('stored-pending-source.txt', 'stored pending text');
+        $pendingAsset  = PendingAsset::createFromFile($pendingSource);
+        $pendingAsset
+            ->usingName('Stored Pending Document')
+            ->usingFileName('stored-pending.txt')
+            ->withCustomProperty('source', 'stored-pending');
+
+        $manager = PendingAssetManager::make();
+        $manager->store($pendingAsset);
+
+        $pendingAssetId = $pendingAsset->id;
+        $this->assertInstanceOf(PendingAsset::class, $manager->fetchById($pendingAssetId));
+
+        $asset = $entity->addAssetFromPending($pendingAssetId)
+            ->toAssetCollection(FakeDocumentCollection::class);
+
+        $this->assertAssetWasStoredForEntity($asset, $entity, 'fake_documents');
+        $this->assertAssetFileContains($asset, 'stored pending text');
+        $this->assertSame('Stored Pending Document', $asset->name);
+        $this->assertSame('stored-pending.txt', $asset->file_name);
+        $this->assertSame('stored-pending', $asset->getCustomProperty('source'));
+        $this->assertNull($manager->fetchById($pendingAssetId));
+    }
+
     public function testEntityCanAddAssetsFromRequest(): void
     {
         $entity = $this->createFakeEntity();
@@ -335,6 +742,132 @@ final class AssetConnectEntityFlowTest extends AssetConnectFeatureTestCase
         $this->assertAssetWasStoredForEntity($assets[1], $entity, 'fake_documents');
         $this->assertSame('request-one.txt', $assets[0]->file_name);
         $this->assertSame('request-two.txt', $assets[1]->file_name);
+    }
+
+    public function testEntityRejectsAssetRequestWithoutKeyNames(): void
+    {
+        try {
+            $this->createFakeEntity()->addAssetFromRequest();
+        } catch (InvalidArgumentException $exception) {
+            $this->assertSame(
+                ['At least one key name must be provided.'],
+                $exception->errors,
+                'Missing request keys should be reported in the package exception errors.',
+            );
+
+            return;
+        }
+
+        $this->fail('Expected missing request key exception.');
+    }
+
+    public function testEntityRejectsInvalidUploadedFileFromRequest(): void
+    {
+        $request = $this->createStub(IncomingRequest::class);
+        $request->method('getFiles')->willReturn([
+            'documents' => ['not-an-uploaded-file'],
+        ]);
+
+        Services::injectMock('request', $request);
+
+        try {
+            $this->expectException(FileException::class);
+
+            $this->createFakeEntity()->addAssetFromRequest('documents');
+        } finally {
+            $this->injectUrlRequest();
+        }
+    }
+
+    public function testMultipleAssetAdderAcceptsSingleUploadedFileValue(): void
+    {
+        $entity       = $this->createFakeEntity();
+        $uploadedFile = $this->createUploadedFileStub(
+            'single request.txt',
+            $this->createSourceFile('single-request-source.txt', 'single request'),
+        );
+        $multipleAdder = $this->createMultipleAssetAdder([
+            'document' => $uploadedFile,
+        ], $entity);
+
+        $assetAdders = $multipleAdder->forEach();
+
+        $this->assertCount(1, $assetAdders, 'forEach should wrap a single UploadedFile value into a list.');
+        $this->assertContainsOnlyInstancesOf(AssetAdder::class, $assetAdders, 'forEach should return asset adders for single UploadedFile values.');
+
+        $assets = $multipleAdder->toAssetCollection(FakeDocumentCollection::class);
+
+        $this->assertCount(1, $assets, 'toAssetCollection should wrap a single UploadedFile value into a list.');
+        $this->assertAssetWasStoredForEntity($assets[0], $entity, 'fake_documents');
+        $this->assertSame('single-request.txt', $assets[0]->file_name, 'Single uploaded file should be stored with its sanitized client file name.');
+    }
+
+    public function testEntityRejectsInvalidBase64AssetPayload(): void
+    {
+        $this->expectException(FileException::class);
+
+        $this->createFakeEntity()->addAssetFromBase64('###');
+    }
+
+    public function testEntityRejectsMissingPendingAssetId(): void
+    {
+        $this->assetConfig->pendingSecurityToken = null;
+
+        $storage = $this->createMock(PendingStorageInterface::class);
+        $storage->expects($this->once())
+            ->method('fetchById')
+            ->with('missing-pending-id')
+            ->willReturn(null);
+        $storage->method('getDefaultTTLSeconds')->willReturn(3600);
+
+        try {
+            $this->createFakeEntity()->addAssetFromPending('missing-pending-id', $storage);
+        } catch (AssetException $exception) {
+            $this->assertSame(404, $exception->getCode(), 'Missing pending asset IDs should be reported as not found.');
+
+            return;
+        }
+
+        $this->fail('Expected missing pending asset exception.');
+    }
+
+    public function testEntityIgnoresUnrequestedAssetRequestFields(): void
+    {
+        $entity       = $this->createFakeEntity();
+        $uploadedFile = $this->createUploadedFileStub(
+            'ignored request.txt',
+            $this->createSourceFile('ignored-request-source.txt', 'ignored request'),
+        );
+
+        $request = $this->createStub(IncomingRequest::class);
+        $request->method('getFiles')->willReturn([
+            'ignored' => [$uploadedFile],
+        ]);
+
+        Services::injectMock('request', $request);
+
+        try {
+            $multipleAdder = $entity->addAssetFromRequest('documents');
+
+            $this->assertSame([], $multipleAdder->forEach(), 'Unrequested uploaded fields should be skipped.');
+        } finally {
+            $this->injectUrlRequest();
+        }
+    }
+
+    public function testMultipleAssetAdderRejectsInvalidUploadedFileItem(): void
+    {
+        $multipleAdder = $this->createMultipleAssetAdder([
+            'document' => ['not an uploaded file'],
+        ], $this->createFakeEntity());
+
+        try {
+            $multipleAdder->forEach();
+            $this->fail('forEach should reject items that are not UploadedFile instances.');
+        } catch (InvalidArgumentException $exception) {
+            $this->assertSame('Invalid argument provided', $exception->getMessage(), 'Invalid item should use the package invalid argument message.');
+            $this->assertSame(['Expected UploadedFile, got string'], $exception->errors, 'Invalid item should report the actual value type.');
+        }
     }
 
     public function testAssetStoragePathCanBeRemovedWithoutDeletingDatabaseRow(): void
@@ -509,6 +1042,30 @@ final class AssetConnectEntityFlowTest extends AssetConnectFeatureTestCase
         $this->assertSame($expectedAsset->id, $asset->id);
     }
 
+    private function createSetupAssetCollection(string $collection): SetupAssetCollection
+    {
+        return (new SetupAssetCollection())->setDefaultCollectionDefinition($collection);
+    }
+
+    private function createPersistenceAsset(
+        FakeAssetEntity $entity,
+        File|UnsupportedAssetFileValue $file,
+        string $fileName,
+        int $size = 1,
+        string $mimeType = 'text/plain',
+    ): Asset {
+        return Asset::create([
+            'file'        => $file,
+            'file_name'   => $fileName,
+            'name'        => pathinfo($fileName, PATHINFO_FILENAME),
+            'mime_type'   => $mimeType,
+            'size'        => $size,
+            'entity_id'   => $entity->id,
+            'entity_type' => $entity,
+            'order'       => 0,
+        ]);
+    }
+
     /**
      * @return Stub&UploadedFile
      */
@@ -525,6 +1082,14 @@ final class AssetConnectEntityFlowTest extends AssetConnectFeatureTestCase
         $uploadedFile->method('getRealPath')->willReturn($path);
 
         return $uploadedFile;
+    }
+
+    /**
+     * @param array<string, mixed> $uploadedFiles
+     */
+    private function createMultipleAssetAdder(array $uploadedFiles, FakeAssetEntity $entity): AssetAdderMultiple
+    {
+        return new AssetAdderMultiple($uploadedFiles, $entity);
     }
 
     private function injectUrlRequest(): void

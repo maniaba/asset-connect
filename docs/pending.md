@@ -6,19 +6,19 @@ Pending assets allow temporary storage of files and their metadata before final 
 
 A pending asset represents a temporary file that is not yet permanently attached to an entity in your application. Each pending asset contains:
 
-- The actual file stored on disk
+- The actual file stored on the configured protected storage disk
 - Metadata about the asset (name, custom properties, order, preserve_original)
 - Expiration time (TTL - Time To Live)
 - A unique ID for identification
 
-Pending assets are stored in a temporary directory and automatically deleted after the TTL expires (default 24 hours).
+Pending assets are stored under a protected storage prefix and are deleted when consumed or when a known pending ID expires.
 
 ## Where are Pending Assets Stored?
 
-The default storage (`DefaultPendingStorage`) uses the filesystem to store pending assets. The directory structure is as follows:
+The default storage (`DefaultPendingStorage`) uses the AssetConnect storage disk system. If `pendingStorageDisk` is not configured, it falls back to `defaultProtectedStorage`. The resolved disk must be protected.
 
 ```
-WRITEPATH/assets_pending/
+<protected-disk>:assets_pending/
 ├── <pendingId>/
 │   ├── file              # Raw file
 │   └── metadata.json     # Metadata in JSON format
@@ -26,15 +26,17 @@ WRITEPATH/assets_pending/
 
 **Example:**
 ```
-writable/assets_pending/
+protected:assets_pending/
 ├── a1b2c3d4e5f6/
 │   ├── file              # profile.jpg
 │   └── metadata.json     # {"id":"a1b2c3d4e5f6","name":"Profile Photo",...}
 ```
 
+The `assets_pending` prefix is configurable with `Config\Asset::$pendingStoragePrefix`.
+
 **Default expiration time (TTL):** 86400 seconds (24 hours)
 
-After an asset expires (`created_at + ttl < now`), `PendingAssetManager::fetchById()` will return `null` and attempt to automatically delete the expired asset.
+After an asset expires (`created_at + ttl < now`), `PendingAssetManager::fetchById()` returns `null` and attempts to delete that known pending ID. Default storage deletes known object keys (`file` and `metadata.json`) and does not list remote buckets to find expired entries; use storage lifecycle rules or an application-side index if you need background cleanup for unconsumed pending assets.
 
 ## Main Classes
 
@@ -60,7 +62,7 @@ A class that represents a pending asset. Contains the file and metadata.
 | `preserve_original` | bool | Whether to preserve the original file |
 | `custom_properties` | array | Additional custom properties |
 | `file` | File\|UploadedFile | Reference to the actual file |
-| `security_token` | string\|null | Short-lived security token assigned to the pending asset (set by PendingAssetManager when a token provider is configured) |
+| `security_token` | string\|null | Internal pending security digest/token assigned by `PendingAssetManager` when a token provider is configured |
 
 
 ### Available Methods
@@ -98,7 +100,7 @@ For detailed documentation, see [Pending Asset Manager](pending-asset-manager.md
 
 ### DefaultPendingStorage
 
-Default filesystem implementation for storing pending assets.
+Default protected Flysystem storage implementation for storing pending assets.
 
 **Namespace:** `Maniaba\AssetConnect\Pending\DefaultPendingStorage`
 
@@ -342,7 +344,7 @@ if ($pending) {
 }
 ```
 
-**Note:** For complete `PendingAssetManager` API documentation (fetching, deleting, cleaning), see [Pending Asset Manager](pending-asset-manager.md).
+**Note:** For complete `PendingAssetManager` API documentation (fetching, consuming, and deleting known pending IDs), see [Pending Asset Manager](pending-asset-manager.md).
 
 ## Create vs Update (Important!)
 
@@ -352,8 +354,8 @@ One of the key characteristics of pending storage is the distinction between cre
 
 When a pending asset **does not have** an ID, `store()` will:
 1. Generate a new unique ID
-2. Store the raw file in `WRITEPATH/assets_pending/<id>/file`
-3. Store metadata in `WRITEPATH/assets_pending/<id>/metadata.json`
+2. Store the raw file at `<pending-storage-disk>:<pendingStoragePrefix>/<id>/file`
+3. Store metadata at `<pending-storage-disk>:<pendingStoragePrefix>/<id>/metadata.json`
 
 ```php
 $pending = PendingAsset::createFromFile('/path/to/photo.jpg');
@@ -421,7 +423,7 @@ The `addAssetFromPending` method:
    - `preservingOriginal()` - preserve original
 5. Returns the `AssetAdder` which you can further configure (e.g., set collection) and save
 
-**Note:** Pending assets are automatically cleaned up from storage after being successfully added to an entity.
+**Note:** When using a pending ID, `addAssetFromPending()` consumes the pending asset, deletes the pending storage entry and token, then stores the real asset from a temporary source file.
 
 ### Usage Examples
 
@@ -460,8 +462,8 @@ if ($pending->size > 5 * 1024 * 1024) {
     throw new \RuntimeException('File is too large');
 }
 
-// Add asset
-$user->addAssetFromPending($pending)
+// Add asset by ID so the pending entry is consumed and deleted
+$user->addAssetFromPending($pendingId)
     ->toAssetCollection(Documents::class);
 ```
 
@@ -663,10 +665,12 @@ public function testUpdatingPendingMetadataDoesNotOverwriteFile()
     $pending->store();
     $id = $pending->id;
 
-    // Check file checksum
-    $filePath = WRITEPATH . 'assets_pending' . DIRECTORY_SEPARATOR . $id . DIRECTORY_SEPARATOR . 'file';
-    $this->assertFileExists($filePath);
-    $checksumBefore = md5_file($filePath);
+    // Check file checksum through the manager, without relying on local storage paths
+    $loadedBefore = PendingAssetManager::make()->fetchById($id);
+    $this->assertNotNull($loadedBefore);
+    $loadedBeforePath = $loadedBefore->file->getRealPath();
+    $this->assertIsString($loadedBeforePath);
+    $checksumBefore = hash_file('sha256', $loadedBeforePath);
 
     // Update only metadata
     $pending->withCustomProperty('version', 2);
@@ -678,13 +682,15 @@ public function testUpdatingPendingMetadataDoesNotOverwriteFile()
     $this->assertNotNull($reloaded);
     $this->assertEquals(2, $reloaded->custom_properties['version']);
     $this->assertEquals('Updated name', $reloaded->name);
+    $reloadedPath = $reloaded->file->getRealPath();
+    $this->assertIsString($reloadedPath);
 
     // Verify file is identical
-    $checksumAfter = md5_file($filePath);
-    $this->assertEquals($checksumBefore, $checksumAfter);
+    $checksumAfter = hash_file('sha256', $reloadedPath);
+    $this->assertSame($checksumBefore, $checksumAfter);
 
     // Verify content is actually the same
-    $this->assertEquals($originalContent, file_get_contents($filePath));
+    $this->assertSame($originalContent, file_get_contents($reloadedPath));
 }
 ```
 
@@ -701,26 +707,9 @@ For advanced topics including custom storage implementations (S3, Redis, etc.), 
 **Possible causes:**
 
 1. **Asset has expired** - check if `created_at + ttl < now`
-2. **ID doesn't exist** - check if directory `WRITEPATH/assets_pending/<id>` was created
+2. **ID doesn't exist** - check if object keys exist under `<pendingStoragePrefix>/<id>/` on the protected pending storage disk
 3. **Corrupted metadata** - check if `metadata.json` is valid JSON
-4. **Missing file** - check if `file` exists in the directory
-
-**Verification:**
-```php
-$id = 'a1b2c3d4e5f6';
-$basePath = WRITEPATH . 'assets_pending' . DIRECTORY_SEPARATOR . $id . DIRECTORY_SEPARATOR;
-
-if (!is_dir($basePath)) {
-    echo "Directory does not exist";
-} elseif (!file_exists($basePath . 'file')) {
-    echo "File does not exist";
-} elseif (!file_exists($basePath . 'metadata.json')) {
-    echo "Metadata does not exist";
-} else {
-    $metadata = json_decode(file_get_contents($basePath . 'metadata.json'), true);
-    print_r($metadata);
-}
-```
+4. **Missing file** - check if `file` exists under the pending ID prefix
 
 ### `AssetException::forPendingAssetNotFound()`
 
@@ -739,24 +728,20 @@ try {
 }
 ```
 
-### Disk space issues
+### Storage cleanup
 
-Pending assets take up space. Ensure regular cleanup:
+Pending assets take up space. The safest cleanup path is consuming or deleting a known pending ID:
 
 ```php
-// Run daily in cron
 $manager = PendingAssetManager::make();
-$manager->cleanExpiredPendingAssets();
+$manager->deleteById($pendingId);
 ```
+
+Default pending storage intentionally does not list remote buckets to discover expired entries. It deletes known object keys under the pending ID prefix. For S3-compatible storage, configure lifecycle expiration for the pending prefix. For local storage, use a custom pending storage implementation if you need directory scanning.
 
 ### Permissions issues
 
-Ensure `WRITEPATH/assets_pending/` has correct permissions:
-
-```bash
-chmod -R 755 writable/assets_pending
-chown -R www-data:www-data writable/assets_pending
-```
+Ensure the configured protected storage disk can write, read, and delete the pending prefix.
 
 ## Summary
 
@@ -764,8 +749,8 @@ chown -R www-data:www-data writable/assets_pending
 - **TTL** (default 24h) automatically deletes old pending assets
 - **Create vs Update**: if pending has an ID, `store()` updates only metadata without overwriting the file
 - **`addAssetFromPending()`** converts a pending asset into a real asset - simple and fast
-- **Automatic cleanup**: pending assets are automatically removed from storage after successful addition to an entity
-- **Expired assets cleanup**: expired pending assets are automatically cleaned up by the `AssetConnectJob` queue job when processing assets
+- **Automatic cleanup**: pending IDs are consumed and removed from storage before the real asset is stored from a temporary source file
+- **Expired known IDs**: expired pending assets are rejected by `fetchById()` and that known ID is deleted when possible
 
 Pending assets make upload processes more flexible and allow users to first upload a file, then edit metadata, and finally confirm where the asset will be added.
 
@@ -783,7 +768,7 @@ Security tokens are short-lived tokens that ensure only authorized actions are p
 
    - Generate a pending ID (when creating a new pending asset)
    - Persist the pending file/metadata using the configured pending storage
-   - Invoke the configured token provider's `generateToken($pendingId)` and set the resulting token on the `PendingAsset` instance (`$pending->security_token`).
+   - Invoke the configured token provider's `generateToken($pendingId)` and store the resulting HMAC digest on the `PendingAsset` instance (`$pending->security_token`).
 
    Therefore you do NOT need to instantiate the token provider or call `generateToken()` manually in typical flows. Example:
 
@@ -796,23 +781,21 @@ $pending = $result['file'][0];
 // Persist pending asset - the PendingAssetManager will generate and persist the token
 $pending->store();
 
-// After storing, the token is available on the PendingAsset object (if a token provider is configured)
+// The client only needs the pending ID. The HMAC digest stays internal.
 return $this->response->setJSON([
     'pending_id' => $pending->id,
-    'security_token' => $pending->security_token,
 ]);
 ```
 
 2. Token validation / retrieval behavior
 
-   - `PendingSecurityTokenInterface::validateToken(PendingAsset $pendingAsset, ?string $tokenProvided = null): bool` validates the provided token against the pending asset's stored `security_token`.
-   - If you don't pass a `$tokenProvided`, most built-in token providers (the abstract implementation) will automatically call `retrieveToken($pendingId)` and validate the retrieved value. For example, `SessionPendingSecurityToken::retrieveToken()` reads the token from session tempdata.
+   - `PendingSecurityTokenInterface::validateToken(PendingAsset $pendingAsset, ?string $tokenProvided = null): bool` validates the pending asset against the configured token strategy.
+   - The built-in HMAC providers (`SessionPendingSecurityToken`, `CookiePendingSecurityToken`, and `OwnerPendingSecurityToken`) use server-side session/cookie/owner context and do not require the client to submit a separate token.
 
-   Example — validating a token that the client passed explicitly:
+   Example — validating ownership from the current request context:
 
 ```php
 use Maniaba\AssetConnect\Pending\PendingAssetManager;
-use Maniaba\AssetConnect\Pending\PendingSecurityToken\SessionPendingSecurityToken;
 
 $manager = PendingAssetManager::make();
 $pending = $manager->fetchById($pendingId);
@@ -821,33 +804,12 @@ if (! $pending) {
     throw new \RuntimeException('Pending asset not found');
 }
 
-// Validate by passing the token explicitly into fetchById().
-// If token is invalid the method returns null.
-$pending = $manager->fetchById($pendingId, $providedTokenFromClient);
-
-if ($pending === null) {
-    // Either asset not found, expired, or invalid token
-    throw new \RuntimeException('Pending asset not found or invalid security token.');
-}
-
-// proceed to convert pending asset into a real asset
-```
-
-   Example — let the provider retrieve the token itself (no explicit token passed):
-
-```php
-$pending = $manager->fetchById($pendingId);
-
-if ($pending === null) {
-    // Asset not found, expired, or provider failed to validate token
-    throw new \RuntimeException('Pending asset not found or invalid/expired token.');
-}
-
 // proceed to convert pending asset into a real asset
 ```
 
 Notes:
 
 - Token validation is executed inside `PendingAssetManager::fetchById(string $id, ?string $token = null): ?PendingAsset`. If the token provider is configured, `fetchById()` will call the provider's `validateToken()` internally. When validation fails `fetchById()` returns `null`.
-- You can explicitly pass the token into `fetchById()` (useful when the client sends token in the request body). If you omit the token, the configured provider will usually attempt `retrieveToken($pendingId)` itself (for example, `SessionPendingSecurityToken` reads session tempdata).
+- Built-in HMAC providers ignore explicit client-provided token values and validate against the current server-side session/cookie/owner context.
+- For API/JWT flows, use `OwnerPendingSecurityToken` with `PendingOwnerResolverInterface`; the resolver should return the current JWT subject or a stronger key such as `sub:jti` for token/device binding.
 - If `Config\Asset::$pendingSecurityToken` is `null`, token generation and validation are disabled and `fetchById()` will behave like a normal read (subject to expiration checks).

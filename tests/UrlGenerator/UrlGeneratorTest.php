@@ -13,7 +13,10 @@ use League\Flysystem\Local\LocalFilesystemAdapter;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Maniaba\AssetConnect\UrlGenerator\UrlGenerator;
+use ReflectionProperty;
+use stdClass;
 use Tests\Support\Config\TestAssetConfig;
+use Tests\Support\UrlGenerator\RoutingTestUrlGenerator;
 
 /**
  * @internal
@@ -149,6 +152,38 @@ final class UrlGeneratorTest extends CIUnitTestCase
         $this->fail('Expected missing public URL generator exception.');
     }
 
+    public function testGetUrlKeepsAlreadyAbsolutePublicStorageUrl(): void
+    {
+        $config           = new TestAssetConfig();
+        $config->storages = [
+            'cdn_public' => [
+                'driver'     => 'local',
+                'root'       => sys_get_temp_dir(),
+                'public_url' => 'https://cdn.example.test/assets',
+                'visibility' => 'public',
+            ],
+        ];
+
+        Factories::injectMock('config', \Maniaba\AssetConnect\Config\Asset::class, $config);
+
+        $asset = new Asset([
+            'id'         => '123',
+            'file_name'  => 'test.jpg',
+            'storage'    => 'cdn_public',
+            'path'       => 'uploads/test.jpg',
+            'collection' => 'default_collection',
+            'metadata'   => json_encode([
+                'asset_variants' => [],
+            ]),
+        ]);
+
+        $this->assertSame(
+            'https://cdn.example.test/assets/uploads/test.jpg',
+            UrlGenerator::create($asset)->getUrl(),
+            'Absolute public URLs from storage should not be wrapped with site_url().',
+        );
+    }
+
     public function testGetUrlForProtectedStorageUsesControllerRoute(): void
     {
         $asset = new Asset([
@@ -226,6 +261,43 @@ final class UrlGeneratorTest extends CIUnitTestCase
         $this->assertSame('https://example.com/index.php/assets/temporary/b0a4ae59595b37c409e6196189b3f22854f578e66a1fe526cee293792c8b166c/variant/thumbnail/test_thumbnail.jpg', $url);
     }
 
+    public function testAssetTraitTemporaryUrlSupportsForceDownload(): void
+    {
+        Time::setTestNow('2025-10-01 12:00:00');
+
+        $expiration = Time::now()->addHours(1);
+
+        $this->assertSame(
+            'https://example.com/index.php/assets/temporary/b0a4ae59595b37c409e6196189b3f22854f578e66a1fe526cee293792c8b166c/variant/thumbnail/test_thumbnail.jpg?download=force',
+            $this->asset->getTemporaryUrl($expiration, 'thumbnail', true),
+            'Asset temporary URLs should append the force-download query when requested.',
+        );
+    }
+
+    public function testAssetTraitTemporaryRelativeUrlKeepsPathAndQuery(): void
+    {
+        Time::setTestNow('2025-10-01 12:00:00');
+
+        $expiration = Time::now()->addHours(1);
+
+        $this->assertSame(
+            '/index.php/assets/temporary/b0a4ae59595b37c409e6196189b3f22854f578e66a1fe526cee293792c8b166c/variant/thumbnail/test_thumbnail.jpg?download=force',
+            $this->asset->getTemporaryUrlRelative($expiration, 'thumbnail', true),
+            'Relative temporary URLs should strip scheme and host while keeping the query string.',
+        );
+    }
+
+    public function testAssetTraitRelativeUrlReturnsOriginalUrlWhenNoPathCanBeParsed(): void
+    {
+        $toRelativeUrl = $this->getPrivateMethodInvoker($this->asset, 'toRelativeUrl');
+
+        $this->assertSame(
+            'https://example.com',
+            $toRelativeUrl('https://example.com'),
+            'Relative URL conversion should return the original URL when it has no path component.',
+        );
+    }
+
     /**
      * Test routeTo method
      */
@@ -294,6 +366,85 @@ final class UrlGeneratorTest extends CIUnitTestCase
         $this->assertSame('', $url);
     }
 
+    public function testRoutesDoesNothingWhenNoDefaultUrlGeneratorIsConfigured(): void
+    {
+        RoutingTestUrlGenerator::reset();
+
+        $assetConfig                      = new TestAssetConfig();
+        $assetConfig->defaultUrlGenerator = null;
+        Factories::injectMock('config', 'Asset', $assetConfig);
+
+        $routes = Services::routes();
+
+        UrlGenerator::routes($routes);
+
+        $this->assertFalse(RoutingTestUrlGenerator::$routesCalled, 'Routes registration should be a no-op when no default URL generator is configured.');
+    }
+
+    public function testRoutesRejectsInvalidDefaultUrlGenerator(): void
+    {
+        $assetConfig = new TestAssetConfig();
+        $this->setDefaultUrlGenerator($assetConfig, stdClass::class);
+        Factories::injectMock('config', 'Asset', $assetConfig);
+
+        $routes = Services::routes();
+
+        $this->expectException(InvalidArgumentException::class);
+
+        try {
+            UrlGenerator::routes($routes);
+        } catch (InvalidArgumentException $exception) {
+            $this->assertSame(
+                ["The URL generator class 'stdClass' must implement the UrlGeneratorInterface."],
+                $exception->errors,
+                'Invalid route generator classes should be rejected before route registration.',
+            );
+
+            throw $exception;
+        }
+    }
+
+    public function testRoutesDelegatesToConfiguredUrlGenerator(): void
+    {
+        RoutingTestUrlGenerator::reset();
+
+        $assetConfig                      = new TestAssetConfig();
+        $assetConfig->defaultUrlGenerator = RoutingTestUrlGenerator::class;
+        Factories::injectMock('config', 'Asset', $assetConfig);
+
+        $routes = Services::routes();
+
+        UrlGenerator::routes($routes);
+
+        $this->assertTrue(RoutingTestUrlGenerator::$routesCalled, 'Routes registration should delegate to the configured URL generator.');
+    }
+
+    public function testRouteToRejectsInvalidDefaultUrlGenerator(): void
+    {
+        $assetConfig = new TestAssetConfig();
+        $this->setDefaultUrlGenerator($assetConfig, stdClass::class);
+        Factories::injectMock('config', 'Asset', $assetConfig);
+
+        $asset = new Asset([
+            'id'        => 123,
+            'file_name' => 'test.jpg',
+        ]);
+
+        $this->expectException(InvalidArgumentException::class);
+
+        try {
+            UrlGenerator::routeTo('asset-connect.show', $asset, null);
+        } catch (InvalidArgumentException $exception) {
+            $this->assertSame(
+                ["The URL generator class 'stdClass' must implement the UrlGeneratorInterface."],
+                $exception->errors,
+                'Invalid routeTo generator classes should be rejected before parameter resolution.',
+            );
+
+            throw $exception;
+        }
+    }
+
     /**
      * Test routeTo method with undefined route
      */
@@ -323,6 +474,32 @@ final class UrlGeneratorTest extends CIUnitTestCase
         UrlGenerator::routeTo($routeName, $asset, null);
     }
 
+    public function testRouteToThrowsWhenRouterCannotGeneratePath(): void
+    {
+        $assetConfig                      = new TestAssetConfig();
+        $assetConfig->defaultUrlGenerator = RoutingTestUrlGenerator::class;
+        Factories::injectMock('config', 'Asset', $assetConfig);
+
+        $asset = new Asset([
+            'id'        => 123,
+            'file_name' => 'test.jpg',
+        ]);
+
+        $this->expectException(InvalidArgumentException::class);
+
+        try {
+            UrlGenerator::routeTo('route-that-returns-false', $asset, null);
+        } catch (InvalidArgumentException $exception) {
+            $this->assertSame(
+                ["Could not generate URL for asset '123' with variant ''. Please ensure the route 'route-that-returns-false' is defined."],
+                $exception->errors,
+                'routeTo should report when CodeIgniter cannot generate a path for configured params.',
+            );
+
+            throw $exception;
+        }
+    }
+
     /**
      * Test create method
      */
@@ -333,5 +510,11 @@ final class UrlGeneratorTest extends CIUnitTestCase
 
         // Assert
         $this->assertInstanceOf(UrlGenerator::class, $urlGenerator);
+    }
+
+    private function setDefaultUrlGenerator(TestAssetConfig $assetConfig, string $urlGenerator): void
+    {
+        $property = new ReflectionProperty($assetConfig, 'defaultUrlGenerator');
+        $property->setValue($assetConfig, $urlGenerator);
     }
 }

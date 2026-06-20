@@ -96,6 +96,22 @@ final class AssetCollectionTest extends CIUnitTestCase
         $this->assertSame(AssetVisibility::PROTECTED, $collection->getVisibility());
     }
 
+    public function testSetStorageTrimsStorageName(): void
+    {
+        $result = $this->assetCollection->setStorage(' public ');
+
+        $this->assertSame($this->assetCollection, $result);
+        $this->assertSame('public', $this->assetCollection->getStorage(), 'Storage name should be trimmed before it is stored.');
+    }
+
+    public function testSetStorageThrowsForEmptyStorageName(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid argument provided');
+
+        $this->assetCollection->setStorage('   ');
+    }
+
     /**
      * Test allowedExtensions method with valid extensions
      */
@@ -225,6 +241,23 @@ final class AssetCollectionTest extends CIUnitTestCase
         // Act & Assert
         $this->expectException(InvalidArgumentException::class);
         $this->assetCollection->allowedMimeTypes($emptyMimeType);
+    }
+
+    public function testAllowedMimeTypesWithWhitespaceOnlyMimeType(): void
+    {
+        try {
+            $this->assetCollection->allowedMimeTypes('   ');
+        } catch (InvalidArgumentException $exception) {
+            $this->assertSame(
+                ['MIME type cannot be empty.'],
+                $exception->errors,
+                'Whitespace-only MIME type should fail with the empty MIME validation error.',
+            );
+
+            return;
+        }
+
+        $this->fail('Expected whitespace-only MIME type to throw an invalid argument exception.');
     }
 
     /**

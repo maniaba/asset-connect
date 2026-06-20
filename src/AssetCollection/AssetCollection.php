@@ -151,14 +151,17 @@ final class AssetCollection implements AssetCollectionSetterInterface, AssetColl
                 return $mimeType->value; // Convert enum to string
             }
 
-            if (! preg_match('/^[\w\-+]+\/[\w\-+.]+$/', $mimeType)) {
-                throw new InvalidArgumentException('Invalid MIME type: ' . $mimeType);
-            }
-            if (trim($mimeType) === '') {
+            $mimeType = trim($mimeType);
+
+            if ($mimeType === '') {
                 throw new InvalidArgumentException('MIME type cannot be empty.');
             }
 
-            return strtolower(trim($mimeType));
+            if (! preg_match('/^[\w\-+]+\/[\w\-+.]+$/', $mimeType)) {
+                throw new InvalidArgumentException('Invalid MIME type: ' . $mimeType);
+            }
+
+            return strtolower($mimeType);
         }, $mimeTypes));
 
         return $this;

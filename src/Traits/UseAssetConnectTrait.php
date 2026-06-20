@@ -260,16 +260,19 @@ trait UseAssetConnectTrait
      */
     public function addAssetFromPending(PendingAsset|string $pendingAsset, ?PendingStorageInterface $storage = null): AssetAdder
     {
+        $forceSourceDeletionAfterStore = false;
+
         if (is_string($pendingAsset)) {
             $manager            = PendingAssetManager::make($storage);
-            $pendingAssetEntity = $manager->fetchById($pendingAsset);
+            $pendingAssetEntity = $manager->consumeById($pendingAsset);
 
             if (! $pendingAssetEntity instanceof PendingAsset) {
                 throw AssetException::forPendingAssetNotFound($pendingAsset);
             }
 
-            $pendingAsset = $pendingAssetEntity;
-            unset($manager, $pendingAssetEntity);
+            $pendingAsset                  = $pendingAssetEntity;
+            $forceSourceDeletionAfterStore = true;
+            unset($pendingAssetEntity);
         }
 
         $assetAdder = $this->addAsset($pendingAsset->file);
@@ -279,7 +282,7 @@ trait UseAssetConnectTrait
         $assetAdder->usingFileName($pendingAsset->file_name);
         $assetAdder->setOrder($pendingAsset->order);
         $assetAdder->withCustomProperties($pendingAsset->custom_properties);
-        $assetAdder->preservingOriginal($pendingAsset->preserve_original);
+        $assetAdder->preservingOriginal($forceSourceDeletionAfterStore ? false : $pendingAsset->preserve_original);
 
         return $assetAdder;
     }

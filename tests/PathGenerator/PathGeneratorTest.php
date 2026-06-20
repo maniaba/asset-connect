@@ -59,6 +59,15 @@ final class PathGeneratorTest extends CIUnitTestCase
         $this->assertSame('path/to/file/', $this->pathGenerator->getPath());
     }
 
+    public function testGetPathReturnsEmptyStringWhenNormalizedPathIsEmpty(): void
+    {
+        $this->mockPathGeneratorInterface->expects($this->once())
+            ->method('getPath')
+            ->willReturn('/');
+
+        $this->assertSame('', $this->pathGenerator->getPath(), 'PathGenerator should not append a slash to an empty normalized path.');
+    }
+
     public function testGetFileRelativePathForVariants(): void
     {
         $this->mockPathGeneratorInterface->expects($this->once())

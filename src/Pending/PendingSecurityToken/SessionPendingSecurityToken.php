@@ -8,7 +8,7 @@ use CodeIgniter\Session\Session;
 use InvalidArgumentException;
 use Override;
 
-final class SessionPendingSecurityToken extends AbstractPendingSecurityToken
+final class SessionPendingSecurityToken extends AbstractHmacPendingSecurityToken
 {
     public const string SESSION_KEY = '__asset_pending_security_token__';
 
@@ -22,11 +22,10 @@ final class SessionPendingSecurityToken extends AbstractPendingSecurityToken
         if ($token === null) {
             $token = $this->randomStringToken();
 
-            // Store the token in the session or other storage mechanism
-            $this->session->setTempdata(self::SESSION_KEY, $token, $this->tokenTTLSeconds);
+            $this->session->setTempdata($this->sessionKey($pendingId), $token, $this->tokenTTLSeconds);
         }
 
-        return $token;
+        return $this->createTokenDigest($pendingId, $token);
     }
 
     /**
@@ -35,13 +34,15 @@ final class SessionPendingSecurityToken extends AbstractPendingSecurityToken
     #[Override]
     public function retrieveToken(string $pendingId): ?string
     {
-        return $this->session->getTempdata(self::SESSION_KEY);
+        $token = $this->session->getTempdata($this->sessionKey($pendingId));
+
+        return is_string($token) && $token !== '' ? $token : null;
     }
 
     #[Override]
     public function deleteToken(string $pendingId): void
     {
-        $this->session->removeTempdata(self::SESSION_KEY);
+        $this->session->removeTempdata($this->sessionKey($pendingId));
     }
 
     #[Override]
@@ -55,5 +56,10 @@ final class SessionPendingSecurityToken extends AbstractPendingSecurityToken
         }
 
         $this->session = $session;
+    }
+
+    private function sessionKey(string $pendingId): string
+    {
+        return self::SESSION_KEY . '_' . hash('sha256', $pendingId);
     }
 }

@@ -90,9 +90,7 @@ protected function setupStorageRemote(array $storage): array
 }
 ```
 
-The setup method name is generated from the configured storage name. For example, `remote` calls `setupStorageRemote()`, `s3` calls `setupStorageS3()`, and `private_documents` calls `setupStoragePrivateDocuments()`. The returned array is merged over the original disk configuration.
-
-For backward compatibility, if no storage-name setup method exists, AssetConnect falls back to the legacy driver-based method name. For example, `driver => 'aws_s3'` can still call `setupStorageAwsS3()`. Prefer storage-name setup methods for new code, especially when multiple storage disks use the same driver.
+The setup method name is generated from the configured storage name. For example, `remote` calls `setupStorageRemote()`, `s3` calls `setupStorageS3()`, and `private_documents` calls `setupStoragePrivateDocuments()`. The returned array is merged over the original disk configuration. Driver-based setup method names such as `setupStorageAwsS3()` are not resolved automatically.
 
 Example AWS S3 disk:
 
