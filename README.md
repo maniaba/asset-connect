@@ -5,6 +5,7 @@
 [![Deptrac](https://github.com/maniaba/asset-connect/actions/workflows/deptrac.yml/badge.svg)](https://github.com/maniaba/asset-connect/actions/workflows/deptrac.yml)
 [![Psalm](https://github.com/maniaba/asset-connect/actions/workflows/psalm.yml/badge.svg)](https://github.com/maniaba/asset-connect/actions/workflows/psalm.yml)
 [![Docs](https://github.com/maniaba/asset-connect/actions/workflows/docs.yml/badge.svg)](https://github.com/maniaba/asset-connect/actions/workflows/docs.yml)
+[![Coverage Status](https://coveralls.io/repos/github/maniaba/asset-connect/badge.svg?branch=develop)](https://coveralls.io/github/maniaba/asset-connect?branch=develop)
 
 ![PHP](https://img.shields.io/badge/PHP-%5E8.3-blue)
 [![CodeIgniter](https://img.shields.io/badge/CodeIgniter-4.6+-blue.svg?style=flat-square)](http://codeigniter.com/)

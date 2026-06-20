@@ -4,11 +4,21 @@ declare(strict_types=1);
 
 namespace Tests\Pending;
 
+use CodeIgniter\Config\Factories;
+use CodeIgniter\Files\File;
 use CodeIgniter\I18n\Time;
 use CodeIgniter\Test\CIUnitTestCase;
+use InvalidArgumentException;
+use Maniaba\AssetConnect\Config\Asset as AssetConfig;
+use Maniaba\AssetConnect\Enums\AssetVisibility;
 use Maniaba\AssetConnect\Exceptions\PendingAssetException;
 use Maniaba\AssetConnect\Pending\DefaultPendingStorage;
 use Maniaba\AssetConnect\Pending\PendingAsset;
+use Maniaba\AssetConnect\Storage\Interfaces\StorageDiskInterface;
+use PHPUnit\Framework\MockObject\Stub;
+use RuntimeException;
+use Tests\Support\Config\TestAssetConfig;
+use Tests\Support\Pending\PendingAssetManagerFunctionOverrides;
 
 /**
  * @internal
@@ -18,16 +28,34 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
     private DefaultPendingStorage $storage;
     private string $tempFilePath;
     private string $basePendingPath;
+    private string $storageRoot;
 
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->storageRoot = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR)
+            . DIRECTORY_SEPARATOR
+            . 'asset-connect-pending-storage-test-' . bin2hex(random_bytes(4));
+
+        $config           = new TestAssetConfig();
+        $config->storages = [
+            'protected' => [
+                'driver'     => 'local',
+                'root'       => $this->storageRoot,
+                'visibility' => 'protected',
+            ],
+        ];
+
+        Factories::injectMock('config', AssetConfig::class, $config);
+        Factories::injectMock('config', 'Asset', $config);
+
         $this->storage = new DefaultPendingStorage();
         // Create a temporary file for testing
         $this->tempFilePath = tempnam(sys_get_temp_dir(), 'test_storage_');
         file_put_contents($this->tempFilePath, 'test storage content');
         // Set up base pending path
-        $this->basePendingPath = WRITEPATH . 'assets_pending' . DIRECTORY_SEPARATOR;
+        $this->basePendingPath = $this->storageRoot . DIRECTORY_SEPARATOR . 'assets_pending' . DIRECTORY_SEPARATOR;
         // Ensure the base directory exists
         if (! is_dir($this->basePendingPath)) {
             mkdir($this->basePendingPath, 0755, true);
@@ -47,6 +75,15 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
             delete_files($this->basePendingPath, true, true, true);
             @rmdir($this->basePendingPath);
         }
+
+        if (is_dir($this->storageRoot)) {
+            helper('filesystem');
+            delete_files($this->storageRoot, true, true, true);
+            @rmdir($this->storageRoot);
+        }
+
+        PendingAssetManagerFunctionOverrides::reset();
+        Factories::reset('config');
     }
 
     /**
@@ -59,6 +96,36 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
 
         // Assert
         $this->assertInstanceOf(DefaultPendingStorage::class, $storage);
+    }
+
+    public function testUsesDefaultProtectedStorageWhenPendingStorageDiskIsNotConfigured(): void
+    {
+        $pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
+
+        $this->storage->store($pendingAsset, 'fallback-protected-id');
+
+        $this->assertFileExists($this->basePendingPath . 'fallback-protected-id' . DIRECTORY_SEPARATOR . 'file');
+    }
+
+    public function testRejectsPublicPendingStorageDisk(): void
+    {
+        $config                     = new TestAssetConfig();
+        $config->pendingStorageDisk = 'public';
+        $config->storages           = [
+            'public' => [
+                'driver'     => 'local',
+                'root'       => $this->storageRoot,
+                'visibility' => 'public',
+            ],
+        ];
+
+        Factories::injectMock('config', AssetConfig::class, $config);
+        Factories::injectMock('config', 'Asset', $config);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Pending storage disk must be protected.');
+
+        new DefaultPendingStorage();
     }
 
     /**
@@ -91,24 +158,56 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
         $this->assertNotSame($id1, $id3);
     }
 
-    /**
-     * Test generatePendingId avoids collision when directory exists
-     */
     public function testGeneratePendingIdAvoidsCollision(): void
     {
-        // Arrange - Create a directory with a potential ID
         $existingId  = bin2hex(random_bytes(16));
         $existingDir = $this->basePendingPath . $existingId . DIRECTORY_SEPARATOR;
         mkdir($existingDir, 0755, true);
+        file_put_contents($existingDir . 'file', 'existing content');
 
-        // Act
         $newId = $this->storage->generatePendingId();
 
-        // Assert
         $this->assertNotSame($existingId, $newId);
 
-        // Cleanup
+        @unlink($existingDir . 'file');
         rmdir($existingDir);
+    }
+
+    public function testGeneratePendingIdRetriesWhenGeneratedIdAlreadyExists(): void
+    {
+        PendingAssetManagerFunctionOverrides::$randomBytesQueue = [
+            str_repeat("\x01", 16),
+            str_repeat("\x02", 16),
+        ];
+
+        $disk = $this->protectedDisk();
+        $disk->method('fileExists')->willReturnOnConsecutiveCalls(true, false, false);
+
+        $storage = new DefaultPendingStorage($disk, 'pending');
+
+        $this->assertSame(str_repeat('02', 16), $storage->generatePendingId(), 'Pending ID generation should retry when the first generated ID already exists.');
+    }
+
+    public function testGeneratePendingIdThrowsAfterCollisionRetryLimit(): void
+    {
+        PendingAssetManagerFunctionOverrides::$randomBytesQueue = [
+            str_repeat("\x01", 16),
+            str_repeat("\x02", 16),
+            str_repeat("\x03", 16),
+            str_repeat("\x04", 16),
+            str_repeat("\x05", 16),
+            str_repeat("\x06", 16),
+        ];
+
+        $disk = $this->protectedDisk();
+        $disk->method('fileExists')->willReturn(true);
+
+        $storage = new DefaultPendingStorage($disk, 'pending');
+
+        $this->expectException(PendingAssetException::class);
+        $this->expectExceptionMessage('Unable to generate unique pending ID after 5 attempts.');
+
+        $storage->generatePendingId();
     }
 
     /**
@@ -169,17 +268,13 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
         $this->assertSame(32, strlen($pendingAsset->id));
     }
 
-    /**
-     * Test store creates directory if not exists
-     */
-    public function testStoreCreatesDirectoryIfNotExists(): void
+    public function testStoreCreatesPendingPrefixIfNotExists(): void
     {
         // Arrange
         $pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
         $id           = 'new-directory-id';
         $expectedDir  = $this->basePendingPath . $id . DIRECTORY_SEPARATOR;
 
-        // Verify directory doesn't exist before
         $this->assertDirectoryDoesNotExist($expectedDir);
 
         // Act
@@ -250,6 +345,14 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
         $this->assertNotInstanceOf(PendingAsset::class, $result);
     }
 
+    public function testFetchByIdRejectsInvalidPendingId(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Pending asset ID contains invalid characters.');
+
+        $this->storage->fetchById('../outside');
+    }
+
     /**
      * Test fetchById returns null when file exists but metadata missing
      */
@@ -305,12 +408,94 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
         $this->storage->fetchById($id);
     }
 
-    /**
-     * Test deleteById removes pending asset directory
-     */
-    public function testDeleteByIdRemovesPendingAssetDirectory(): void
+    public function testFetchByIdThrowsWhenMetadataCannotBeRead(): void
     {
-        // Arrange
+        $disk = $this->protectedDisk();
+        $disk->method('fileExists')->willReturn(true);
+        $disk->method('read')->willThrowException(new RuntimeException('metadata read failed'));
+
+        $storage = new DefaultPendingStorage($disk, 'pending');
+
+        $this->expectException(PendingAssetException::class);
+
+        $storage->fetchById('metadata-read-fails');
+    }
+
+    public function testFetchByIdThrowsWhenPendingFileStreamIsNotReadable(): void
+    {
+        $disk = $this->protectedDisk();
+        $disk->method('fileExists')->willReturn(true);
+        $disk->method('read')->willReturn('{"name":"stream-fail"}');
+        $disk->method('readStream')->willReturn(false);
+
+        $storage = new DefaultPendingStorage($disk, 'pending');
+
+        $this->expectException(PendingAssetException::class);
+
+        $storage->fetchById('stream-read-fails');
+    }
+
+    public function testFetchByIdWrapsUnexpectedPendingFileStreamErrors(): void
+    {
+        $disk = $this->protectedDisk();
+        $disk->method('fileExists')->willReturn(true);
+        $disk->method('read')->willReturn('{"name":"stream-exception"}');
+        $disk->method('readStream')->willThrowException(new RuntimeException('adapter read stream failed'));
+
+        $storage = new DefaultPendingStorage($disk, 'pending');
+
+        $this->expectException(PendingAssetException::class);
+
+        $storage->fetchById('stream-exception-id');
+    }
+
+    public function testFetchByIdThrowsWhenTemporaryFileCannotBeCreated(): void
+    {
+        PendingAssetManagerFunctionOverrides::$failNextTempnam = true;
+
+        $disk = $this->protectedDisk();
+        $disk->method('fileExists')->willReturn(true);
+        $disk->method('read')->willReturn('{"name":"tempnam-fail"}');
+
+        $storage = new DefaultPendingStorage($disk, 'pending');
+
+        $this->expectException(PendingAssetException::class);
+
+        try {
+            $storage->fetchById('tempnam-fails');
+        } finally {
+            PendingAssetManagerFunctionOverrides::reset();
+        }
+    }
+
+    public function testFetchByIdWrapsPendingAssetCreationFailure(): void
+    {
+        PendingAssetManagerFunctionOverrides::$deleteStreamCopyTarget = true;
+
+        $disk = $this->protectedDisk();
+        $disk->method('fileExists')->willReturn(true);
+        $disk->method('read')->willReturn('{"name":"creation-fails"}');
+        $disk->method('readStream')->willReturnCallback(static function () {
+            $stream = fopen('php://temp', 'rb+');
+            fwrite($stream, 'pending content');
+            rewind($stream);
+
+            return $stream;
+        });
+
+        $storage = new DefaultPendingStorage($disk, 'pending');
+
+        $this->expectException(PendingAssetException::class);
+
+        try {
+            $storage->fetchById('creation-fails-id');
+        } finally {
+            PendingAssetManagerFunctionOverrides::reset();
+        }
+    }
+
+    public function testDeleteByIdRemovesPendingAssetFiles(): void
+    {
         $pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
         $id           = 'delete-test-id';
 
@@ -319,18 +504,14 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
         $dir = $this->basePendingPath . $id . DIRECTORY_SEPARATOR;
         $this->assertDirectoryExists($dir);
 
-        // Act
         $result = $this->storage->deleteById($id);
 
-        // Assert
         $this->assertTrue($result);
-        $this->assertDirectoryDoesNotExist($dir);
+        $this->assertFileDoesNotExist($dir . 'file');
+        $this->assertFileDoesNotExist($dir . 'metadata.json');
     }
 
-    /**
-     * Test deleteById returns true when directory does not exist
-     */
-    public function testDeleteByIdReturnsTrueWhenDirectoryDoesNotExist(): void
+    public function testDeleteByIdReturnsTrueWhenPendingFilesDoNotExist(): void
     {
         // Act
         $result = $this->storage->deleteById('non-existent-id');
@@ -339,168 +520,34 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
         $this->assertTrue($result);
     }
 
-    /**
-     * Test deleteById removes all files in directory recursively
-     */
-    public function testDeleteByIdRemovesAllFilesRecursively(): void
+    public function testDeleteByIdRemovesKnownPendingFiles(): void
     {
-        // Arrange
-        $id  = 'recursive-delete-id';
-        $dir = $this->basePendingPath . $id . DIRECTORY_SEPARATOR;
-        mkdir($dir . 'subdir', 0755, true);
-        file_put_contents($dir . 'file1.txt', 'content1');
-        file_put_contents($dir . 'subdir/file2.txt', 'content2');
+        $id           = 'recursive-delete-id';
+        $pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
 
-        // Act
+        $this->storage->store($pendingAsset, $id);
+
+        $dir = $this->basePendingPath . $id . DIRECTORY_SEPARATOR;
+        mkdir($dir . 'variants', 0755, true);
+        file_put_contents($dir . 'variants/thumb.txt', 'thumb');
+
         $result = $this->storage->deleteById($id);
 
-        // Assert
         $this->assertTrue($result);
-        $this->assertDirectoryDoesNotExist($dir);
+        $this->assertFileDoesNotExist($dir . 'file');
+        $this->assertFileDoesNotExist($dir . 'metadata.json');
+        $this->assertFileExists($dir . 'variants/thumb.txt');
     }
 
-    /**
-     * Test cleanExpiredPendingAssets removes expired assets
-     */
-    public function testCleanExpiredPendingAssetsRemovesExpiredAssets(): void
+    public function testDeleteByIdReturnsFalseWhenStorageDeleteFails(): void
     {
-        // Arrange
-        $expiredId = 'expired-asset-id';
-        $validId   = 'valid-asset-id';
+        $disk = $this->protectedDisk();
+        $disk->method('fileExists')->willReturn(true);
+        $disk->method('delete')->willThrowException(new RuntimeException('delete failed'));
 
-        // Create separate temp files for each asset
-        $expiredTempFile = tempnam(sys_get_temp_dir(), 'test_expired_');
-        $validTempFile   = tempnam(sys_get_temp_dir(), 'test_valid_');
-        file_put_contents($expiredTempFile, 'expired content');
-        file_put_contents($validTempFile, 'valid content');
+        $storage = new DefaultPendingStorage($disk, 'pending');
 
-        // Create expired asset (created 2 days ago)
-        $expiredAsset = PendingAsset::createFromFile($expiredTempFile);
-        $this->setPrivateProperty($expiredAsset, 'created_at', Time::now()->subDays(2));
-        $this->storage->store($expiredAsset, $expiredId);
-
-        // Create valid asset (created 1 hour ago)
-        $validAsset = PendingAsset::createFromFile($validTempFile);
-        $this->setPrivateProperty($validAsset, 'created_at', Time::now()->subHours(1));
-        $this->storage->store($validAsset, $validId);
-
-        // Update metadata files with correct timestamps
-        $this->updateMetadataTimestamp($expiredId, Time::now()->subDays(2));
-        $this->updateMetadataTimestamp($validId, Time::now()->subHours(1));
-
-        // Act
-        $this->storage->cleanExpiredPendingAssets();
-
-        // Assert
-        $expiredDir = $this->basePendingPath . $expiredId . DIRECTORY_SEPARATOR;
-        $validDir   = $this->basePendingPath . $validId . DIRECTORY_SEPARATOR;
-
-        $this->assertDirectoryDoesNotExist($expiredDir, 'Expired asset should be deleted');
-        $this->assertDirectoryExists($validDir, 'Valid asset should still exist');
-
-        // Cleanup temp files
-        @unlink($expiredTempFile);
-        @unlink($validTempFile);
-    }
-
-    /**
-     * Test cleanExpiredPendingAssets does nothing when base directory does not exist
-     */
-    public function testCleanExpiredPendingAssetsDoesNothingWhenBaseDirNotExists(): void
-    {
-        // Arrange - Delete base directory
-        delete_files($this->basePendingPath, true, true, true);
-        rmdir($this->basePendingPath);
-
-        // Act & Assert - Should not throw exception
-        $this->storage->cleanExpiredPendingAssets();
-        $this->assertTrue(true); // If we get here, no exception was thrown
-    }
-
-    /**
-     * Test cleanExpiredPendingAssets handles empty directory
-     */
-    public function testCleanExpiredPendingAssetsHandlesEmptyDirectory(): void
-    {
-        // Act & Assert - Should not throw exception
-        $this->storage->cleanExpiredPendingAssets();
-        $this->assertTrue(true);
-    }
-
-    /**
-     * Test cleanExpiredPendingAssets skips directory without metadata
-     */
-    public function testCleanExpiredPendingAssetsSkipsDirectoryWithoutMetadata(): void
-    {
-        // Arrange
-        $id  = 'no-metadata-id';
-        $dir = $this->basePendingPath . $id . DIRECTORY_SEPARATOR;
-        mkdir($dir, 0755, true);
-        file_put_contents($dir . 'file', 'content');
-        // Don't create metadata.json
-
-        // Act
-        $this->storage->cleanExpiredPendingAssets();
-
-        // Assert - Directory should still exist
-        $this->assertDirectoryExists($dir);
-    }
-
-    /**
-     * Test cleanExpiredPendingAssets skips invalid JSON metadata
-     */
-    public function testCleanExpiredPendingAssetsSkipsInvalidJsonMetadata(): void
-    {
-        // Arrange
-        $id  = 'invalid-json-cleanup-id';
-        $dir = $this->basePendingPath . $id . DIRECTORY_SEPARATOR;
-        mkdir($dir, 0755, true);
-        file_put_contents($dir . 'file', 'content');
-        file_put_contents($dir . 'metadata.json', '{invalid json}');
-
-        // Act
-        $this->storage->cleanExpiredPendingAssets();
-
-        // Assert - Directory should still exist
-        $this->assertDirectoryExists($dir);
-    }
-
-    /**
-     * Test cleanExpiredPendingAssets skips metadata without created_at
-     */
-    public function testCleanExpiredPendingAssetsSkipsMetadataWithoutCreatedAt(): void
-    {
-        // Arrange
-        $id  = 'no-created-at-id';
-        $dir = $this->basePendingPath . $id . DIRECTORY_SEPARATOR;
-        mkdir($dir, 0755, true);
-        file_put_contents($dir . 'file', 'content');
-        file_put_contents($dir . 'metadata.json', json_encode(['name' => 'test']));
-
-        // Act
-        $this->storage->cleanExpiredPendingAssets();
-
-        // Assert - Directory should still exist
-        $this->assertDirectoryExists($dir);
-    }
-
-    /**
-     * Test cleanExpiredPendingAssets skips invalid created_at format
-     */
-    public function testCleanExpiredPendingAssetsSkipsInvalidCreatedAtFormat(): void
-    {
-        // Arrange
-        $id  = 'invalid-date-id';
-        $dir = $this->basePendingPath . $id . DIRECTORY_SEPARATOR;
-        mkdir($dir, 0755, true);
-        file_put_contents($dir . 'file', 'content');
-        file_put_contents($dir . 'metadata.json', json_encode(['created_at' => 'invalid-date']));
-
-        // Act
-        $this->storage->cleanExpiredPendingAssets();
-
-        // Assert - Directory should still exist
-        $this->assertDirectoryExists($dir);
+        $this->assertFalse($storage->deleteById('delete-fails'), 'Delete should report false when storage delete fails.');
     }
 
     /**
@@ -567,6 +614,101 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
         // Cleanup
         @unlink($tempFile1);
         @unlink($tempFile2);
+    }
+
+    public function testStoreRejectsUnreadableSourceFile(): void
+    {
+        $pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
+
+        $file = $this->createStub(File::class);
+        $file->method('getRealPath')->willReturn($this->storageRoot . DIRECTORY_SEPARATOR . 'missing-source.txt');
+
+        $pendingAsset->setFile($file);
+
+        $this->expectException(PendingAssetException::class);
+        $this->expectExceptionMessage('unable_to_store_pending_asset');
+
+        $this->storage->store($pendingAsset, 'missing-source-id');
+    }
+
+    public function testStoreThrowsWhenMetadataCannotBeEncoded(): void
+    {
+        $pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
+        $resource     = fopen('php://temp', 'rb');
+        $this->assertIsResource($resource);
+
+        $pendingAsset->withCustomProperty('resource', $resource);
+
+        $this->expectException(PendingAssetException::class);
+        $this->expectExceptionMessage('unable_to_store_pending_asset');
+
+        try {
+            $this->storage->store($pendingAsset, 'metadata-encode-fails');
+        } finally {
+            fclose($resource);
+        }
+    }
+
+    public function testStoreThrowsWhenSourceStreamCannotBeOpened(): void
+    {
+        PendingAssetManagerFunctionOverrides::$failNextFopen = true;
+
+        $pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
+
+        $this->expectException(PendingAssetException::class);
+        $this->expectExceptionMessage('unable_to_store_pending_asset');
+
+        try {
+            $this->storage->store($pendingAsset, 'fopen-fails');
+        } finally {
+            PendingAssetManagerFunctionOverrides::reset();
+        }
+    }
+
+    public function testStoreThrowsWhenStorageStreamWriteFails(): void
+    {
+        $disk = $this->protectedDisk();
+        $disk->method('fileExists')->willReturn(false);
+        $disk->method('writeStream')->willThrowException(new RuntimeException('adapter write failed'));
+
+        $storage      = new DefaultPendingStorage($disk, 'pending');
+        $pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
+
+        $this->expectException(PendingAssetException::class);
+        $this->expectExceptionMessage('unable_to_store_pending_asset');
+
+        $storage->store($pendingAsset, 'write-stream-fails');
+    }
+
+    public function testConstructorRejectsEmptyPendingStoragePrefix(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Pending storage prefix must not be empty.');
+
+        new DefaultPendingStorage($this->protectedDisk(), '///');
+    }
+
+    public function testNormalizeMetadataHandlesTimeObjectsStringsAndInvalidDates(): void
+    {
+        $normalizeMetadata = $this->getPrivateMethodInvoker($this->storage, 'normalizeMetadata');
+
+        $createdAt = Time::parse('2026-01-02 03:04:05');
+        $metadata  = $normalizeMetadata([
+            'created_at' => $createdAt,
+            'updated_at' => ['date' => '2026-02-03 04:05:06.000000'],
+        ]);
+
+        $this->assertInstanceOf(Time::class, $metadata['created_at'], 'Time metadata values should remain normalized as Time instances.');
+        $this->assertSame($createdAt->getTimestamp(), $metadata['created_at']->getTimestamp());
+        $this->assertInstanceOf(Time::class, $metadata['updated_at'], 'Array date metadata values should be parsed into Time instances.');
+
+        $metadata = $normalizeMetadata([
+            'created_at' => 'not a date',
+            'updated_at' => '',
+        ]);
+
+        $this->assertSame('not a date', $metadata['created_at'], 'Invalid date strings should be kept unchanged.');
+        $this->assertSame('', $metadata['updated_at'], 'Empty date strings should be kept unchanged.');
     }
 
     /**
@@ -694,16 +836,11 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
         }
     }
 
-    /**
-     * Helper method to update metadata timestamp
-     */
-    private function updateMetadataTimestamp(string $id, Time $createdAt): void
+    private function protectedDisk(): StorageDiskInterface&Stub
     {
-        $metadataPath = $this->basePendingPath . $id . DIRECTORY_SEPARATOR . 'metadata.json';
-        $metadata     = json_decode(file_get_contents($metadataPath), true);
+        $disk = $this->createStub(StorageDiskInterface::class);
+        $disk->method('visibility')->willReturn(AssetVisibility::PROTECTED);
 
-        $metadata['created_at'] = $createdAt->format('Y-m-d H:i:s');
-
-        file_put_contents($metadataPath, json_encode($metadata));
+        return $disk;
     }
 }

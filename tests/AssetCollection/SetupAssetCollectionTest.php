@@ -14,9 +14,10 @@ use Maniaba\AssetConnect\Config\Asset;
 use Maniaba\AssetConnect\Exceptions\AssetException;
 use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Maniaba\AssetConnect\PathGenerator\Interfaces\PathGeneratorInterface;
-use Override;
 use PHPUnit\Framework\MockObject\Stub;
 use stdClass;
+use Tests\Support\Config\TestAssetConfig;
+use Tests\Support\PathGenerators\TestPathGenerator;
 
 /**
  * @internal
@@ -158,6 +159,55 @@ final class SetupAssetCollectionTest extends CIUnitTestCase
         $this->assertSame($pdbStub, $result);
     }
 
+    public function testGetPathGeneratorUsesConfiguredDefaultWhenNotSet(): void
+    {
+        $config                       = new TestAssetConfig();
+        $config->defaultPathGenerator = TestPathGenerator::class;
+
+        Factories::injectMock('config', 'Asset', $config);
+
+        try {
+            $setupAssetCollection = new SetupAssetCollection();
+
+            $pathGenerator = $setupAssetCollection->getPathGenerator();
+
+            $this->assertInstanceOf(TestPathGenerator::class, $pathGenerator);
+            $this->assertSame($pathGenerator, $setupAssetCollection->getPathGenerator(), 'Default path generator should be cached after first resolution.');
+        } finally {
+            Factories::reset('config');
+        }
+    }
+
+    public function testGetPathGeneratorThrowsWhenConfiguredDefaultIsInvalid(): void
+    {
+        $config = new TestAssetConfig();
+        $this->setPrivateProperty($config, 'defaultPathGenerator', stdClass::class);
+
+        Factories::injectMock('config', 'Asset', $config);
+
+        try {
+            $setupAssetCollection = new SetupAssetCollection();
+
+            $setupAssetCollection->getPathGenerator();
+        } catch (InvalidArgumentException $exception) {
+            $this->assertSame(
+                sprintf(
+                    'Default path generator class %s does not exist or does not implement %s.',
+                    stdClass::class,
+                    PathGeneratorInterface::class,
+                ),
+                $exception->getMessage(),
+                'Invalid configured default path generator should expose the exact configuration error.',
+            );
+
+            return;
+        } finally {
+            Factories::reset('config');
+        }
+
+        $this->fail('Expected invalid default path generator configuration to throw.');
+    }
+
     /**
      * Test getCollectionDefinition when collection definition is set
      */
@@ -295,34 +345,25 @@ final class SetupAssetCollectionTest extends CIUnitTestCase
         $this->expectException(InvalidArgumentException::class);
         $this->setupAssetCollection->autoDetectSubjectPrimaryKeyAttribute($invalidModelClass);
     }
-}
 
-/**
- * Test implementation of PathGeneratorInterface for testing
- */
-class TestPathGenerator implements PathGeneratorInterface
-{
-    #[Override]
-    public function getFileRelativePath($generatorHelper, $collection): string
+    public function testConstructorThrowsWhenAssetConfigIsInvalid(): void
     {
-        return 'relative/path/';
-    }
+        Factories::injectMock('config', 'Asset', new stdClass());
 
-    #[Override]
-    public function getPath($generatorHelper, $collection): string
-    {
-        return 'relative/path/';
-    }
+        try {
+            new SetupAssetCollection();
+        } catch (InvalidArgumentException $exception) {
+            $this->assertSame(
+                ['Asset configuration is not properly set up.'],
+                $exception->errors,
+                'SetupAssetCollection should reject non-Asset config instances.',
+            );
 
-    #[Override]
-    public function getFileRelativePathForVariants($generatorHelper, $collection): string
-    {
-        return 'relative/path/variants/';
-    }
+            return;
+        } finally {
+            Factories::reset('config');
+        }
 
-    #[Override]
-    public function getPathForVariants($generatorHelper, $collection): string
-    {
-        return 'relative/path/variants/';
+        $this->fail('Expected invalid Asset config to throw.');
     }
 }

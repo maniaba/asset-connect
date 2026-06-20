@@ -1,6 +1,6 @@
 # Custom Pending Storage
 
-This guide explains how to create and configure custom storage implementations for pending assets. By default, AssetConnect uses filesystem storage (`DefaultPendingStorage`), but you can implement your own storage backend for services like Amazon S3, Redis, or any other storage solution.
+This guide explains how to create and configure custom storage implementations for pending assets. By default, AssetConnect uses a protected storage disk (`DefaultPendingStorage`), but you can implement your own storage backend for services like Amazon S3, Redis, or any other storage solution.
 
 ## Overview
 
@@ -8,8 +8,7 @@ Custom pending storage allows you to:
 
 - Store pending assets in cloud storage (S3, Azure Blob, Google Cloud Storage)
 - Use in-memory storage for testing or caching (Redis, Memcached)
-- Implement custom TTL and cleanup logic
-- Add custom security token providers
+- Implement a custom TTL policy
 - Integrate with your existing storage infrastructure
 
 ## Implementing PendingStorageInterface
@@ -19,7 +18,6 @@ To create a custom pending storage, implement the `PendingStorageInterface`:
 ```php
 use Maniaba\AssetConnect\Pending\Interfaces\PendingStorageInterface;
 use Maniaba\AssetConnect\Pending\PendingAsset;
-use Maniaba\AssetConnect\Pending\Interfaces\PendingSecurityTokenInterface;
 
 class MyCustomPendingStorage implements PendingStorageInterface
 {
@@ -46,16 +44,6 @@ class MyCustomPendingStorage implements PendingStorageInterface
     public function getDefaultTTLSeconds(): int
     {
         // Return default TTL in seconds
-    }
-
-    public function cleanExpiredPendingAssets(): void
-    {
-        // Remove all expired pending assets
-    }
-
-    public function pendingSecurityToken(): ?PendingSecurityTokenInterface
-    {
-        // Return security token provider (optional)
     }
 }
 ```
@@ -189,49 +177,6 @@ public function getDefaultTTLSeconds(): int
 
     // 7 days
     return 604800;
-}
-```
-
-### cleanExpiredPendingAssets()
-
-Removes all expired pending assets.
-
-```php
-public function cleanExpiredPendingAssets(): void
-```
-
-**Example:**
-```php
-public function cleanExpiredPendingAssets(): void
-{
-    $allAssets = $this->storageClient->getAll();
-    $now = time();
-
-    foreach ($allAssets as $id => $asset) {
-        $expiresAt = $asset['created_at'] + $asset['ttl'];
-
-        if ($expiresAt < $now) {
-            $this->deleteById($id);
-        }
-    }
-}
-```
-
-### pendingSecurityToken()
-
-Returns a security token provider for pending operations (optional).
-
-```php
-public function pendingSecurityToken(): ?PendingSecurityTokenInterface
-```
-
-**Returns:** Security token provider or `null`
-
-**Example:**
-```php
-public function pendingSecurityToken(): ?PendingSecurityTokenInterface
-{
-    return new MyCustomSecurityToken();
 }
 ```
 
@@ -432,5 +377,4 @@ public function fetchById(string $id): ?PendingAsset
 
 - [Pending Assets](pending.md) - Overview of pending assets functionality
 - [Pending Asset Manager](pending-asset-manager.md) - Manager class documentation
-- [DefaultPendingStorage](pending.md#defaultpendingstorage) - Default filesystem implementation
-
+- [DefaultPendingStorage](pending.md#defaultpendingstorage) - Default protected storage implementation

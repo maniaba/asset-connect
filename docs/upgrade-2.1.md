@@ -2,6 +2,8 @@
 
 AssetConnect 2.1.0 changes how custom storage setup methods are resolved.
 
+> **AssetConnect 3.0 note:** The driver-based fallback described on this page was removed in 3.0.0. Current versions resolve storage setup methods only from the configured storage disk name.
+
 In 2.0.0, setup methods were resolved from the storage `driver` value:
 
 ```php
@@ -30,11 +32,11 @@ protected function setupStorageRemote(array $storage): array
 }
 ```
 
-## Compatibility
+## Compatibility in 2.1.x
 
-This release is backward compatible with 2.0.0 storage setup methods.
+The 2.1.x release line is backward compatible with 2.0.0 storage setup methods.
 
-If `setupStorageRemote()` does not exist, AssetConnect falls back to the legacy driver-based method name, such as `setupStorageCustomRemote()`.
+In 2.1.x, if `setupStorageRemote()` does not exist, AssetConnect falls back to the legacy driver-based method name, such as `setupStorageCustomRemote()`.
 
 That means existing 2.0.0 applications can upgrade to 2.1.0 without immediately renaming storage setup methods.
 

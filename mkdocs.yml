@@ -85,6 +85,7 @@ nav:
   - Home: index.md
   - Installation: installation.md
   - Upgrade:
+      - Upgrade from 2.1.0 to 3.0.0: upgrade-3.0.md
       - Upgrade from 2.0.0 to 2.1.0: upgrade-2.1.md
       - Upgrade from 1.0.2 to 2.0.0: upgrade-2.0.md
   - Configuration:

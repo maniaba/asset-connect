@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Maniaba\AssetConnect\Pending;
 
+use CodeIgniter\Files\File;
 use CodeIgniter\I18n\Time;
 use InvalidArgumentException;
 use Maniaba\AssetConnect\Config\Asset as AssetConfig;
@@ -95,6 +96,34 @@ final class PendingAssetManager
         return $pendingAsset;
     }
 
+    public function consumeById(string $id, ?string $token = null): ?PendingAsset
+    {
+        $pendingAsset = $this->fetchById($id, $token);
+
+        if ($pendingAsset === null) {
+            return null;
+        }
+
+        $temporaryPath = $this->copyPendingFileToTemporarySource($pendingAsset, $id);
+
+        try {
+            if (! $this->storage->deleteById($id)) {
+                throw PendingAssetException::forUnableToStorePendingAsset($id, 'Failed to delete pending asset after consumption.');
+            }
+
+            $this->tokenProvider?->deleteToken($id);
+        } catch (Throwable $exception) {
+            @unlink($temporaryPath);
+
+            throw $exception;
+        }
+
+        $pendingAsset->setFile(new File($temporaryPath));
+        $pendingAsset->preservingOriginal(false);
+
+        return $pendingAsset;
+    }
+
     public function deleteById(string $id, ?string $token = null): bool
     {
         $asset = $this->fetchById($id, $token);
@@ -131,8 +160,27 @@ final class PendingAssetManager
         $this->storage->store($pendingAsset, $pendingAsset->id);
     }
 
-    public function cleanExpiredPendingAssets(): void
+    private function copyPendingFileToTemporarySource(PendingAsset $pendingAsset, string $id): string
     {
-        $this->storage->cleanExpiredPendingAssets();
+        $sourcePath = $pendingAsset->file->getRealPath();
+
+        if (! is_string($sourcePath) || ! is_file($sourcePath)) {
+            throw PendingAssetException::forUnableToStorePendingAsset($id, 'Pending file is not readable.');
+        }
+
+        $temporaryPath = tempnam(sys_get_temp_dir(), 'asset_pending_');
+        if ($temporaryPath === false) {
+            throw PendingAssetException::forUnableToStorePendingAsset($id, 'Unable to create temporary source file.');
+        }
+
+        if (! copy($sourcePath, $temporaryPath)) {
+            @unlink($temporaryPath);
+
+            throw PendingAssetException::forUnableToStorePendingAsset($id, 'Unable to copy pending file to temporary source file.');
+        }
+
+        @chmod($temporaryPath, 0600);
+
+        return $temporaryPath;
     }
 }

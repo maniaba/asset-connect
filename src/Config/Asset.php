@@ -19,6 +19,7 @@ use Maniaba\AssetConnect\Models\AssetModel;
 use Maniaba\AssetConnect\PathGenerator\DefaultPathGenerator;
 use Maniaba\AssetConnect\PathGenerator\Interfaces\PathGeneratorInterface;
 use Maniaba\AssetConnect\Pending\DefaultPendingStorage;
+use Maniaba\AssetConnect\Pending\Interfaces\PendingOwnerResolverInterface;
 use Maniaba\AssetConnect\Pending\Interfaces\PendingSecurityTokenInterface;
 use Maniaba\AssetConnect\Pending\Interfaces\PendingStorageInterface;
 use Maniaba\AssetConnect\Pending\PendingSecurityToken\SessionPendingSecurityToken;
@@ -167,6 +168,26 @@ class Asset extends BaseConfig
 
     /**
      * --------------------------------------------------------------------
+     * Pending Assets Storage Disk
+     * --------------------------------------------------------------------
+     *
+     * Storage disk used by DefaultPendingStorage. If null, the configured
+     * default protected storage disk is used. The resolved disk must have
+     * protected visibility.
+     */
+    public ?string $pendingStorageDisk = null;
+
+    /**
+     * --------------------------------------------------------------------
+     * Pending Assets Storage Prefix
+     * --------------------------------------------------------------------
+     *
+     * Relative directory inside the pending storage disk.
+     */
+    public string $pendingStoragePrefix = 'assets_pending';
+
+    /**
+     * --------------------------------------------------------------------
      * Pending Assets Security Token
      * --------------------------------------------------------------------
      *
@@ -177,13 +198,38 @@ class Asset extends BaseConfig
      * You can change this to any class that implements the PendingSecurityTokenInterface.
      *
      * Available options:
-     * - SessionPendingSecurityToken: Uses session to store the token.
-     * - CookiePendingSecurityToken: Uses cookies to store the token.
+     * - SessionPendingSecurityToken: Uses a per-pending session secret and HMAC digest.
+     * - CookiePendingSecurityToken: Uses a per-pending HTTP-only cookie secret and HMAC digest.
+     * - OwnerPendingSecurityToken: Uses PendingOwnerResolverInterface for API/JWT ownership.
      * - Null: Disables security token validation for pending assets.
      *
      * @var class-string<PendingSecurityTokenInterface>|null If null, no security token will be used.
      */
     public ?string $pendingSecurityToken = SessionPendingSecurityToken::class;
+
+    /**
+     * --------------------------------------------------------------------
+     * Pending Assets Security Key
+     * --------------------------------------------------------------------
+     *
+     * Secret key used to create HMAC digests for pending asset ownership.
+     * If null, the CodeIgniter Encryption key will be used.
+     */
+    public ?string $pendingSecurityKey = null;
+
+    /**
+     * --------------------------------------------------------------------
+     * Pending Owner Resolver
+     * --------------------------------------------------------------------
+     *
+     * Resolver used by OwnerPendingSecurityToken for stateless API/JWT flows.
+     * The resolver should return a stable owner value, such as JWT `sub`, or
+     * `sub:jti`/`sub:device_id` when the pending asset must be tied to a
+     * specific token/device.
+     *
+     * @var class-string<PendingOwnerResolverInterface>|PendingOwnerResolverInterface|null
+     */
+    public PendingOwnerResolverInterface|string|null $pendingOwnerResolver = null;
 
     /**
      * --------------------------------------------------------------------
@@ -248,11 +294,7 @@ class Asset extends BaseConfig
             }
 
             $storageNameString = (string) $storageName;
-            $driver            = $storageConfig['driver'] ?? null;
-            $methodName        = $this->resolveStorageSetupMethodName(
-                $storageNameString,
-                is_string($driver) && $driver !== '' ? $driver : null,
-            );
+            $methodName        = $this->resolveStorageSetupMethodName($storageNameString);
 
             if ($methodName === null) {
                 continue;
@@ -270,20 +312,11 @@ class Asset extends BaseConfig
         }
     }
 
-    private function resolveStorageSetupMethodName(string $storageName, ?string $driver): ?string
+    private function resolveStorageSetupMethodName(string $storageName): ?string
     {
         $storageMethodName = $this->storageSetupMethodName($storageName);
         if (method_exists($this, $storageMethodName)) {
             return $storageMethodName;
-        }
-
-        if ($driver === null) {
-            return null;
-        }
-
-        $driverMethodName = $this->storageSetupMethodName($driver);
-        if (method_exists($this, $driverMethodName)) {
-            return $driverMethodName;
         }
 
         return null;

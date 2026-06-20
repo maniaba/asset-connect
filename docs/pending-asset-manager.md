@@ -178,29 +178,9 @@ if ($success) {
 }
 ```
 
-**Note:** When using `addAssetFromPending()`, pending assets are automatically cleaned up after successful addition to an entity.
+**Note:** When using `addAssetFromPending()` with a pending ID, the ID is consumed immediately after ownership validation. The pending storage entry and token are deleted, and the real asset is stored from a temporary source file.
 
-### cleanExpiredPendingAssets()
-
-Manually triggers cleanup of all expired pending assets.
-
-```php
-public function cleanExpiredPendingAssets(): void
-```
-
-**Example:**
-```php
-$manager = PendingAssetManager::make();
-$manager->cleanExpiredPendingAssets();
-
-echo "Expired assets cleaned";
-```
-
-**Automatic Cleanup:**
-
-Expired pending assets are automatically cleaned up by the `AssetConnectJob` queue job. When assets are processed, the job also handles cleanup of expired pending assets from the default pending storage. This ensures that temporary files don't accumulate over time.
-
-If you need to manually trigger cleanup outside of the queue job, you can use the method shown above.
+Expired pending assets are rejected when a known pending ID is fetched, and AssetConnect then attempts to delete that ID. `DefaultPendingStorage` does not list remote storage buckets to discover expired entries. For S3-compatible storage, use storage lifecycle rules on the pending prefix if you need background cleanup for unconsumed pending assets.
 
 ## Complete Usage Examples
 
@@ -228,19 +208,13 @@ public function confirm()
 {
     $pendingId = $this->request->getPost('pending_id');
 
-    $manager = PendingAssetManager::make();
-    $pending = $manager->fetchById($pendingId);
-
-    if (!$pending) {
+    try {
+        // Add to entity by ID. This consumes and deletes the pending entry.
+        $user->addAssetFromPending($pendingId)
+            ->toAssetCollection(Photos::class);
+    } catch (\Maniaba\AssetConnect\Exceptions\AssetException) {
         return $this->response->setStatusCode(404);
     }
-
-    // Add to entity
-    $user->addAssetFromPending($pending)
-        ->toAssetCollection(Photos::class);
-
-    // Clean up
-    $manager->deleteById($pendingId);
 
     return $this->response->setJSON(['success' => true]);
 }
@@ -294,15 +268,12 @@ public function confirmUpload()
 {
     $pendingId = $this->request->getPost('pending_id');
 
-    $manager = PendingAssetManager::make();
-    $pending = $manager->fetchById($pendingId);
-
-    if (!$pending) {
+    try {
+        $user->addAssetFromPending($pendingId)
+            ->toAssetCollection(Images::class);
+    } catch (\Maniaba\AssetConnect\Exceptions\AssetException) {
         return $this->response->setStatusCode(404);
     }
-
-    $user->addAssetFromPending($pending)
-        ->toAssetCollection(Images::class);
 
     return $this->response->setJSON(['success' => true]);
 }
@@ -337,17 +308,14 @@ public function batchUpload()
 public function confirmBatch()
 {
     $pendingIds = $this->request->getPost('pending_ids');
-    $manager = PendingAssetManager::make();
 
     foreach ($pendingIds as $pendingId) {
-        $pending = $manager->fetchById($pendingId);
-
-        if (!$pending) {
-            continue; // Skip expired or invalid
+        try {
+            $product->addAssetFromPending($pendingId)
+                ->toAssetCollection(ProductImages::class);
+        } catch (\Maniaba\AssetConnect\Exceptions\AssetException) {
+            continue; // Skip expired, invalid, or already consumed IDs
         }
-
-        $product->addAssetFromPending($pending)
-            ->toAssetCollection(ProductImages::class);
     }
 
     return $this->response->setJSON(['success' => true]);
@@ -426,7 +394,7 @@ try {
 ### 1. Pending Assets Are Auto-Cleaned
 
 ```php
-// Pending assets are automatically cleaned up after successful addition
+// Pending IDs are consumed and removed before the real asset is stored
 $user->addAssetFromPending($pendingId)
     ->toAssetCollection(Photos::class);
 // File is automatically removed from pending storage
@@ -456,7 +424,7 @@ $manager->store($pending, 1800); // 30 minutes
 $manager->store($pending, 86400 * 7); // 7 days
 ```
 
-> **Note:** Expired pending assets are automatically cleaned up by the `AssetConnectJob` queue job when processing assets. No additional setup is required for automatic cleanup.
+> **Note:** Default pending storage avoids bucket listing. Use storage lifecycle rules or an application-side index if you need scheduled cleanup of unconsumed expired pending assets.
 
 ## Configuration
 
@@ -468,6 +436,8 @@ use Maniaba\AssetConnect\Pending\DefaultPendingStorage;
 class Asset extends BaseConfig
 {
     public string $pendingStorage = DefaultPendingStorage::class;
+    public ?string $pendingStorageDisk = null; // falls back to defaultProtectedStorage
+    public string $pendingStoragePrefix = 'assets_pending';
 }
 ```
 
@@ -485,5 +455,5 @@ class Asset extends BaseConfig
 ## See Also
 
 - [Pending Assets](pending.md) - Overview of pending assets functionality
-- [DefaultPendingStorage](pending.md#defaultpendingstorage) - Default filesystem storage implementation
+- [DefaultPendingStorage](pending.md#defaultpendingstorage) - Default protected storage implementation
 - [Custom Pending Storage](custom-pending-storage.md) - Creating custom storage implementations

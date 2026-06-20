@@ -157,7 +157,7 @@ final class AssetConfigTest extends CIUnitTestCase
         $this->assertSame(HOMEPATH . 'build/asset-connect/by-name', $config->storages['s3']['root']);
     }
 
-    public function testStorageDriverSetupMethodsStillWorkAsBackwardCompatibleFallback(): void
+    public function testStorageDriverSetupMethodsAreIgnoredWithoutMatchingStorageNameSetup(): void
     {
         $config = new class () extends Asset {
             public array $receivedStorageConfig = [];
@@ -191,8 +191,9 @@ final class AssetConfigTest extends CIUnitTestCase
         };
 
         $this->assertArrayHasKey('legacy', $config->storages);
-        $this->assertSame('aws_s3', $config->receivedStorageConfig['driver']);
-        $this->assertSame('local', $config->storages['legacy']['driver']);
+        $this->assertSame([], $config->receivedStorageConfig);
+        $this->assertSame('aws_s3', $config->storages['legacy']['driver']);
+        $this->assertSame('before-setup', $config->storages['legacy']['root']);
         $this->assertSame('public', $config->storages['legacy']['visibility']);
     }
 

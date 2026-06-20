@@ -190,21 +190,9 @@ parameters:
 			path: tests/Pending/DefaultPendingStorageTest.php
 
 		-
-			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertTrue\(\) with true will always evaluate to true\.$#'
-			identifier: method.alreadyNarrowedType
-			count: 2
-			path: tests/Pending/DefaultPendingStorageTest.php
-
-		-
 			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\AssetConnect\\\\Pending\\\\PendingAssetManager'' and Maniaba\\AssetConnect\\Pending\\PendingAssetManager will always evaluate to true\.$#'
 			identifier: method.alreadyNarrowedType
 			count: 2
-			path: tests/Pending/PendingAssetManagerTest.php
-
-		-
-			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertTrue\(\) with true will always evaluate to true\.$#'
-			identifier: method.alreadyNarrowedType
-			count: 1
 			path: tests/Pending/PendingAssetManagerTest.php
 
 		-
@@ -218,18 +206,6 @@ parameters:
 			identifier: method.alreadyNarrowedType
 			count: 9
 			path: tests/Pending/PendingAssetTest.php
-
-		-
-			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\AssetConnect\\\\Pending\\\\PendingSecurityToken\\\\SessionPendingSecurityToken'' and Maniaba\\AssetConnect\\Pending\\PendingSecurityToken\\SessionPendingSecurityToken will always evaluate to true\.$#'
-			identifier: method.alreadyNarrowedType
-			count: 2
-			path: tests/Pending/SessionPendingSecurityTokenTest.php
-
-		-
-			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertTrue\(\) with true will always evaluate to true\.$#'
-			identifier: method.alreadyNarrowedType
-			count: 2
-			path: tests/Pending/SessionPendingSecurityTokenTest.php
 
 		-
 			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\AssetConnect\\\\UrlGenerator\\\\UrlGenerator'' and Maniaba\\AssetConnect\\UrlGenerator\\UrlGenerator will always evaluate to true\.$#'

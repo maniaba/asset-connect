@@ -9,6 +9,11 @@ use Maniaba\AssetConnect\AssetCollection\DefaultAssetCollection;
 use Maniaba\AssetConnect\Config\Asset as BaseAsset;
 use Tests\Support\AssetCollections\FakeAvatarCollection;
 use Tests\Support\AssetCollections\FakeDocumentCollection;
+use Tests\Support\AssetCollections\ImmediateVariantTestAssetCollection;
+use Tests\Support\AssetCollections\MimeRestrictedTestAssetCollection;
+use Tests\Support\AssetCollections\QueuedVariantTestAssetCollection;
+use Tests\Support\AssetCollections\SingleFileTestAssetCollection;
+use Tests\Support\AssetCollections\SizeLimitedTestAssetCollection;
 use Tests\Support\Entities\FakeAssetEntity;
 use Tests\Support\TestAssetCollection;
 use Tests\Support\TestEntity;
@@ -19,6 +24,8 @@ use Tests\Support\TestEntity;
  */
 final class TestAssetConfig extends BaseAsset
 {
+    public ?string $pendingSecurityKey = 'asset-connect-test-pending-security-key';
+
     /**
      * {@inheritDoc}
      */
@@ -32,10 +39,15 @@ final class TestAssetConfig extends BaseAsset
      * {@inheritDoc}
      */
     public array $collectionKeyDefinitions = [
-        TestAssetCollection::class    => 'test_collection',
-        FakeDocumentCollection::class => 'fake_documents',
-        FakeAvatarCollection::class   => 'fake_avatars',
-        DefaultAssetCollection::class => 'default_collection',
+        TestAssetCollection::class                 => 'test_collection',
+        FakeDocumentCollection::class              => 'fake_documents',
+        FakeAvatarCollection::class                => 'fake_avatars',
+        ImmediateVariantTestAssetCollection::class => 'immediate_variants',
+        MimeRestrictedTestAssetCollection::class   => 'mime_restricted',
+        QueuedVariantTestAssetCollection::class    => 'queued_variants',
+        SingleFileTestAssetCollection::class       => 'single_file',
+        SizeLimitedTestAssetCollection::class      => 'size_limited',
+        DefaultAssetCollection::class              => 'default_collection',
     ];
 
     /**

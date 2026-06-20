@@ -71,7 +71,7 @@ final readonly class StorageLinker
             return $this->result($name, StorageLinkStatus::LINKED, $source, $target, 'Would create storage link.');
         }
 
-        if (! is_dir($source) && ! mkdir($source, 0755, true) && ! is_dir($source)) {
+        if (! is_dir($source) && ! @mkdir($source, 0755, true) && ! is_dir($source)) {
             return $this->result($name, StorageLinkStatus::FAILED, $source, $target, 'Storage root directory could not be created.');
         }
 
@@ -85,13 +85,13 @@ final readonly class StorageLinker
                 return $this->result($name, StorageLinkStatus::FAILED, $source, $target, 'Target path already exists.');
             }
 
-            if (! unlink($target)) {
+            if (! @unlink($target)) {
                 return $this->result($name, StorageLinkStatus::FAILED, $source, $target, 'Existing symlink could not be removed.');
             }
         }
 
         $targetParent = dirname($target);
-        if (! is_dir($targetParent) && ! mkdir($targetParent, 0755, true) && ! is_dir($targetParent)) {
+        if (! is_dir($targetParent) && ! @mkdir($targetParent, 0755, true) && ! is_dir($targetParent)) {
             return $this->result($name, StorageLinkStatus::FAILED, $source, $target, 'Target parent directory could not be created.');
         }
 
@@ -161,6 +161,7 @@ final readonly class StorageLinker
             return false;
         }
 
+        // @codeCoverageIgnoreStart
         $command = 'cmd /C mklink /J ' . escapeshellarg($target) . ' ' . escapeshellarg($source);
         $output  = [];
         $code    = 1;
@@ -168,6 +169,7 @@ final readonly class StorageLinker
         exec($command, $output, $code);
 
         return $code === 0;
+        // @codeCoverageIgnoreEnd
     }
 
     private function result(string $storage, StorageLinkStatus $status, string $source, string $target, string $message): StorageLinkResult
