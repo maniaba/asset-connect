@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pending asset updates with an existing ID update metadata only and do not overwrite the original pending file.
 - `addAssetFromPending()` now consumes pending IDs through `PendingAssetManager::consumeById()`, deletes the pending file/metadata and token, then stores the final asset from a temporary source file.
 - Expired pending IDs are rejected by `fetchById()` and the known pending file/metadata keys for that ID are deleted when possible.
+- Expanded PHPUnit coverage across core AssetConnect components; most production classes are now covered close to 100%, including critical asset, pending, storage, URL, model, path generator, variant, and upgrade flows.
 
 ### Security
 - Pending asset access now validates HMAC ownership tokens by default using the current session context, with cookie and owner-resolver strategies available for other upload flows.
