@@ -5,13 +5,20 @@ declare(strict_types=1);
 namespace Tests\Pending;
 
 use CodeIgniter\Config\Factories;
+use CodeIgniter\Files\File;
+use CodeIgniter\I18n\Time;
 use CodeIgniter\Test\CIUnitTestCase;
 use InvalidArgumentException;
 use Maniaba\AssetConnect\Config\Asset as AssetConfig;
+use Maniaba\AssetConnect\Enums\AssetVisibility;
 use Maniaba\AssetConnect\Exceptions\PendingAssetException;
 use Maniaba\AssetConnect\Pending\DefaultPendingStorage;
 use Maniaba\AssetConnect\Pending\PendingAsset;
+use Maniaba\AssetConnect\Storage\Interfaces\StorageDiskInterface;
+use PHPUnit\Framework\MockObject\Stub;
+use RuntimeException;
 use Tests\Support\Config\TestAssetConfig;
+use Tests\Support\Pending\PendingAssetManagerFunctionOverrides;
 
 /**
  * @internal
@@ -75,6 +82,7 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
             @rmdir($this->storageRoot);
         }
 
+        PendingAssetManagerFunctionOverrides::reset();
         Factories::reset('config');
     }
 
@@ -163,6 +171,43 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
 
         @unlink($existingDir . 'file');
         rmdir($existingDir);
+    }
+
+    public function testGeneratePendingIdRetriesWhenGeneratedIdAlreadyExists(): void
+    {
+        PendingAssetManagerFunctionOverrides::$randomBytesQueue = [
+            str_repeat("\x01", 16),
+            str_repeat("\x02", 16),
+        ];
+
+        $disk = $this->protectedDisk();
+        $disk->method('fileExists')->willReturnOnConsecutiveCalls(true, false, false);
+
+        $storage = new DefaultPendingStorage($disk, 'pending');
+
+        $this->assertSame(str_repeat('02', 16), $storage->generatePendingId(), 'Pending ID generation should retry when the first generated ID already exists.');
+    }
+
+    public function testGeneratePendingIdThrowsAfterCollisionRetryLimit(): void
+    {
+        PendingAssetManagerFunctionOverrides::$randomBytesQueue = [
+            str_repeat("\x01", 16),
+            str_repeat("\x02", 16),
+            str_repeat("\x03", 16),
+            str_repeat("\x04", 16),
+            str_repeat("\x05", 16),
+            str_repeat("\x06", 16),
+        ];
+
+        $disk = $this->protectedDisk();
+        $disk->method('fileExists')->willReturn(true);
+
+        $storage = new DefaultPendingStorage($disk, 'pending');
+
+        $this->expectException(PendingAssetException::class);
+        $this->expectExceptionMessage('Unable to generate unique pending ID after 5 attempts.');
+
+        $storage->generatePendingId();
     }
 
     /**
@@ -363,6 +408,92 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
         $this->storage->fetchById($id);
     }
 
+    public function testFetchByIdThrowsWhenMetadataCannotBeRead(): void
+    {
+        $disk = $this->protectedDisk();
+        $disk->method('fileExists')->willReturn(true);
+        $disk->method('read')->willThrowException(new RuntimeException('metadata read failed'));
+
+        $storage = new DefaultPendingStorage($disk, 'pending');
+
+        $this->expectException(PendingAssetException::class);
+
+        $storage->fetchById('metadata-read-fails');
+    }
+
+    public function testFetchByIdThrowsWhenPendingFileStreamIsNotReadable(): void
+    {
+        $disk = $this->protectedDisk();
+        $disk->method('fileExists')->willReturn(true);
+        $disk->method('read')->willReturn('{"name":"stream-fail"}');
+        $disk->method('readStream')->willReturn(false);
+
+        $storage = new DefaultPendingStorage($disk, 'pending');
+
+        $this->expectException(PendingAssetException::class);
+
+        $storage->fetchById('stream-read-fails');
+    }
+
+    public function testFetchByIdWrapsUnexpectedPendingFileStreamErrors(): void
+    {
+        $disk = $this->protectedDisk();
+        $disk->method('fileExists')->willReturn(true);
+        $disk->method('read')->willReturn('{"name":"stream-exception"}');
+        $disk->method('readStream')->willThrowException(new RuntimeException('adapter read stream failed'));
+
+        $storage = new DefaultPendingStorage($disk, 'pending');
+
+        $this->expectException(PendingAssetException::class);
+
+        $storage->fetchById('stream-exception-id');
+    }
+
+    public function testFetchByIdThrowsWhenTemporaryFileCannotBeCreated(): void
+    {
+        PendingAssetManagerFunctionOverrides::$failNextTempnam = true;
+
+        $disk = $this->protectedDisk();
+        $disk->method('fileExists')->willReturn(true);
+        $disk->method('read')->willReturn('{"name":"tempnam-fail"}');
+
+        $storage = new DefaultPendingStorage($disk, 'pending');
+
+        $this->expectException(PendingAssetException::class);
+
+        try {
+            $storage->fetchById('tempnam-fails');
+        } finally {
+            PendingAssetManagerFunctionOverrides::reset();
+        }
+    }
+
+    public function testFetchByIdWrapsPendingAssetCreationFailure(): void
+    {
+        PendingAssetManagerFunctionOverrides::$deleteStreamCopyTarget = true;
+
+        $disk = $this->protectedDisk();
+        $disk->method('fileExists')->willReturn(true);
+        $disk->method('read')->willReturn('{"name":"creation-fails"}');
+        $disk->method('readStream')->willReturnCallback(static function () {
+            $stream = fopen('php://temp', 'rb+');
+            fwrite($stream, 'pending content');
+            rewind($stream);
+
+            return $stream;
+        });
+
+        $storage = new DefaultPendingStorage($disk, 'pending');
+
+        $this->expectException(PendingAssetException::class);
+
+        try {
+            $storage->fetchById('creation-fails-id');
+        } finally {
+            PendingAssetManagerFunctionOverrides::reset();
+        }
+    }
+
     public function testDeleteByIdRemovesPendingAssetFiles(): void
     {
         $pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
@@ -406,6 +537,17 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
         $this->assertFileDoesNotExist($dir . 'file');
         $this->assertFileDoesNotExist($dir . 'metadata.json');
         $this->assertFileExists($dir . 'variants/thumb.txt');
+    }
+
+    public function testDeleteByIdReturnsFalseWhenStorageDeleteFails(): void
+    {
+        $disk = $this->protectedDisk();
+        $disk->method('fileExists')->willReturn(true);
+        $disk->method('delete')->willThrowException(new RuntimeException('delete failed'));
+
+        $storage = new DefaultPendingStorage($disk, 'pending');
+
+        $this->assertFalse($storage->deleteById('delete-fails'), 'Delete should report false when storage delete fails.');
     }
 
     /**
@@ -472,6 +614,101 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
         // Cleanup
         @unlink($tempFile1);
         @unlink($tempFile2);
+    }
+
+    public function testStoreRejectsUnreadableSourceFile(): void
+    {
+        $pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
+
+        $file = $this->createStub(File::class);
+        $file->method('getRealPath')->willReturn($this->storageRoot . DIRECTORY_SEPARATOR . 'missing-source.txt');
+
+        $pendingAsset->setFile($file);
+
+        $this->expectException(PendingAssetException::class);
+        $this->expectExceptionMessage('unable_to_store_pending_asset');
+
+        $this->storage->store($pendingAsset, 'missing-source-id');
+    }
+
+    public function testStoreThrowsWhenMetadataCannotBeEncoded(): void
+    {
+        $pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
+        $resource     = fopen('php://temp', 'rb');
+        $this->assertIsResource($resource);
+
+        $pendingAsset->withCustomProperty('resource', $resource);
+
+        $this->expectException(PendingAssetException::class);
+        $this->expectExceptionMessage('unable_to_store_pending_asset');
+
+        try {
+            $this->storage->store($pendingAsset, 'metadata-encode-fails');
+        } finally {
+            fclose($resource);
+        }
+    }
+
+    public function testStoreThrowsWhenSourceStreamCannotBeOpened(): void
+    {
+        PendingAssetManagerFunctionOverrides::$failNextFopen = true;
+
+        $pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
+
+        $this->expectException(PendingAssetException::class);
+        $this->expectExceptionMessage('unable_to_store_pending_asset');
+
+        try {
+            $this->storage->store($pendingAsset, 'fopen-fails');
+        } finally {
+            PendingAssetManagerFunctionOverrides::reset();
+        }
+    }
+
+    public function testStoreThrowsWhenStorageStreamWriteFails(): void
+    {
+        $disk = $this->protectedDisk();
+        $disk->method('fileExists')->willReturn(false);
+        $disk->method('writeStream')->willThrowException(new RuntimeException('adapter write failed'));
+
+        $storage      = new DefaultPendingStorage($disk, 'pending');
+        $pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
+
+        $this->expectException(PendingAssetException::class);
+        $this->expectExceptionMessage('unable_to_store_pending_asset');
+
+        $storage->store($pendingAsset, 'write-stream-fails');
+    }
+
+    public function testConstructorRejectsEmptyPendingStoragePrefix(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Pending storage prefix must not be empty.');
+
+        new DefaultPendingStorage($this->protectedDisk(), '///');
+    }
+
+    public function testNormalizeMetadataHandlesTimeObjectsStringsAndInvalidDates(): void
+    {
+        $normalizeMetadata = $this->getPrivateMethodInvoker($this->storage, 'normalizeMetadata');
+
+        $createdAt = Time::parse('2026-01-02 03:04:05');
+        $metadata  = $normalizeMetadata([
+            'created_at' => $createdAt,
+            'updated_at' => ['date' => '2026-02-03 04:05:06.000000'],
+        ]);
+
+        $this->assertInstanceOf(Time::class, $metadata['created_at'], 'Time metadata values should remain normalized as Time instances.');
+        $this->assertSame($createdAt->getTimestamp(), $metadata['created_at']->getTimestamp());
+        $this->assertInstanceOf(Time::class, $metadata['updated_at'], 'Array date metadata values should be parsed into Time instances.');
+
+        $metadata = $normalizeMetadata([
+            'created_at' => 'not a date',
+            'updated_at' => '',
+        ]);
+
+        $this->assertSame('not a date', $metadata['created_at'], 'Invalid date strings should be kept unchanged.');
+        $this->assertSame('', $metadata['updated_at'], 'Empty date strings should be kept unchanged.');
     }
 
     /**
@@ -597,5 +834,13 @@ final class DefaultPendingStorageTest extends CIUnitTestCase
             $currentInode = fileinode($storedFilePath);
             $this->assertSame($originalInode, $currentInode, "File inode should remain the same after update {$i}");
         }
+    }
+
+    private function protectedDisk(): StorageDiskInterface&Stub
+    {
+        $disk = $this->createStub(StorageDiskInterface::class);
+        $disk->method('visibility')->willReturn(AssetVisibility::PROTECTED);
+
+        return $disk;
     }
 }

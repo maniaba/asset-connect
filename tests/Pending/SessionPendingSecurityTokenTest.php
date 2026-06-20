@@ -14,6 +14,7 @@ use Maniaba\AssetConnect\Pending\PendingAsset;
 use Maniaba\AssetConnect\Pending\PendingSecurityToken\SessionPendingSecurityToken;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
+use Tests\Support\Pending\PendingAssetManagerFunctionOverrides;
 
 /**
  * @internal
@@ -53,6 +54,7 @@ final class SessionPendingSecurityTokenTest extends CIUnitTestCase
         }
 
         Factories::reset('config');
+        PendingAssetManagerFunctionOverrides::reset();
 
         parent::tearDown();
     }
@@ -73,6 +75,21 @@ final class SessionPendingSecurityTokenTest extends CIUnitTestCase
         $this->expectExceptionMessage('Token length must be between 1 and 64 bytes.');
 
         new SessionPendingSecurityToken(3600, 65);
+    }
+
+    #[AllowMockObjectsWithoutExpectations]
+    public function testConstructorThrowsExceptionWhenSessionServiceIsUnavailable(): void
+    {
+        PendingAssetManagerFunctionOverrides::$sessionUnavailable = true;
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Session service is not available. Ensure that sessions are properly configured.');
+
+        try {
+            new SessionPendingSecurityToken();
+        } finally {
+            PendingAssetManagerFunctionOverrides::reset();
+        }
     }
 
     public function testGenerateTokenStoresPerPendingSessionSecretAndReturnsHmacDigest(): void

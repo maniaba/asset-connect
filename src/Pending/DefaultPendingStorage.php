@@ -94,12 +94,8 @@ class DefaultPendingStorage implements PendingStorageInterface
 
         try {
             return PendingAsset::createFromFile($temporaryPath, $this->normalizeMetadata($metadata));
-        } catch (Throwable $exception) {
+        } catch (Throwable) {
             @unlink($temporaryPath);
-
-            if ($exception instanceof PendingAssetException) {
-                throw $exception;
-            }
 
             throw PendingAssetException::forUnableToReadMetadata($id);
         }
@@ -299,11 +295,13 @@ class DefaultPendingStorage implements PendingStorageInterface
             }
         }
 
+        // @codeCoverageIgnoreStart
         register_shutdown_function(static function () use ($temporaryPath): void {
             if (is_file($temporaryPath)) {
                 @unlink($temporaryPath);
             }
         });
+        // @codeCoverageIgnoreEnd
 
         return $temporaryPath;
     }

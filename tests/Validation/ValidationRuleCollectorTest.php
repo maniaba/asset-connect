@@ -6,6 +6,7 @@ namespace Tests\Validation;
 
 use Closure;
 use CodeIgniter\Files\File;
+use CodeIgniter\HTTP\Files\UploadedFile;
 use CodeIgniter\HTTP\IncomingRequest;
 use CodeIgniter\Test\CIUnitTestCase;
 use Config\Services;
@@ -182,6 +183,26 @@ final class ValidationRuleCollectorTest extends CIUnitTestCase
         $this->assertStringContainsString("cannot contain more than {$maxFiles} files", $error . '');
     }
 
+    public function testMaxFileCountValidationRuleRejectsSingleFileWhenMaximumIsZero(): void
+    {
+        $params = "{$this->fieldName},0";
+        $error  = null;
+
+        $file = $this->createStub(UploadedFile::class);
+        $file->method('getError')->willReturn(UPLOAD_ERR_OK);
+
+        $request = $this->createStub(IncomingRequest::class);
+        $request->method('getFileMultiple')->willReturn(null);
+        $request->method('getFile')->willReturn($file);
+
+        Services::injectMock('request', $request);
+
+        $result = ValidationRuleCollector::maxFileCountValidationRule(null, $params, [], $error, $this->fieldName);
+
+        $this->assertFalse($result);
+        $this->assertSame("The field '{$this->fieldName}' cannot contain any files.", $error);
+    }
+
     /**
      * Test setMaxFileSize method
      */
@@ -226,6 +247,16 @@ final class ValidationRuleCollectorTest extends CIUnitTestCase
 
         // Assert
         $this->assertSame($this->collector, $result);
+    }
+
+    public function testSetStorageDoesNotChangeValidationRules(): void
+    {
+        $rulesBefore = $this->collector->getRules();
+
+        $result = $this->collector->setStorage('protected');
+
+        $this->assertSame($this->collector, $result);
+        $this->assertSame($rulesBefore, $this->collector->getRules());
     }
 
     /**
