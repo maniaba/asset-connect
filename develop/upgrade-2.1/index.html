@@ -13,7 +13,7 @@
         <link rel="canonical" href="https://maniaba.github.io/asset-connect/latest/upgrade-2.1/">
       
       
-        <link rel="prev" href="../installation/">
+        <link rel="prev" href="../upgrade-3.0/">
       
       
         <link rel="next" href="../upgrade-2.0/">
@@ -387,6 +387,34 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../upgrade-3.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upgrade from 2.1.0 to 3.0.0
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -450,10 +478,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#compatibility" class="md-nav__link">
+  <a href="#compatibility-in-21x" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Compatibility
+        Compatibility in 2.1.x
       
     </span>
   </a>
@@ -1320,10 +1348,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#compatibility" class="md-nav__link">
+  <a href="#compatibility-in-21x" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Compatibility
+        Compatibility in 2.1.x
       
     </span>
   </a>
@@ -1401,6 +1429,9 @@
 
 <h1 id="upgrade-from-200-to-210">Upgrade from 2.0.0 to 2.1.0</h1>
 <p>AssetConnect 2.1.0 changes how custom storage setup methods are resolved.</p>
+<blockquote>
+<p><strong>AssetConnect 3.0 note:</strong> The driver-based fallback described on this page was removed in 3.0.0. Current versions resolve storage setup methods only from the configured storage disk name.</p>
+</blockquote>
 <p>In 2.0.0, setup methods were resolved from the storage <code>driver</code> value:</p>
 <pre class="highlight"><code class="language-php">public array $storages = [
     'remote' =&gt; [
@@ -1417,9 +1448,9 @@
 {
     // ...
 }</code></pre>
-<h2 id="compatibility">Compatibility</h2>
-<p>This release is backward compatible with 2.0.0 storage setup methods.</p>
-<p>If <code>setupStorageRemote()</code> does not exist, AssetConnect falls back to the legacy driver-based method name, such as <code>setupStorageCustomRemote()</code>.</p>
+<h2 id="compatibility-in-21x">Compatibility in 2.1.x</h2>
+<p>The 2.1.x release line is backward compatible with 2.0.0 storage setup methods.</p>
+<p>In 2.1.x, if <code>setupStorageRemote()</code> does not exist, AssetConnect falls back to the legacy driver-based method name, such as <code>setupStorageCustomRemote()</code>.</p>
 <p>That means existing 2.0.0 applications can upgrade to 2.1.0 without immediately renaming storage setup methods.</p>
 <h2 id="recommended-migration">Recommended Migration</h2>
 <p>Rename custom setup methods from driver-based names to storage-name-based names when convenient.</p>
@@ -1522,7 +1553,7 @@ composer analyze</code></pre>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../installation/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Installation">
+          <a href="../upgrade-3.0/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Upgrade from 2.1.0 to 3.0.0">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1532,7 +1563,7 @@ composer analyze</code></pre>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Installation
+                Upgrade from 2.1.0 to 3.0.0
               </div>
             </div>
           </a>

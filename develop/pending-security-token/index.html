@@ -388,6 +388,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../upgrade-3.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upgrade from 2.1.0 to 3.0.0
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../upgrade-2.1/" class="md-nav__link">
         
   
@@ -1164,6 +1192,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#apijwt-implementation-ownerpendingsecuritytoken" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API/JWT implementation: OwnerPendingSecurityToken
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#other-strategies" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1421,6 +1460,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#apijwt-implementation-ownerpendingsecuritytoken" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API/JWT implementation: OwnerPendingSecurityToken
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#other-strategies" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1492,33 +1542,41 @@
 <h1 id="pending-security-tokens">Pending Security Tokens</h1>
 <p>This page documents the pending asset security token subsystem: what it is, why it exists, available strategies, configuration options, and usage examples.</p>
 <h2 id="what-is-a-pending-security-token">What is a pending security token?</h2>
-<p>A pending security token is a short-lived opaque value associated with a pending asset. It helps protect access to pending files and ensures that only the actor that created the pending asset (or a trusted flow that received the token) can access, confirm, or convert the pending asset into a permanent asset.</p>
-<p>Tokens are intentionally short-lived (configurable TTL) and are compared using a timing-safe comparison to avoid leaking information via timing attacks.</p>
+<p>A pending security token is a short-lived ownership proof associated with a pending asset. It helps protect access to pending files and ensures that only the actor that created the pending asset can access, confirm, or convert the pending asset into a permanent asset.</p>
+<p>Tokens are intentionally short-lived (configurable TTL) and are compared using a timing-safe comparison to avoid leaking information via timing attacks. The built-in session, cookie, and owner strategies store an HMAC digest on the pending asset, not the raw owner secret.</p>
 <h2 id="why-use-security-tokens">Why use security tokens?</h2>
 <ul>
 <li>Prevents accidental or malicious access to pending files by ID alone.</li>
-<li>Makes it safe to expose pending IDs to clients, since the token is required to confirm/convert the pending asset.</li>
+<li>Makes it safe to expose pending IDs to clients, since ownership is validated before the pending asset can be read or converted.</li>
 <li>Supports multiple storage strategies (session, cookie, headers, signed URLs, database) depending on your application's architecture.</li>
 </ul>
 <h2 id="configuration-asset-config">Configuration (Asset config)</h2>
 <p>The <code>Asset</code> configuration exposes a <code>pendingSecurityToken</code> option where you can set the concrete class used to manage tokens:</p>
 <ul>
-<li><code>\Maniaba\AssetConnect\Pending\PendingSecurityToken\SessionPendingSecurityToken</code> (default) — stores tokens in the active session using tempdata.</li>
-<li><code>CookiePendingSecurityToken</code> — (documented here as an option) stores tokens in cookies.</li>
+<li><code>\Maniaba\AssetConnect\Pending\PendingSecurityToken\SessionPendingSecurityToken</code> (default) — stores a per-pending secret in the active session and stores only its HMAC digest in pending metadata.</li>
+<li><code>CookiePendingSecurityToken</code> — stores a per-pending secret in an HTTP-only SameSite cookie and stores only its HMAC digest in pending metadata.</li>
+<li><code>OwnerPendingSecurityToken</code> — derives the HMAC digest from the current owner resolved by <code>PendingOwnerResolverInterface</code>; use this for API/JWT flows.</li>
 <li><code>null</code> — disables security token validation; pending assets will not be protected by tokens.</li>
 </ul>
 <p>Example (default config):</p>
 <pre class="highlight"><code class="language-php">// src/Config/Asset.php
 public ?string $pendingSecurityToken = \Maniaba\AssetConnect\Pending\PendingSecurityToken\SessionPendingSecurityToken::class;</code></pre>
-<p>Set this to <code>null</code> to disable the token subsystem.</p>
+<p>The HMAC strategies use <code>Config\Asset::$pendingSecurityKey</code>. If it is null, they use <code>Config\Encryption::$key</code>. In production, configure a stable secret key.</p>
+<pre class="highlight"><code class="language-php">public ?string $pendingSecurityKey = null;</code></pre>
+<p>Use <code>.env</code> to override it in a normal CodeIgniter 4 application:</p>
+<pre class="highlight"><code class="language-dotenv">asset.pendingSecurityKey = your-random-secret</code></pre>
+<p>Set <code>pendingSecurityToken</code> to <code>null</code> only when pending IDs are never exposed to untrusted clients.</p>
 <h2 id="available-interfaces-and-base-class">Available interfaces and base class</h2>
 <ul>
 <li><code>Maniaba\AssetConnect\Pending\Interfaces\PendingSecurityTokenInterface</code> — interface that any token strategy must implement. Public methods:</li>
-<li><code>generateToken(string $pendingId): string</code> — generate and persist a token for the given pending ID and return the token.</li>
+<li><code>generateToken(string $pendingId): string</code> — generate the pending asset security value for the given pending ID. Built-in HMAC strategies return the digest stored in pending metadata.</li>
 <li><code>retrieveToken(string $pendingId): ?string</code> — retrieve the token for the given pending ID from the chosen strategy (session, cookie, header, etc.).</li>
-<li><code>validateToken(PendingAsset $pendingAsset, ?string $tokenProvided = null): bool</code> — validate the provided (or retrieved) token against the pending asset's stored <code>security_token</code> value.</li>
+<li><code>validateToken(PendingAsset $pendingAsset, ?string $tokenProvided = null): bool</code> — validate the pending asset against the provider's current security context.</li>
 <li>
 <p><code>deleteToken(string $pendingId): void</code> — remove stored token data for cleanup.</p>
+</li>
+<li>
+<p><code>Maniaba\AssetConnect\Pending\Interfaces\PendingOwnerResolverInterface</code> — resolves the current owner for stateless API/JWT flows. Return a stable value such as the JWT <code>sub</code>, or a stronger value like <code>sub:jti</code> or <code>sub:device_id</code> when pending assets must be tied to a specific token/device.</p>
 </li>
 <li>
 <p><code>Maniaba\AssetConnect\Pending\PendingSecurityToken\AbstractPendingSecurityToken</code> — provides common behavior:</p>
@@ -1526,20 +1584,45 @@ public ?string $pendingSecurityToken = \Maniaba\AssetConnect\Pending\PendingSecu
 <li>Validates constructor parameters: positive TTL and token length between 1 and 64 bytes.</li>
 <li><code>randomStringToken()</code> — uses <code>random_bytes()</code> and <code>bin2hex()</code> to build a cryptographically random token. May throw randomness-related exceptions.</li>
 <li><code>validateToken()</code> — default validation uses <code>retrieveToken()</code> when the token is not passed explicitly and compares using <code>hash_equals()</code>.</li>
-<li>Requires concrete classes to implement <code>initialize()</code> where service wiring (for example, session) is performed.</li>
+<li>
+<p>Requires concrete classes to implement <code>initialize()</code> where service wiring (for example, session) is performed.</p>
+</li>
+<li>
+<p><code>Maniaba\AssetConnect\Pending\PendingSecurityToken\AbstractHmacPendingSecurityToken</code> — base for built-in ownership-bound strategies:</p>
+</li>
+<li>Builds a SHA-256 HMAC from <code>pendingId + owner proof</code>.</li>
+<li>Ignores explicit client-provided token values during validation.</li>
+<li>Requires the current session/cookie/owner resolver to produce the owner proof again.</li>
 </ul>
 <h2 id="default-implementation-sessionpendingsecuritytoken">Default implementation: SessionPendingSecurityToken</h2>
 <p>Namespace: <code>Maniaba\AssetConnect\Pending\PendingSecurityToken\SessionPendingSecurityToken</code></p>
 <p>Behavior and notes:</p>
 <ul>
-<li>Stores tokens in CodeIgniter session tempdata with a key: <code>__pending_asset_security_token_{pendingId}</code>.</li>
+<li>Stores a random per-pending secret in CodeIgniter session tempdata with a key derived from the pending ID.</li>
 <li>Constructor parameters: token TTL (seconds) and token byte length.</li>
-<li><code>generateToken($pendingId)</code> — generates a token, stores it in session tempdata (with TTL), and returns the token string.</li>
-<li><code>retrieveToken($pendingId)</code> — reads session tempdata for the key and returns the token or <code>null</code>.</li>
+<li><code>generateToken($pendingId)</code> — generates a session secret, stores it in tempdata (with TTL), and returns the HMAC digest that is stored in pending metadata.</li>
+<li><code>retrieveToken($pendingId)</code> — reads the per-pending session secret and returns it or <code>null</code>.</li>
 <li><code>deleteToken($pendingId)</code> — removes tempdata for cleanup.</li>
 <li><code>initialize()</code> loads the <code>session</code> service and throws <code>InvalidArgumentException</code> if the session service is not available.</li>
 </ul>
-<p>This strategy is appropriate when you control the user's browser session (typical web app). The token lives in server-side session storage and is accessible only to the same session that received it.</p>
+<p>This strategy is appropriate when you control the user's browser session (typical web app). The client only needs to submit the pending ID; validation succeeds only when the same server-side session still contains the per-pending secret.</p>
+<h2 id="apijwt-implementation-ownerpendingsecuritytoken">API/JWT implementation: OwnerPendingSecurityToken</h2>
+<p>Namespace: <code>Maniaba\AssetConnect\Pending\PendingSecurityToken\OwnerPendingSecurityToken</code></p>
+<p>Use this strategy when there is no browser session and the current actor is authenticated through an API token such as JWT.</p>
+<pre class="highlight"><code class="language-php">use Maniaba\AssetConnect\Pending\Interfaces\PendingOwnerResolverInterface;
+
+final class JwtPendingOwnerResolver implements PendingOwnerResolverInterface
+{
+    public function resolveOwnerId(): ?string
+    {
+        $claims = service('auth')-&gt;jwtClaims();
+
+        return $claims-&gt;sub; // Or "{$claims-&gt;sub}:{$claims-&gt;jti}" for token/device binding.
+    }
+}</code></pre>
+<pre class="highlight"><code class="language-php">public ?string $pendingSecurityToken = \Maniaba\AssetConnect\Pending\PendingSecurityToken\OwnerPendingSecurityToken::class;
+public string|\Maniaba\AssetConnect\Pending\Interfaces\PendingOwnerResolverInterface|null $pendingOwnerResolver = JwtPendingOwnerResolver::class;</code></pre>
+<p>For a normal API flow, the client still sends only <code>pending_id</code> on form submit. <code>OwnerPendingSecurityToken</code> recomputes the HMAC from the current owner and rejects the pending asset if another owner attempts to consume the same ID.</p>
 <h2 id="other-strategies">Other strategies</h2>
 <ul>
 <li>Cookie-backed tokens: store the token in an HTTP-only cookie scoped for the upload/confirm routes. This is useful for stateless endpoints when you still want the browser to carry the token.</li>
@@ -1549,7 +1632,7 @@ public ?string $pendingSecurityToken = \Maniaba\AssetConnect\Pending\PendingSecu
 <p>To use a different strategy, implement <code>PendingSecurityTokenInterface</code> and change <code>Config\Asset::$pendingSecurityToken</code> to your class.</p>
 <h2 id="usage-examples">Usage examples</h2>
 <p>Important: tokens are generated automatically when you persist a pending asset through <code>PendingAsset::store()</code> (which delegates to <code>PendingAssetManager::store()</code>). The manager will call the configured token provider's <code>generateToken($pendingId)</code> and set the returned token on the <code>PendingAsset</code> instance (<code>$pending-&gt;security_token</code>). You typically do not need to call <code>generateToken()</code> yourself.</p>
-<p>1) Upload flow — store pending asset and return the generated token to the client:</p>
+<p>1) Upload flow — store pending asset and return only the pending ID:</p>
 <pre class="highlight"><code class="language-php">use Maniaba\AssetConnect\Pending\PendingAsset;
 
 $result = PendingAsset::createFromRequest('file');
@@ -1558,44 +1641,30 @@ $pending = $result['file'][0];
 // Persist pending asset. PendingAssetManager::store() will generate a token
 $pending-&gt;store();
 
-// Token (if token provider is configured) is available on the PendingAsset object
 return $this-&gt;response-&gt;setJSON([
     'pending_id' =&gt; $pending-&gt;id,
-    'security_token' =&gt; $pending-&gt;security_token, // may be null if no provider
 ]);</code></pre>
 <p>2) Token validation when confirming/adding a pending asset</p>
 <p>Token validation is performed by <code>PendingAssetManager::fetchById(string $id, ?string $token = null): ?PendingAsset</code>.
 If a token provider is configured, <code>fetchById()</code> will call the provider's <code>validateToken()</code> internally. When validation fails (or asset is missing/expired) <code>fetchById()</code> returns <code>null</code>.</p>
-<p>Examples below demonstrate two patterns:</p>
+<p>For built-in HMAC strategies, validation normally uses the current session/cookie/owner resolver. The client does not need a separate token:</p>
 <pre class="highlight"><code class="language-php">use Maniaba\AssetConnect\Pending\PendingAssetManager;
 
 $manager = PendingAssetManager::make();
 
-// 1) Explicit token provided by the client (e.g. POST body).
-// Pass the token into fetchById(); if it's invalid, you'll get null.
-$pending = $manager-&gt;fetchById($pendingId, $providedTokenFromClient);
+$pending = $manager-&gt;fetchById($pendingId);
 
 if ($pending === null) {
     // Asset not found, expired, or token invalid
     throw new \RuntimeException('Pending asset not found or invalid security token.');
 }
 
-// proceed to add asset from pending
-
-// 2) Let the configured provider retrieve the token itself (no explicit token passed).
-// For example, SessionPendingSecurityToken will read tempdata from the session.
-$pending = $manager-&gt;fetchById($pendingId);
-
-if ($pending === null) {
-    // Asset not found, expired, or provider failed to validate token
-    throw new \RuntimeException('Pending asset not found or invalid/expired token.');
-}
-
 // proceed to add asset from pending</code></pre>
 <p>Notes:</p>
 <ul>
 <li>If <code>Config\\Asset::$pendingSecurityToken</code> is <code>null</code>, token generation and validation are disabled and <code>fetchById()</code> behaves as a normal read (subject to expiry checks).</li>
-<li>If you need to perform provider-level deletion of token material after consumption, call the provider's <code>deleteToken($pendingId)</code> directly (e.g. via the configured provider instance).</li>
+<li><code>SessionPendingSecurityToken</code>, <code>CookiePendingSecurityToken</code>, and <code>OwnerPendingSecurityToken</code> ignore explicit client-provided token values and validate against the current server-side owner context.</li>
+<li><code>addAssetFromPending($pendingId)</code> consumes the pending ID, deletes the pending file and provider token, then stores the real asset from a temporary source file.</li>
 </ul>
 <p>3) Cleaning up tokens</p>
 <p>After you have confirmed and consumed a pending asset, you may call <code>deleteToken($pendingId)</code> to remove any stored token material from the provider (session, cookie, DB, ...):</p>

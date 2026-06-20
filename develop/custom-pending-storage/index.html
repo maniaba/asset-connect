@@ -388,6 +388,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../upgrade-3.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upgrade from 2.1.0 to 3.0.0
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../upgrade-2.1/" class="md-nav__link">
         
   
@@ -1169,28 +1197,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#cleanexpiredpendingassets" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        cleanExpiredPendingAssets()
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#pendingsecuritytoken" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        pendingSecurityToken()
-      
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -1654,28 +1660,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#cleanexpiredpendingassets" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        cleanExpiredPendingAssets()
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#pendingsecuritytoken" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        pendingSecurityToken()
-      
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -1890,21 +1874,19 @@
 
 
 <h1 id="custom-pending-storage">Custom Pending Storage</h1>
-<p>This guide explains how to create and configure custom storage implementations for pending assets. By default, AssetConnect uses filesystem storage (<code>DefaultPendingStorage</code>), but you can implement your own storage backend for services like Amazon S3, Redis, or any other storage solution.</p>
+<p>This guide explains how to create and configure custom storage implementations for pending assets. By default, AssetConnect uses a protected storage disk (<code>DefaultPendingStorage</code>), but you can implement your own storage backend for services like Amazon S3, Redis, or any other storage solution.</p>
 <h2 id="overview">Overview</h2>
 <p>Custom pending storage allows you to:</p>
 <ul>
 <li>Store pending assets in cloud storage (S3, Azure Blob, Google Cloud Storage)</li>
 <li>Use in-memory storage for testing or caching (Redis, Memcached)</li>
-<li>Implement custom TTL and cleanup logic</li>
-<li>Add custom security token providers</li>
+<li>Implement a custom TTL policy</li>
 <li>Integrate with your existing storage infrastructure</li>
 </ul>
 <h2 id="implementing-pendingstorageinterface">Implementing PendingStorageInterface</h2>
 <p>To create a custom pending storage, implement the <code>PendingStorageInterface</code>:</p>
 <pre class="highlight"><code class="language-php">use Maniaba\AssetConnect\Pending\Interfaces\PendingStorageInterface;
 use Maniaba\AssetConnect\Pending\PendingAsset;
-use Maniaba\AssetConnect\Pending\Interfaces\PendingSecurityTokenInterface;
 
 class MyCustomPendingStorage implements PendingStorageInterface
 {
@@ -1931,16 +1913,6 @@ class MyCustomPendingStorage implements PendingStorageInterface
     public function getDefaultTTLSeconds(): int
     {
         // Return default TTL in seconds
-    }
-
-    public function cleanExpiredPendingAssets(): void
-    {
-        // Remove all expired pending assets
-    }
-
-    public function pendingSecurityToken(): ?PendingSecurityTokenInterface
-    {
-        // Return security token provider (optional)
     }
 }</code></pre>
 <h2 id="required-methods">Required Methods</h2>
@@ -2026,32 +1998,6 @@ class MyCustomPendingStorage implements PendingStorageInterface
 
     // 7 days
     return 604800;
-}</code></pre></p>
-<h3 id="cleanexpiredpendingassets">cleanExpiredPendingAssets()</h3>
-<p>Removes all expired pending assets.</p>
-<pre class="highlight"><code class="language-php">public function cleanExpiredPendingAssets(): void</code></pre>
-<p><strong>Example:</strong>
-<pre class="highlight"><code class="language-php">public function cleanExpiredPendingAssets(): void
-{
-    $allAssets = $this-&gt;storageClient-&gt;getAll();
-    $now = time();
-
-    foreach ($allAssets as $id =&gt; $asset) {
-        $expiresAt = $asset['created_at'] + $asset['ttl'];
-
-        if ($expiresAt &lt; $now) {
-            $this-&gt;deleteById($id);
-        }
-    }
-}</code></pre></p>
-<h3 id="pendingsecuritytoken">pendingSecurityToken()</h3>
-<p>Returns a security token provider for pending operations (optional).</p>
-<pre class="highlight"><code class="language-php">public function pendingSecurityToken(): ?PendingSecurityTokenInterface</code></pre>
-<p><strong>Returns:</strong> Security token provider or <code>null</code></p>
-<p><strong>Example:</strong>
-<pre class="highlight"><code class="language-php">public function pendingSecurityToken(): ?PendingSecurityTokenInterface
-{
-    return new MyCustomSecurityToken();
 }</code></pre></p>
 <h2 id="storage-implementation-examples">Storage Implementation Examples</h2>
 <p>You can implement custom storage for various backends based on your needs:</p>
@@ -2198,7 +2144,7 @@ $user-&gt;addAssetFromPending($pendingId, $customStorage)
 <ul>
 <li><a href="../pending/">Pending Assets</a> - Overview of pending assets functionality</li>
 <li><a href="../pending-asset-manager/">Pending Asset Manager</a> - Manager class documentation</li>
-<li><a href="../pending/#defaultpendingstorage">DefaultPendingStorage</a> - Default filesystem implementation</li>
+<li><a href="../pending/#defaultpendingstorage">DefaultPendingStorage</a> - Default protected storage implementation</li>
 </ul>
 
 

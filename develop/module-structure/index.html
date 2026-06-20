@@ -386,6 +386,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../upgrade-3.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upgrade from 2.1.0 to 3.0.0
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../upgrade-2.1/" class="md-nav__link">
         
   
@@ -2214,7 +2242,7 @@
 <hr />
 <h2 id="jobs"><code>Jobs/</code></h2>
 <p><code>Maniaba\AssetConnect\Jobs</code></p>
-<p><code>AssetConnectJob</code> – CI4 Queue job handler. Processes asset variants and cleans up expired pending assets asynchronously.</p>
+<p><code>AssetConnectJob</code> – CI4 Queue job handler. Processes queued asset work asynchronously.</p>
 <hr />
 <h2 id="language"><code>Language/</code></h2>
 <p><code>Maniaba\AssetConnect\Language</code></p>
@@ -2291,11 +2319,15 @@
 </tr>
 <tr>
 <td><code>PendingAssetManager.php</code></td>
-<td>Facade over <code>PendingStorageInterface</code>. Methods: <code>make()</code>, <code>store()</code>, <code>fetchById()</code>, <code>deleteById()</code>, <code>cleanExpiredPendingAssets()</code>.</td>
+<td>Facade over <code>PendingStorageInterface</code>. Methods: <code>make()</code>, <code>store()</code>, <code>fetchById()</code>, <code>consumeById()</code>, <code>deleteById()</code>.</td>
 </tr>
 <tr>
 <td><code>DefaultPendingStorage.php</code></td>
-<td>Filesystem implementation; stores file + <code>metadata.json</code> per asset.</td>
+<td>Protected Flysystem storage implementation; stores known pending object keys under the configured prefix.</td>
+</tr>
+<tr>
+<td><code>Interfaces/PendingOwnerResolverInterface.php</code></td>
+<td>Contract for resolving the current pending owner in API/JWT flows.</td>
 </tr>
 <tr>
 <td><code>Interfaces/PendingStorageInterface.php</code></td>
@@ -2310,12 +2342,20 @@
 <td>Base implementation for token length, TTL validation, random token generation, and comparison.</td>
 </tr>
 <tr>
+<td><code>PendingSecurityToken/AbstractHmacPendingSecurityToken.php</code></td>
+<td>HMAC ownership validation base for session, cookie, and owner strategies.</td>
+</tr>
+<tr>
 <td><code>PendingSecurityToken/SessionPendingSecurityToken.php</code></td>
-<td>Default session-tempdata token strategy.</td>
+<td>Default per-pending session-secret HMAC strategy.</td>
 </tr>
 <tr>
 <td><code>PendingSecurityToken/CookiePendingSecurityToken.php</code></td>
-<td>Cookie-backed token strategy.</td>
+<td>Per-pending HTTP-only cookie HMAC strategy.</td>
+</tr>
+<tr>
+<td><code>PendingSecurityToken/OwnerPendingSecurityToken.php</code></td>
+<td>API/JWT owner HMAC strategy using <code>PendingOwnerResolverInterface</code>.</td>
 </tr>
 </tbody>
 </table>

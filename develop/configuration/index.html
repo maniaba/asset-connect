@@ -388,6 +388,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../upgrade-3.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upgrade from 2.1.0 to 3.0.0
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../upgrade-2.1/" class="md-nav__link">
         
   
@@ -653,6 +681,17 @@
     <span class="md-ellipsis">
       
         Default URL Generator
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pending-security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pending Security
       
     </span>
   </a>
@@ -1492,6 +1531,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pending-security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pending Security
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#table-names" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1629,7 +1679,7 @@ public array $storages = [
     ],
 ];</code></pre>
 <p>Use <code>setStorage('disk_name')</code> in a collection definition when a collection should use a specific disk. Otherwise AssetConnect chooses the default disk based on collection visibility.</p>
-<p>For local public storage disks with <code>public_url</code>, expose the configured roots through <code>php spark asset-connect:storage-link</code> or web server aliases. Protected disks should not define <code>public_url</code> and are served through AssetConnect routes. For FTP, SFTP, S3, Google Cloud Storage, Azure Blob Storage, MongoDB GridFS, WebDAV, memory, or any other Flysystem adapter, install the adapter package, set the disk <code>driver</code>, and add a matching <code>setupStorage{StorageName}()</code> method that returns the adapter config. Legacy <code>setupStorage{Driver}()</code> methods are still supported as a fallback. See <a href="../storage/">Storage</a> for examples.</p>
+<p>For local public storage disks with <code>public_url</code>, expose the configured roots through <code>php spark asset-connect:storage-link</code> or web server aliases. Protected disks should not define <code>public_url</code> and are served through AssetConnect routes. For FTP, SFTP, S3, Google Cloud Storage, Azure Blob Storage, MongoDB GridFS, WebDAV, memory, or any other Flysystem adapter, install the adapter package, set the disk <code>driver</code>, and add a matching <code>setupStorage{StorageName}()</code> method that returns the adapter config. See <a href="../storage/">Storage</a> for examples.</p>
 <h3 id="default-asset-collection">Default Asset Collection</h3>
 <p>You can change the default collection class that will be used when no specific collection is provided:</p>
 <pre class="highlight"><code class="language-php">public string $defaultCollection = CustomAssetCollection::class;</code></pre>
@@ -1645,6 +1695,33 @@ public array $storages = [
 <pre class="highlight"><code class="language-php">public ?string $defaultUrlGenerator = CustomUrlGenerator::class;</code></pre>
 <p>The class must implement the <code>UrlGeneratorInterface</code>. If set to <code>null</code>, the default URL generator will be used and routes will not be registered.</p>
 <p>For detailed information about URL generators, see the <a href="../custom-url-generator/">Custom URL Generator</a> documentation.</p>
+<h3 id="pending-security">Pending Security</h3>
+<p>Pending uploads are protected by a configurable security token strategy:</p>
+<pre class="highlight"><code class="language-php">public string $pendingStorage = \Maniaba\AssetConnect\Pending\DefaultPendingStorage::class;
+public ?string $pendingStorageDisk = null; // falls back to defaultProtectedStorage
+public string $pendingStoragePrefix = 'assets_pending';
+public ?string $pendingSecurityToken = \Maniaba\AssetConnect\Pending\PendingSecurityToken\SessionPendingSecurityToken::class;
+public ?string $pendingSecurityKey = null;</code></pre>
+<p><code>DefaultPendingStorage</code> stores pending files through the configured AssetConnect storage system. The pending disk must be protected. If <code>pendingStorageDisk</code> is <code>null</code>, AssetConnect uses <code>defaultProtectedStorage</code>.</p>
+<p><code>SessionPendingSecurityToken</code> is the default browser flow. It stores a per-pending secret in the current session and stores only an HMAC digest in pending metadata, so the client only needs to submit <code>pending_id</code>.</p>
+<p>For production, set a stable key through <code>.env</code>; CodeIgniter will override the <code>Asset</code> config property automatically:</p>
+<pre class="highlight"><code class="language-dotenv">asset.pendingSecurityKey = your-random-secret</code></pre>
+<p>For API/JWT flows, use <code>OwnerPendingSecurityToken</code> and configure a resolver:</p>
+<pre class="highlight"><code class="language-php">use Maniaba\AssetConnect\Pending\Interfaces\PendingOwnerResolverInterface;
+
+final class JwtPendingOwnerResolver implements PendingOwnerResolverInterface
+{
+    public function resolveOwnerId(): ?string
+    {
+        $claims = service('auth')-&gt;jwtClaims();
+
+        return $claims-&gt;sub; // Or "{$claims-&gt;sub}:{$claims-&gt;jti}" for token/device binding.
+    }
+}
+
+public ?string $pendingSecurityToken = \Maniaba\AssetConnect\Pending\PendingSecurityToken\OwnerPendingSecurityToken::class;
+public PendingOwnerResolverInterface|string|null $pendingOwnerResolver = JwtPendingOwnerResolver::class;</code></pre>
+<p>If <code>pendingSecurityKey</code> is null, AssetConnect uses <code>Config\Encryption::$key</code>. Do not set <code>pendingSecurityToken</code> to null when pending IDs are exposed to clients.</p>
 <h3 id="table-names">Table Names</h3>
 <p>You can customize the name of the database table used by Asset Connect:</p>
 <pre class="highlight"><code class="language-php">public array $tables = [

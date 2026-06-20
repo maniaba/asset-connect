@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://maniaba.github.io/asset-connect/latest/upgrade-2.0/">
+        <link rel="canonical" href="https://maniaba.github.io/asset-connect/latest/upgrade-3.0/">
       
       
-        <link rel="prev" href="../upgrade-2.1/">
+        <link rel="prev" href="../installation/">
       
       
-        <link rel="next" href="../configuration/">
+        <link rel="next" href="../upgrade-2.1/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>Upgrade from 1.0.2 to 2.0.0 - CodeIgniter AssetConnect</title>
+        <title>Upgrade from 2.1.0 to 3.0.0 - CodeIgniter AssetConnect</title>
       
     
     
@@ -84,7 +84,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#upgrade-from-102-to-200" class="md-skip">
+        <a href="#upgrade-from-210-to-300" class="md-skip">
           Skip to content
         </a>
       
@@ -135,7 +135,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Upgrade from 1.0.2 to 2.0.0
+              Upgrade from 2.1.0 to 3.0.0
             
           </span>
         </div>
@@ -387,10 +387,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../upgrade-3.0/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upgrade from 2.1.0 to 3.0.0
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -406,6 +433,70 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#storage-setup-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Storage Setup Methods
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pending-cleanup-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pending Cleanup API
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pending-storage-and-security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pending Storage and Security
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verification
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -443,37 +534,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Upgrade from 1.0.2 to 2.0.0
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../upgrade-2.0/" class="md-nav__link">
         
   
   
@@ -489,103 +553,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#before-running" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Before Running
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#dry-run" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Dry Run
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#execute-migration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Execute Migration
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#protected-files" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Protected Files
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#idempotency" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Idempotency
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#large-tables" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Large Tables
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#verify" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Verify
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1370,10 +1337,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#before-running" class="md-nav__link">
+  <a href="#storage-setup-methods" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Before Running
+        Storage Setup Methods
       
     </span>
   </a>
@@ -1381,10 +1348,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#dry-run" class="md-nav__link">
+  <a href="#pending-cleanup-api" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Dry Run
+        Pending Cleanup API
       
     </span>
   </a>
@@ -1392,10 +1359,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#execute-migration" class="md-nav__link">
+  <a href="#pending-storage-and-security" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Execute Migration
+        Pending Storage and Security
       
     </span>
   </a>
@@ -1403,43 +1370,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#protected-files" class="md-nav__link">
+  <a href="#verification" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Protected Files
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#idempotency" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Idempotency
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#large-tables" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Large Tables
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#verify" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Verify
+        Verification
       
     </span>
   </a>
@@ -1463,7 +1397,7 @@
 
 
   
-    <a href="https://github.com/maniaba/asset-connect/edit/develop/docs/upgrade-2.0.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/maniaba/asset-connect/edit/develop/docs/upgrade-3.0.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -1471,76 +1405,65 @@
   
 
 
-<h1 id="upgrade-from-102-to-200">Upgrade from 1.0.2 to 2.0.0</h1>
-<p>AssetConnect 2.0.0 stores file locations as:</p>
-<ul>
-<li><code>storage</code>: configured Flysystem disk name, for example <code>public</code> or <code>protected</code></li>
-<li><code>path</code>: relative path inside that storage disk</li>
-</ul>
-<p>Older AssetConnect versions used <code>storage_base_directory_path</code> as part of the filesystem path model. That value is no longer stored because physical roots now live in <code>Config\Asset::$storages</code>.</p>
-<h2 id="before-running">Before Running</h2>
-<p>Back up the database and files before running the migration.</p>
-<p>Run the AssetConnect migrations first so the <code>storage</code> column exists:</p>
-<pre class="highlight"><code class="language-bash">php spark migrate --namespace=Maniaba\\AssetConnect</code></pre>
-<p>Configure the target storage disks in <code>Config\Asset</code>:</p>
+<h1 id="upgrade-from-210-to-300">Upgrade from 2.1.0 to 3.0.0</h1>
+<p>AssetConnect 3.0.0 removes legacy compatibility paths that were kept during the 2.x storage transition.</p>
+<h2 id="storage-setup-methods">Storage Setup Methods</h2>
+<p>Storage setup methods are now resolved only from the configured storage disk name.</p>
+<p>Before:</p>
 <pre class="highlight"><code class="language-php">public array $storages = [
-    'public' =&gt; [
-        'driver'     =&gt; 'local',
-        'root'       =&gt; WRITEPATH . 'asset-connect/public',
-        'public_url' =&gt; 'assets/storage',
-        'visibility' =&gt; 'public',
+    'remote' =&gt; [
+        'driver' =&gt; 'aws_s3',
     ],
-    'protected' =&gt; [
-        'driver'     =&gt; 'local',
-        'root'       =&gt; WRITEPATH . 'asset-connect/protected',
-        'visibility' =&gt; 'protected',
+];
+
+protected function setupStorageAwsS3(array $storage): array
+{
+    return [
+        'adapter' =&gt; new AwsS3V3Adapter(...),
+    ];
+}</code></pre>
+<p>After:</p>
+<pre class="highlight"><code class="language-php">public array $storages = [
+    'remote' =&gt; [
+        'driver' =&gt; 'aws_s3',
     ],
-];</code></pre>
-<p>Legacy <code>assets.path</code> values should already be storage-relative paths. For rows created by older AssetConnect versions, the migration command can also derive the storage-relative path from <code>metadata.storage_info.storage_base_directory_path</code> when the absolute <code>assets.path</code> is under that legacy base directory.</p>
-<p>When the target Flysystem disk does not already contain the file, the command copies the readable legacy filesystem path into the selected storage disk before updating the database row. Arbitrary absolute filesystem paths are still rejected; the command only converts them when the legacy metadata proves which base directory should be removed.</p>
-<h2 id="dry-run">Dry Run</h2>
-<p>Start with a dry run. This prints the database update plan without changing rows:</p>
-<pre class="highlight"><code class="language-bash">php spark asset-connect:migrate-paths \
-    --storage public \
-    --dry-run</code></pre>
-<p>Use:</p>
-<ul>
-<li><code>--storage</code>: the 2.0.0 storage disk to assign to matching rows</li>
-<li><code>--dry-run</code>: print the plan without updating rows</li>
-</ul>
-<p>If <code>--storage</code> is omitted, AssetConnect tries to resolve the disk from the asset collection configuration and falls back to the configured default public disk.</p>
-<h2 id="execute-migration">Execute Migration</h2>
-<p>After reviewing the dry run, remove <code>--dry-run</code>:</p>
-<pre class="highlight"><code class="language-bash">php spark asset-connect:migrate-paths --storage public</code></pre>
-<p>The command prints one line per asset:</p>
-<pre class="highlight"><code class="language-text">[1/250] asset #15 MIGRATED public:assets/2026/06/file.jpg - Database row updated.</code></pre>
-<p>For each migrated asset the command:</p>
-<ol>
-<li>Resolves the target storage disk.</li>
-<li>Validates that <code>assets.path</code> is storage-relative, or derives it from supported legacy storage metadata.</li>
-<li>Verifies that the file exists on the target storage disk, or copies it from the readable legacy absolute path.</li>
-<li>Updates the row to <code>storage = &lt;disk&gt;</code> and <code>path = &lt;relative path&gt;</code>.</li>
-<li>Removes the legacy <code>metadata.storage_info</code> property from rows whose storage disk and relative path are already normalized.</li>
-</ol>
-<h2 id="protected-files">Protected Files</h2>
-<p>Run the command for protected files using the protected disk:</p>
-<pre class="highlight"><code class="language-bash">php spark asset-connect:migrate-paths --storage protected</code></pre>
-<h2 id="idempotency">Idempotency</h2>
-<p>The command is safe to re-run:</p>
-<ul>
-<li>Rows that already have a non-empty <code>storage</code> value are ignored by path migration, but still have obsolete <code>metadata.storage_info</code> cleaned when their path is already storage-relative.</li>
-<li>Rows with arbitrary absolute filesystem paths are rejected instead of being split into root and relative path.</li>
-<li>Rows with older <code>metadata.storage_info.storage_base_directory_path</code> metadata can be converted when the absolute path is inside that base directory.</li>
-</ul>
-<h2 id="large-tables">Large Tables</h2>
-<p>Limit one run:</p>
-<pre class="highlight"><code class="language-bash">php spark asset-connect:migrate-paths --storage public --limit=500</code></pre>
-<p>Change query batch size:</p>
-<pre class="highlight"><code class="language-bash">php spark asset-connect:migrate-paths --storage public --batch-size=50</code></pre>
-<h2 id="verify">Verify</h2>
-<p>After migration, asset rows should have a non-empty <code>storage</code> value and <code>path</code> should remain a storage-relative path.</p>
-<p>For local storage, make sure each public storage URL points to its configured storage root:</p>
-<pre class="highlight"><code class="language-bash">php spark asset-connect:storage-link</code></pre>
+];
+
+protected function setupStorageRemote(array $storage): array
+{
+    return [
+        'adapter' =&gt; new AwsS3V3Adapter(...),
+    ];
+}</code></pre>
+<p>If multiple disks use the same driver, each disk should have its own setup method based on the disk name, such as <code>setupStorageImages()</code> or <code>setupStorageDocuments()</code>.</p>
+<h2 id="pending-cleanup-api">Pending Cleanup API</h2>
+<p><code>cleanExpiredPendingAssets()</code> was removed from the pending storage and manager APIs.</p>
+<p>Remove calls such as:</p>
+<pre class="highlight"><code class="language-php">PendingAssetManager::make()-&gt;cleanExpiredPendingAssets();</code></pre>
+<p>Default pending storage deletes a known pending ID when it is consumed or when that known ID is fetched and found expired. For unconsumed expired pending files, use storage lifecycle rules or keep an application-side index of pending IDs that your application can delete explicitly.</p>
+<h2 id="pending-storage-and-security">Pending Storage and Security</h2>
+<p><code>DefaultPendingStorage</code> now writes pending files through the configured AssetConnect storage disk system. Pending storage must resolve to a protected disk.</p>
+<p>Review these config values after upgrading:</p>
+<pre class="highlight"><code class="language-php">public string $pendingStorage = \Maniaba\AssetConnect\Pending\DefaultPendingStorage::class;
+public ?string $pendingStorageDisk = null; // null uses defaultProtectedStorage
+public string $pendingStoragePrefix = 'assets_pending';
+public ?string $pendingSecurityToken = \Maniaba\AssetConnect\Pending\PendingSecurityToken\SessionPendingSecurityToken::class;
+public ?string $pendingSecurityKey = null;</code></pre>
+<p>If <code>pendingStorageDisk</code> is <code>null</code>, AssetConnect uses <code>defaultProtectedStorage</code>. If you set <code>pendingStorageDisk</code>, make sure that disk has protected visibility.</p>
+<p>For browser uploads, the default <code>SessionPendingSecurityToken</code> binds the pending asset to the current session with an HMAC digest. The client only needs to submit <code>pending_id</code> on the final form submit.</p>
+<p>For API/JWT uploads, use <code>OwnerPendingSecurityToken</code> with <code>PendingOwnerResolverInterface</code>:</p>
+<pre class="highlight"><code class="language-php">public ?string $pendingSecurityToken = \Maniaba\AssetConnect\Pending\PendingSecurityToken\OwnerPendingSecurityToken::class;
+public \Maniaba\AssetConnect\Pending\Interfaces\PendingOwnerResolverInterface|string|null $pendingOwnerResolver = JwtPendingOwnerResolver::class;</code></pre>
+<p>The resolver should return a stable authenticated owner value, such as the JWT <code>sub</code>, or a stronger value such as <code>sub:jti</code> when the pending asset must be tied to a specific token/device.</p>
+<p>When confirming a pending upload, prefer passing the pending ID directly:</p>
+<pre class="highlight"><code class="language-php">$user-&gt;addAssetFromPending($pendingId)
+    -&gt;toAssetCollection(ProfilePhotos::class);</code></pre>
+<p>Passing the ID consumes the pending entry, deletes the pending file/metadata and token, then stores the final asset from a temporary source file. Passing an already fetched <code>PendingAsset</code> object is still supported, but it does not consume the remote pending entry automatically.</p>
+<h2 id="verification">Verification</h2>
+<p>After upgrading, run:</p>
+<pre class="highlight"><code class="language-bash">composer test
+composer analyze
+composer inspect</code></pre>
 
 
 
@@ -1576,7 +1499,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../upgrade-2.1/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Upgrade from 2.0.0 to 2.1.0">
+          <a href="../installation/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Installation">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1586,20 +1509,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Upgrade from 2.0.0 to 2.1.0
+                Installation
               </div>
             </div>
           </a>
         
         
           
-          <a href="../configuration/" class="md-footer__link md-footer__link--next" aria-label="Next: Overview">
+          <a href="../upgrade-2.1/" class="md-footer__link md-footer__link--next" aria-label="Next: Upgrade from 2.0.0 to 2.1.0">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Overview
+                Upgrade from 2.0.0 to 2.1.0
               </div>
             </div>
             <div class="md-footer__button md-icon">

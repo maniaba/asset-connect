@@ -388,6 +388,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../upgrade-3.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upgrade from 2.1.0 to 3.0.0
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../upgrade-2.1/" class="md-nav__link">
         
   
@@ -1596,8 +1624,7 @@ protected function setupStorageRemote(array $storage): array
 
     return ['adapter' =&gt; $adapter];
 }</code></pre>
-<p>The setup method name is generated from the configured storage name. For example, <code>remote</code> calls <code>setupStorageRemote()</code>, <code>s3</code> calls <code>setupStorageS3()</code>, and <code>private_documents</code> calls <code>setupStoragePrivateDocuments()</code>. The returned array is merged over the original disk configuration.</p>
-<p>For backward compatibility, if no storage-name setup method exists, AssetConnect falls back to the legacy driver-based method name. For example, <code>driver =&gt; 'aws_s3'</code> can still call <code>setupStorageAwsS3()</code>. Prefer storage-name setup methods for new code, especially when multiple storage disks use the same driver.</p>
+<p>The setup method name is generated from the configured storage name. For example, <code>remote</code> calls <code>setupStorageRemote()</code>, <code>s3</code> calls <code>setupStorageS3()</code>, and <code>private_documents</code> calls <code>setupStoragePrivateDocuments()</code>. The returned array is merged over the original disk configuration. Driver-based setup method names such as <code>setupStorageAwsS3()</code> are not resolved automatically.</p>
 <p>Example AWS S3 disk:</p>
 <pre class="highlight"><code class="language-bash">composer require league/flysystem-aws-s3-v3:^3.0 aws/aws-sdk-php</code></pre>
 <pre class="highlight"><code class="language-php">use Aws\S3\S3Client;

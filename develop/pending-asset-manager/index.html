@@ -388,6 +388,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../upgrade-3.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upgrade from 2.1.0 to 3.0.0
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../upgrade-2.1/" class="md-nav__link">
         
   
@@ -1169,17 +1197,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#cleanexpiredpendingassets" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        cleanExpiredPendingAssets()
-      
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -1688,17 +1705,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#cleanexpiredpendingassets" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        cleanExpiredPendingAssets()
-      
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -2018,18 +2024,8 @@ if ($success) {
 } else {
     echo "Failed to delete asset or asset not found";
 }</code></pre></p>
-<p><strong>Note:</strong> When using <code>addAssetFromPending()</code>, pending assets are automatically cleaned up after successful addition to an entity.</p>
-<h3 id="cleanexpiredpendingassets">cleanExpiredPendingAssets()</h3>
-<p>Manually triggers cleanup of all expired pending assets.</p>
-<pre class="highlight"><code class="language-php">public function cleanExpiredPendingAssets(): void</code></pre>
-<p><strong>Example:</strong>
-<pre class="highlight"><code class="language-php">$manager = PendingAssetManager::make();
-$manager-&gt;cleanExpiredPendingAssets();
-
-echo "Expired assets cleaned";</code></pre></p>
-<p><strong>Automatic Cleanup:</strong></p>
-<p>Expired pending assets are automatically cleaned up by the <code>AssetConnectJob</code> queue job. When assets are processed, the job also handles cleanup of expired pending assets from the default pending storage. This ensures that temporary files don't accumulate over time.</p>
-<p>If you need to manually trigger cleanup outside of the queue job, you can use the method shown above.</p>
+<p><strong>Note:</strong> When using <code>addAssetFromPending()</code> with a pending ID, the ID is consumed immediately after ownership validation. The pending storage entry and token are deleted, and the real asset is stored from a temporary source file.</p>
+<p>Expired pending assets are rejected when a known pending ID is fetched, and AssetConnect then attempts to delete that ID. <code>DefaultPendingStorage</code> does not list remote storage buckets to discover expired entries. For S3-compatible storage, use storage lifecycle rules on the pending prefix if you need background cleanup for unconsumed pending assets.</p>
 <h2 id="complete-usage-examples">Complete Usage Examples</h2>
 <h3 id="example-1-simple-upload-flow">Example 1: Simple Upload Flow</h3>
 <pre class="highlight"><code class="language-php">// Upload endpoint
@@ -2053,19 +2049,13 @@ public function confirm()
 {
     $pendingId = $this-&gt;request-&gt;getPost('pending_id');
 
-    $manager = PendingAssetManager::make();
-    $pending = $manager-&gt;fetchById($pendingId);
-
-    if (!$pending) {
+    try {
+        // Add to entity by ID. This consumes and deletes the pending entry.
+        $user-&gt;addAssetFromPending($pendingId)
+            -&gt;toAssetCollection(Photos::class);
+    } catch (\Maniaba\AssetConnect\Exceptions\AssetException) {
         return $this-&gt;response-&gt;setStatusCode(404);
     }
-
-    // Add to entity
-    $user-&gt;addAssetFromPending($pending)
-        -&gt;toAssetCollection(Photos::class);
-
-    // Clean up
-    $manager-&gt;deleteById($pendingId);
 
     return $this-&gt;response-&gt;setJSON(['success' =&gt; true]);
 }</code></pre>
@@ -2115,15 +2105,12 @@ public function confirmUpload()
 {
     $pendingId = $this-&gt;request-&gt;getPost('pending_id');
 
-    $manager = PendingAssetManager::make();
-    $pending = $manager-&gt;fetchById($pendingId);
-
-    if (!$pending) {
+    try {
+        $user-&gt;addAssetFromPending($pendingId)
+            -&gt;toAssetCollection(Images::class);
+    } catch (\Maniaba\AssetConnect\Exceptions\AssetException) {
         return $this-&gt;response-&gt;setStatusCode(404);
     }
-
-    $user-&gt;addAssetFromPending($pending)
-        -&gt;toAssetCollection(Images::class);
 
     return $this-&gt;response-&gt;setJSON(['success' =&gt; true]);
 }</code></pre>
@@ -2154,17 +2141,14 @@ public function confirmUpload()
 public function confirmBatch()
 {
     $pendingIds = $this-&gt;request-&gt;getPost('pending_ids');
-    $manager = PendingAssetManager::make();
 
     foreach ($pendingIds as $pendingId) {
-        $pending = $manager-&gt;fetchById($pendingId);
-
-        if (!$pending) {
-            continue; // Skip expired or invalid
+        try {
+            $product-&gt;addAssetFromPending($pendingId)
+                -&gt;toAssetCollection(ProductImages::class);
+        } catch (\Maniaba\AssetConnect\Exceptions\AssetException) {
+            continue; // Skip expired, invalid, or already consumed IDs
         }
-
-        $product-&gt;addAssetFromPending($pending)
-            -&gt;toAssetCollection(ProductImages::class);
     }
 
     return $this-&gt;response-&gt;setJSON(['success' =&gt; true]);
@@ -2225,7 +2209,7 @@ if ($pending === null) {
 }</code></pre>
 <h2 id="best-practices">Best Practices</h2>
 <h3 id="1-pending-assets-are-auto-cleaned">1. Pending Assets Are Auto-Cleaned</h3>
-<pre class="highlight"><code class="language-php">// Pending assets are automatically cleaned up after successful addition
+<pre class="highlight"><code class="language-php">// Pending IDs are consumed and removed before the real asset is stored
 $user-&gt;addAssetFromPending($pendingId)
     -&gt;toAssetCollection(Photos::class);
 // File is automatically removed from pending storage</code></pre>
@@ -2246,7 +2230,7 @@ $manager-&gt;store($pending, 1800); // 30 minutes
 // Long-lived uploads (e.g., document approval workflow)
 $manager-&gt;store($pending, 86400 * 7); // 7 days</code></pre>
 <blockquote>
-<p><strong>Note:</strong> Expired pending assets are automatically cleaned up by the <code>AssetConnectJob</code> queue job when processing assets. No additional setup is required for automatic cleanup.</p>
+<p><strong>Note:</strong> Default pending storage avoids bucket listing. Use storage lifecycle rules or an application-side index if you need scheduled cleanup of unconsumed expired pending assets.</p>
 </blockquote>
 <h2 id="configuration">Configuration</h2>
 <p>The default pending storage is configured in <code>app/Config/Asset.php</code>:</p>
@@ -2255,6 +2239,8 @@ $manager-&gt;store($pending, 86400 * 7); // 7 days</code></pre>
 class Asset extends BaseConfig
 {
     public string $pendingStorage = DefaultPendingStorage::class;
+    public ?string $pendingStorageDisk = null; // falls back to defaultProtectedStorage
+    public string $pendingStoragePrefix = 'assets_pending';
 }</code></pre>
 <p>To use a custom storage implementation:</p>
 <pre class="highlight"><code class="language-php">use App\Storage\CustomPendingStorage;
@@ -2266,7 +2252,7 @@ class Asset extends BaseConfig
 <h2 id="see-also">See Also</h2>
 <ul>
 <li><a href="../pending/">Pending Assets</a> - Overview of pending assets functionality</li>
-<li><a href="../pending/#defaultpendingstorage">DefaultPendingStorage</a> - Default filesystem storage implementation</li>
+<li><a href="../pending/#defaultpendingstorage">DefaultPendingStorage</a> - Default protected storage implementation</li>
 <li><a href="../custom-pending-storage/">Custom Pending Storage</a> - Creating custom storage implementations</li>
 </ul>
 
