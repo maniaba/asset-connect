@@ -78,6 +78,8 @@ $setup->setFileNameSanitizer(function (string $fileName): string {
 
 This method sets a closure to sanitize file names before they are stored. The closure should accept a string (the file name) and return a sanitized string. This method replaces the default sanitizer.
 
+The default sanitizer uses CodeIgniter's `sanitize_filename()` helper and removes characters not allowed by `Config\App::$permittedURIChars`, so newly stored asset file names remain safe for AssetConnect routes. If you provide a custom sanitizer, make sure the returned file name is still safe for storage paths and URLs.
+
 #### setPreserveOriginal
 
 ```php
