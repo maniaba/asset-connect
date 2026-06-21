@@ -1808,6 +1808,7 @@ class ImagesCollection implements AssetCollectionDefinitionInterface, AssetVaria
     return str_replace(['#', '/', '\\', ' '], '-', $fileName);
 });</code></pre>
 <p>This method sets a closure to sanitize file names before they are stored. The closure should accept a string (the file name) and return a sanitized string. This method replaces the default sanitizer.</p>
+<p>The default sanitizer uses CodeIgniter's <code>sanitize_filename()</code> helper and removes characters not allowed by <code>Config\App::$permittedURIChars</code>, so newly stored asset file names remain safe for AssetConnect routes. If you provide a custom sanitizer, make sure the returned file name is still safe for storage paths and URLs.</p>
 <h4 id="setpreserveoriginal">setPreserveOriginal</h4>
 <pre class="highlight"><code class="language-php">$setup-&gt;setPreserveOriginal(true);</code></pre>
 <p>This method determines whether to preserve the original file after it has been processed and stored. By default, original files are not preserved.</p>
