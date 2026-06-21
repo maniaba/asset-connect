@@ -7,6 +7,7 @@ namespace Tests\AssetCollection;
 use CodeIgniter\Config\Factories;
 use CodeIgniter\Model;
 use CodeIgniter\Test\CIUnitTestCase;
+use Config\App;
 use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\AssetConnect\AssetCollection\DefaultAssetCollection;
 use Maniaba\AssetConnect\AssetCollection\SetupAssetCollection;
@@ -267,6 +268,47 @@ final class SetupAssetCollectionTest extends CIUnitTestCase
 
         // Assert
         $this->assertSame('test-file.jpg', $result);
+    }
+
+    public function testDefaultSanitizerUsesPermittedUriChars(): void
+    {
+        $sanitizer = $this->setupAssetCollection->getFileNameSanitizer();
+        $result    = $sanitizer('1757885128897-Living-&-Dining-Room-20250915-214045.jpg');
+
+        $this->assertSame('1757885128897-Living-Dining-Room-20250915-214045.jpg', $result);
+        $this->assertMatchesRegularExpression(
+            '/\A[' . config('App')->permittedURIChars . ']+\z/iu',
+            urldecode($result),
+        );
+    }
+
+    public function testDefaultSanitizerUsesConfiguredPermittedUriChars(): void
+    {
+        $appConfig = new class () extends App {
+            public string $permittedURIChars = 'a-z0-9._';
+        };
+        Factories::injectMock('config', 'App', $appConfig);
+
+        $sanitizer = $this->setupAssetCollection->getFileNameSanitizer();
+        $result    = $sanitizer('Upload.File-&-Final.JPG');
+
+        $this->assertSame('Upload.File_Final.JPG', $result);
+        $this->assertMatchesRegularExpression(
+            '/\A[' . $appConfig->permittedURIChars . ']+\z/iu',
+            urldecode($result),
+        );
+    }
+
+    public function testDefaultSanitizerHandlesEncodedDisallowedUriChars(): void
+    {
+        $sanitizer = $this->setupAssetCollection->getFileNameSanitizer();
+        $result    = $sanitizer('encoded-%26-name.jpg');
+
+        $this->assertSame('encoded-name.jpg', $result);
+        $this->assertMatchesRegularExpression(
+            '/\A[' . config('App')->permittedURIChars . ']+\z/iu',
+            urldecode($result),
+        );
     }
 
     /**
