@@ -1876,6 +1876,8 @@
 <h3 id="sanitizingfilename">sanitizingFileName</h3>
 <pre class="highlight"><code class="language-php">public function sanitizingFileName(callable $fileNameSanitizer): self</code></pre>
 <p>Sets a custom file name sanitizer. This is a callable that takes a string (the file name) and returns a sanitized string.</p>
+<p>By default, AssetConnect sanitizes file names with CodeIgniter's <code>sanitize_filename()</code> helper and removes characters that are not allowed by <code>Config\App::$permittedURIChars</code>. This keeps stored file names usable in AssetConnect protected and temporary asset routes. For example, an uploaded file such as <code>Living-&amp;-Dining.jpg</code> is stored as <code>Living-Dining.jpg</code> with the default CodeIgniter URI character configuration.</p>
+<p>If you override the sanitizer, your callable replaces the default behavior. Keep the returned file name safe for both storage paths and URLs. If your application customizes <code>Config\App::$permittedURIChars</code>, keep <code>.</code> in the allowed character group when you want file extensions such as <code>.jpg</code> or <code>.JPG</code> to remain separated by a dot.</p>
 <p><strong>Parameters:</strong>
 - <code>$fileNameSanitizer</code>: A callable that takes a string and returns a sanitized string.</p>
 <p><strong>Returns:</strong>
@@ -2054,6 +2056,7 @@ public function uploadDocuments()
 <h2 id="best-practices">Best Practices</h2>
 <h3 id="file-name-sanitization">File Name Sanitization</h3>
 <p>Always sanitize file names to ensure they are safe to use in file systems and URLs. The <code>AssetAdder</code> class provides a default file name sanitizer, but you can override it with your own implementation using the <code>sanitizingFileName</code> method.</p>
+<p>The default sanitizer affects newly stored assets only. Existing asset rows keep their current <code>file_name</code> values until you update or migrate them.</p>
 <pre class="highlight"><code class="language-php">$asset = $user-&gt;addAsset('/path/to/file.jpg')
     -&gt;sanitizingFileName(function (string $fileName): string {
         // Remove special characters and spaces
