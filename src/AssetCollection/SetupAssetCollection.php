@@ -147,9 +147,32 @@ final class SetupAssetCollection implements SetupAssetCollectionInterface
 
     private function defaultSanitizer(string $fileName): string
     {
-        $sanitizedFileName = preg_replace('#\p{C}+#u', '', $fileName);
+        helper('security');
 
+        $sanitizedFileName = preg_replace('#\p{C}+#u', '', urldecode($fileName)) ?? '';
         $sanitizedFileName = str_replace(['#', '/', '\\', ' '], '-', $sanitizedFileName);
+        $sanitizedFileName = sanitize_filename($sanitizedFileName);
+
+        /** @var object{permittedURIChars: string} $appConfig */
+        $appConfig         = config('App');
+        $permittedURIChars = $appConfig->permittedURIChars;
+
+        if ($permittedURIChars !== '') {
+            $separator = preg_match('/\A[' . $permittedURIChars . ']+\z/iu', '-') === 1 ? '-' : '_';
+            $separator = preg_match('/\A[' . $permittedURIChars . ']+\z/iu', $separator) === 1 ? $separator : '';
+
+            $sanitizedFileName = preg_replace('/[^' . $permittedURIChars . ']+/iu', $separator, $sanitizedFileName) ?? '';
+
+            if ($separator !== '') {
+                $quotedSeparator   = preg_quote($separator, '/');
+                $sanitizedFileName = preg_replace('/' . $quotedSeparator . '+/', $separator, $sanitizedFileName) ?? '';
+                $sanitizedFileName = trim($sanitizedFileName, $separator);
+            }
+        }
+
+        if ($sanitizedFileName === '' || $sanitizedFileName === '.' || $sanitizedFileName === '..') {
+            $sanitizedFileName = 'asset';
+        }
 
         $phpExtensions = [
             '.php', '.php3', '.php4', '.php5', '.php7', '.php8', '.phtml', '.phar',
