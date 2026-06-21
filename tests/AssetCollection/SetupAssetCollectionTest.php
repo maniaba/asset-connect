@@ -285,14 +285,14 @@ final class SetupAssetCollectionTest extends CIUnitTestCase
     public function testDefaultSanitizerUsesConfiguredPermittedUriChars(): void
     {
         $appConfig = new class () extends App {
-            public string $permittedURIChars = 'a-z0-9_';
+            public string $permittedURIChars = 'a-z0-9._';
         };
         Factories::injectMock('config', 'App', $appConfig);
 
         $sanitizer = $this->setupAssetCollection->getFileNameSanitizer();
         $result    = $sanitizer('Upload.File-&-Final.JPG');
 
-        $this->assertSame('Upload_File_Final_JPG', $result);
+        $this->assertSame('Upload.File_Final.JPG', $result);
         $this->assertMatchesRegularExpression(
             '/\A[' . $appConfig->permittedURIChars . ']+\z/iu',
             urldecode($result),
