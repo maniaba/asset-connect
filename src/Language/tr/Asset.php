@@ -17,5 +17,6 @@ return [
         'page_forbidden'          => 'Bu sayfaya erişim izniniz yok.',
         'variant_not_found'       => 'İstenen varyant "{variantName}" bulunamadı.',
         'token_invalid'           => 'Sağlanan token geçersiz veya süresi dolmuş.',
+        'pending_asset_not_found' => 'ID "{id}" olan bekleyen varlık bulunamadı.',
     ],
 ];

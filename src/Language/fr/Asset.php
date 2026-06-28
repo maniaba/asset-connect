@@ -17,5 +17,6 @@ return [
         'page_forbidden'          => 'Vous n\'avez pas la permission d\'accéder à cette page.',
         'variant_not_found'       => 'La variante demandée "{variantName}" n\'a pas été trouvée.',
         'token_invalid'           => 'Le jeton fourni n\'est pas valide ou a expiré.',
+        'pending_asset_not_found' => 'L\'actif en attente avec l\'ID "{id}" est introuvable.',
     ],
 ];

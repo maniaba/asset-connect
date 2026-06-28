@@ -17,5 +17,6 @@ return [
         'page_forbidden'          => 'Anda tidak memiliki izin untuk mengakses halaman ini.',
         'variant_not_found'       => 'Varian yang diminta "{variantName}" tidak ditemukan.',
         'token_invalid'           => 'Token yang diberikan tidak valid atau telah kedaluwarsa.',
+        'pending_asset_not_found' => 'Aset tertunda dengan ID "{id}" tidak ditemukan.',
     ],
 ];

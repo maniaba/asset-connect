@@ -17,5 +17,6 @@ return [
         'page_forbidden'          => 'Sie haben keine Berechtigung, auf diese Seite zuzugreifen.',
         'variant_not_found'       => 'Die angeforderte Variante "{variantName}" wurde nicht gefunden.',
         'token_invalid'           => 'Das bereitgestellte Token ist ungültig oder abgelaufen.',
+        'pending_asset_not_found' => 'Das ausstehende Asset mit der ID "{id}" wurde nicht gefunden.',
     ],
 ];

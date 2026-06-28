@@ -17,5 +17,6 @@ return [
         'page_forbidden'          => 'Nie masz uprawnień do dostępu do tej strony.',
         'variant_not_found'       => 'Żądany wariant "{variantName}" nie został znaleziony.',
         'token_invalid'           => 'Podany token jest nieprawidłowy lub wygasł.',
+        'pending_asset_not_found' => 'Oczekujący zasób o ID "{id}" nie został znaleziony.',
     ],
 ];
