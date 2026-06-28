@@ -9,6 +9,7 @@ use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Asset\Interfaces\AuthorizableAssetCollectionDefinitionInterface;
 use Maniaba\AssetConnect\AssetVariants\AssetVariant;
 use Maniaba\AssetConnect\Exceptions\PageException;
+use Maniaba\AssetConnect\Pending\PendingAssetManager;
 use Maniaba\AssetConnect\Repositories\AssetRepository;
 use Maniaba\AssetConnect\Repositories\Interfaces\AssetRepositoryInterface;
 use Maniaba\AssetConnect\Services\Interfaces\AssetAccessServiceInterface;
@@ -49,7 +50,7 @@ final readonly class AssetAccessService implements AssetAccessServiceInterface
         }
 
         // Create a download response
-        $response = new DownloadResponse($target['fileName'], false);
+        $response = $this->createDownloadResponse($target['fileName']);
         $response->setContentType($target['mimeType']);
 
         $localPath = $target['disk']->localPath($target['path']);
@@ -97,6 +98,31 @@ final readonly class AssetAccessService implements AssetAccessServiceInterface
         return $this->handleAssetRequest($assetId, $variantName);
     }
 
+    public function handlePendingAssetRequest(string $pendingAssetId, ?string $token = null): DownloadResponse
+    {
+        $pendingAsset = PendingAssetManager::make()->fetchById($pendingAssetId, $token);
+
+        if ($pendingAsset === null) {
+            throw PageException::forPendingAssetNotFound($pendingAssetId);
+        }
+
+        // DefaultPendingStorage streams remote/protected pending files into a
+        // local temporary file before returning the PendingAsset.
+        $sourcePath = $pendingAsset->file->getRealPath();
+
+        if (! is_string($sourcePath) || ! is_file($sourcePath)) {
+            throw PageException::forFileNotFound('/pending/' . $pendingAssetId);
+        }
+
+        $response = $this->createDownloadResponse($pendingAsset->file_name);
+        $response->setContentType($pendingAsset->mime_type);
+        $response->setFilePath($sourcePath);
+        $response->setHeader('Content-Length', (string) $pendingAsset->size);
+        $response->setHeader('Last-Modified', gmdate('D, d M Y H:i:s', $pendingAsset->updated_at->getTimestamp()) . ' GMT');
+
+        return $response;
+    }
+
     /**
      * @return array{disk: StorageDiskInterface, path: string, fileName: string, mimeType: string}
      */
@@ -126,5 +152,10 @@ final readonly class AssetAccessService implements AssetAccessServiceInterface
             'fileName' => $fileName,
             'mimeType' => $mimeType,
         ];
+    }
+
+    private function createDownloadResponse(string $fileName): DownloadResponse
+    {
+        return new DownloadResponse($fileName, false);
     }
 }

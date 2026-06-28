@@ -17,5 +17,6 @@ return [
         'page_forbidden'          => '您無權訪問此頁面。',
         'variant_not_found'       => '未找到請求的變體 "{variantName}"。',
         'token_invalid'           => '提供的權杖無效或已過期。',
+        'pending_asset_not_found' => '找不到 ID 為 "{id}" 的待處理資產。',
     ],
 ];

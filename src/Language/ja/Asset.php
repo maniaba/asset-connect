@@ -17,5 +17,6 @@ return [
         'page_forbidden'          => 'このページにアクセスする権限がありません。',
         'variant_not_found'       => '要求されたバリアント"{variantName}"が見つかりませんでした。',
         'token_invalid'           => '提供されたトークンは無効であるか、期限切れです。',
+        'pending_asset_not_found' => 'ID "{id}" の保留中アセットが見つかりませんでした。',
     ],
 ];

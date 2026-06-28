@@ -102,7 +102,7 @@ The central orchestrator. Holds the `AssetModel`, manages cached assets per enti
 
 | File | Description |
 |---|---|
-| `AssetConnectController.php` | Serves protected and temporary asset routes by delegating authorization and response creation to `AssetAccessService`. |
+| `AssetConnectController.php` | Serves protected, temporary, and pending asset routes by delegating authorization and response creation to `AssetAccessService`. |
 
 ---
 
@@ -250,8 +250,10 @@ Two-step upload system – upload first, attach to entity later.
 
 | File | Description |
 |---|---|
-| `Interfaces/UrlGeneratorInterface.php` | Contract: `getUrl()`, `getUrlRelative()`, `getTemporaryUrl()`, `getTemporaryUrlRelative()`. |
-| `DefaultUrlGenerator.php` | Registers legacy/controller routes for temporary or custom URL generation. |
+| `Interfaces/PendingUrlGeneratorInterface.php` | Optional contract for URL generators that support pending asset preview/download routes. |
+| `Interfaces/UrlGeneratorInterface.php` | Contract for registering route-backed asset URLs and returning route parameters. |
+| `DefaultUrlGenerator.php` | Registers controller routes for protected, temporary, and pending URL generation. |
+| `PendingUrlGenerator.php` | Generates pending asset preview/download URLs from the configured URL generator. |
 | `TempUrlToken.php` | Creates and validates HMAC-signed temporary URL tokens. |
 | `UrlGenerator.php` | Generates direct storage-disk URLs and temporary route URLs. |
 | `Traits/UrlGeneratorTrait.php` | Shared URL-building helpers. |

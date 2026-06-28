@@ -111,6 +111,10 @@ public function sanitizingFileName(callable $fileNameSanitizer): self
 
 Sets a custom file name sanitizer. This is a callable that takes a string (the file name) and returns a sanitized string.
 
+By default, AssetConnect sanitizes file names with CodeIgniter's `sanitize_filename()` helper and removes characters that are not allowed by `Config\App::$permittedURIChars`. This keeps stored file names usable in AssetConnect protected and temporary asset routes. For example, an uploaded file such as `Living-&-Dining.jpg` is stored as `Living-Dining.jpg` with the default CodeIgniter URI character configuration.
+
+If you override the sanitizer, your callable replaces the default behavior. Keep the returned file name safe for both storage paths and URLs. If your application customizes `Config\App::$permittedURIChars`, keep `.` in the allowed character group when you want file extensions such as `.jpg` or `.JPG` to remain separated by a dot.
+
 **Parameters:**
 - `$fileNameSanitizer`: A callable that takes a string and returns a sanitized string.
 
@@ -364,6 +368,8 @@ public function uploadDocuments()
 ### File Name Sanitization
 
 Always sanitize file names to ensure they are safe to use in file systems and URLs. The `AssetAdder` class provides a default file name sanitizer, but you can override it with your own implementation using the `sanitizingFileName` method.
+
+The default sanitizer affects newly stored assets only. Existing asset rows keep their current `file_name` values until you update or migrate them.
 
 ```php
 $asset = $user->addAsset('/path/to/file.jpg')

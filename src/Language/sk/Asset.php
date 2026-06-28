@@ -17,5 +17,6 @@ return [
         'page_forbidden'          => 'Nemáte oprávnenie na prístup k tejto stránke.',
         'variant_not_found'       => 'Požadovaný variant "{variantName}" nebol nájdený.',
         'token_invalid'           => 'Poskytnutý token je neplatný alebo vypršal.',
+        'pending_asset_not_found' => 'Čakajúci prostriedok s ID "{id}" sa nenašiel.',
     ],
 ];

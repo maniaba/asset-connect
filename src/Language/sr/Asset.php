@@ -17,5 +17,6 @@ return [
         'page_forbidden'          => 'Nemate dozvolu za pristup ovoj stranici.',
         'variant_not_found'       => 'Tražena varijanta "{variantName}" nije pronađena.',
         'token_invalid'           => 'Navedeni token nije važeći ili je istekao.',
+        'pending_asset_not_found' => 'Sredstvo na čekanju sa ID-jem "{id}" nije pronađeno.',
     ],
 ];

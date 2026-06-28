@@ -17,5 +17,6 @@ return [
         'page_forbidden'          => 'Non hai il permesso di accedere a questa pagina.',
         'variant_not_found'       => 'La variante richiesta "{variantName}" non è stata trovata.',
         'token_invalid'           => 'Il token fornito non è valido o è scaduto.',
+        'pending_asset_not_found' => 'L\'asset in sospeso con ID "{id}" non è stato trovato.',
     ],
 ];

@@ -17,5 +17,6 @@ return [
         'page_forbidden'          => 'คุณไม่มีสิทธิ์เข้าถึงหน้านี้',
         'variant_not_found'       => 'ไม่พบรูปแบบที่ร้องขอ "{variantName}"',
         'token_invalid'           => 'โทเค็นที่ให้มาไม่ถูกต้องหรือหมดอายุแล้ว',
+        'pending_asset_not_found' => 'ไม่พบแอสเซ็ตที่รอดำเนินการซึ่งมี ID "{id}"',
     ],
 ];

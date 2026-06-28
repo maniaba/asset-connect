@@ -17,5 +17,6 @@ return [
         'page_forbidden'          => 'Bạn không có quyền truy cập trang này.',
         'variant_not_found'       => 'Không tìm thấy biến thể được yêu cầu "{variantName}".',
         'token_invalid'           => 'Token được cung cấp không hợp lệ hoặc đã hết hạn.',
+        'pending_asset_not_found' => 'Không tìm thấy tài sản đang chờ xử lý có ID "{id}".',
     ],
 ];

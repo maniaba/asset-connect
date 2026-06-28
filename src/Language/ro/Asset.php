@@ -17,5 +17,6 @@ return [
         'page_forbidden'          => 'Nu aveți permisiunea de a accesa această pagină.',
         'variant_not_found'       => 'Varianta solicitată "{variantName}" nu a fost găsită.',
         'token_invalid'           => 'Tokenul furnizat este invalid sau a expirat.',
+        'pending_asset_not_found' => 'Activul în așteptare cu ID-ul "{id}" nu a fost găsit.',
     ],
 ];

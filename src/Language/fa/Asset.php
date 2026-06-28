@@ -17,5 +17,6 @@ return [
         'page_forbidden'          => 'شما اجازه دسترسی به این صفحه را ندارید.',
         'variant_not_found'       => 'نسخه درخواستی "{variantName}" یافت نشد.',
         'token_invalid'           => 'توکن ارائه شده نامعتبر است یا منقضی شده است.',
+        'pending_asset_not_found' => 'دارایی در انتظار با شناسه "{id}" یافت نشد.',
     ],
 ];

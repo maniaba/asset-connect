@@ -17,5 +17,6 @@ return [
         'page_forbidden'          => 'Jums nav atļaujas piekļūt šai lapai.',
         'variant_not_found'       => 'Pieprasītais variants "{variantName}" netika atrasts.',
         'token_invalid'           => 'Norādītais tokens nav derīgs vai ir beidzies tā derīguma termiņš.',
+        'pending_asset_not_found' => 'Gaidošais resurss ar ID "{id}" netika atrasts.',
     ],
 ];

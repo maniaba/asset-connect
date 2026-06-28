@@ -17,5 +17,6 @@ return [
         'page_forbidden'          => 'Du har ikke tillatelse til å få tilgang til denne siden.',
         'variant_not_found'       => 'Den forespurte varianten "{variantName}" ble ikke funnet.',
         'token_invalid'           => 'Det angitte tokenet er ugyldig eller har utløpt.',
+        'pending_asset_not_found' => 'Ventende ressurs med ID "{id}" ble ikke funnet.',
     ],
 ];

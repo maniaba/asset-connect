@@ -17,5 +17,6 @@ return [
         'page_forbidden'          => '您无权访问此页面。',
         'variant_not_found'       => '未找到请求的变体 "{variantName}"。',
         'token_invalid'           => '提供的令牌无效或已过期。',
+        'pending_asset_not_found' => '未找到 ID 为 "{id}" 的待处理资产。',
     ],
 ];

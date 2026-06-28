@@ -17,5 +17,6 @@ return [
         'page_forbidden'          => 'Jūs neturite leidimo pasiekti šį puslapį.',
         'variant_not_found'       => 'Prašomas variantas "{variantName}" nerastas.',
         'token_invalid'           => 'Pateiktas žetonas yra neteisingas arba baigėsi jo galiojimo laikas.',
+        'pending_asset_not_found' => 'Laukiantis išteklius su ID "{id}" nerastas.',
     ],
 ];

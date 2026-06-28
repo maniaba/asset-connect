@@ -17,5 +17,6 @@ return [
         'page_forbidden'          => 'Não tem permissão para aceder a esta página.',
         'variant_not_found'       => 'A variante solicitada "{variantName}" não foi encontrada.',
         'token_invalid'           => 'O token fornecido é inválido ou expirou.',
+        'pending_asset_not_found' => 'O ativo pendente com ID "{id}" não foi encontrado.',
     ],
 ];
