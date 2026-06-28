@@ -28,4 +28,11 @@ final class PageException extends PageNotFoundException
             'path' => $filePath,
         ]), 404);
     }
+
+    public static function forPendingAssetNotFound(string $id): self
+    {
+        return new self(lang('Asset.exception.pending_asset_not_found', [
+            'id' => $id,
+        ]), 404);
+    }
 }

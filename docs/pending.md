@@ -63,6 +63,8 @@ A class that represents a pending asset. Contains the file and metadata.
 | `custom_properties` | array | Additional custom properties |
 | `file` | File\|UploadedFile | Reference to the actual file |
 | `security_token` | string\|null | Internal pending security digest/token assigned by `PendingAssetManager` when a token provider is configured |
+| `preview_url` | string | Route URL that serves the pending file inline when the asset has an ID |
+| `download_url` | string | Route URL that serves the pending file as a forced download when the asset has an ID |
 
 
 ### Available Methods
@@ -79,6 +81,10 @@ A class that represents a pending asset. Contains the file and metadata.
 | `setTTL(int $ttl)` | Sets the time to live in seconds |
 | `store(?PendingStorageInterface $storage = null, ?int $ttlSeconds = null)` | Stores the pending asset. If ID exists, updates metadata only; if no ID, creates new storage. Optional custom storage and TTL parameters. |
 | `setSecurityToken(?string $token)` | Sets the security token on the `PendingAsset` (used internally by `PendingAssetManager`/storage after token generation) |
+| `getPreviewUrl()` | Returns the inline preview route URL for a stored pending asset |
+| `getDownloadUrl()` | Returns the force-download route URL for a stored pending asset |
+| `getPreviewUrlRelative()` | Returns the relative inline preview route URL |
+| `getDownloadUrlRelative()` | Returns the relative force-download route URL |
 
 #### Creation Methods (Static)
 
@@ -103,6 +109,30 @@ For detailed documentation, see [Pending Asset Manager](pending-asset-manager.md
 Default protected Flysystem storage implementation for storing pending assets.
 
 **Namespace:** `Maniaba\AssetConnect\Pending\DefaultPendingStorage`
+
+## Pending Preview and Download URLs
+
+Stored pending assets can be served through AssetConnect routes before they are attached to an entity. The default route is:
+
+```text
+/assets/pending/{pendingId}/{filename}
+```
+
+The route uses `PendingAssetManager::fetchById()`, so pending TTL and the configured pending security token provider are still enforced. The response is inline by default for previews. Add `?download=force` to force a browser download.
+
+```php
+use Maniaba\AssetConnect\Pending\PendingAsset;
+
+$result = PendingAsset::createFromRequest('file');
+$pending = $result['file'][0];
+$pending->store();
+
+return $this->response->setJSON([
+    'pending' => $pending,
+    'preview_url' => $pending->getPreviewUrl(),
+    'download_url' => $pending->getDownloadUrl(),
+]);
+```
 
 ## Creating Pending Assets
 

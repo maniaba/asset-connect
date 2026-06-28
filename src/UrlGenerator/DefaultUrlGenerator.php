@@ -8,10 +8,12 @@ use CodeIgniter\Router\RouteCollection;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\AssetVariants\AssetVariant;
 use Maniaba\AssetConnect\Controllers\AssetConnectController;
+use Maniaba\AssetConnect\Pending\PendingAsset;
+use Maniaba\AssetConnect\UrlGenerator\Interfaces\PendingUrlGeneratorInterface;
 use Maniaba\AssetConnect\UrlGenerator\Interfaces\UrlGeneratorInterface;
 use Override;
 
-class DefaultUrlGenerator implements UrlGeneratorInterface
+class DefaultUrlGenerator implements UrlGeneratorInterface, PendingUrlGeneratorInterface
 {
     #[Override]
     public static function routes(RouteCollection &$routes): void
@@ -37,6 +39,11 @@ class DefaultUrlGenerator implements UrlGeneratorInterface
                 'priority' => 100,
                 'as'       => 'asset-connect.temporary_variant',
             ]);
+
+            $routes->get('pending/(:segment)/(:segment)', [AssetConnectController::class, 'pending/$1'], [
+                'priority' => 100,
+                'as'       => 'asset-connect.pending',
+            ]);
         });
     }
 
@@ -51,6 +58,17 @@ class DefaultUrlGenerator implements UrlGeneratorInterface
             'asset-connect.show_variant'      => [$asset->id, $variantName, $variantFileName],
             'asset-connect.temporary'         => [$token, $asset->file_name],
             'asset-connect.temporary_variant' => [$token, $variantName, $variantFileName],
+        ];
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    #[Override]
+    public static function pendingParams(PendingAsset $pendingAsset): array
+    {
+        return [
+            'asset-connect.pending' => [$pendingAsset->id, $pendingAsset->file_name],
         ];
     }
 }
