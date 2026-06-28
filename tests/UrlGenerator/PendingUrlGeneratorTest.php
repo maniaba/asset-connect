@@ -11,7 +11,6 @@ use Maniaba\AssetConnect\Config\Asset as AssetConfig;
 use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Maniaba\AssetConnect\Pending\PendingAsset;
 use Maniaba\AssetConnect\UrlGenerator\PendingUrlGenerator;
-use Override;
 use Tests\Support\Config\TestAssetConfig;
 use Tests\Support\UrlGenerator\RoutingTestUrlGenerator;
 
@@ -23,35 +22,28 @@ final class PendingUrlGeneratorTest extends CIUnitTestCase
     private string $tempFilePath;
     private PendingAsset $pendingAsset;
 
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
-
         Factories::injectMock('config', AssetConfig::class, new TestAssetConfig());
         Factories::injectMock('config', 'Asset', new TestAssetConfig());
         Services::reset();
         Services::routes()->loadRoutes();
-
         $tempFilePath = tempnam(sys_get_temp_dir(), 'pending_url_generator_');
         $this->assertIsString($tempFilePath);
         $this->tempFilePath = $tempFilePath;
         file_put_contents($this->tempFilePath, 'pending url content');
-
         $this->pendingAsset = PendingAsset::createFromFile($this->tempFilePath);
         $this->pendingAsset->setId('pending-url-id');
         $this->pendingAsset->usingFileName('pending-url.txt');
     }
 
-    #[Override]
     protected function tearDown(): void
     {
         if (is_file($this->tempFilePath)) {
             unlink($this->tempFilePath);
         }
-
         Factories::reset('config');
-
         parent::tearDown();
     }
 
@@ -122,7 +114,7 @@ final class PendingUrlGeneratorTest extends CIUnitTestCase
         } catch (InvalidArgumentException $exception) {
             $this->assertStringContainsString(
                 'must implement the PendingUrlGeneratorInterface',
-                $exception->errors[0],
+                (string) $exception->errors[0],
             );
 
             return;

@@ -12,7 +12,6 @@ use Maniaba\AssetConnect\Pending\DefaultPendingStorage;
 use Maniaba\AssetConnect\Pending\PendingAsset;
 use Maniaba\AssetConnect\Repositories\Interfaces\AssetRepositoryInterface;
 use Maniaba\AssetConnect\Services\AssetAccessService;
-use Override;
 use Tests\Support\Config\TestAssetConfig;
 
 /**
@@ -23,15 +22,12 @@ final class AssetAccessServiceTest extends CIUnitTestCase
     private string $storageRoot;
     private string $sourcePath;
 
-    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
-
         $this->storageRoot = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR)
             . DIRECTORY_SEPARATOR
             . 'asset-connect-access-service-test-' . bin2hex(random_bytes(4));
-
         $config                       = new TestAssetConfig();
         $config->pendingSecurityToken = null;
         $config->storages             = [
@@ -41,31 +37,25 @@ final class AssetAccessServiceTest extends CIUnitTestCase
                 'visibility' => 'protected',
             ],
         ];
-
         Factories::injectMock('config', AssetConfig::class, $config);
         Factories::injectMock('config', 'Asset', $config);
-
         $sourcePath = tempnam(sys_get_temp_dir(), 'asset_access_pending_');
         $this->assertIsString($sourcePath);
         $this->sourcePath = $sourcePath;
         file_put_contents($this->sourcePath, 'pending response content');
     }
 
-    #[Override]
     protected function tearDown(): void
     {
         if (is_file($this->sourcePath)) {
             unlink($this->sourcePath);
         }
-
         if (is_dir($this->storageRoot)) {
             helper('filesystem');
             delete_files($this->storageRoot, true, true, true);
             @rmdir($this->storageRoot);
         }
-
         Factories::reset('config');
-
         parent::tearDown();
     }
 
