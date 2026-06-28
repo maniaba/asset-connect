@@ -7,11 +7,13 @@ namespace Tests\Services;
 use CodeIgniter\Config\Factories;
 use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\AssetConnect\Config\Asset as AssetConfig;
+use Maniaba\AssetConnect\Enums\AssetVisibility;
 use Maniaba\AssetConnect\Exceptions\PageException;
 use Maniaba\AssetConnect\Pending\DefaultPendingStorage;
 use Maniaba\AssetConnect\Pending\PendingAsset;
 use Maniaba\AssetConnect\Repositories\Interfaces\AssetRepositoryInterface;
 use Maniaba\AssetConnect\Services\AssetAccessService;
+use Maniaba\AssetConnect\Storage\Interfaces\StorageDiskInterface;
 use Tests\Support\Config\TestAssetConfig;
 
 /**
@@ -72,6 +74,44 @@ final class AssetAccessServiceTest extends CIUnitTestCase
         $this->assertSame(strlen('pending response content'), $response->getContentLength());
         $this->assertSame((string) strlen('pending response content'), $response->getHeaderLine('Content-Length'));
         $this->assertNotSame('', $response->getHeaderLine('Last-Modified'));
+    }
+
+    public function testHandlePendingAssetRequestStreamsRemotePendingStorageToTemporaryFile(): void
+    {
+        $disk = $this->createMock(StorageDiskInterface::class);
+        $disk->method('visibility')->willReturn(AssetVisibility::PROTECTED);
+        $disk->method('fileExists')->willReturn(true);
+        $disk->method('read')->willReturn((string) json_encode([
+            'id'        => 'remote-pending-id',
+            'file_name' => 'remote-pending.txt',
+            'mime_type' => 'text/plain',
+            'size'      => strlen('remote pending content'),
+        ]));
+        $disk->method('readStream')->willReturnCallback(static function () {
+            $stream = fopen('php://temp', 'rb+');
+            fwrite($stream, 'remote pending content');
+            rewind($stream);
+
+            return $stream;
+        });
+        $disk->expects($this->never())->method('localPath');
+
+        $config                       = new TestAssetConfig();
+        $config->pendingSecurityToken = null;
+        $config->storages             = [
+            'protected' => [
+                'disk'       => $disk,
+                'visibility' => 'protected',
+            ],
+        ];
+        Factories::injectMock('config', AssetConfig::class, $config);
+        Factories::injectMock('config', 'Asset', $config);
+
+        $service  = new AssetAccessService($this->createStub(AssetRepositoryInterface::class));
+        $response = $service->handlePendingAssetRequest('remote-pending-id');
+
+        $this->assertSame(strlen('remote pending content'), $response->getContentLength());
+        $this->assertSame('text/plain; charset=UTF-8', $response->getHeaderLine('Content-Type'));
     }
 
     public function testHandlePendingAssetRequestThrowsWhenPendingAssetIsMissing(): void

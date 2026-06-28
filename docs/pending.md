@@ -118,7 +118,7 @@ Stored pending assets can be served through AssetConnect routes before they are 
 /assets/pending/{pendingId}/{filename}
 ```
 
-The route uses `PendingAssetManager::fetchById()`, so pending TTL and the configured pending security token provider are still enforced. The response is inline by default for previews. Add `?download=force` to force a browser download.
+The route uses `PendingAssetManager::fetchById()`, so pending TTL and the configured pending security token provider are still enforced. `DefaultPendingStorage` supports remote/protected disks by streaming the pending file into a temporary local source before the response is built. Custom `PendingStorageInterface` implementations should do the same and return a `PendingAsset` backed by a readable local temporary file. The response is inline by default for previews. Add `?download=force` to force a browser download.
 
 ```php
 use Maniaba\AssetConnect\Pending\PendingAsset;

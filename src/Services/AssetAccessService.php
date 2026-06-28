@@ -106,6 +106,8 @@ final readonly class AssetAccessService implements AssetAccessServiceInterface
             throw PageException::forPendingAssetNotFound($pendingAssetId);
         }
 
+        // DefaultPendingStorage streams remote/protected pending files into a
+        // local temporary file before returning the PendingAsset.
         $sourcePath = $pendingAsset->file->getRealPath();
 
         if (! is_string($sourcePath) || ! is_file($sourcePath)) {
