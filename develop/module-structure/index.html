@@ -2142,7 +2142,7 @@
 <tbody>
 <tr>
 <td><code>AssetConnectController.php</code></td>
-<td>Serves protected and temporary asset routes by delegating authorization and response creation to <code>AssetAccessService</code>.</td>
+<td>Serves protected, temporary, and pending asset routes by delegating authorization and response creation to <code>AssetAccessService</code>.</td>
 </tr>
 </tbody>
 </table>
@@ -2441,12 +2441,20 @@
 </thead>
 <tbody>
 <tr>
+<td><code>Interfaces/PendingUrlGeneratorInterface.php</code></td>
+<td>Optional contract for URL generators that support pending asset preview/download routes.</td>
+</tr>
+<tr>
 <td><code>Interfaces/UrlGeneratorInterface.php</code></td>
-<td>Contract: <code>getUrl()</code>, <code>getUrlRelative()</code>, <code>getTemporaryUrl()</code>, <code>getTemporaryUrlRelative()</code>.</td>
+<td>Contract for registering route-backed asset URLs and returning route parameters.</td>
 </tr>
 <tr>
 <td><code>DefaultUrlGenerator.php</code></td>
-<td>Registers legacy/controller routes for temporary or custom URL generation.</td>
+<td>Registers controller routes for protected, temporary, and pending URL generation.</td>
+</tr>
+<tr>
+<td><code>PendingUrlGenerator.php</code></td>
+<td>Generates pending asset preview/download URLs from the configured URL generator.</td>
 </tr>
 <tr>
 <td><code>TempUrlToken.php</code></td>

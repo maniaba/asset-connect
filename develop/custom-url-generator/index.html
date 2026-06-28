@@ -1427,6 +1427,17 @@ interface UrlGeneratorInterface
 <li><code>asset-connect.temporary</code></li>
 <li><code>asset-connect.temporary_variant</code></li>
 </ul>
+<p>Pending asset preview/download URLs are supported by the default generator. A custom generator must also implement <code>PendingUrlGeneratorInterface</code> when it wants <code>PendingAsset::getPreviewUrl()</code> and <code>PendingAsset::getDownloadUrl()</code> support:</p>
+<pre class="highlight"><code class="language-php">use Maniaba\AssetConnect\Pending\PendingAsset;
+
+interface PendingUrlGeneratorInterface
+{
+    public static function pendingParams(PendingAsset $pendingAsset): array;
+}</code></pre>
+<p>The pending params array must contain:</p>
+<ul>
+<li><code>asset-connect.pending</code></li>
+</ul>
 <h2 id="example">Example</h2>
 <pre class="highlight"><code class="language-php">&lt;?php
 
@@ -1438,9 +1449,11 @@ use CodeIgniter\Router\RouteCollection;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\AssetVariants\AssetVariant;
 use Maniaba\AssetConnect\Controllers\AssetConnectController;
+use Maniaba\AssetConnect\Pending\PendingAsset;
+use Maniaba\AssetConnect\UrlGenerator\Interfaces\PendingUrlGeneratorInterface;
 use Maniaba\AssetConnect\UrlGenerator\Interfaces\UrlGeneratorInterface;
 
-final class CustomUrlGenerator implements UrlGeneratorInterface
+final class CustomUrlGenerator implements UrlGeneratorInterface, PendingUrlGeneratorInterface
 {
     public static function routes(RouteCollection &amp;$routes): void
     {
@@ -1464,6 +1477,11 @@ final class CustomUrlGenerator implements UrlGeneratorInterface
                 'priority' =&gt; 100,
                 'as'       =&gt; 'asset-connect.temporary_variant',
             ]);
+
+            $routes-&gt;get('pending/(:segment)/(:segment)', [AssetConnectController::class, 'pending/$1'], [
+                'priority' =&gt; 100,
+                'as'       =&gt; 'asset-connect.pending',
+            ]);
         });
     }
 
@@ -1476,6 +1494,13 @@ final class CustomUrlGenerator implements UrlGeneratorInterface
             'asset-connect.temporary_variant' =&gt; [$token, $variant?-&gt;name, $variant?-&gt;file_name],
         ];
     }
+
+    public static function pendingParams(PendingAsset $pendingAsset): array
+    {
+        return [
+            'asset-connect.pending' =&gt; [$pendingAsset-&gt;id, $pendingAsset-&gt;file_name],
+        ];
+    }
 }</code></pre>
 <p>This generator creates route-backed URLs like:</p>
 <ul>
@@ -1483,6 +1508,7 @@ final class CustomUrlGenerator implements UrlGeneratorInterface
 <li>Protected variants: <code>/files/view/{assetId}/variant/{variantName}/{filename}</code></li>
 <li>Temporary assets: <code>/files/temporary/{token}/{filename}</code></li>
 <li>Temporary variants: <code>/files/temporary/{token}/variant/{variantName}/{filename}</code></li>
+<li>Pending assets: <code>/files/pending/{pendingId}/{filename}</code></li>
 </ul>
 <h2 id="configuration">Configuration</h2>
 <p>Set the generator in <code>Config\Asset</code>:</p>
@@ -1495,7 +1521,7 @@ final class Asset extends BaseAsset
 }</code></pre>
 <h2 id="notes">Notes</h2>
 <p>Public disks still return direct storage URLs from the disk configuration. To change public URLs, configure the disk's <code>public_url</code> or provide a Flysystem adapter with public URL support.</p>
-<p>Protected disks and temporary URLs use AssetConnect routes, so authorization and HMAC temporary-token validation continue to run through <code>AssetConnectController</code>.</p>
+<p>Protected disks, temporary URLs, and pending preview/download URLs use AssetConnect routes, so authorization and HMAC temporary-token validation continue to run through <code>AssetConnectController</code>.</p>
 
 
 

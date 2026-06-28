@@ -1153,6 +1153,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#pending-preview-and-download-urls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pending Preview and Download URLs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#creating-pending-assets" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1978,6 +1989,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#pending-preview-and-download-urls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pending Preview and Download URLs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#creating-pending-assets" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2589,6 +2611,16 @@
 <td>string|null</td>
 <td>Internal pending security digest/token assigned by <code>PendingAssetManager</code> when a token provider is configured</td>
 </tr>
+<tr>
+<td><code>preview_url</code></td>
+<td>string</td>
+<td>Route URL that serves the pending file inline when the asset has an ID</td>
+</tr>
+<tr>
+<td><code>download_url</code></td>
+<td>string</td>
+<td>Route URL that serves the pending file as a forced download when the asset has an ID</td>
+</tr>
 </tbody>
 </table>
 <h3 id="available-methods">Available Methods</h3>
@@ -2640,6 +2672,22 @@
 <td><code>setSecurityToken(?string $token)</code></td>
 <td>Sets the security token on the <code>PendingAsset</code> (used internally by <code>PendingAssetManager</code>/storage after token generation)</td>
 </tr>
+<tr>
+<td><code>getPreviewUrl()</code></td>
+<td>Returns the inline preview route URL for a stored pending asset</td>
+</tr>
+<tr>
+<td><code>getDownloadUrl()</code></td>
+<td>Returns the force-download route URL for a stored pending asset</td>
+</tr>
+<tr>
+<td><code>getPreviewUrlRelative()</code></td>
+<td>Returns the relative inline preview route URL</td>
+</tr>
+<tr>
+<td><code>getDownloadUrlRelative()</code></td>
+<td>Returns the relative force-download route URL</td>
+</tr>
 </tbody>
 </table>
 <h4 id="creation-methods-static">Creation Methods (Static)</h4>
@@ -2676,6 +2724,21 @@
 <h3 id="defaultpendingstorage">DefaultPendingStorage</h3>
 <p>Default protected Flysystem storage implementation for storing pending assets.</p>
 <p><strong>Namespace:</strong> <code>Maniaba\AssetConnect\Pending\DefaultPendingStorage</code></p>
+<h2 id="pending-preview-and-download-urls">Pending Preview and Download URLs</h2>
+<p>Stored pending assets can be served through AssetConnect routes before they are attached to an entity. The default route is:</p>
+<pre class="highlight"><code class="language-text">/assets/pending/{pendingId}/{filename}</code></pre>
+<p>The route uses <code>PendingAssetManager::fetchById()</code>, so pending TTL and the configured pending security token provider are still enforced. <code>DefaultPendingStorage</code> supports remote/protected disks by streaming the pending file into a temporary local source before the response is built. Custom <code>PendingStorageInterface</code> implementations should do the same and return a <code>PendingAsset</code> backed by a readable local temporary file. The response is inline by default for previews. Add <code>?download=force</code> to force a browser download.</p>
+<pre class="highlight"><code class="language-php">use Maniaba\AssetConnect\Pending\PendingAsset;
+
+$result = PendingAsset::createFromRequest('file');
+$pending = $result['file'][0];
+$pending-&gt;store();
+
+return $this-&gt;response-&gt;setJSON([
+    'pending' =&gt; $pending,
+    'preview_url' =&gt; $pending-&gt;getPreviewUrl(),
+    'download_url' =&gt; $pending-&gt;getDownloadUrl(),
+]);</code></pre>
 <h2 id="creating-pending-assets">Creating Pending Assets</h2>
 <p>Pending assets are created using factory methods of the <code>PendingAsset</code> class.</p>
 <h3 id="createfromfile">createFromFile</h3>
