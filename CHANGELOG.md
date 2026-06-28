@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Added route-backed pending asset preview and download URLs, including the `assets/pending/{pendingId}/{filename}` route, `PendingAsset` URL helpers, and serialized `preview_url`/`download_url` fields.
+
 ### Changed
 - The default asset file name sanitizer now also applies CodeIgniter's `sanitize_filename()` helper and filters the result through `Config\App::$permittedURIChars`. This prevents newly stored asset file names from producing protected or temporary asset URLs that CodeIgniter rejects with a 400 response because of disallowed URI characters such as `&` or encoded equivalents.
 
