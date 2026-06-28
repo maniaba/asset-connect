@@ -5,10 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [v3.1.0](https://github.com/maniaba/asset-connect/tree/v3.1.0) - 2026-06-28
 
 ### Added
 - Added route-backed pending asset preview and download URLs, including the `assets/pending/{pendingId}/{filename}` route, `PendingAsset` URL helpers, and serialized `preview_url`/`download_url` fields.
+- Added localized `Asset.exception.pending_asset_not_found` messages for all bundled languages.
 
 ### Changed
 - The default asset file name sanitizer now also applies CodeIgniter's `sanitize_filename()` helper and filters the result through `Config\App::$permittedURIChars`. This prevents newly stored asset file names from producing protected or temporary asset URLs that CodeIgniter rejects with a 400 response because of disallowed URI characters such as `&` or encoded equivalents.
