@@ -17,5 +17,6 @@ return [
         'page_forbidden'          => 'ඔබට මෙම පිටුවට ප්‍රවේශ වීමට අවසර නැත.',
         'variant_not_found'       => 'ඉල්ලූ විකල්පය "{variantName}" හමු නොවීය.',
         'token_invalid'           => 'සපයා ඇති ටෝකනය වලංගු නොවේ හෝ කල් ඉකුත් වී ඇත.',
+        'pending_asset_not_found' => 'ID "{id}" සහිත බලාපොරොත්තු වන asset එක සොයාගත නොහැක.',
     ],
 ];

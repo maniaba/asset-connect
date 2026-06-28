@@ -49,4 +49,23 @@ final class AssetConnectController extends Controller
 
         return $response;
     }
+
+    public function pending(string $pendingAssetId): ResponseInterface
+    {
+        /** @var AssetAccessService $service */
+        $service = service('assetAccessService');
+
+        $token = $this->request->getGet('token');
+        $token = is_string($token) && $token !== '' ? $token : null;
+
+        $response = $service->handlePendingAssetRequest($pendingAssetId, $token);
+
+        $needsDownload = $this->request->getGet('download') !== null;
+
+        if (! $needsDownload) {
+            $response->inline();
+        }
+
+        return $response;
+    }
 }

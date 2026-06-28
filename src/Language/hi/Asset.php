@@ -17,5 +17,6 @@ return [
         'page_forbidden'          => 'आपको इस पृष्ठ तक पहुंचने की अनुमति नहीं है।',
         'variant_not_found'       => 'अनुरोधित वेरिएंट "{variantName}" नहीं मिला।',
         'token_invalid'           => 'प्रदान किया गया टोकन अमान्य है या समाप्त हो गया है।',
+        'pending_asset_not_found' => 'ID "{id}" वाला लंबित एसेट नहीं मिला।',
     ],
 ];

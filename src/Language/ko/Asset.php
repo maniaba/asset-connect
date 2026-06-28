@@ -17,5 +17,6 @@ return [
         'page_forbidden'          => '이 페이지에 접근할 권한이 없습니다.',
         'variant_not_found'       => '요청한 변형 "{variantName}"을(를) 찾을 수 없습니다.',
         'token_invalid'           => '제공된 토큰이 유효하지 않거나 만료되었습니다.',
+        'pending_asset_not_found' => 'ID "{id}"인 대기 중 에셋을 찾을 수 없습니다.',
     ],
 ];

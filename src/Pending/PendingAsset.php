@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Maniaba\AssetConnect\Pending;
 
 use AllowDynamicProperties;
-use CodeIgniter\Entity\Entity;
 use CodeIgniter\Files\File;
 use CodeIgniter\HTTP\Files\UploadedFile;
 use CodeIgniter\I18n\Time;
@@ -17,8 +16,10 @@ use Maniaba\AssetConnect\Exceptions\FileException;
 use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Maniaba\AssetConnect\Exceptions\PendingAssetException;
 use Maniaba\AssetConnect\Pending\Interfaces\PendingStorageInterface;
+use Maniaba\AssetConnect\UrlGenerator\PendingUrlGenerator;
 use Override;
 use Random\RandomException;
+use Throwable;
 use TypeError;
 
 /**
@@ -35,6 +36,7 @@ use TypeError;
  * @property-read int                  $order
  * @property-read bool                 $preserve_original
  * @property-read string|null          $security_token    Internal pending security digest/token.
+ * @property-read int                  $size
  * @property-read int                  $ttl
  * @property-read Time                 $updated_at
  */
@@ -121,6 +123,8 @@ final class PendingAsset implements AssetDefinitionInterface, JsonSerializable
             'ttl'                 => $this->ttl,
             'custom_properties'   => $this->custom_properties,
             'security_token'      => $this->security_token,
+            'preview_url'         => $this->safeUrl(false),
+            'download_url'        => $this->safeUrl(true),
         ];
     }
 
@@ -277,6 +281,36 @@ final class PendingAsset implements AssetDefinitionInterface, JsonSerializable
         return $this;
     }
 
+    public function getUrl(bool $forceDownload = false): string
+    {
+        return PendingUrlGenerator::create($this)->getUrl($forceDownload);
+    }
+
+    public function getUrlRelative(bool $forceDownload = false): string
+    {
+        return PendingUrlGenerator::toRelativeUrl($this->getUrl($forceDownload));
+    }
+
+    public function getPreviewUrl(): string
+    {
+        return $this->getUrl();
+    }
+
+    public function getPreviewUrlRelative(): string
+    {
+        return $this->getUrlRelative();
+    }
+
+    public function getDownloadUrl(): string
+    {
+        return $this->getUrl(true);
+    }
+
+    public function getDownloadUrlRelative(): string
+    {
+        return $this->getUrlRelative(true);
+    }
+
     public static function createFromString(string $string, array|string $attributes = []): self
     {
         $tempFilePath = tempnam(sys_get_temp_dir(), 'pending_asset_');
@@ -299,5 +333,14 @@ final class PendingAsset implements AssetDefinitionInterface, JsonSerializable
         $manager = PendingAssetManager::make($storage);
 
         $manager->store($this, $ttlSeconds);
+    }
+
+    private function safeUrl(bool $forceDownload): string
+    {
+        try {
+            return $this->getUrl($forceDownload);
+        } catch (Throwable) {
+            return '';
+        }
     }
 }

@@ -17,5 +17,6 @@ return [
         'page_forbidden'          => 'U heeft geen toestemming om deze pagina te bekijken.',
         'variant_not_found'       => 'De gevraagde variant "{variantName}" is niet gevonden.',
         'token_invalid'           => 'De opgegeven token is ongeldig of verlopen.',
+        'pending_asset_not_found' => 'Het wachtende asset met ID "{id}" is niet gevonden.',
     ],
 ];

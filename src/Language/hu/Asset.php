@@ -17,5 +17,6 @@ return [
         'page_forbidden'          => 'Nincs jogosultsága az oldal megtekintéséhez.',
         'variant_not_found'       => 'A kért "{variantName}" változat nem található.',
         'token_invalid'           => 'A megadott token érvénytelen vagy lejárt.',
+        'pending_asset_not_found' => 'A(z) "{id}" azonosítójú függőben lévő asset nem található.',
     ],
 ];

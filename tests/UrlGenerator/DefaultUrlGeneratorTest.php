@@ -9,6 +9,7 @@ use CodeIgniter\Test\CIUnitTestCase;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\AssetVariants\AssetVariant;
 use Maniaba\AssetConnect\Controllers\AssetConnectController;
+use Maniaba\AssetConnect\Pending\PendingAsset;
 use Maniaba\AssetConnect\UrlGenerator\DefaultUrlGenerator;
 
 /**
@@ -51,7 +52,7 @@ final class DefaultUrlGeneratorTest extends CIUnitTestCase
         // Call the group callback with a mock RouteCollection to verify it sets up the routes correctly
         $mockGroupRoutes = $this->createMock(RouteCollection::class);
 
-        // Setup expectations for the get method to be called 4 times for the 4 routes
+        // Setup expectations for the get method to be called for all default routes
         // Define the expected parameters for each call
         $expectedCalls = [
             [
@@ -74,12 +75,17 @@ final class DefaultUrlGeneratorTest extends CIUnitTestCase
                 'handler' => [AssetConnectController::class, 'temporary/$1'],
                 'options' => ['priority' => 100, 'as' => 'asset-connect.temporary_variant'],
             ],
+            [
+                'pattern' => 'pending/(:segment)/(:segment)',
+                'handler' => [AssetConnectController::class, 'pending/$1'],
+                'options' => ['priority' => 100, 'as' => 'asset-connect.pending'],
+            ],
         ];
 
         // Counter to track which call we're on
         $callIndex = 0;
 
-        $mockGroupRoutes->expects($this->exactly(4))
+        $mockGroupRoutes->expects($this->exactly(5))
             ->method('get')
             ->willReturnCallback(function (string $pattern, $handler, ?array $options) use (&$callIndex, $expectedCalls, $mockGroupRoutes) {
                 $expected = $expectedCalls[$callIndex];
@@ -94,6 +100,29 @@ final class DefaultUrlGeneratorTest extends CIUnitTestCase
 
         // Call the group callback
         $groupCallback($mockGroupRoutes);
+    }
+
+    public function testPendingParams(): void
+    {
+        $temporaryPath = tempnam(sys_get_temp_dir(), 'pending_url_params_');
+        $this->assertIsString($temporaryPath);
+        file_put_contents($temporaryPath, 'pending content');
+
+        try {
+            $pendingAsset = PendingAsset::createFromFile($temporaryPath);
+            $pendingAsset->setId('pending-id');
+            $pendingAsset->usingFileName('pending-file.txt');
+
+            $params = DefaultUrlGenerator::pendingParams($pendingAsset);
+
+            $this->assertSame([
+                'asset-connect.pending' => ['pending-id', 'pending-file.txt'],
+            ], $params);
+        } finally {
+            if (is_file($temporaryPath)) {
+                unlink($temporaryPath);
+            }
+        }
     }
 
     /**
