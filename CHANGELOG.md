@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- Fixed queued garbage cleanup for soft-deleted assets so variant files are removed from the storage disk loaded from their metadata, and cleanup failures do not fail otherwise successful queue jobs.
+
 ## [v3.1.0](https://github.com/maniaba/asset-connect/tree/v3.1.0) - 2026-06-28
 
 ### Added
