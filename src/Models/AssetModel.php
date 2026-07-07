@@ -79,8 +79,6 @@ class AssetModel extends BaseModel
      * Filter assets by name
      *
      * @param string $name The name to filter by
-     *
-     * @return $this
      */
     public function filterByName(string $name): self
     {
@@ -91,8 +89,6 @@ class AssetModel extends BaseModel
      * Filter assets by file name
      *
      * @param string $fileName The file name to filter by
-     *
-     * @return $this
      */
     public function filterByFileName(string $fileName): self
     {
@@ -103,8 +99,6 @@ class AssetModel extends BaseModel
      * Filter assets by MIME type
      *
      * @param string $mimeType The MIME type to filter by
-     *
-     * @return $this
      */
     public function filterByMimeType(string $mimeType): self
     {
@@ -116,8 +110,6 @@ class AssetModel extends BaseModel
      *
      * @param int    $size     The size to filter by
      * @param string $operator Comparison operator (=, >, <, >=, <=)
-     *
-     * @return $this
      */
     public function filterBySize(int $size, string $operator = '='): self
     {
@@ -128,8 +120,6 @@ class AssetModel extends BaseModel
      * Filter assets by path
      *
      * @param string $path The path to filter by
-     *
-     * @return $this
      */
     public function filterByPath(string $path): self
     {
@@ -140,8 +130,6 @@ class AssetModel extends BaseModel
      * Filter assets by storage disk name
      *
      * @param string $storage The configured storage disk name
-     *
-     * @return $this
      */
     public function filterByStorage(string $storage): self
     {
@@ -152,8 +140,6 @@ class AssetModel extends BaseModel
      * Filter assets by order
      *
      * @param int $order The order to filter by
-     *
-     * @return $this
      */
     public function filterByOrder(int $order): self
     {
@@ -200,8 +186,6 @@ class AssetModel extends BaseModel
      * @param string $key      The JSON key to filter by (can use dot notation for nested properties)
      * @param mixed  $value    The value to filter by
      * @param string $operator Comparison operator (=, >, <, >=, <=, LIKE, etc.)
-     *
-     * @return $this
      */
     public function filterByProperty(string $key, $value, string $operator = '='): self
     {
@@ -245,8 +229,6 @@ class AssetModel extends BaseModel
      * - Others: Falls back to LIKE comparison (less efficient)
      *
      * @param string $key The JSON key to check for existence (can use dot notation for nested properties)
-     *
-     * @return $this
      */
     public function filterByPropertyExists(string $key): self
     {
@@ -291,8 +273,6 @@ class AssetModel extends BaseModel
      *
      * @param string $arrayKey The JSON array key (can use dot notation for nested arrays)
      * @param mixed  $value    The value to check for in the array
-     *
-     * @return $this
      */
     public function filterByPropertyContains(string $arrayKey, $value): self
     {
@@ -331,8 +311,6 @@ class AssetModel extends BaseModel
      *
      * @param string $date     The date to filter by (in format matching dateFormat)
      * @param string $operator Comparison operator (=, >, <, >=, <=)
-     *
-     * @return $this
      */
     public function filterByCreatedAt(string $date, string $operator = '='): self
     {
@@ -344,8 +322,6 @@ class AssetModel extends BaseModel
      *
      * @param string $date     The date to filter by (in format matching dateFormat)
      * @param string $operator Comparison operator (=, >, <, >=, <=)
-     *
-     * @return $this
      */
     public function filterByUpdatedAt(string $date, string $operator = '='): self
     {
@@ -356,8 +332,6 @@ class AssetModel extends BaseModel
      * Filter assets by name pattern (using LIKE)
      *
      * @param string $pattern The pattern to search for
-     *
-     * @return $this
      */
     public function filterByNameLike(string $pattern): self
     {
@@ -368,8 +342,6 @@ class AssetModel extends BaseModel
      * Filter assets by file name pattern (using LIKE)
      *
      * @param string $pattern The pattern to search for
-     *
-     * @return $this
      */
     public function filterByFileNameLike(string $pattern): self
     {
@@ -381,8 +353,6 @@ class AssetModel extends BaseModel
      *
      * @param int $minSize The minimum size
      * @param int $maxSize The maximum size
-     *
-     * @return $this
      */
     public function filterBySizeRange(int $minSize, int $maxSize): self
     {
@@ -395,8 +365,6 @@ class AssetModel extends BaseModel
      * @param string $startDate The start date (in format matching dateFormat)
      * @param string $endDate   The end date (in format matching dateFormat)
      * @param string $dateField The date field to filter by (created_at or updated_at)
-     *
-     * @return $this
      */
     public function filterByDateRange(string $startDate, string $endDate, string $dateField = 'created_at'): self
     {
@@ -407,8 +375,6 @@ class AssetModel extends BaseModel
      * Filter assets by collection
      *
      * @param AssetCollectionDefinitionInterface|class-string<AssetCollectionDefinitionInterface> $collection The collection to filter by
-     *
-     * @return $this
      */
     public function whereCollection(AssetCollectionDefinitionInterface|string $collection): self
     {
@@ -430,8 +396,6 @@ class AssetModel extends BaseModel
      * Filter assets by entity type
      *
      * @param class-string<Entity&UseAssetConnectTrait>|Entity&UseAssetConnectTrait $entityType The entity type to filter by
-     *
-     * @return $this
      */
     public function whereEntityType(Entity|string $entityType): self
     {
