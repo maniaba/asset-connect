@@ -50,8 +50,6 @@ final class AssetConnectValidator
      *
      * @param string                                                                              $fieldName            The field name
      * @param AssetCollectionDefinitionInterface|class-string<AssetCollectionDefinitionInterface> $collectionDefinition The collection definition for this field
-     *
-     * @return $this
      */
     public function setFieldCollectionDefinition(string $fieldName, AssetCollectionDefinitionInterface|string $collectionDefinition): self
     {
