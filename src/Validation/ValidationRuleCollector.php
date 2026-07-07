@@ -34,8 +34,6 @@ final class ValidationRuleCollector implements AssetCollectionSetterInterface
      * Set allowed file extensions
      *
      * @param AssetExtension|string ...$extensions The allowed file extensions
-     *
-     * @return $this
      */
     #[Override]
     public function allowedExtensions(AssetExtension|string ...$extensions): static
@@ -55,8 +53,6 @@ final class ValidationRuleCollector implements AssetCollectionSetterInterface
      * Set allowed MIME types
      *
      * @param AssetMimeType|string ...$mimeTypes The allowed MIME types
-     *
-     * @return $this
      */
     #[Override]
     public function allowedMimeTypes(AssetMimeType|string ...$mimeTypes): static
@@ -76,8 +72,6 @@ final class ValidationRuleCollector implements AssetCollectionSetterInterface
      * Set maximum number of items in the collection
      *
      * @param int $maximumNumberOfItemsInCollection The maximum number of items
-     *
-     * @return $this
      */
     #[Override]
     public function onlyKeepLatest(int $maximumNumberOfItemsInCollection): static
@@ -124,8 +118,6 @@ final class ValidationRuleCollector implements AssetCollectionSetterInterface
      * Set maximum file size
      *
      * @param float|int $maxFileSize The maximum file size in bytes
-     *
-     * @return $this
      */
     #[Override]
     public function setMaxFileSize(float|int $maxFileSize): static
@@ -140,8 +132,6 @@ final class ValidationRuleCollector implements AssetCollectionSetterInterface
 
     /**
      * Set the collection to only allow a single file
-     *
-     * @return $this
      */
     #[Override]
     public function singleFileCollection(): static
@@ -158,8 +148,6 @@ final class ValidationRuleCollector implements AssetCollectionSetterInterface
      * Set the path generator
      *
      * @param PathGeneratorInterface $pathGenerator The path generator
-     *
-     * @return $this
      */
     #[Override]
     public function setPathGenerator(PathGeneratorInterface $pathGenerator): static
@@ -180,8 +168,6 @@ final class ValidationRuleCollector implements AssetCollectionSetterInterface
      *
      * @param int $width  The maximum width in pixels
      * @param int $height The maximum height in pixels
-     *
-     * @return $this
      */
     public function setMaxImageDimensions(int $width, int $height): static
     {
@@ -195,8 +181,6 @@ final class ValidationRuleCollector implements AssetCollectionSetterInterface
      *
      * @param int $width  The minimum width in pixels
      * @param int $height The minimum height in pixels
-     *
-     * @return $this
      */
     public function setMinImageDimensions(int $width, int $height): static
     {
@@ -207,8 +191,6 @@ final class ValidationRuleCollector implements AssetCollectionSetterInterface
 
     /**
      * Require that the file is an image
-     *
-     * @return $this
      */
     public function requireImage(): static
     {

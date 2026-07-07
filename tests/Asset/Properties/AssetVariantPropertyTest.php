@@ -144,7 +144,7 @@ final class AssetVariantPropertyTest extends CIUnitTestCase
     public function testGetVariantsConvertsArrayDataToAssetVariantInstances(): void
     {
         // Arrange
-        $variantData = ['name' => 'test_variant', 'path' => '/path/to/variant'];
+        $variantData = ['name' => 'test_variant', 'storage' => 'protected', 'path' => '/path/to/variant'];
         $this->setPrivateProperty($this->assetVariantProperty, 'properties', ['test_variant' => $variantData]);
 
         // Act
@@ -153,6 +153,7 @@ final class AssetVariantPropertyTest extends CIUnitTestCase
         // Assert
         $this->assertCount(1, $variants);
         $this->assertInstanceOf(AssetVariant::class, $variants['test_variant']);
+        $this->assertSame('protected', $variants['test_variant']->storage);
     }
 
     /**

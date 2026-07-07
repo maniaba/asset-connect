@@ -17,6 +17,7 @@ use Maniaba\AssetConnect\Events\AssetUpdated;
 use Maniaba\AssetConnect\Exceptions\AssetException;
 use Maniaba\AssetConnect\Models\AssetModel;
 use Override;
+use Throwable;
 
 /**
  * @property array{assetId: int, definition: class-string<AssetCollectionDefinitionInterface>, definitionArguments: array} $data
@@ -96,7 +97,7 @@ final class AssetConnectJob extends BaseJob implements JobInterface
         return $this->definitionInstance;
     }
 
-    // clean garbage, soft delete assets from database
+    // Clean storage files for soft-deleted assets, then remove their database rows.
     public function cleanGarbage(): void
     {
         $deletedAssets = AssetModel::init(false)->onlyDeleted()->findAll(1000);
@@ -105,13 +106,22 @@ final class AssetConnectJob extends BaseJob implements JobInterface
         }
 
         foreach ($deletedAssets as $asset) {
-            $variants = $asset->metadata->assetVariant->getVariants();
+            try {
+                $variants = $asset->metadata->assetVariant->getVariants();
 
-            foreach ($variants as $variant) {
-                AssetPersistenceManager::removeStoragePath($variant->storage, $variant->path);
+                foreach ($variants as $variant) {
+                    AssetPersistenceManager::removeStoragePath($variant->storage, $variant->path);
+                }
+
+                AssetPersistenceManager::removeStoragePath($asset->storage, $asset->path);
+            } catch (Throwable $exception) {
+                log_message('error', 'Asset garbage cleanup failed for asset ID {id}: {message}', [
+                    'id'      => $asset->id,
+                    'message' => $exception->getMessage(),
+                ]);
+
+                continue;
             }
-
-            AssetPersistenceManager::removeStoragePath($asset->storage, $asset->path);
 
             AssetModel::init(false)->delete((int) $asset->id, true);
 
