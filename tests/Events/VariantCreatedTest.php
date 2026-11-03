@@ -17,11 +17,6 @@ use ReflectionMethod;
  */
 final class VariantCreatedTest extends CIUnitTestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-    }
-
     /**
      * Test that VariantCreated implements AssetEventInterface
      */

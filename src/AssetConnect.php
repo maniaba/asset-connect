@@ -217,10 +217,8 @@ final class AssetConnect implements Serializable
 
     public function addAsset(Asset $asset): void
     {
-        if (! isset($this->assets[$asset->entity_id])) {
-            // Initialize the array for this entity ID if it doesn't exist
-            $this->assets[$asset->entity_id] = [];
-        }
+        // Initialize the array for this entity ID if it doesn't exist
+        $this->assets[$asset->entity_id] ??= [];
 
         $this->assets[$asset->entity_id][$asset->id] = $asset;
     }

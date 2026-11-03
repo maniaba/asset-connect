@@ -17,11 +17,6 @@ use Maniaba\AssetConnect\UrlGenerator\DefaultUrlGenerator;
  */
 final class DefaultUrlGeneratorTest extends CIUnitTestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-    }
-
     /**
      * Test routes method
      */

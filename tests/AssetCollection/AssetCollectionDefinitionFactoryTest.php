@@ -16,11 +16,6 @@ use stdClass;
  */
 final class AssetCollectionDefinitionFactoryTest extends CIUnitTestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-    }
-
     /**
      * Test validateStringClass method with valid class name
      */

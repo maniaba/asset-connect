@@ -11,8 +11,10 @@ use CodeIgniter\Test\CIUnitTestCase;
 use League\Flysystem\Filesystem;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 use Maniaba\AssetConnect\Asset\Asset;
+use Maniaba\AssetConnect\AssetVariants\AssetVariant;
 use Maniaba\AssetConnect\Exceptions\InvalidArgumentException;
 use Maniaba\AssetConnect\UrlGenerator\UrlGenerator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use ReflectionProperty;
 use stdClass;
 use Tests\Support\Config\TestAssetConfig;
@@ -41,6 +43,7 @@ final class UrlGeneratorTest extends CIUnitTestCase
                 'asset_variants' => [
                     'thumbnail' => [
                         'name'                  => 'thumbnail',
+                        'processed'             => true,
                         'storage'               => 'public',
                         'path'                  => 'uploads/variants/test_thumbnail.jpg',
                         'relative_path_for_url' => 'uploads/variants/test_thumbnail.jpg',
@@ -83,6 +86,74 @@ final class UrlGeneratorTest extends CIUnitTestCase
 
             return false;
         };
+    }
+
+    #[DataProvider('provideIncompleteVariantUrlsAreEmpty')]
+    public function testIncompleteVariantUrlsAreEmpty(bool $processed, string $storage, string $path): void
+    {
+        $this->asset->metadata->assetVariant->addAssetVariant(new AssetVariant([
+            'name'      => 'thumbnail',
+            'processed' => $processed,
+            'storage'   => $storage,
+            'path'      => $path,
+            'size'      => 512,
+        ]));
+        $before = $this->asset->metadata->assetVariant->getAssetVariant('thumbnail')->toRawArray();
+
+        $this->assertSame('', UrlGenerator::create($this->asset)->getUrl('thumbnail'));
+        $this->assertSame('', $this->asset->getUrl('thumbnail'));
+        $this->assertSame('', $this->asset->getUrl('thumbnail', true));
+        $this->assertSame('', $this->asset->getUrlRelative('thumbnail'));
+        $this->assertSame('', $this->asset->getUrlRelative('thumbnail', true));
+
+        $json = json_decode(json_encode($this->asset, JSON_THROW_ON_ERROR), true, 512, JSON_THROW_ON_ERROR);
+
+        $this->assertSame('', $json['variants']['thumbnail']['url']);
+        $this->assertSame('', $json['variants']['thumbnail']['url_relative']);
+        $this->assertSame($processed, $json['variants']['thumbnail']['processed']);
+        $this->assertSame(512, $json['variants']['thumbnail']['size']);
+        $this->assertSame($this->asset->getUrl(), $json['url']);
+        $this->assertNotSame('', $json['url']);
+        $this->assertSame($before, $this->asset->metadata->assetVariant->getAssetVariant('thumbnail')->toRawArray());
+    }
+
+    public static function provideIncompleteVariantUrlsAreEmpty(): iterable
+    {
+        yield 'missing storage' => [true, '', 'variants/preview.txt'];
+
+        yield 'missing public path' => [true, 'public', ''];
+
+        yield 'missing protected path' => [true, 'protected', ''];
+
+        yield 'pending public variant' => [false, 'public', 'variants/preview.txt'];
+
+        yield 'pending protected variant' => [false, 'protected', 'variants/preview.txt'];
+
+        yield 'empty variant' => [false, '', ''];
+    }
+
+    public function testReadyPublicVariantRetainsItsOwnUrl(): void
+    {
+        $this->assertSame(
+            'https://example.com/index.php/assets/storage/uploads/variants/test_thumbnail.jpg',
+            $this->asset->getUrl('thumbnail'),
+        );
+        $this->assertSame(
+            '/index.php/assets/storage/uploads/variants/test_thumbnail.jpg?download=force',
+            $this->asset->getUrlRelative('thumbnail', true),
+        );
+    }
+
+    public function testReadyVariantWithUnknownStorageStillThrows(): void
+    {
+        $variant = $this->asset->metadata->assetVariant->getAssetVariant('thumbnail');
+        $this->assertInstanceOf(AssetVariant::class, $variant);
+        $variant->storage = 'unknown';
+        $this->asset->metadata->assetVariant->addAssetVariant($variant);
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->asset->getUrl('thumbnail');
     }
 
     /**
@@ -196,6 +267,7 @@ final class UrlGeneratorTest extends CIUnitTestCase
                 'asset_variants' => [
                     'thumbnail' => [
                         'name'                  => 'thumbnail',
+                        'processed'             => true,
                         'storage'               => 'protected',
                         'path'                  => 'secure/variants/test_thumbnail.jpg',
                         'relative_path_for_url' => 'secure/variants/test_thumbnail.jpg',
@@ -223,6 +295,7 @@ final class UrlGeneratorTest extends CIUnitTestCase
                 'asset_variants' => [
                     'thumbnail' => [
                         'name'                  => 'thumbnail',
+                        'processed'             => true,
                         'file_name'             => 'test_thumbnail.jpg',
                         'storage'               => 'protected',
                         'path'                  => 'secure/variants/test_thumbnail.jpg',

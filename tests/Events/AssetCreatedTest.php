@@ -17,11 +17,6 @@ use ReflectionMethod;
  */
 final class AssetCreatedTest extends CIUnitTestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-    }
-
     /**
      * Test that AssetCreated implements AssetEventInterface
      */

@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Rector\Caching\ValueObject\Storage\FileCacheStorage;
 use Rector\CodeQuality\Rector\BooleanAnd\SimplifyEmptyArrayCheckRector;
 use Rector\CodeQuality\Rector\Class_\CompleteDynamicPropertiesRector;
 use Rector\CodeQuality\Rector\Empty_\SimplifyEmptyCheckOnEmptyArrayRector;
@@ -49,13 +48,12 @@ return static function (RectorConfig $rectorConfig): void {
         SetList::DEAD_CODE,
         LevelSetList::UP_TO_PHP_83,
         PHPUnitSetList::PHPUNIT_CODE_QUALITY,
-        PHPUnitSetList::PHPUNIT_100,
+        PHPUnitSetList::COMPOSER_BASED,
     ]);
 
     $rectorConfig->parallel();
 
     // Github action cache
-    $rectorConfig->cacheClass(FileCacheStorage::class);
     if (is_dir('/tmp')) {
         $rectorConfig->cacheDirectory('/tmp/rector');
     }

@@ -289,3 +289,30 @@ Two-step upload system – upload first, attach to entity later.
 |---|---|
 | `AssetConnectValidator.php` | High-level validator; maps field names → collection definitions → CI4 validation rules. Methods: `setFieldCollectionDefinition()`, `validate()`, `validateFields()`, `validateDefinedFields()`, `validateFieldsFromRequest()`, `validateRequest()`, `getRules()`, `getErrors()`. |
 | `ValidationRuleCollector.php` | Implements `AssetCollectionSetterInterface`; collects constraints and converts them to CI4 validation rule strings. |
+
+## CI tool compatibility
+
+The repository does not commit `composer.lock`, so CI resolves the versions
+allowed by `composer.json`. Reproduce analysis failures with freshly resolved
+dependencies instead of relying on an older local vendor directory. Run the full
+PHPStan analysis and Rector dry-run after tool configuration changes; the PHPUnit
+migration rules use `PHPUnitSetList::COMPOSER_BASED` alongside the code-quality
+set, so Rector selects rules supported by the installed PHPUnit version. Cache
+storage is selected by Rector; the existing `/tmp/rector` cache directory remains
+configured without the removed `cacheClass()` setter.
+
+Pending asset creation reads filesystem creation and modification timestamps
+directly from `File::getCTime()` and `File::getMTime()`. These methods do not return
+null, so null-coalescing timestamp defaults are unnecessary. File access failures
+continue to follow the underlying filesystem API behavior.
+
+Current Rector checks also simplify first-use collection initialization with
+`??=` and remove test lifecycle overrides that only call the parent method.
+`PendingAssetManager` keeps its constructor-assigned storage and token-provider
+references readonly; the injected adapters still own their mutable state.
+The owner-token deletion test declares that the no-op intentionally performs no
+assertions instead of incrementing the assertion count manually.
+
+Removing an empty lifecycle method shifts an anonymous event fixture's line in
+`AssetEventInterfaceTest`. Its existing PHPStan baseline entry follows that
+location change; the ignored finding and count remain the same.

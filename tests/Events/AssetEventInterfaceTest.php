@@ -16,11 +16,6 @@ use ReflectionType;
  */
 final class AssetEventInterfaceTest extends CIUnitTestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-    }
-
     /**
      * Test that interface defines required methods
      */

@@ -151,8 +151,8 @@ final class PendingAsset implements AssetDefinitionInterface, JsonSerializable
         $this->preserve_original = false;
         $this->custom_properties = [];
         $this->order             = 0;
-        $this->created_at        = Time::createFromTimestamp($this->file->getCTime() ?? 0);
-        $this->updated_at        = Time::createFromTimestamp($this->file->getMTime() ?? 0);
+        $this->created_at        = Time::createFromTimestamp($this->file->getCTime());
+        $this->updated_at        = Time::createFromTimestamp($this->file->getMTime());
         $this->ttl               = 0;
 
         $this->updateAttributes($attributes);
@@ -249,9 +249,7 @@ final class PendingAsset implements AssetDefinitionInterface, JsonSerializable
                     throw FileException::forInvalidFile($field);
                 }
 
-                if (! isset($pendingAssets[$field])) {
-                    $pendingAssets[$field] = [];
-                }
+                $pendingAssets[$field] ??= [];
 
                 $pendingAssets[$field][] = self::createFromFile($file);
             }

@@ -174,9 +174,7 @@ trait UseAssetConnectTrait
                     throw FileException::forInvalidFile($field);
                 }
 
-                if (! isset($uploadedFiles[$field])) {
-                    $uploadedFiles[$field] = [];
-                }
+                $uploadedFiles[$field] ??= [];
 
                 $uploadedFiles[$field][] = $file;
             }

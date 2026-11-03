@@ -93,9 +93,7 @@ final class ValidationRuleCollector implements AssetCollectionSetterInterface
 
         $request = Services::request();
         $files   = $request->getFileMultiple($name);
-        if ($files === null) {
-            $files = [$request->getFile($name)];
-        }
+        $files ??= [$request->getFile($name)];
 
         // For multiple file uploads, check the count
         if (is_array($files) && count($files) > 1) {

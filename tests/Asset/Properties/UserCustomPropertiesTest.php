@@ -12,11 +12,6 @@ use Maniaba\AssetConnect\Asset\Properties\UserCustomProperty;
  */
 final class UserCustomPropertiesTest extends CIUnitTestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-    }
-
     /**
      * Test that getName returns the correct name
      */

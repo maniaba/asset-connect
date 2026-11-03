@@ -839,3 +839,20 @@ $asset->save();
 ## Conclusion
 
 The `Asset` class is a fundamental component of CodeIgniter Asset Connect that provides a rich set of methods for working with files associated with entities in your application. By using its methods, you can access file information, manage public custom properties and backend internal properties, generate URLs, and more.
+
+## Unavailable variant URLs
+
+For an existing variant, `getUrl()` and `getUrlRelative()` return an empty string
+when `processed` is false, or its storage name or path is empty. Passing
+`forceDownload: true` also returns an empty string in this case. The original
+file is never substituted for the requested variant, regardless of file type.
+The original URL remains separately available through `getUrl()` without a
+variant name.
+
+JSON serialization keeps the variant entry, size and processing flag, with
+empty `url` and `url_relative` values for unavailable variants. Reading URLs does
+not regenerate files or repair stored metadata. Ready variants keep their own
+public storage or protected controller URLs. Unknown variant names and unknown
+nonempty storage names on ready variants still throw configuration errors.
+These availability checks apply to regular URLs; signed temporary URL behavior
+is unchanged.
