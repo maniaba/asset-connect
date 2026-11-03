@@ -18,7 +18,9 @@ trait UrlGeneratorTrait
      */
     public function getUrl(?string $variantName = null, bool $forceDownload = false): string
     {
-        return UrlGenerator::create($this)->getUrl($variantName) . ($forceDownload ? '?download=force' : '');
+        $url = UrlGenerator::create($this)->getUrl($variantName);
+
+        return $url === '' ? '' : $url . ($forceDownload ? '?download=force' : '');
     }
 
     /**

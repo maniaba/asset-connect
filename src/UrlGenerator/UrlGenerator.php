@@ -40,6 +40,10 @@ final readonly class UrlGenerator
                 throw new InvalidArgumentException("Variant '{$variantName}' does not exist for asset '{$this->asset->id}'.");
             }
 
+            if (! $variant->processed || $variant->storage === '' || $variant->path === '') {
+                return '';
+            }
+
             $storage   = $variant->storage;
             $path      = $variant->path;
             $routeName = 'asset-connect.show_variant';

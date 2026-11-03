@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- Return empty URLs for existing unprocessed variants or variants with empty storage/path metadata, preventing incomplete variants from failing asset JSON serialization. Forced-download and relative URL helpers preserve the empty result instead of substituting the original file.
+
 ## [v3.1.1](https://github.com/maniaba/asset-connect/tree/v3.1.1) - 2026-07-07
 
 ### Fixed
