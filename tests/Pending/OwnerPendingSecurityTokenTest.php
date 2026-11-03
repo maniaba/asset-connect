@@ -11,6 +11,7 @@ use Maniaba\AssetConnect\Config\Asset as AssetConfig;
 use Maniaba\AssetConnect\Pending\Interfaces\PendingOwnerResolverInterface;
 use Maniaba\AssetConnect\Pending\PendingAsset;
 use Maniaba\AssetConnect\Pending\PendingSecurityToken\OwnerPendingSecurityToken;
+use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
 use stdClass;
 use Tests\Support\Pending\StaticPendingOwnerResolver;
 
@@ -130,14 +131,13 @@ final class OwnerPendingSecurityTokenTest extends CIUnitTestCase
         $tokenService->generateToken('pending-id-1');
     }
 
+    #[DoesNotPerformAssertions]
     public function testDeleteTokenIsNoop(): void
     {
         $this->injectAssetConfig($this->resolver('user-123'));
 
         $tokenService = new OwnerPendingSecurityToken();
         $tokenService->deleteToken('pending-id-1');
-
-        $this->addToAssertionCount(1);
     }
 
     public function testConstructorAcceptsOwnerResolverClassString(): void

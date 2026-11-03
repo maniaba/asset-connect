@@ -69,9 +69,7 @@ final class AssetConnectJob extends BaseJob implements JobInterface
 
     private function getAsset(): ?Asset
     {
-        if (! isset($this->asset)) {
-            $this->asset = AssetModel::init(false)->find($this->data['assetId'] ?? 0);
-        }
+        $this->asset ??= AssetModel::init(false)->find($this->data['assetId'] ?? 0);
 
         return $this->asset;
     }

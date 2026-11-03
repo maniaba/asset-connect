@@ -16,11 +16,6 @@ use ReflectionMethod;
  */
 final class AssetDeletedTest extends CIUnitTestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-    }
-
     /**
      * Test that AssetDeleted implements AssetEventInterface
      */

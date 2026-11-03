@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- Updated Rector PHPUnit and cache configuration for current Rector 2.x releases, applied its source/test cleanups, and removed redundant nullable timestamp defaults flagged by current PHPStan releases.
 - Return empty URLs for existing unprocessed variants or variants with empty storage/path metadata, preventing incomplete variants from failing asset JSON serialization. Forced-download and relative URL helpers preserve the empty result instead of substituting the original file.
 
 ## [v3.1.1](https://github.com/maniaba/asset-connect/tree/v3.1.1) - 2026-07-07

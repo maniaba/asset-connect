@@ -14,10 +14,10 @@ use Maniaba\AssetConnect\Pending\Interfaces\PendingStorageInterface;
 use Random\RandomException;
 use Throwable;
 
-final class PendingAssetManager
+final readonly class PendingAssetManager
 {
-    private readonly PendingStorageInterface $storage;
-    private ?PendingSecurityTokenInterface $tokenProvider = null;
+    private PendingStorageInterface $storage;
+    private ?PendingSecurityTokenInterface $tokenProvider;
 
     private function __construct(
         ?PendingStorageInterface $storage = null,

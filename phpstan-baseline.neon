@@ -130,7 +130,7 @@ parameters:
 			path: tests/Events/AssetEventInterfaceTest.php
 
 		-
-			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\AssetConnect\\\\Events\\\\AssetEventInterface'' and Maniaba\\AssetConnect\\Events\\AssetEventInterface@anonymous/tests/Events/AssetEventInterfaceTest\.php\:99 will always evaluate to true\.$#'
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Maniaba\\\\AssetConnect\\\\Events\\\\AssetEventInterface'' and Maniaba\\AssetConnect\\Events\\AssetEventInterface@anonymous/tests/Events/AssetEventInterfaceTest\.php\:94 will always evaluate to true\.$#'
 			identifier: method.alreadyNarrowedType
 			count: 1
 			path: tests/Events/AssetEventInterfaceTest.php
