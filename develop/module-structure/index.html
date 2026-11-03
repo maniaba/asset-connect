@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../assets/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
     
     
       
@@ -29,10 +29,10 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -1574,6 +1574,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#ci-tool-compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CI tool compatibility
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1894,6 +1905,17 @@
     <span class="md-ellipsis">
       
         Validation/
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ci-tool-compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CI tool compatibility
       
     </span>
   </a>
@@ -2569,6 +2591,28 @@
 </tr>
 </tbody>
 </table>
+<h2 id="ci-tool-compatibility">CI tool compatibility</h2>
+<p>The repository does not commit <code>composer.lock</code>, so CI resolves the versions
+allowed by <code>composer.json</code>. Reproduce analysis failures with freshly resolved
+dependencies instead of relying on an older local vendor directory. Run the full
+PHPStan analysis and Rector dry-run after tool configuration changes; the PHPUnit
+migration rules use <code>PHPUnitSetList::COMPOSER_BASED</code> alongside the code-quality
+set, so Rector selects rules supported by the installed PHPUnit version. Cache
+storage is selected by Rector; the existing <code>/tmp/rector</code> cache directory remains
+configured without the removed <code>cacheClass()</code> setter.</p>
+<p>Pending asset creation reads filesystem creation and modification timestamps
+directly from <code>File::getCTime()</code> and <code>File::getMTime()</code>. These methods do not return
+null, so null-coalescing timestamp defaults are unnecessary. File access failures
+continue to follow the underlying filesystem API behavior.</p>
+<p>Current Rector checks also simplify first-use collection initialization with
+<code>??=</code> and remove test lifecycle overrides that only call the parent method.
+<code>PendingAssetManager</code> keeps its constructor-assigned storage and token-provider
+references readonly; the injected adapters still own their mutable state.
+The owner-token deletion test declares that the no-op intentionally performs no
+assertions instead of incrementing the assertion count manually.</p>
+<p>Removing an empty lifecycle method shifts an anonymous event fixture's line in
+<code>AssetEventInterfaceTest</code>. Its existing PHPStan baseline entry follows that
+location change; the ignored finding and count remain the same.</p>
 
 
 
@@ -2684,10 +2728,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "content.code.copy", "navigation.footer", "content.action.edit", "navigation.top", "search.suggest", "search.highlight", "search.share"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"alias": true, "default": "latest", "provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "content.code.copy", "navigation.footer", "content.action.edit", "navigation.top", "search.suggest", "search.highlight", "search.share"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"alias": true, "default": "latest", "provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../assets/javascripts/bundle.c21346df.min.js"></script>
       
         <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/highlight.min.js"></script>
       
