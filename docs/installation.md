@@ -7,18 +7,54 @@ Before installing CodeIgniter Asset Connect, ensure your environment meets the f
 - PHP 8.3 or higher
 - CodeIgniter 4.6 or higher
 - CodeIgniter Queue
-- Flysystem 3 (installed as a package dependency)
-- Composer
+- Flysystem 3 and Flysystem Local
+- Composer is recommended for dependency resolution, but AssetConnect can be installed manually when the dependencies are already available.
 
 ## Installation Steps
 
-### 1. Install via Composer
+### 1. Install the Package
+
+#### Option A: Composer
 
 You can install the package via Composer:
 
 ```bash
 composer require maniaba/asset-connect
 ```
+
+#### Option B: Manual Install
+
+Use this option for environments where Composer is not available on the server.
+
+Manual installation only registers AssetConnect itself. The required dependencies still need to be available to the application. The safest deployment flow is to run Composer locally, then upload the generated `vendor/` directory together with your application. If your application already has CodeIgniter Queue, Flysystem, and Flysystem Local available, you can upload only the AssetConnect package files.
+
+1. Download a release archive or clone the repository.
+2. Upload the package so the library source is available at:
+
+    ```text
+    app/ThirdParty/asset-connect/src
+    ```
+
+3. Register the namespace in `app/Config/Autoload.php`:
+
+    ```php
+    public $psr4 = [
+        APP_NAMESPACE => APPPATH,
+        'Maniaba\\AssetConnect' => APPPATH . 'ThirdParty/asset-connect/src',
+    ];
+    ```
+
+    Alternatively, include the package bootstrap file from the same config:
+
+    ```php
+    public $files = [
+        APPPATH . 'ThirdParty/asset-connect/autoload.php',
+    ];
+    ```
+
+    Use the direct `$psr4` mapping or the `autoload.php` file, not both.
+
+4. Keep CodeIgniter module auto-discovery enabled in `app/Config/Modules.php`. The default CodeIgniter configuration already discovers `routes`, `services`, and `registrars`; AssetConnect uses those for protected asset routes, services, and queue job registration.
 
 ### 2. Run Migrations
 
@@ -30,6 +66,8 @@ php spark migrate --namespace=Maniaba\\AssetConnect
 
 This will create the `assets` table in your database.
 
+If your environment does not allow CLI access, run the migration during deployment from an environment that has CLI access, or create the table using the schema in `src/Database/Migrations/2025-06-18-180653_CreateAssetsTable.php` and keep your migration history consistent.
+
 ### 3. Link Local Storage
 
 If you use the default local public storage disk, expose the configured public storage root from your public folder:
@@ -39,6 +77,8 @@ php spark asset-connect:storage-link
 ```
 
 The command creates links for public local disks that define `public_url`. Protected disks are served through AssetConnect routes and should not be exposed through a public link or web-server alias.
+
+In environments that do not allow symlinks or `php spark`, either create the equivalent public link/alias from the hosting control panel, or configure the public storage disk root directly inside your public web directory. Keep protected storage under `WRITEPATH` or another non-public directory.
 
 ### 4. Configure Your Entities
 

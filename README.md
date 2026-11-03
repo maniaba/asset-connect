@@ -37,11 +37,13 @@ Storage is backed by named Flysystem disks. Asset records store the disk name an
 
 ## Installation
 
-Install the package:
+Install the package with Composer:
 
 ```bash
 composer require maniaba/asset-connect
 ```
+
+For environments where Composer is not available on the server, install dependencies locally and upload `vendor/`, then place AssetConnect in `app/ThirdParty/asset-connect` and register either its PSR-4 namespace or `autoload.php` in `app/Config/Autoload.php`. See [Manual Install](docs/installation.md#option-b-manual-install) for the full steps.
 
 Run the package migrations:
 
