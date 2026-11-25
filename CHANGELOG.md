@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Added `Asset::copyToEntity()` and `UseAssetConnectTrait::copyAssetsTo()` for copying assets between entities with independent files, configurable storage, and destination collection validation.
 
+### Fixed
+- Fixed the Rector CI check by requiring Rector 2.9.2 or later in the 2.x series, switching to its fluent configuration API, and removing references to obsolete rules.
+
 ## [v3.1.2](https://github.com/maniaba/asset-connect/tree/v3.1.2) - 2026-11-03
 
 ### Fixed
