@@ -1,6 +1,6 @@
-# CodeIgniter Asset Connect 3.1.2 Documentation
+# CodeIgniter Asset Connect 3.2.0 Documentation
 
-This documentation covers AssetConnect 3.1.2, including Flysystem-backed named storage disks, storage-relative database paths, storage-name-based custom setup methods, protected pending storage, and pending asset preview/download URLs.
+This documentation covers AssetConnect 3.2.0, including copying assets between entities, Flysystem-backed named storage disks, storage-relative database paths, protected pending storage, and pending asset preview and download URLs.
 
 CodeIgniter Asset Connect is a file management library for CodeIgniter 4 that allows you to associate files with any entity in your application.
 
@@ -8,6 +8,7 @@ CodeIgniter Asset Connect is a file management library for CodeIgniter 4 that al
 
 - Associate files with any entity in your application
 - Organize files into collections
+- Copy assets between entities and storage disks
 - Store custom properties with your files
 - Easily retrieve and manipulate files
 - Secure asset storage with access control
