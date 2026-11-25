@@ -156,6 +156,27 @@ $firstImage = $product->getFirstAsset(ImagesCollection::class);
 $lastDocument = $product->getLastAsset(DocumentsCollection::class);
 ```
 
+### Copying Assets Between Entities
+
+Use `copyAssetsTo()` on a saved entity to copy its assets to another saved entity. The method returns the new assets in source order. Pass `collection` to filter the source assets by collection.
+
+```php
+$copies = $sourceEntity->copyAssetsTo($targetEntity);
+
+$documentCopies = $sourceEntity->copyAssetsTo(
+    $targetEntity,
+    collection: DocumentsCollection::class
+);
+
+$remoteCopies = $sourceEntity->copyAssetsTo($targetEntity, storage: 'minio');
+```
+
+Each copy keeps its source collection. Use [`copyToEntity()`](asset.md#copytoentity) to place an individual copy in a different collection.
+
+AssetConnect rolls back the new rows and files if a copy fails. Collections using `onlyKeepLatest()` or `singleFileCollection()` can replace older assets on the destination after all copies are ready. A copy that would evict a source or one of the new copies raises an `AssetException` with code 409.
+
+AssetConnect logs any failures while cleaning up. Jobs already accepted by an external queue and side effects from application event listeners follow their own lifecycle.
+
 ### Deleting Assets
 
 You can delete assets from an entity:

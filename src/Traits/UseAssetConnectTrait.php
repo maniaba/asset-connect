@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Maniaba\AssetConnect\Traits;
 
+use CodeIgniter\Entity\Entity;
 use CodeIgniter\Files\File;
 use CodeIgniter\HTTP\Files\UploadedFile;
 use Config\Services;
 use Maniaba\AssetConnect\Asset\Asset;
 use Maniaba\AssetConnect\Asset\AssetAdder;
 use Maniaba\AssetConnect\Asset\AssetAdderMultiple;
+use Maniaba\AssetConnect\Asset\AssetCopier;
 use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\AssetConnect\AssetCollection\Interfaces\SetupAssetCollectionInterface;
 use Maniaba\AssetConnect\AssetConnect;
@@ -94,6 +96,22 @@ trait UseAssetConnectTrait
     final public function getAssets(?string $collection = null): array
     {
         return $this->assetConnectInstance()?->getAssetsForEntity($this, $collection) ?? [];
+    }
+
+    /**
+     * Copy the entity's assets to the target entity, preserving their collections.
+     *
+     * @param class-string<AssetCollectionDefinitionInterface>|null $collection Optional source collection filter.
+     * @param string|null                                           $storage    Defaults to each source asset's disk.
+     *
+     * @return list<Asset>
+     */
+    final public function copyAssetsTo(
+        Entity $targetEntity,
+        ?string $collection = null,
+        ?string $storage = null,
+    ): array {
+        return (new AssetCopier())->copyFromEntity($this, $targetEntity, $collection, $storage);
     }
 
     /**

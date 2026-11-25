@@ -293,13 +293,10 @@ Two-step upload system – upload first, attach to entity later.
 ## CI tool compatibility
 
 The repository does not commit `composer.lock`, so CI resolves the versions
-allowed by `composer.json`. Reproduce analysis failures with freshly resolved
-dependencies instead of relying on an older local vendor directory. Run the full
-PHPStan analysis and Rector dry-run after tool configuration changes; the PHPUnit
-migration rules use `PHPUnitSetList::COMPOSER_BASED` alongside the code-quality
-set, so Rector selects rules supported by the installed PHPUnit version. Cache
-storage is selected by Rector; the existing `/tmp/rector` cache directory remains
-configured without the removed `cacheClass()` setter.
+allowed by `composer.json`. Rector 2.9.2 or later in the 2.x series reads the
+project's PHP requirement through `withPhpSets()` and selects PHPUnit migration
+rules for the installed PHPUnit version through `withComposerBased(phpunit: true)`.
+Run `composer analyze` after changes to the analysis configuration.
 
 Pending asset creation reads filesystem creation and modification timestamps
 directly from `File::getCTime()` and `File::getMTime()`. These methods do not return

@@ -11,7 +11,6 @@ use Maniaba\AssetConnect\AssetVariants\AssetVariant;
 use Maniaba\AssetConnect\AssetVariants\Interfaces\AssetVariantsInterface;
 use Maniaba\AssetConnect\AssetVariants\Interfaces\CreateAssetVariantsInterface;
 use Override;
-use Tests\Support\PathGenerators\FakeAssetPathGenerator;
 
 final class ImmediateVariantTestAssetCollection implements AssetCollectionDefinitionInterface, AssetVariantsInterface
 {
@@ -20,8 +19,7 @@ final class ImmediateVariantTestAssetCollection implements AssetCollectionDefini
     {
         $definition
             ->allowedExtensions('txt')
-            ->setStorage('public')
-            ->setPathGenerator(new FakeAssetPathGenerator('fake-assets/immediate-variants'));
+            ->setStorage('public');
     }
 
     #[Override]

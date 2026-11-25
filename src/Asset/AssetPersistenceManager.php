@@ -10,10 +10,10 @@ use CodeIgniter\Files\File;
 use CodeIgniter\I18n\Time;
 use Maniaba\AssetConnect\AssetCollection\AssetCollection;
 use Maniaba\AssetConnect\AssetCollection\SetupAssetCollection;
+use Maniaba\AssetConnect\AssetConnect;
 use Maniaba\AssetConnect\AssetVariants\AssetVariants;
 use Maniaba\AssetConnect\AssetVariants\AssetVariantsProcess;
 use Maniaba\AssetConnect\AssetVariants\Interfaces\AssetVariantsInterface;
-use Maniaba\AssetConnect\Contracts\AssetConnectEntityInterface;
 use Maniaba\AssetConnect\Events\AssetCreated;
 use Maniaba\AssetConnect\Exceptions\AssetException;
 use Maniaba\AssetConnect\Exceptions\FileException;
@@ -32,14 +32,18 @@ final class AssetPersistenceManager
     private AssetVariants $assetVariants;
     private ?StorageDiskInterface $storageDisk = null;
     private ?string $storedPath                = null;
+    private bool $copyInsertAttempted          = false;
+
+    /**
+     * @var list<string>
+     */
+    private array $copyVariantPaths = [];
 
     public function __construct(
-        /**
-         * @var AssetConnectEntityInterface&Entity $subjectEntity The entity to which the asset is being added
-         */
         private readonly Entity $subjectEntity,
         private Asset $asset,
         private readonly SetupAssetCollection $setupAssetCollection,
+        private readonly ?string $copyFileName = null,
     ) {
         $this->collection = AssetCollection::create($this->setupAssetCollection);
 
@@ -70,7 +74,9 @@ final class AssetPersistenceManager
             $this->processFileVariants();
 
             // Save the asset to the database
-            $this->saveAsset();
+            $this->insertAsset(AssetModel::init(false));
+            $this->scheduleVariants();
+            $this->publish();
 
             // Check if we need to enforce maximum number of items in collection
             $this->enforceMaximumNumberOfItemsInCollection();
@@ -83,6 +89,92 @@ final class AssetPersistenceManager
         }
 
         return $this->asset;
+    }
+
+    /**
+     * @internal
+     */
+    public function prepareCopy(StorageDiskInterface $disk, string $storage): void
+    {
+        $requiredStorage = $this->collection->getStorage();
+
+        if (($requiredStorage !== null && $requiredStorage !== $storage)
+            || $disk->visibility() !== $this->collection->getVisibility()
+        ) {
+            $message = "Storage disk '{$storage}' is not allowed by the destination collection.";
+
+            throw new AssetException($message, $message, 400);
+        }
+
+        $this->asset->storage = $storage;
+        $this->storageDisk    = $disk;
+        $this->validateAsset();
+    }
+
+    /**
+     * @internal
+     */
+    public function stageCopy(Asset $source): void
+    {
+        $sourceDisk = $source->getStorageDisk();
+        if (! $sourceDisk->fileExists($source->path)) {
+            throw FileException::forFileNotFound($source->path);
+        }
+
+        $disk = $this->storageDisk ?? throw new InvalidArgumentException('Destination storage has not been set.');
+        $path = $this->pathGenerator->getPath() . $this->copyFileName;
+
+        if ($disk->fileExists($path)) {
+            throw FileException::forCannotCopyFile($source->path, $path);
+        }
+
+        $sourceSize        = $sourceDisk->fileSize($source->path);
+        $this->asset->size = $sourceSize;
+        $this->validateAsset();
+
+        $this->writeFile($disk, $this->asset->storage, $path, $sourceDisk->readStream($source->path), [
+            'mimetype' => $this->asset->mime_type,
+        ]);
+
+        if ($disk->fileSize($path) !== $sourceSize) {
+            throw FileException::forCannotCopyFile($source->path, $path);
+        }
+
+        $this->processFileVariants();
+    }
+
+    /**
+     * @internal
+     */
+    public function discardCopy(): void
+    {
+        // Remove the row first so workers cannot start processing its variants.
+        try {
+            if ($this->copyInsertAttempted) {
+                $model   = AssetModel::init(false);
+                $deleted = $model->where([
+                    'path'    => $this->storedPath,
+                    'storage' => $this->asset->storage,
+                ])->delete(null, true);
+                if (! $deleted) {
+                    throw AssetException::forDatabaseError($model->errors() ?: ['Could not remove the copied asset.']);
+                }
+            }
+
+            if ($this->asset->id > 0) {
+                $this->connection()?->removeAssetById($this->asset->id);
+            }
+        } catch (Throwable $exception) {
+            log_message('error', 'Failed to roll back copied asset row: {message}', ['message' => $exception->getMessage()]);
+        }
+
+        foreach ($this->copyVariantPaths as $path) {
+            $this->cleanStoragePath($path);
+        }
+
+        if ($this->storedPath !== null) {
+            $this->cleanStoragePath($this->storedPath);
+        }
     }
 
     /**
@@ -137,56 +229,68 @@ final class AssetPersistenceManager
         $storageName    = $this->collection->getStorage()
             ?? $storageManager->defaultDiskNameForVisibility($this->collection->getVisibility());
 
-        $this->storageDisk = $storageManager->disk($storageName);
+        $disk = $storageManager->disk($storageName);
 
         $relativeDirectory = $this->pathGenerator->getPath();
         $relativePath      = $relativeDirectory . $this->asset->file_name;
-
-        $this->storedPath     = $relativePath;
-        $this->asset->storage = $storageName;
-        $this->asset->path    = $relativePath;
 
         $stream = fopen($sourcePath, 'rb');
         if ($stream === false) {
             throw FileException::forFileNotFound($sourcePath);
         }
 
+        $this->writeFile($disk, $storageName, $relativePath, $stream);
+    }
+
+    /**
+     * @param resource $stream
+     */
+    private function writeFile(StorageDiskInterface $disk, string $storageName, string $relativePath, $stream, array $config = []): void
+    {
+        $this->storageDisk    = $disk;
+        $this->storedPath     = $relativePath;
+        $this->asset->storage = $storageName;
+        $this->asset->path    = $relativePath;
+
         try {
-            $this->storageDisk->writeStream($relativePath, $stream, [
+            $disk->writeStream($relativePath, $stream, $config + [
                 'visibility' => $this->collection->getVisibility()->value,
             ]);
         } catch (Throwable $exception) {
             throw FileException::forCannotWriteToStorage($storageName, $relativePath, $exception);
         } finally {
-            fclose($stream);
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
         }
 
-        $localPath = $this->storageDisk->localPath($relativePath);
+        $localPath = $disk->localPath($relativePath);
         if ($localPath !== null) {
             $this->asset->file = new File($localPath);
         }
     }
 
     /**
-     * Save the asset to the database
+     * @internal
      */
-    private function saveAsset(): void
+    public function insertAsset(AssetModel $model): void
     {
-        // Save the asset to the database
-        $model = AssetModel::init(false);
-        $model->save($this->asset);
-
-        $errors = $model->errors();
-
-        if (! in_array($errors, [null, []], true)) {
-            throw AssetException::forDatabaseError($errors);
+        $this->copyInsertAttempted = $this->copyFileName !== null;
+        if (! $model->save($this->asset)) {
+            throw AssetException::forDatabaseError($model->errors() ?: ['Could not insert asset.']);
         }
 
         $this->asset->id = $model->getInsertID();
 
         $this->asset->created_at = Time::now();
         $this->asset->updated_at = Time::now();
+    }
 
+    /**
+     * @internal
+     */
+    public function scheduleVariants(): void
+    {
         // If variants are processed on the queue, we must add queue job for processing
         if (isset($this->assetVariants) && $this->assetVariants->onQueue) {
             AssetVariantsProcess::onQueue(
@@ -194,17 +298,31 @@ final class AssetPersistenceManager
                 $this->setupAssetCollection->getCollectionDefinition(),
             );
         }
+    }
 
+    /**
+     * @internal
+     */
+    public function publish(): void
+    {
         unset($this->asset->file); // Unset the file property unless you need it later
 
         // If the asset was saved, we can now connect it to the entity
-        $autoConnectInstance = $this->subjectEntity->assetConnectInstance();
-        if ($autoConnectInstance !== null) {
-            $autoConnectInstance->addAsset($this->asset);
-        }
+        $this->connection()?->addAsset($this->asset);
 
         // Trigger asset.created event
         Events::trigger(AssetCreated::name(), AssetCreated::createFromAsset($this->asset, $this->subjectEntity));
+    }
+
+    private function connection(): ?AssetConnect
+    {
+        if (! method_exists($this->subjectEntity, 'assetConnectInstance')) {
+            return null;
+        }
+
+        $connection = $this->subjectEntity->assetConnectInstance();
+
+        return $connection instanceof AssetConnect ? $connection : null;
     }
 
     /**
@@ -221,9 +339,30 @@ final class AssetPersistenceManager
         $this->assetVariants = new AssetVariants(
             $this->pathGenerator,
             $this->asset,
+            $this->copyFileName,
         );
 
         $definition->variants($this->assetVariants, $this->asset);
+
+        if ($this->copyFileName !== null) {
+            $disk = $this->asset->getStorageDisk();
+
+            foreach ($this->asset->metadata->assetVariant->getVariants() as $variant) {
+                $directory = $this->pathGenerator->getPathForVariants();
+
+                if ($variant->storage !== $this->asset->storage
+                    || $variant->path !== $directory . basename($variant->path)
+                    || $variant->path === $this->storedPath
+                    || str_contains($variant->path, '\\')
+                    || $disk->fileExists($variant->path)
+                    || in_array($variant->path, $this->copyVariantPaths, true)
+                ) {
+                    throw FileException::forInvalidFile($variant->path);
+                }
+
+                $this->copyVariantPaths[] = $variant->path;
+            }
+        }
 
         if (! $this->assetVariants->onQueue) {
             // If the definition indicates that variants should be processed immediately,
@@ -236,19 +375,23 @@ final class AssetPersistenceManager
      */
     private function cleanGarbage(): void
     {
-        if ($this->storageDisk !== null && $this->storedPath !== null) {
-            try {
-                self::removeStoragePath($this->storageDisk->name(), $this->storedPath);
-            } catch (Throwable $exception) {
-                // Log the error but do not throw it, as we are already handling an exception
-                log_message('error', 'Failed to clean up garbage after asset storage failure: {message}', ['message' => $exception->getMessage()]);
-            }
+        if ($this->storedPath !== null) {
+            $this->cleanStoragePath($this->storedPath);
         }
 
         if ($this->asset->id > 0) {
             // If the asset was saved, delete it from the database
             $model = AssetModel::init(false);
             $model->delete($this->asset->id, true);
+        }
+    }
+
+    private function cleanStoragePath(string $path): void
+    {
+        try {
+            $this->storageDisk?->delete($path);
+        } catch (Throwable $exception) {
+            log_message('error', 'Failed to clean up garbage after asset storage failure: {message}', ['message' => $exception->getMessage()]);
         }
     }
 
@@ -263,41 +406,47 @@ final class AssetPersistenceManager
      */
     private function enforceMaximumNumberOfItemsInCollection(): void
     {
-        // Get the maximum number of items allowed in this collection
-        $maxItems = $this->collection->getMaximumNumberOfItemsInCollection();
-
-        // If no maximum is set (0) or it's set to 1 (which means only the current asset should exist),
-        // then we don't need to do anything
-        if ($maxItems <= 0) {
+        $ids = $this->obsoleteAssetIds(AssetModel::init(false));
+        if ($ids === []) {
             return;
         }
 
+        // Files from storage will be deleted in queue.
+        AssetModel::init(false)->whereIn('id', $ids)->delete();
+
+        foreach ($ids as $id) {
+            $this->connection()?->removeAssetById($id);
+        }
+    }
+
+    /** @internal
+     * @return list<int>
+     */
+    public function obsoleteAssetIds(AssetModel $model): array
+    {
+        // Get the maximum number of items allowed in this collection
+        $maxItems = $this->collection->getMaximumNumberOfItemsInCollection();
+
+        if ($maxItems <= 0) {
+            return [];
+        }
+
         // Get the AssetModel
-        $model = AssetModel::init(false);
-        $ids   = AssetModel::init(false)
-            ->where([
-                'collection'  => $this->asset->collection,
-                'entity_type' => $this->asset->entity_type,
-                'entity_id'   => $this->asset->entity_id,
-                'deleted_at'  => null, // Only consider non-deleted assets
-            ])->orderBy('created_at', 'DESC')
+        $model->where([
+            'collection'  => $this->asset->collection,
+            'entity_type' => $this->asset->entity_type,
+            'entity_id'   => $this->asset->entity_id,
+            'deleted_at'  => null, // Only consider non-deleted assets
+        ])->orderBy('created_at', 'DESC');
+        if ($this->copyFileName !== null) {
+            $model->orderBy('id', 'DESC');
+        }
+
+        $ids = $model
             ->limit(2147483647) // Use a large limit to get all assets in the collection, int max is 2147483647 for best compatibility
             ->offset($maxItems) // Skip the newest $maxItems (which we want to keep)
             ->findColumn('id');
 
-        if (in_array($ids, [null, []], true)) {
-            // No assets to delete, return early
-            return;
-        }
-
-        // Files from storage will be deleted in queue, so we can safely delete them from the database
-        $model->whereIn('id', $ids)->delete();
-
-        $autoConnectInstance = $this->subjectEntity->assetConnectInstance();
-        if ($autoConnectInstance !== null) {
-            foreach ($ids as $id) {
-                $autoConnectInstance->removeAssetById((int) $id);
-            }
-        }
+        return array_map(intval(...), $ids ?? []);
     }
 }
