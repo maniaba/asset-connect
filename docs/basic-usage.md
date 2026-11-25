@@ -177,6 +177,34 @@ AssetConnect rolls back the new rows and files if a copy fails. Collections usin
 
 AssetConnect logs any failures while cleaning up. Jobs already accepted by an external queue and side effects from application event listeners follow their own lifecycle.
 
+#### Copying files in the queue
+
+Use the queue methods to get the new asset IDs and metadata immediately while a worker transfers the files.
+
+```php
+$copy = $asset->copyToEntityUsingQueue(
+    $targetEntity,
+    collection: ArchiveCollection::class,
+    storage: 'archive'
+);
+
+$copies = $sourceEntity->copyAssetsToUsingQueue(
+    $targetEntity,
+    collection: DocumentsCollection::class,
+    storage: 'minio'
+);
+```
+
+Start the CodeIgniter Queue worker for `Config\Asset::$queue['name']`, which defaults to `asset_queue`.
+
+```sh
+php spark queue:work asset_queue
+```
+
+The copies return `true` from `isCopyPending()` and an empty URL until the batch finishes. The worker emits `asset.updated` after the files and variants are ready. Reload the asset by ID to get its current state before saving it. Keep the source assets and their files available and unchanged until the worker runs. The worker creates the destination collection definition from its registered class, so the class must be constructible without arguments and describe its rules and variants with that configuration.
+
+A failed copy job removes the copies created by that batch. Destination collection retention runs after the files and variants are ready.
+
 ### Deleting Assets
 
 You can delete assets from an entity:

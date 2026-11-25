@@ -10,8 +10,10 @@ use Maniaba\AssetConnect\AssetCollection\SetupAssetCollection;
 use Maniaba\AssetConnect\AssetConnect;
 use Maniaba\AssetConnect\Config\Asset as AssetConfig;
 use Maniaba\AssetConnect\Exceptions\AssetException;
+use Maniaba\AssetConnect\Jobs\CopyAssetsJob;
 use Maniaba\AssetConnect\Models\AssetModel;
 use Maniaba\AssetConnect\Storage\StorageManager;
+use ReflectionClass;
 use Throwable;
 
 /**
@@ -29,6 +31,7 @@ final class AssetCopier
         Entity $targetEntity,
         ?string $collection,
         ?string $storage,
+        bool $usingQueue = false,
     ): array {
         $setup = $this->setupEntity($sourceEntity);
 
@@ -44,7 +47,7 @@ final class AssetCopier
 
         $sources = $model->orderBy('order', 'ASC')->orderBy('id', 'ASC')->findAll();
 
-        return $this->copy($sources, $targetEntity, null, $storage);
+        return $this->copy($sources, $targetEntity, null, $storage, $usingQueue);
     }
 
     /**
@@ -58,6 +61,7 @@ final class AssetCopier
         Entity $targetEntity,
         AssetCollectionDefinitionInterface|string|null $collection,
         ?string $storage,
+        bool $usingQueue = false,
     ): array {
         $storageManager = StorageManager::make();
         $storage        = $storage === null ? null : trim($storage);
@@ -78,11 +82,26 @@ final class AssetCopier
         $persistences = [];
 
         foreach ($sources as $index => $source) {
+            if ($source->isCopyPending() || ($usingQueue && $source->id <= 0)) {
+                $message = 'Copying requires an available source asset.';
+
+                throw new AssetException($message, $message, 409);
+            }
+
             $setup = $this->setupEntity($targetEntity);
 
             $definition = $collection ?? $source->collection_definition_class;
             if ($definition !== $setup->getCollectionDefinition()::class) {
                 $setup->setDefaultCollectionDefinition($definition);
+            }
+
+            if ($usingQueue) {
+                $definitionClass = new ReflectionClass($setup->getCollectionDefinition());
+                if (! $definitionClass->isInstantiable() || ($definitionClass->getConstructor()?->getNumberOfRequiredParameters() ?? 0) > 0) {
+                    $message = 'Queued copying requires a collection definition that can be instantiated without arguments.';
+
+                    throw new AssetException($message, $message, 400);
+                }
             }
 
             $copy = Asset::create([
@@ -112,18 +131,42 @@ final class AssetCopier
         $model = AssetModel::init(false);
 
         try {
+            $batch              = $usingQueue ? bin2hex(random_bytes(16)) : null;
+            $variantDirectories = [];
+
             foreach ($persistences as $index => $persistence) {
-                $persistence->stageCopy($sources[$index]);
+                if ($batch === null) {
+                    $persistence->stageCopy($sources[$index]);
+                } else {
+                    $variantDirectories[$index] = $persistence->prepareQueuedCopy($batch);
+                }
             }
 
             foreach ($persistences as $persistence) {
                 $persistence->insertAsset($model);
             }
 
-            $obsoleteIds = $this->obsoleteAssetIds($model, $persistences, $sources, $copies);
+            $sourceIds   = array_map(static fn (Asset $source): int => (int) $source->id, $sources);
+            $obsoleteIds = self::obsoleteAssetIds($model, $persistences, $sourceIds, $copies);
 
             foreach ($persistences as $persistence) {
                 $persistence->publish();
+            }
+
+            if ($batch !== null) {
+                $items = [];
+
+                foreach ($copies as $index => $copy) {
+                    $items[] = [
+                        'sourceId'         => $sourceIds[$index],
+                        'copyId'           => $copy->id,
+                        'variantDirectory' => $variantDirectories[$index],
+                    ];
+                }
+
+                CopyAssetsJob::dispatch($batch, $items);
+
+                return $copies;
             }
 
             foreach ($persistences as $persistence) {
@@ -132,9 +175,7 @@ final class AssetCopier
 
             // Apply retention in one statement, after the whole copy has succeeded.
             if ($obsoleteIds !== []) {
-                if (! $model->whereIn('id', $obsoleteIds)->delete()) {
-                    throw AssetException::forDatabaseError($model->errors() ?: ['Could not apply destination collection retention.']);
-                }
+                self::applyRetention($model, $obsoleteIds);
 
                 if ($connection instanceof AssetConnect) {
                     foreach ($obsoleteIds as $id) {
@@ -180,12 +221,12 @@ final class AssetCopier
 
     /**
      * @param list<AssetPersistenceManager> $persistences
-     * @param list<Asset>                   $sources
+     * @param list<int>                     $sourceIds
      * @param list<Asset>                   $copies
      *
      * @return list<int>
      */
-    private function obsoleteAssetIds(AssetModel $model, array $persistences, array $sources, array $copies): array
+    public static function obsoleteAssetIds(AssetModel $model, array $persistences, array $sourceIds, array $copies): array
     {
         $obsoleteIds = [];
         $collections = [];
@@ -198,7 +239,7 @@ final class AssetCopier
             }
         }
 
-        $protectedIds = array_map(static fn (Asset $asset): int => $asset->id, [...$sources, ...$copies]);
+        $protectedIds = [...$sourceIds, ...array_map(static fn (Asset $asset): int => $asset->id, $copies)];
         if (array_intersect($obsoleteIds, $protectedIds) !== []) {
             $message = 'The destination collection cannot retain all copies without discarding a source or a copy.';
 
@@ -206,5 +247,15 @@ final class AssetCopier
         }
 
         return $obsoleteIds;
+    }
+
+    /**
+     * @param list<int> $obsoleteIds
+     */
+    public static function applyRetention(AssetModel $model, array $obsoleteIds): void
+    {
+        if ($obsoleteIds !== [] && ! $model->whereIn('id', $obsoleteIds)->delete()) {
+            throw AssetException::forDatabaseError($model->errors() ?: ['Could not apply destination collection retention.']);
+        }
     }
 }

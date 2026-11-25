@@ -67,6 +67,11 @@ class Asset extends Entity implements JsonSerializable
     use UrlGeneratorTrait;
     use AssetFileInfoTrait;
 
+    /**
+     * @internal
+     */
+    public const string COPY_BATCH_PROPERTY = '_asset_connect_copy_batch';
+
     protected $casts = [
         'id'          => 'int',
         'entity_type' => 'string',
@@ -217,7 +222,7 @@ class Asset extends Entity implements JsonSerializable
 
     protected function getLocalPath(): ?string
     {
-        return $this->getStorageDisk()->localPath($this->path);
+        return $this->isCopyPending() ? null : $this->getStorageDisk()->localPath($this->path);
     }
 
     public function getStorageDisk(): StorageDiskInterface
@@ -239,8 +244,30 @@ class Asset extends Entity implements JsonSerializable
         return (new AssetCopier())->copy([$this], $targetEntity, $collection, $storage)[0];
     }
 
+    /**
+     * Store the copy's metadata now and queue its files for processing.
+     *
+     * @param AssetCollectionDefinitionInterface|class-string<AssetCollectionDefinitionInterface>|null $collection
+     */
+    public function copyToEntityUsingQueue(
+        Entity $targetEntity,
+        AssetCollectionDefinitionInterface|string|null $collection = null,
+        ?string $storage = null,
+    ): Asset {
+        return (new AssetCopier())->copy([$this], $targetEntity, $collection, $storage, usingQueue: true)[0];
+    }
+
+    public function isCopyPending(): bool
+    {
+        return $this->getInternalProperty(self::COPY_BATCH_PROPERTY) !== null;
+    }
+
     public function copyToTemporaryFile(?string $variantName = null, ?string $directory = null, string $prefix = 'asset_connect_'): string
     {
+        if ($this->isCopyPending()) {
+            throw FileException::forFileNotFound($this->file_name);
+        }
+
         if ($variantName !== null && $variantName !== '' && $variantName !== '0') {
             $variant = $this->getMetadata()->assetVariant->getAssetVariant($variantName);
 
@@ -426,6 +453,10 @@ class Asset extends Entity implements JsonSerializable
      */
     public function transferToStorage(string $storage, bool $withVariants = true, bool $deleteSource = true): static
     {
+        if ($this->isCopyPending()) {
+            throw FileException::forFileNotFound($this->file_name);
+        }
+
         $targetStorage = trim($storage);
         if ($targetStorage === '') {
             throw new \Maniaba\AssetConnect\Exceptions\InvalidArgumentException('Target storage disk name must not be empty.');
@@ -499,6 +530,10 @@ class Asset extends Entity implements JsonSerializable
      */
     public function save(): bool
     {
+        if ($this->isCopyPending()) {
+            throw new AssetException('Reload the copied asset after the file copy completes.', 'Asset copy is pending', 409);
+        }
+
         $data = Asset::create([
             'id'         => $this->id,
             'metadata'   => $this->getMetadata(),

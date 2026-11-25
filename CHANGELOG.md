@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Added `Asset::copyToEntity()` and `UseAssetConnectTrait::copyAssetsTo()` for copying assets between entities with independent files, configurable storage, and destination collection validation.
+- Added `copyToEntityUsingQueue()` and `copyAssetsToUsingQueue()` to save copy metadata immediately and transfer files and generate variants in a queue worker.
 
 ### Fixed
 - Fixed the Rector CI check by requiring Rector 2.9.2 or later in the 2.x series, switching to its fluent configuration API, and removing references to obsolete rules.

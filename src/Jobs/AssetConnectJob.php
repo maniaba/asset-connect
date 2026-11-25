@@ -105,13 +105,13 @@ final class AssetConnectJob extends BaseJob implements JobInterface
 
         foreach ($deletedAssets as $asset) {
             try {
-                $variants = $asset->metadata->assetVariant->getVariants();
+                if (! $asset->isCopyPending()) {
+                    foreach ($asset->metadata->assetVariant->getVariants() as $variant) {
+                        AssetPersistenceManager::removeStoragePath($variant->storage, $variant->path);
+                    }
 
-                foreach ($variants as $variant) {
-                    AssetPersistenceManager::removeStoragePath($variant->storage, $variant->path);
+                    AssetPersistenceManager::removeStoragePath($asset->storage, $asset->path);
                 }
-
-                AssetPersistenceManager::removeStoragePath($asset->storage, $asset->path);
             } catch (Throwable $exception) {
                 log_message('error', 'Asset garbage cleanup failed for asset ID {id}: {message}', [
                     'id'      => $asset->id,
