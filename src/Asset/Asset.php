@@ -225,6 +225,20 @@ class Asset extends Entity implements JsonSerializable
         return StorageManager::make()->disk($this->storage);
     }
 
+    /**
+     * Create an independent copy attached to the target entity.
+     *
+     * @param AssetCollectionDefinitionInterface|class-string<AssetCollectionDefinitionInterface>|null $collection Defaults to the source collection.
+     * @param string|null                                                                              $storage    Defaults to the source disk, subject to the destination collection rules.
+     */
+    public function copyToEntity(
+        Entity $targetEntity,
+        AssetCollectionDefinitionInterface|string|null $collection = null,
+        ?string $storage = null,
+    ): Asset {
+        return (new AssetCopier())->copy([$this], $targetEntity, $collection, $storage)[0];
+    }
+
     public function copyToTemporaryFile(?string $variantName = null, ?string $directory = null, string $prefix = 'asset_connect_'): string
     {
         if ($variantName !== null && $variantName !== '' && $variantName !== '0') {

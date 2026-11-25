@@ -8,8 +8,8 @@ use Maniaba\AssetConnect\AssetCollection\AssetCollection;
 
 final class PathGeneratorFactory
 {
-    public static function create(AssetCollection $collection): PathGenerator
+    public static function create(AssetCollection $collection, string $subdirectory = ''): PathGenerator
     {
-        return new PathGenerator($collection);
+        return new PathGenerator($collection, $subdirectory);
     }
 }

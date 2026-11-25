@@ -14,6 +14,7 @@ use Tests\Support\AssetCollections\MimeRestrictedTestAssetCollection;
 use Tests\Support\AssetCollections\QueuedVariantTestAssetCollection;
 use Tests\Support\AssetCollections\SingleFileTestAssetCollection;
 use Tests\Support\AssetCollections\SizeLimitedTestAssetCollection;
+use Tests\Support\Entities\CopyTargetEntity;
 use Tests\Support\Entities\FakeAssetEntity;
 use Tests\Support\TestAssetCollection;
 use Tests\Support\TestEntity;
@@ -30,9 +31,10 @@ final class TestAssetConfig extends BaseAsset
      * {@inheritDoc}
      */
     public array $entityKeyDefinitions = [
-        TestEntity::class      => 'test_entity',
-        FakeAssetEntity::class => 'fake_asset_entity',
-        Entity::class          => 'basic_entity',
+        TestEntity::class       => 'test_entity',
+        FakeAssetEntity::class  => 'fake_asset_entity',
+        CopyTargetEntity::class => 'copy_target',
+        Entity::class           => 'basic_entity',
     ];
 
     /**

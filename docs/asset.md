@@ -357,6 +357,31 @@ $properties = $asset->getInternalProperties();
 // ]
 ```
 
+### copyToEntity
+
+`copyToEntity()` creates a new asset for a saved entity. By default the new asset uses the source asset's collection and storage disk.
+
+```php
+$copy = $asset->copyToEntity($targetEntity);
+
+$document = $asset->copyToEntity(
+    $targetEntity,
+    collection: DocumentsCollection::class
+);
+
+$onS3 = $asset->copyToEntity($targetEntity, storage: 's3');
+
+$archived = $asset->copyToEntity(
+    $targetEntity,
+    collection: ArchiveCollection::class,
+    storage: 'archive'
+);
+```
+
+The copy keeps the file name, asset name, MIME type, order, and custom properties. It receives its own ID, timestamps, and storage path. The destination collection generates its own internal metadata and variants, including queued variants when configured. Each asset and its generated files can be deleted independently.
+
+See [choosing a disk for copies](storage.md#choosing-a-disk-for-copies) for storage requirements and [copying assets between entities](basic-usage.md#copying-assets-between-entities) for bulk copies.
+
 ### transferToStorage
 
 ```php

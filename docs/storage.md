@@ -228,6 +228,14 @@ final class ProductImagesCollection implements AssetCollectionDefinitionInterfac
 
 If `setStorage()` is not used, AssetConnect selects the disk from the collection visibility.
 
+## Choosing a Disk for Copies
+
+Both [`copyToEntity()`](asset.md#copytoentity) and [`copyAssetsTo()`](basic-usage.md#copying-assets-between-entities) accept a named disk from `Config\Asset::$storages`. When `storage` is omitted, each copy uses its source disk. The disk must match the destination collection's visibility and any disk pinned by `setStorage()`.
+
+An unconfigured disk raises an `InvalidArgumentException`. A disk disallowed by the collection raises an `AssetException`, including when the source disk was selected by default. Pass a compatible disk explicitly to copy between collections with different storage requirements.
+
+AssetConnect streams the original file through the configured storage adapters. Each copy uses a unique subdirectory within the destination collection's generated paths. Variant processors can use [temporary local files](#local-and-temporary-paths-for-processing) when they require a local path.
+
 ## Transfer Assets Between Storage Disks
 
 Use `transferToStorage()` when an existing asset needs to move from one configured disk to another:
