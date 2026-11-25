@@ -40,7 +40,7 @@ final class AssetPersistenceManager
     private array $copyVariantPaths = [];
 
     public function __construct(
-        private readonly Entity $subjectEntity,
+        private readonly ?Entity $subjectEntity,
         private Asset $asset,
         private readonly SetupAssetCollection $setupAssetCollection,
         private readonly ?string $copyFileName = null,
@@ -96,6 +96,13 @@ final class AssetPersistenceManager
      */
     public function prepareCopy(StorageDiskInterface $disk, string $storage): void
     {
+        $this->setCopyStorage($disk, $storage);
+        $this->asset->path = $this->pathGenerator->getPath() . $this->copyFileName;
+        $this->validateAsset();
+    }
+
+    private function setCopyStorage(StorageDiskInterface $disk, string $storage): void
+    {
         $requiredStorage = $this->collection->getStorage();
 
         if (($requiredStorage !== null && $requiredStorage !== $storage)
@@ -108,13 +115,22 @@ final class AssetPersistenceManager
 
         $this->asset->storage = $storage;
         $this->storageDisk    = $disk;
-        $this->validateAsset();
     }
 
     /**
      * @internal
      */
-    public function stageCopy(Asset $source): void
+    public function prepareQueuedCopy(string $batch): string
+    {
+        $this->asset->setInternalProperty(Asset::COPY_BATCH_PROPERTY, $batch);
+
+        return $this->pathGenerator->getPathForVariants();
+    }
+
+    /**
+     * @internal
+     */
+    public function stageCopy(Asset $source, ?string $queuedVariantDirectory = null): void
     {
         $sourceDisk = $source->getStorageDisk();
         if (! $sourceDisk->fileExists($source->path)) {
@@ -122,15 +138,19 @@ final class AssetPersistenceManager
         }
 
         $disk = $this->storageDisk ?? throw new InvalidArgumentException('Destination storage has not been set.');
-        $path = $this->pathGenerator->getPath() . $this->copyFileName;
+        $path = $this->asset->path;
 
         if ($disk->fileExists($path)) {
             throw FileException::forCannotCopyFile($source->path, $path);
         }
 
-        $sourceSize        = $sourceDisk->fileSize($source->path);
-        $this->asset->size = $sourceSize;
-        $this->validateAsset();
+        $sourceSize = $sourceDisk->fileSize($source->path);
+        if ($queuedVariantDirectory === null) {
+            $this->asset->size = $sourceSize;
+            $this->validateAsset();
+        } elseif ($sourceSize !== $this->asset->size) {
+            throw FileException::forCannotCopyFile($source->path, $path);
+        }
 
         $this->writeFile($disk, $this->asset->storage, $path, $sourceDisk->readStream($source->path), [
             'mimetype' => $this->asset->mime_type,
@@ -140,7 +160,8 @@ final class AssetPersistenceManager
             throw FileException::forCannotCopyFile($source->path, $path);
         }
 
-        $this->processFileVariants();
+        $this->processFileVariants($queuedVariantDirectory);
+        unset($this->asset->file);
     }
 
     /**
@@ -151,11 +172,15 @@ final class AssetPersistenceManager
         // Remove the row first so workers cannot start processing its variants.
         try {
             if ($this->copyInsertAttempted) {
-                $model   = AssetModel::init(false);
-                $deleted = $model->where([
-                    'path'    => $this->storedPath,
+                $model = AssetModel::init(false);
+                $model->where([
+                    'path'    => $this->asset->path,
                     'storage' => $this->asset->storage,
-                ])->delete(null, true);
+                ]);
+                if ($this->asset->id <= 0 && $this->asset->isCopyPending()) {
+                    $model->where('metadata', json_encode($this->asset->metadata, JSON_THROW_ON_ERROR));
+                }
+                $deleted = $model->delete($this->asset->id ?: null, true);
                 if (! $deleted) {
                     throw AssetException::forDatabaseError($model->errors() ?: ['Could not remove the copied asset.']);
                 }
@@ -168,6 +193,14 @@ final class AssetPersistenceManager
             log_message('error', 'Failed to roll back copied asset row: {message}', ['message' => $exception->getMessage()]);
         }
 
+        $this->discardCopyFiles();
+    }
+
+    /**
+     * @internal
+     */
+    public function discardCopyFiles(): void
+    {
         foreach ($this->copyVariantPaths as $path) {
             $this->cleanStoragePath($path);
         }
@@ -311,12 +344,14 @@ final class AssetPersistenceManager
         $this->connection()?->addAsset($this->asset);
 
         // Trigger asset.created event
-        Events::trigger(AssetCreated::name(), AssetCreated::createFromAsset($this->asset, $this->subjectEntity));
+        if ($this->subjectEntity !== null) {
+            Events::trigger(AssetCreated::name(), AssetCreated::createFromAsset($this->asset, $this->subjectEntity));
+        }
     }
 
     private function connection(): ?AssetConnect
     {
-        if (! method_exists($this->subjectEntity, 'assetConnectInstance')) {
+        if ($this->subjectEntity === null || ! method_exists($this->subjectEntity, 'assetConnectInstance')) {
             return null;
         }
 
@@ -328,7 +363,7 @@ final class AssetPersistenceManager
     /**
      * Process file variants if the collection implements FileVariantInterface
      */
-    private function processFileVariants(): void
+    private function processFileVariants(?string $queuedVariantDirectory = null): void
     {
         $definition = $this->setupAssetCollection->getCollectionDefinition();
 
@@ -340,6 +375,7 @@ final class AssetPersistenceManager
             $this->pathGenerator,
             $this->asset,
             $this->copyFileName,
+            $queuedVariantDirectory,
         );
 
         $definition->variants($this->assetVariants, $this->asset);
@@ -348,7 +384,7 @@ final class AssetPersistenceManager
             $disk = $this->asset->getStorageDisk();
 
             foreach ($this->asset->metadata->assetVariant->getVariants() as $variant) {
-                $directory = $this->pathGenerator->getPathForVariants();
+                $directory = $queuedVariantDirectory ?? $this->pathGenerator->getPathForVariants();
 
                 if ($variant->storage !== $this->asset->storage
                     || $variant->path !== $directory . basename($variant->path)
@@ -364,10 +400,23 @@ final class AssetPersistenceManager
             }
         }
 
-        if (! $this->assetVariants->onQueue) {
+        if (! $this->assetVariants->onQueue || $queuedVariantDirectory !== null) {
             // If the definition indicates that variants should be processed immediately,
             AssetVariantsProcess::run($this->asset, $definition);
         }
+    }
+
+    /**
+     * @internal
+     */
+    public static function resumeQueuedCopy(Asset $asset): self
+    {
+        $path  = $asset->path;
+        $setup = (new SetupAssetCollection())->setDefaultCollectionDefinition($asset->collection_definition_class);
+        $copy  = new self(null, $asset, $setup, basename($path));
+        $copy->setCopyStorage($asset->getStorageDisk(), $asset->storage);
+
+        return $copy;
     }
 
     /**

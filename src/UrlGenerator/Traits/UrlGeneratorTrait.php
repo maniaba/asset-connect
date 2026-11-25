@@ -47,7 +47,9 @@ trait UrlGeneratorTrait
      */
     public function getTemporaryUrl(Time $expiration, ?string $variantName = null, bool $forceDownload = false): string
     {
-        return UrlGenerator::create($this)->getTemporaryUrl($expiration, $variantName) . ($forceDownload ? '?download=force' : '');
+        $url = UrlGenerator::create($this)->getTemporaryUrl($expiration, $variantName);
+
+        return $url === '' ? '' : $url . ($forceDownload ? '?download=force' : '');
     }
 
     /**

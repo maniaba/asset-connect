@@ -115,6 +115,21 @@ trait UseAssetConnectTrait
     }
 
     /**
+     * Store all copy metadata now and queue the files as a single batch.
+     *
+     * @param class-string<AssetCollectionDefinitionInterface>|null $collection Optional source collection filter.
+     *
+     * @return list<Asset>
+     */
+    final public function copyAssetsToUsingQueue(
+        Entity $targetEntity,
+        ?string $collection = null,
+        ?string $storage = null,
+    ): array {
+        return (new AssetCopier())->copyFromEntity($this, $targetEntity, $collection, $storage, usingQueue: true);
+    }
+
+    /**
      * Get the first asset associated with this entity
      *
      * @param class-string<AssetCollectionDefinitionInterface>|null $collection The collection to get the asset from

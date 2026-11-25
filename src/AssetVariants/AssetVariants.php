@@ -21,6 +21,7 @@ final class AssetVariants implements CreateAssetVariantsInterface
         private readonly PathGenerator $pathGenerator,
         private readonly Asset $asset,
         private readonly ?string $fileName = null,
+        private readonly ?string $variantDirectory = null,
     ) {
     }
 
@@ -40,7 +41,7 @@ final class AssetVariants implements CreateAssetVariantsInterface
         $variant = new AssetVariant([
             'name'      => $name,
             'storage'   => $this->asset->storage,
-            'path'      => $this->pathGenerator->getPathForVariants() . $variantFileName,
+            'path'      => ($this->variantDirectory ?? $this->pathGenerator->getPathForVariants()) . $variantFileName,
             'size'      => 0, // Size will be updated after writing the file
             'processed' => false,
         ]);

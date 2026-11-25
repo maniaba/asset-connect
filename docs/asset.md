@@ -382,6 +382,8 @@ The copy keeps the file name, asset name, MIME type, order, and custom propertie
 
 See [choosing a disk for copies](storage.md#choosing-a-disk-for-copies) for storage requirements and [copying assets between entities](basic-usage.md#copying-assets-between-entities) for bulk copies.
 
+Use [`copyToEntityUsingQueue()`](basic-usage.md#copying-files-in-the-queue) to persist the copy immediately and transfer its file in a worker. Read `isCopyPending()` to check whether the file is ready.
+
 ### transferToStorage
 
 ```php

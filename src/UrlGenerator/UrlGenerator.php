@@ -29,6 +29,10 @@ final readonly class UrlGenerator
      */
     public function getUrl(?string $variantName = null): string
     {
+        if ($this->asset->isCopyPending()) {
+            return '';
+        }
+
         $storage   = $this->asset->storage;
         $path      = $this->asset->path;
         $routeName = 'asset-connect.show';
@@ -81,6 +85,10 @@ final readonly class UrlGenerator
      */
     public function getTemporaryUrl(Time $expiration, ?string $variantName = null): string
     {
+        if ($this->asset->isCopyPending()) {
+            return '';
+        }
+
         // Generate a temporary URL for the asset
         $token  = TempUrlToken::createToken($this->asset, $variantName, $expiration);
         $method = $variantName === null || $variantName === '' ? 'asset-connect.temporary' : 'asset-connect.temporary_variant';

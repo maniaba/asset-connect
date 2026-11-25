@@ -6,6 +6,7 @@ namespace Maniaba\AssetConnect\Config;
 
 use Maniaba\AssetConnect\AssetVariants\AssetVariantsProcess;
 use Maniaba\AssetConnect\Jobs\AssetConnectJob;
+use Maniaba\AssetConnect\Jobs\CopyAssetsJob;
 
 class Registrar
 {
@@ -19,7 +20,8 @@ class Registrar
 
         return [
             'jobHandlers' => [
-                $jobHandler => $jobClass,
+                $jobHandler            => $jobClass,
+                CopyAssetsJob::HANDLER => CopyAssetsJob::class,
             ],
         ];
     }

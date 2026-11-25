@@ -34,7 +34,7 @@ final readonly class AssetAccessService implements AssetAccessServiceInterface
         // Get the asset from the repository
         $asset = $this->assetRepository->find($assetId);
 
-        if ($asset === null) {
+        if ($asset === null || $asset->isCopyPending()) {
             throw PageException::forPageNotFound();
         }
 
