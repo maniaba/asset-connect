@@ -295,11 +295,12 @@ Two-step upload system – upload first, attach to entity later.
 The repository does not commit `composer.lock`, so CI resolves the versions
 allowed by `composer.json`. Reproduce analysis failures with freshly resolved
 dependencies instead of relying on an older local vendor directory. Run the full
-PHPStan analysis and Rector dry-run after tool configuration changes; the PHPUnit
-migration rules use `PHPUnitSetList::COMPOSER_BASED` alongside the code-quality
-set, so Rector selects rules supported by the installed PHPUnit version. Cache
-storage is selected by Rector; the existing `/tmp/rector` cache directory remains
-configured without the removed `cacheClass()` setter.
+PHPStan analysis and Rector dry-run after tool configuration changes. The
+Composer-based PHPUnit migration set selects rules for the installed PHPUnit
+version through `withComposerBased(phpunit: true)`. Legacy rules are registered
+when the installed Rector version provides them. The explicit constructor in
+`AssetModel` is excluded from the legacy parent-constructor removal rule.
+Rector selects its cache storage and uses the configured `/tmp/rector` directory.
 
 Pending asset creation reads filesystem creation and modification timestamps
 directly from `File::getCTime()` and `File::getMTime()`. These methods do not return

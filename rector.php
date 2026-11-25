@@ -48,8 +48,9 @@ return static function (RectorConfig $rectorConfig): void {
         SetList::DEAD_CODE,
         LevelSetList::UP_TO_PHP_83,
         PHPUnitSetList::PHPUNIT_CODE_QUALITY,
-        PHPUnitSetList::COMPOSER_BASED,
     ]);
+
+    RectorConfig::configure()->withComposerBased(phpunit: true)($rectorConfig);
 
     $rectorConfig->parallel();
 
@@ -88,7 +89,7 @@ return static function (RectorConfig $rectorConfig): void {
     $rectorConfig->importNames();
 
     // Are there files or rules you need to skip?
-    $rectorConfig->skip([
+    $skippedRules = [
         __DIR__ . '/src/Views',
 
         StringifyStrNeedlesRector::class,
@@ -116,38 +117,32 @@ return static function (RectorConfig $rectorConfig): void {
             __DIR__ . '/tests/_support/Models/FakeAssetEntityModel.php',
             __DIR__ . '/tests/_support/Models/InvalidAssetConnectReturnTypeModel.php',
         ],
+    ];
 
-        RemoveParentDelegatingConstructorRector::class => [
+    if (class_exists(RemoveParentDelegatingConstructorRector::class)) {
+        $skippedRules[RemoveParentDelegatingConstructorRector::class] = [
             __DIR__ . '/src/Models/AssetModel.php',
-        ],
-    ]);
+        ];
+    }
+
+    $rectorConfig->skip($skippedRules);
 
     // auto import fully qualified class names
     $rectorConfig->importNames();
 
     $rectorConfig->rule(SimplifyUselessVariableRector::class);
     $rectorConfig->rule(RemoveAlwaysElseRector::class);
-    $rectorConfig->rule(CountArrayToEmptyArrayComparisonRector::class);
-    $rectorConfig->rule(ChangeNestedForeachIfsToEarlyContinueRector::class);
     $rectorConfig->rule(ChangeIfElseValueAssignToEarlyReturnRector::class);
-    $rectorConfig->rule(SimplifyStrposLowerRector::class);
-    $rectorConfig->rule(CombineIfRector::class);
     $rectorConfig->rule(SimplifyIfReturnBoolRector::class);
     $rectorConfig->rule(InlineIfToExplicitIfRector::class);
     $rectorConfig->rule(PreparedValueToEarlyReturnRector::class);
-    $rectorConfig->rule(ShortenElseIfRector::class);
-    $rectorConfig->rule(SimplifyIfElseToTernaryRector::class);
-    $rectorConfig->rule(UnusedForeachValueToArrayKeysRector::class);
     $rectorConfig->rule(ChangeArrayPushToArrayAssignRector::class);
     $rectorConfig->rule(UnnecessaryTernaryExpressionRector::class);
-    $rectorConfig->rule(SimplifyRegexPatternRector::class);
     $rectorConfig->rule(FuncGetArgsToVariadicParamRector::class);
     $rectorConfig->rule(MakeInheritedMethodVisibilitySameAsParentRector::class);
     $rectorConfig->rule(SimplifyEmptyArrayCheckRector::class);
     $rectorConfig->rule(SimplifyEmptyCheckOnEmptyArrayRector::class);
     $rectorConfig->rule(TernaryEmptyArrayArrayDimFetchToCoalesceRector::class);
-    $rectorConfig->rule(EmptyOnNullableObjectToInstanceOfRector::class);
-    $rectorConfig->rule(DisallowedEmptyRuleFixerRector::class);
     $rectorConfig
         ->ruleWithConfiguration(TypedPropertyFromAssignsRector::class, [
             /**
@@ -160,8 +155,24 @@ return static function (RectorConfig $rectorConfig): void {
         ]);
     $rectorConfig->rule(StringClassNameToClassConstantRector::class);
     $rectorConfig->rule(PrivatizeFinalClassPropertyRector::class);
-    $rectorConfig->rule(CompleteDynamicPropertiesRector::class);
     $rectorConfig->rule(SingleInArrayToCompareRector::class);
     $rectorConfig->rule(VersionCompareFuncCallToConstantRector::class);
-    $rectorConfig->rule(ExplicitBoolCompareRector::class);
+
+    // These rules are available in older Rector 2.x versions.
+    $legacyRules = [
+        ChangeNestedForeachIfsToEarlyContinueRector::class,
+        CombineIfRector::class,
+        CompleteDynamicPropertiesRector::class,
+        CountArrayToEmptyArrayComparisonRector::class,
+        DisallowedEmptyRuleFixerRector::class,
+        EmptyOnNullableObjectToInstanceOfRector::class,
+        ExplicitBoolCompareRector::class,
+        ShortenElseIfRector::class,
+        SimplifyIfElseToTernaryRector::class,
+        SimplifyRegexPatternRector::class,
+        SimplifyStrposLowerRector::class,
+        UnusedForeachValueToArrayKeysRector::class,
+    ];
+
+    $rectorConfig->rules(array_filter($legacyRules, class_exists(...)));
 };
