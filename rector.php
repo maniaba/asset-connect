@@ -3,30 +3,19 @@
 declare(strict_types=1);
 
 use Rector\CodeQuality\Rector\BooleanAnd\SimplifyEmptyArrayCheckRector;
-use Rector\CodeQuality\Rector\Class_\CompleteDynamicPropertiesRector;
 use Rector\CodeQuality\Rector\Empty_\SimplifyEmptyCheckOnEmptyArrayRector;
 use Rector\CodeQuality\Rector\Expression\InlineIfToExplicitIfRector;
-use Rector\CodeQuality\Rector\Foreach_\UnusedForeachValueToArrayKeysRector;
 use Rector\CodeQuality\Rector\FuncCall\ChangeArrayPushToArrayAssignRector;
-use Rector\CodeQuality\Rector\FuncCall\SimplifyRegexPatternRector;
-use Rector\CodeQuality\Rector\FuncCall\SimplifyStrposLowerRector;
 use Rector\CodeQuality\Rector\FuncCall\SingleInArrayToCompareRector;
 use Rector\CodeQuality\Rector\FunctionLike\SimplifyUselessVariableRector;
-use Rector\CodeQuality\Rector\If_\CombineIfRector;
-use Rector\CodeQuality\Rector\If_\ExplicitBoolCompareRector;
-use Rector\CodeQuality\Rector\If_\ShortenElseIfRector;
-use Rector\CodeQuality\Rector\If_\SimplifyIfElseToTernaryRector;
 use Rector\CodeQuality\Rector\If_\SimplifyIfReturnBoolRector;
 use Rector\CodeQuality\Rector\Ternary\TernaryEmptyArrayArrayDimFetchToCoalesceRector;
 use Rector\CodeQuality\Rector\Ternary\UnnecessaryTernaryExpressionRector;
 use Rector\CodingStyle\Rector\ClassMethod\FuncGetArgsToVariadicParamRector;
 use Rector\CodingStyle\Rector\ClassMethod\MakeInheritedMethodVisibilitySameAsParentRector;
-use Rector\CodingStyle\Rector\FuncCall\CountArrayToEmptyArrayComparisonRector;
 use Rector\CodingStyle\Rector\FuncCall\VersionCompareFuncCallToConstantRector;
 use Rector\Config\RectorConfig;
-use Rector\DeadCode\Rector\ClassMethod\RemoveParentDelegatingConstructorRector;
 use Rector\DeadCode\Rector\ClassMethod\RemoveUnusedPromotedPropertyRector;
-use Rector\EarlyReturn\Rector\Foreach_\ChangeNestedForeachIfsToEarlyContinueRector;
 use Rector\EarlyReturn\Rector\If_\ChangeIfElseValueAssignToEarlyReturnRector;
 use Rector\EarlyReturn\Rector\If_\RemoveAlwaysElseRector;
 use Rector\EarlyReturn\Rector\Return_\PreparedValueToEarlyReturnRector;
@@ -36,66 +25,39 @@ use Rector\PHPUnit\AnnotationsToAttributes\Rector\Class_\AnnotationWithValueToAt
 use Rector\PHPUnit\CodeQuality\Rector\Class_\YieldDataProviderRector;
 use Rector\PHPUnit\Set\PHPUnitSetList;
 use Rector\Privatization\Rector\Property\PrivatizeFinalClassPropertyRector;
-use Rector\Set\ValueObject\LevelSetList;
 use Rector\Set\ValueObject\SetList;
-use Rector\Strict\Rector\Empty_\DisallowedEmptyRuleFixerRector;
-use Rector\TypeDeclaration\Rector\Empty_\EmptyOnNullableObjectToInstanceOfRector;
 use Rector\TypeDeclaration\Rector\Property\TypedPropertyFromAssignsRector;
-use Rector\ValueObject\PhpVersion;
 
-return static function (RectorConfig $rectorConfig): void {
-    $rectorConfig->sets([
-        SetList::DEAD_CODE,
-        LevelSetList::UP_TO_PHP_83,
-        PHPUnitSetList::PHPUNIT_CODE_QUALITY,
-    ]);
-
-    RectorConfig::configure()->withComposerBased(phpunit: true)($rectorConfig);
-
-    $rectorConfig->parallel();
-
-    // Github action cache
-    if (is_dir('/tmp')) {
-        $rectorConfig->cacheDirectory('/tmp/rector');
-    }
-
-    // The paths to refactor (can also be supplied with CLI arguments)
-    $rectorConfig->paths([
+return RectorConfig::configure()
+    ->withPaths([
         __DIR__ . '/src/',
         __DIR__ . '/tests/',
-    ]);
-
-    // Include Composer's autoload - required for global execution, remove if running locally
-    $rectorConfig->autoloadPaths([
+    ])
+    ->withAutoloadPaths([
         __DIR__ . '/vendor/autoload.php',
-    ]);
-
-    // Do you need to include constants, class aliases, or a custom autoloader?
-    $rectorConfig->bootstrapFiles([
-        realpath(getcwd()) . '/vendor/codeigniter4/framework/system/Test/bootstrap.php',
-    ]);
-
-    if (is_file(__DIR__ . '/phpstan.neon.dist')) {
-        $rectorConfig->phpstanConfigs([
-            __DIR__ . DIRECTORY_SEPARATOR . 'phpstan.neon.dist',
-            __DIR__ . DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, ['vendor', 'phpstan', 'phpstan-strict-rules', 'rules.neon']),
-        ]);
-    }
-
-    // Set the target version for refactoring
-    $rectorConfig->phpVersion(PhpVersion::PHP_83);
-
-    // Auto-import fully qualified class names
-    $rectorConfig->importNames();
-
-    // Are there files or rules you need to skip?
-    $skippedRules = [
+    ])
+    ->withBootstrapFiles([
+        __DIR__ . '/vendor/codeigniter4/framework/system/Test/bootstrap.php',
+    ])
+    ->withPHPStanConfigs([
+        __DIR__ . '/phpstan.neon.dist',
+        __DIR__ . '/vendor/phpstan/phpstan-strict-rules/rules.neon',
+    ])
+    ->withCache(is_dir('/tmp') ? '/tmp/rector' : null)
+    ->withParallel()
+    ->withImportNames(removeUnusedImports: false)
+    ->withPhpSets()
+    ->withSets([
+        SetList::DEAD_CODE,
+        PHPUnitSetList::PHPUNIT_CODE_QUALITY,
+    ])
+    ->withComposerBased(phpunit: true)
+    ->withSkip([
         __DIR__ . '/src/Views',
 
         StringifyStrNeedlesRector::class,
         YieldDataProviderRector::class,
 
-        // Note: requires php 8
         RemoveUnusedPromotedPropertyRector::class,
         AnnotationWithValueToAttributeRector::class,
 
@@ -117,62 +79,26 @@ return static function (RectorConfig $rectorConfig): void {
             __DIR__ . '/tests/_support/Models/FakeAssetEntityModel.php',
             __DIR__ . '/tests/_support/Models/InvalidAssetConnectReturnTypeModel.php',
         ],
-    ];
-
-    if (class_exists(RemoveParentDelegatingConstructorRector::class)) {
-        $skippedRules[RemoveParentDelegatingConstructorRector::class] = [
-            __DIR__ . '/src/Models/AssetModel.php',
-        ];
-    }
-
-    $rectorConfig->skip($skippedRules);
-
-    // auto import fully qualified class names
-    $rectorConfig->importNames();
-
-    $rectorConfig->rule(SimplifyUselessVariableRector::class);
-    $rectorConfig->rule(RemoveAlwaysElseRector::class);
-    $rectorConfig->rule(ChangeIfElseValueAssignToEarlyReturnRector::class);
-    $rectorConfig->rule(SimplifyIfReturnBoolRector::class);
-    $rectorConfig->rule(InlineIfToExplicitIfRector::class);
-    $rectorConfig->rule(PreparedValueToEarlyReturnRector::class);
-    $rectorConfig->rule(ChangeArrayPushToArrayAssignRector::class);
-    $rectorConfig->rule(UnnecessaryTernaryExpressionRector::class);
-    $rectorConfig->rule(FuncGetArgsToVariadicParamRector::class);
-    $rectorConfig->rule(MakeInheritedMethodVisibilitySameAsParentRector::class);
-    $rectorConfig->rule(SimplifyEmptyArrayCheckRector::class);
-    $rectorConfig->rule(SimplifyEmptyCheckOnEmptyArrayRector::class);
-    $rectorConfig->rule(TernaryEmptyArrayArrayDimFetchToCoalesceRector::class);
-    $rectorConfig
-        ->ruleWithConfiguration(TypedPropertyFromAssignsRector::class, [
-            /**
-             * The INLINE_PUBLIC value is default to false to avoid BC break,
-             * if you use for libraries and want to preserve BC break, you don't
-             * need to configure it, as it included in LevelSetList::UP_TO_PHP_74
-             * Set to true for projects that allow BC break
-             */
-            TypedPropertyFromAssignsRector::INLINE_PUBLIC => true,
-        ]);
-    $rectorConfig->rule(StringClassNameToClassConstantRector::class);
-    $rectorConfig->rule(PrivatizeFinalClassPropertyRector::class);
-    $rectorConfig->rule(SingleInArrayToCompareRector::class);
-    $rectorConfig->rule(VersionCompareFuncCallToConstantRector::class);
-
-    // These rules are available in older Rector 2.x versions.
-    $legacyRules = [
-        ChangeNestedForeachIfsToEarlyContinueRector::class,
-        CombineIfRector::class,
-        CompleteDynamicPropertiesRector::class,
-        CountArrayToEmptyArrayComparisonRector::class,
-        DisallowedEmptyRuleFixerRector::class,
-        EmptyOnNullableObjectToInstanceOfRector::class,
-        ExplicitBoolCompareRector::class,
-        ShortenElseIfRector::class,
-        SimplifyIfElseToTernaryRector::class,
-        SimplifyRegexPatternRector::class,
-        SimplifyStrposLowerRector::class,
-        UnusedForeachValueToArrayKeysRector::class,
-    ];
-
-    $rectorConfig->rules(array_filter($legacyRules, class_exists(...)));
-};
+    ])
+    ->withRules([
+        SimplifyUselessVariableRector::class,
+        RemoveAlwaysElseRector::class,
+        ChangeIfElseValueAssignToEarlyReturnRector::class,
+        SimplifyIfReturnBoolRector::class,
+        InlineIfToExplicitIfRector::class,
+        PreparedValueToEarlyReturnRector::class,
+        ChangeArrayPushToArrayAssignRector::class,
+        UnnecessaryTernaryExpressionRector::class,
+        FuncGetArgsToVariadicParamRector::class,
+        MakeInheritedMethodVisibilitySameAsParentRector::class,
+        SimplifyEmptyArrayCheckRector::class,
+        SimplifyEmptyCheckOnEmptyArrayRector::class,
+        TernaryEmptyArrayArrayDimFetchToCoalesceRector::class,
+        StringClassNameToClassConstantRector::class,
+        PrivatizeFinalClassPropertyRector::class,
+        SingleInArrayToCompareRector::class,
+        VersionCompareFuncCallToConstantRector::class,
+    ])
+    ->withConfiguredRule(TypedPropertyFromAssignsRector::class, [
+        TypedPropertyFromAssignsRector::INLINE_PUBLIC => true,
+    ]);
