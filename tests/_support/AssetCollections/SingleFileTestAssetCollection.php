@@ -7,7 +7,6 @@ namespace Tests\Support\AssetCollections;
 use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionDefinitionInterface;
 use Maniaba\AssetConnect\Asset\Interfaces\AssetCollectionSetterInterface;
 use Override;
-use Tests\Support\PathGenerators\FakeAssetPathGenerator;
 
 final class SingleFileTestAssetCollection implements AssetCollectionDefinitionInterface
 {
@@ -17,7 +16,6 @@ final class SingleFileTestAssetCollection implements AssetCollectionDefinitionIn
         $definition
             ->allowedExtensions('txt')
             ->setStorage('public')
-            ->onlyKeepLatest(1)
-            ->setPathGenerator(new FakeAssetPathGenerator('fake-assets/single-file'));
+            ->onlyKeepLatest(1);
     }
 }

@@ -14,7 +14,6 @@ final readonly class PathGenerator
 
     public function __construct(
         private AssetCollection $collection,
-        private string $subdirectory = '',
     ) {
         $this->helper        = new PathGeneratorHelper();
         $this->pathGenerator = $this->collection->getPathGenerator();
@@ -37,7 +36,7 @@ final readonly class PathGenerator
     {
         return $this->normalizeDirectoryPath(
             $this->pathGenerator->getPath($this->helper, $this->collection),
-        ) . $this->subdirectory;
+        );
     }
 
     /**
@@ -57,7 +56,7 @@ final readonly class PathGenerator
     {
         return $this->normalizeDirectoryPath(
             $this->pathGenerator->getPathForVariants($this->helper, $this->collection),
-        ) . $this->subdirectory;
+        );
     }
 
     private function normalizeDirectoryPath(string $path): string

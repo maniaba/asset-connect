@@ -50,10 +50,7 @@ final class AssetPersistenceManager
         // Set the collection name using the setCollection method
         $this->asset->setCollection($this->setupAssetCollection->getCollectionDefinition());
 
-        $this->pathGenerator = PathGeneratorFactory::create(
-            $this->collection,
-            $this->copyFileName === null ? '' : bin2hex(random_bytes(16)) . '/',
-        );
+        $this->pathGenerator = PathGeneratorFactory::create($this->collection);
     }
 
     /**

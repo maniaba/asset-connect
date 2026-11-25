@@ -26,7 +26,6 @@ use org\bovigo\vfs\vfsStream;
 use Override;
 use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
-use Tests\Support\AssetCollections\FakeAvatarCollection;
 use Tests\Support\AssetCollections\FakeDocumentCollection;
 use Tests\Support\AssetCollections\ImmediateVariantTestAssetCollection;
 use Tests\Support\AssetCollections\MimeRestrictedTestAssetCollection;
@@ -58,7 +57,7 @@ final class AssetCopyTest extends AssetConnectFeatureTestCase
             ->usingName('Original title')
             ->setOrder(12)
             ->withCustomProperties(['nested' => ['verified' => true, 'tags' => ['one', 'two']]])
-            ->toAssetCollection();
+            ->toAssetCollection(DefaultAssetCollection::class);
         $asset->setInternalProperty('storage_reference', $asset->path);
         $asset->created_at = Time::parse('2020-01-01');
         $asset->updated_at = Time::parse('2020-01-02');
@@ -82,8 +81,10 @@ final class AssetCopyTest extends AssetConnectFeatureTestCase
         $this->assertSame([], $row->getInternalProperties());
         $this->assertNotSame($asset->created_at, $row->created_at);
         $this->assertNotSame($asset->updated_at, $row->updated_at);
-        $this->assertNotSame($asset->path, $row->path);
-        $this->assertStringStartsWith('fake-assets/documents/', $row->path);
+        $expectedPath = '~^\d{4}-\d{2}-\d{2}/[0-9a-f]{20}/original\.txt$~';
+        $this->assertMatchesRegularExpression($expectedPath, $asset->path);
+        $this->assertMatchesRegularExpression($expectedPath, $row->path);
+        $this->assertNotSame(dirname($asset->path), dirname($row->path));
 
         $copy->setCustomProperty('nested', []);
         $this->assertTrue($asset->getCustomProperty('nested')['verified']);
@@ -95,8 +96,8 @@ final class AssetCopyTest extends AssetConnectFeatureTestCase
     {
         $source = $this->createFakeEntity();
         $target = $this->createFakeEntity();
-        $avatar = $source->addAssetFromString('avatar', 'avatar.txt')->setOrder(20)->toAssetCollection(FakeAvatarCollection::class);
-        $doc    = $source->addAssetFromString('document', 'doc.txt')->setOrder(3)->toAssetCollection();
+        $avatar = $source->addAssetFromString('avatar', 'avatar.txt')->setOrder(20)->toAssetCollection(ImmediateVariantTestAssetCollection::class);
+        $doc    = $source->addAssetFromString('document', 'doc.txt')->setOrder(3)->toAssetCollection(DefaultAssetCollection::class);
         $this->assertEntityAssetCount($source, 2);
         $source->assetConnectInstance()?->removeAssetById($doc->id);
         $this->assertEntityAssetCount($source, 1);
@@ -108,7 +109,7 @@ final class AssetCopyTest extends AssetConnectFeatureTestCase
         $this->assertAssetFileContains($copies[0], 'document');
         $this->assertAssetFileContains($copies[1], 'avatar');
 
-        $filtered = $source->copyAssetsTo($target, collection: FakeDocumentCollection::class);
+        $filtered = $source->copyAssetsTo($target, collection: DefaultAssetCollection::class);
         $this->assertCount(1, $filtered);
         $this->assertSame($doc->collection, $filtered[0]->collection);
         $this->assertNotSame($copies[0]->path, $filtered[0]->path);
@@ -155,12 +156,34 @@ final class AssetCopyTest extends AssetConnectFeatureTestCase
         $variant = $copy->metadata->assetVariant->getAssetVariant('preview');
         $this->assertInstanceOf(AssetVariant::class, $variant);
         $this->assertTrue($variant->processed);
+        $this->assertSame(dirname($copy->path) . '/variants/variants-preview.txt', $variant->path);
         $this->assertSame('preview for variants.txt', $variant->getStorageDisk()->read($variant->path));
 
         $secondCopy    = $copy->copyToEntity($target);
         $secondVariant = $secondCopy->metadata->assetVariant->getAssetVariant('preview');
         $this->assertInstanceOf(AssetVariant::class, $secondVariant);
         $this->assertNotSame($variant->path, $secondVariant->path);
+    }
+
+    public function testUsesTheConfiguredUploadPathAndRejectsASecondCopyAtTheSamePath(): void
+    {
+        $source = $this->createFakeEntity();
+        $target = $this->createFakeEntity();
+        $asset  = $source->addAssetFromString('document', 'fixed.txt')->toAssetCollection(DefaultAssetCollection::class);
+        $copy   = $asset->copyToEntity($target, collection: FakeDocumentCollection::class);
+
+        $this->assertSame('fake-assets/documents/fixed.txt', $copy->path);
+
+        try {
+            $asset->copyToEntity($target, collection: FakeDocumentCollection::class);
+            $this->fail('Expected the occupied path to be rejected.');
+        } catch (FileException $exception) {
+            $this->assertSame('Cannot copy file', $exception->getMessage());
+        }
+
+        $this->assertEntityAssetCount($target, 1);
+        $this->assertAssetFileContains($asset, 'document');
+        $this->assertAssetFileContains($copy, 'document');
     }
 
     public function testQueuesVariantsForTheNewAssetId(): void
@@ -188,9 +211,11 @@ final class AssetCopyTest extends AssetConnectFeatureTestCase
 
         $this->assertSame($copy->id, $job['assetId']);
         $this->assertSame(QueuedVariantTestAssetCollection::class, $job['definition']);
+        $this->assertSame('fake-assets/queued-variants/queued.txt', $copy->path);
         $variant = $copy->metadata->assetVariant->getAssetVariant('queued');
         $this->assertInstanceOf(AssetVariant::class, $variant);
         $this->assertFalse($variant->processed);
+        $this->assertSame('fake-assets/queued-variants/variants/queued-queued.txt', $variant->path);
 
         (new AssetConnectJob($job))->process();
         $this->assertSame('queued for queued.txt', $variant->getStorageDisk()->read($variant->path));
