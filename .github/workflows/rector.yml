@@ -23,10 +23,11 @@ jobs:
     name: PHP ${{ matrix.php-versions }} Rector Analysis
     runs-on: ubuntu-latest
     if: (! contains(github.event.head_commit.message, '[ci skip]'))
+    continue-on-error: ${{ matrix.php-versions == '8.5' }}
     strategy:
       fail-fast: false
       matrix:
-        php-versions: ['8.3', '8.4']
+        php-versions: ['8.3', '8.4', '8.5']
 
     steps:
       - name: Checkout
@@ -64,8 +65,8 @@ jobs:
         uses: actions/cache@v6
         with:
           path: /tmp/rector
-          key: ${{ runner.os }}-rector-${{ github.run_id }}
-          restore-keys: ${{ runner.os }}-rector-
+          key: ${{ runner.os }}-rector-${{ matrix.php-versions }}-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-rector-${{ matrix.php-versions }}-
 
       - run: mkdir -p /tmp/rector
 

@@ -23,10 +23,11 @@ jobs:
     name: PHP ${{ matrix.php-versions }} Static Analysis
     runs-on: ubuntu-latest
     if: (! contains(github.event.head_commit.message, '[ci skip]'))
+    continue-on-error: ${{ matrix.php-versions == '8.5' }}
     strategy:
       fail-fast: false
       matrix:
-        php-versions: ['8.3', '8.4']
+        php-versions: ['8.3', '8.4', '8.5']
 
     steps:
       - name: Checkout
@@ -59,8 +60,8 @@ jobs:
         uses: actions/cache@v6
         with:
           path: build/phpstan
-          key: ${{ runner.os }}-phpstan-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-phpstan-
+          key: ${{ runner.os }}-phpstan-${{ matrix.php-versions }}-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-phpstan-${{ matrix.php-versions }}-
 
       - name: Install dependencies
         run: |
