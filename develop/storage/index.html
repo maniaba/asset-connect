@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../assets/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
     
     
       
@@ -703,6 +703,17 @@
     <span class="md-ellipsis">
       
         Selecting Storage Per Collection
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#choosing-a-disk-for-copies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choosing a Disk for Copies
       
     </span>
   </a>
@@ -1486,6 +1497,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#choosing-a-disk-for-copies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choosing a Disk for Copies
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#transfer-assets-between-storage-disks" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1751,6 +1773,10 @@ protected function setupStorageRemote(array $storage): array
     }
 }</code></pre>
 <p>If <code>setStorage()</code> is not used, AssetConnect selects the disk from the collection visibility.</p>
+<h2 id="choosing-a-disk-for-copies">Choosing a Disk for Copies</h2>
+<p>Both <a href="../asset/#copytoentity"><code>copyToEntity()</code></a> and <a href="../basic-usage/#copying-assets-between-entities"><code>copyAssetsTo()</code></a> accept a named disk from <code>Config\Asset::$storages</code>. When <code>storage</code> is omitted, each copy uses its source disk. The disk must match the destination collection's visibility and any disk pinned by <code>setStorage()</code>.</p>
+<p>An unconfigured disk raises an <code>InvalidArgumentException</code>. A disk disallowed by the collection raises an <code>AssetException</code>, including when the source disk was selected by default. Pass a compatible disk explicitly to copy between collections with different storage requirements.</p>
+<p>AssetConnect streams the original file through the configured storage adapters. The destination collection's path generator selects paths for copies and their variants using the same layout as uploads. The default generator gives every asset its own directory. If a custom generator produces a file path that already exists on the destination disk, the copy fails with a <code>FileException</code>. Variant processors can use <a href="#local-and-temporary-paths-for-processing">temporary local files</a> when they require a local path.</p>
 <h2 id="transfer-assets-between-storage-disks">Transfer Assets Between Storage Disks</h2>
 <p>Use <code>transferToStorage()</code> when an existing asset needs to move from one configured disk to another:</p>
 <pre class="highlight"><code class="language-php">// Move original file and existing variants from the current disk to protected
@@ -1959,7 +1985,7 @@ try {
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "content.code.copy", "navigation.footer", "content.action.edit", "navigation.top", "search.suggest", "search.highlight", "search.share"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"alias": true, "default": "latest", "provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.c21346df.min.js"></script>
+      <script src="../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
         <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/highlight.min.js"></script>
       

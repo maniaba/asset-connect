@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../assets/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
     
     
       
@@ -2593,13 +2593,10 @@
 </table>
 <h2 id="ci-tool-compatibility">CI tool compatibility</h2>
 <p>The repository does not commit <code>composer.lock</code>, so CI resolves the versions
-allowed by <code>composer.json</code>. Reproduce analysis failures with freshly resolved
-dependencies instead of relying on an older local vendor directory. Run the full
-PHPStan analysis and Rector dry-run after tool configuration changes; the PHPUnit
-migration rules use <code>PHPUnitSetList::COMPOSER_BASED</code> alongside the code-quality
-set, so Rector selects rules supported by the installed PHPUnit version. Cache
-storage is selected by Rector; the existing <code>/tmp/rector</code> cache directory remains
-configured without the removed <code>cacheClass()</code> setter.</p>
+allowed by <code>composer.json</code>. Rector 2.9.2 or later in the 2.x series reads the
+project's PHP requirement through <code>withPhpSets()</code> and selects PHPUnit migration
+rules for the installed PHPUnit version through <code>withComposerBased(phpunit: true)</code>.
+Run <code>composer analyze</code> after changes to the analysis configuration.</p>
 <p>Pending asset creation reads filesystem creation and modification timestamps
 directly from <code>File::getCTime()</code> and <code>File::getMTime()</code>. These methods do not return
 null, so null-coalescing timestamp defaults are unnecessary. File access failures
@@ -2731,7 +2728,7 @@ location change; the ignored finding and count remain the same.</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "content.code.copy", "navigation.footer", "content.action.edit", "navigation.top", "search.suggest", "search.highlight", "search.share"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"alias": true, "default": "latest", "provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.c21346df.min.js"></script>
+      <script src="../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
         <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/highlight.min.js"></script>
       

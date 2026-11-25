@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../assets/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
     
     
       
@@ -1175,6 +1175,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#copytoentity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        copyToEntity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#transfertostorage" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2100,6 +2111,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#copytoentity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        copyToEntity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#transfertostorage" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2732,6 +2754,24 @@ $relativeTemporaryUrl = $asset-&gt;getTemporaryUrlRelative($expiration);
 //     'processing_job_id' =&gt; 'job-123',
 //     's3_etag' =&gt; 'etag-value'
 // ]</code></pre></p>
+<h3 id="copytoentity">copyToEntity</h3>
+<p><code>copyToEntity()</code> creates a new asset for a saved entity. By default the new asset uses the source asset's collection and storage disk.</p>
+<pre class="highlight"><code class="language-php">$copy = $asset-&gt;copyToEntity($targetEntity);
+
+$document = $asset-&gt;copyToEntity(
+    $targetEntity,
+    collection: DocumentsCollection::class
+);
+
+$onS3 = $asset-&gt;copyToEntity($targetEntity, storage: 's3');
+
+$archived = $asset-&gt;copyToEntity(
+    $targetEntity,
+    collection: ArchiveCollection::class,
+    storage: 'archive'
+);</code></pre>
+<p>The copy keeps the file name, asset name, MIME type, order, and custom properties. It receives its own ID, timestamps, and storage path. The destination collection generates its own internal metadata and variants, including queued variants when configured. Each asset and its generated files can be deleted independently.</p>
+<p>See <a href="../storage/#choosing-a-disk-for-copies">choosing a disk for copies</a> for storage requirements and <a href="../basic-usage/#copying-assets-between-entities">copying assets between entities</a> for bulk copies.</p>
 <h3 id="transfertostorage">transferToStorage</h3>
 <pre class="highlight"><code class="language-php">public function transferToStorage(string $storage, bool $withVariants = true, bool $deleteSource = true): static</code></pre>
 <p>Transfers the asset file to another configured storage disk. The storage-relative <code>path</code> stays the same, while <code>storage</code> is updated to the target disk.</p>
@@ -3179,7 +3219,7 @@ is unchanged.</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "content.code.copy", "navigation.footer", "content.action.edit", "navigation.top", "search.suggest", "search.highlight", "search.share"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"alias": true, "default": "latest", "provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.c21346df.min.js"></script>
+      <script src="../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
         <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/highlight.min.js"></script>
       

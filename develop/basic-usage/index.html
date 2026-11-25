@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../assets/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
     
     
       
@@ -927,6 +927,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#copying-assets-between-entities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Copying Assets Between Entities
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#deleting-assets" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1654,6 +1665,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#copying-assets-between-entities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Copying Assets Between Entities
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#deleting-assets" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1888,6 +1910,19 @@ $firstImage = $product-&gt;getFirstAsset(ImagesCollection::class);
 
 // Get the last asset from a specific collection
 $lastDocument = $product-&gt;getLastAsset(DocumentsCollection::class);</code></pre>
+<h3 id="copying-assets-between-entities">Copying Assets Between Entities</h3>
+<p>Use <code>copyAssetsTo()</code> on a saved entity to copy its assets to another saved entity. The method returns the new assets in source order. Pass <code>collection</code> to filter the source assets by collection.</p>
+<pre class="highlight"><code class="language-php">$copies = $sourceEntity-&gt;copyAssetsTo($targetEntity);
+
+$documentCopies = $sourceEntity-&gt;copyAssetsTo(
+    $targetEntity,
+    collection: DocumentsCollection::class
+);
+
+$remoteCopies = $sourceEntity-&gt;copyAssetsTo($targetEntity, storage: 'minio');</code></pre>
+<p>Each copy keeps its source collection. Use <a href="../asset/#copytoentity"><code>copyToEntity()</code></a> to place an individual copy in a different collection.</p>
+<p>AssetConnect rolls back the new rows and files if a copy fails. Collections using <code>onlyKeepLatest()</code> or <code>singleFileCollection()</code> can replace older assets on the destination after all copies are ready. A copy that would evict a source or one of the new copies raises an <code>AssetException</code> with code 409.</p>
+<p>AssetConnect logs any failures while cleaning up. Jobs already accepted by an external queue and side effects from application event listeners follow their own lifecycle.</p>
 <h3 id="deleting-assets">Deleting Assets</h3>
 <p>You can delete assets from an entity:</p>
 <pre class="highlight"><code class="language-php">// Delete all assets
@@ -2204,7 +2239,7 @@ $mimeType = AssetMimeType::fromAssetExtension(AssetExtension::JPG); // 'image/jp
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "content.code.copy", "navigation.footer", "content.action.edit", "navigation.top", "search.suggest", "search.highlight", "search.share"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"alias": true, "default": "latest", "provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.c21346df.min.js"></script>
+      <script src="../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
         <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/highlight.min.js"></script>
       
