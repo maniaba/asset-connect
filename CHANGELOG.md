@@ -5,10 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [v3.2.0](https://github.com/maniaba/asset-connect/tree/v3.2.0) - 2026-11-25
 
 ### Added
-- Added `Asset::copyToEntity()` and `UseAssetConnectTrait::copyAssetsTo()` for copying assets between entities with independent files, configurable storage, and destination collection validation.
+- Added `Asset::copyToEntity()` and `UseAssetConnectTrait::copyAssetsTo()` to copy individual assets, an entire collection, or all assets between entities.
+- Copies preserve custom properties and order, write independent files to a configurable storage disk, and generate variants according to the destination collection. Failed batch copies roll back newly created records and files.
 
 ### Fixed
 - Fixed the Rector CI check by requiring Rector 2.9.2 or later in the 2.x series, switching to its fluent configuration API, and removing references to obsolete rules.
